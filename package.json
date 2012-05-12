@@ -1,0 +1,22 @@
+{
+  "author": "Bryan Hughes <bhughes@appcelerator.com>",
+  "name": "ti-jitsu",
+  "description": "A code analysis tool for Titanium Mobile",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/bryan-m-hughes/ti-jitsu.git"
+  },
+  "main": "lib/analyzer.js",
+  "scripts": {
+    "test": "bin/analyzer"
+  },
+  "dependencies": {
+    "uglify-js": "1.2.x"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  }
+}
