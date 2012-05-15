@@ -1,6 +1,6 @@
 {
   "author": "Bryan Hughes <bhughes@appcelerator.com>",
-  "name": "ti-jitsu",
+  "name": "ti-code-processor",
   "description": "A code analysis tool for Titanium Mobile",
   "version": "0.1.0",
   "repository": {
