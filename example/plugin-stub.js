@@ -4,26 +4,24 @@
  */
 
 /**
- * Creates an instance of the plugin that is associated with the provided analyzer.
+ * Creates an instance of the plugin that is associated with the provided code processor.
  *
- * @class A plugin hooks into a {@link CodeAnalyzer} to provide useful information on some aspect of the project. A
- * 		plugin could be created, for example, that scans a project for all require() statements and returns a list of all required files.
+ * @class A plugin hooks into a {@link CodeProcessor} to provide useful information on some aspect of the project. A
+ * 		plugin could be created, for example, that scans a project for all require() statements and returns a list of
+ * 		all required files.
  *
  * @constructor
- * @param {CodeAnalyzer} codeAnalyzer The {@link CodeAnalyzer} to associate the plugin with.
- * @throws {InvalidArguments} Thrown when a valid {@link CodeAnalyzer} is not supplied.
+ * @param {codeProcessor} codeProcessor The {@link CodeProcessor} to associate the plugin with.
+ * @param {WinstonLogger} externalLogger An instance of a winston logger, configured for syslog levels, to use instead
+ * 		of creating an internal logger.
+ * @throws {InvalidArguments} Thrown when a valid {@link CodeProcessor} is not supplied.
  */
-var Plugin = modules.exports = function(codeAnalyzer) {
-	
-};
+var Plugin = modules.exports = function(codeProcessor, externalLogger) {};
 
 /**
- * Adds a results listener. This is the only way to get the results from the plugin.
+ * Registers a callback to be called when the results for this plugin are ready
  * 
  * @function
- * @param {function(results)} resultsListener A callback to be called once the results are ready.
- * @throws {InvalidArguments} Thrown when a valid resultsListener is not supplied.
+ * @param {function} resultsListener The function to call once the results are ready.
  */
-Plugin.prototype.addResultsListener = function(resultsListener) {
-	
-};
+Plugin.prototype.addResultsListener = function(resultsListener) {};
