@@ -11,7 +11,8 @@
   "dependencies": {
     "uglify-js": "1.2.x",
     "winston": "0.5.x",
-    "xml2js": "0.1.x"
+    "xml2js": "0.1.x",
+    "shelljs": "0.0.x"
   },
   "devDependencies": {},
   "optionalDependencies": {},
