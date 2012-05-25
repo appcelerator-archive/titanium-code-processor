@@ -1,0 +1,99 @@
+The code is organized according to the ECMA-262 spec. Each folder corresponds to a chapter in the spec.
+
+builtins -> ch 15
+error -> ch 16
+execution -> ch 10
+expressions -> ch 11
+functions -> ch 13
+program -> ch 14
+statements -> ch 12
+type_conversion -> ch 9
+types -> ch 8
+
+Module method/property map
+types/Types:
+	$TypeNumber
+	$TypeBoolean
+	$TypeString
+	$TypeDataProperty
+		[[Value]]
+		[[Writable]]
+		[[Enumerable]]
+		[[Configurable]]
+	$TypeAccessorProperty
+		[[Get]]
+		[[Set]]
+		[[Enumerable]]
+		[[Configurable]]
+	$TypeObject
+		[[Prototype]]
+		[[Class]]
+		[[Extensible]]
+		[[Get]]
+		[[GetOwnProperty]]
+		[[GetProperty]]
+		[[Put]]
+		[[CanPut]]
+		[[HasProperty]]
+		[[Delete]]
+		[[DefaultValue]]
+		[[DefineOwnProperty]]
+		(optional)
+		[[PrimitiveValue]]
+		[[Construct]]
+		[[Call]]
+		[[HasInstance]]
+		[[Scope]]
+		[[FormalParameters]]
+		[[Code]]
+		[[TargetFunction]]
+		[[BoundThis]]
+		[[BoundArguments]]
+		[[Match]]
+		[[ParameterMap]]
+types/Reference:
+	$Reference
+		baseValue
+		referencedName
+		strictReference
+	GetBase(V)
+	GetReferencedName(V)
+	IsStrictReference(V)
+	HasPrimitiveBase(V)
+	IsPropertyReference(V)
+	IsUnresolvableReference(V)
+	GetValue(V)
+	PutValue(V, W)
+	IsAccessorDescriptor(Desc)
+	IsDataDescriptor(Desc)
+	IsGenericDescriptor(Desc)
+	FromPropertyDescriptor(Desc)
+	ToPropertyDescriptor(Obj)
+type_conversion/TypeConversion:
+	ToPrimitive
+	ToBoolean
+	ToNumber
+	ToInteger
+	ToString
+	ToObject
+	CheckObjectCoercible
+	IsCallable
+	SameValue
+execution/EnvironmentRecords
+	$EnvironmentRecord:
+		HasBinding(N)
+		CreateMutableBinding(N,D)
+		SetMutableBinding(N,V,S)
+		GetBindingValue(N,S)
+		DeleteBinding(N)
+		ImplicitThisValue()
+		(Declarative Only)
+		CreateImmutableBinding(N)
+		InitializeImmutableBinding(N,V)
+	GetIdentifierReference(lex, name, strict)
+	NewDeclarativeEnvironment(E)
+	NewObjectEnvironment(O,E)
+	ExecutionState
+		LexicalEnvironment
+		VariableEnvironment
+		ThisBinding
