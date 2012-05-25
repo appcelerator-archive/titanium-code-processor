@@ -15,16 +15,6 @@ types/Types:
 	$TypeNumber
 	$TypeBoolean
 	$TypeString
-	$TypeDataProperty
-		[[Value]]
-		[[Writable]]
-		[[Enumerable]]
-		[[Configurable]]
-	$TypeAccessorProperty
-		[[Get]]
-		[[Set]]
-		[[Enumerable]]
-		[[Configurable]]
 	$TypeObject
 		[[Prototype]]
 		[[Class]]
@@ -64,6 +54,17 @@ types/Reference:
 	IsUnresolvableReference(V)
 	GetValue(V)
 	PutValue(V, W)
+types/Properties
+	$TypeDataProperty
+		[[Value]]
+		[[Writable]]
+		[[Enumerable]]
+		[[Configurable]]
+	$TypeAccessorProperty
+		[[Get]]
+		[[Set]]
+		[[Enumerable]]
+		[[Configurable]]
 	IsAccessorDescriptor(Desc)
 	IsDataDescriptor(Desc)
 	IsGenericDescriptor(Desc)
