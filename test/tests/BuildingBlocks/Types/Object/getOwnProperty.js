@@ -12,7 +12,7 @@ function test(value, expected) {
 }
 
 module.exports = [{
-		name: "Does not exist",
+		name: "Property does not exist",
 		test: function(runNextTest) {
 			var obj = new Types.TypeObject();
 			runNextTest(test(obj.getOwnProperty("foo"), undefined));
@@ -32,7 +32,7 @@ module.exports = [{
 		test: function(runNextTest) {
 			var obj = new Types.TypeObject(),
 				prop = new Types.TypeAccessorProperty();
-			obj._properties["foo"] = prop; // Manually add the prop to avoid 
+			obj._properties["foo"] = prop;
 			runNextTest(test(obj.getOwnProperty("foo"), prop));
 		}
 	}
