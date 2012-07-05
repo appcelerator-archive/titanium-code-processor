@@ -5,10 +5,8 @@ var path = require("path"),
 function test(value) {
 	try {
 		assert.ok(value);
-		console.log("\tPassed");
 		return true;
 	} catch(e) {
-		console.log("\tFailed\n" + e);
 		return false;
 	}
 }

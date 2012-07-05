@@ -2,5 +2,38 @@ var path = require("path"),
 	Types = require(path.join(require.main.exports.libPath, "Types")),
 	assert = require("assert");
 
-module.exports = [
+function test(value, expected) {
+	try {
+		assert.deepEqual(value, expected);
+		return true;
+	} catch(e) {
+		return false;
+	}
+}
+
+module.exports = [{
+		name: "Does not exist",
+		test: function(runNextTest) {
+			var obj = new Types.TypeObject();
+			runNextTest(test(obj.getOwnProperty("foo"), undefined));
+		}
+	},{
+		name: "Data Property",
+		test: function(runNextTest) {
+			var obj = new Types.TypeObject(),
+				prop = new Types.TypeDataProperty();
+			prop.value = new Types.TypeBoolean();
+			prop.value.value = true;
+			obj._properties["foo"] = prop;
+			runNextTest(test(obj.getOwnProperty("foo"), prop));
+		}
+	},{
+		name: "Accessor Property",
+		test: function(runNextTest) {
+			var obj = new Types.TypeObject(),
+				prop = new Types.TypeAccessorProperty();
+			obj._properties["foo"] = prop; // Manually add the prop to avoid 
+			runNextTest(test(obj.getOwnProperty("foo"), prop));
+		}
+	}
 ];

@@ -25,20 +25,22 @@ function findTests(dir) {
 }
 findTests(path.join(__dirname, "tests"));
 
-// Run the tests
+// Kickstart the testing by calling the first test
 console.log("Processing " + testSuites.length + " test suite" + (testSuites.length !== 1 ? "s" : "") + ".\n");
 var currentTestSuite = 0,
 	currentTest = -1,
 	numPassedTests = 0,
 	numFailedTests = 0;
-
 function runNextTest() {	
 
+	// Check if we are finished
 	if (currentTestSuite >= testSuites.length) {
-		console.log("\nAll tests completed.\n" + numPassedTests + " tests passed, " + numFailedTests + " tests failed.");
+		console.log("\nAll tests completed.\n" + numPassedTests + " test" + (numPassedTests > 1 ? "s" : "") + " passed, " + 
+			numFailedTests + " test" + (numFailedTests > 1 ? "s" : "") + " failed.");
 		return;
 	}
-	
+
+	// Move to the next test
 	var suite = testSuites[currentTestSuite];
 	if (currentTest >= suite.tests.length - 1) {
 		currentTestSuite++;
@@ -49,15 +51,17 @@ function runNextTest() {
 		currentTest++;
 	}
 	
+	// Start the test and listen for the results
 	var test = testSuites[currentTestSuite].tests[currentTest];
-	console.log("Testing: " + testSuites[currentTestSuite].name + ", " + test.name);
+	console.log("Testing: " + path.relative(path.join(__dirname, "tests"), testSuites[currentTestSuite].name) + " - " + test.name);
 	test.test(function(success) {
 		if (success) {
 			numPassedTests++;
 		} else {
+			console.log("\tFailed\n");
 			numFailedTests++;
 		}
+		runNextTest();
 	});
-	runNextTest();
 }
 runNextTest();

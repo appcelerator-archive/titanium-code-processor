@@ -2,14 +2,11 @@ var path = require("path"),
 	Types = require(path.join(require.main.exports.libPath, "Types")),
 	assert = require("assert");
 
-
 function test(value) {
 	try {
 		assert.ok(value);
-		console.log("\tPassed");
 		return true;
 	} catch(e) {
-		console.log("\tFailed\n" + e);
 		return false;
 	}
 }
