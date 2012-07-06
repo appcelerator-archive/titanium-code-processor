@@ -2,90 +2,99 @@ var path = require("path"),
 	Types = require(path.join(require.main.exports.libPath, "Types")),
 	assert = require("assert");
 
-function test(value, expected) {
-	try {
-		assert.deepEqual(value, expected);
-		return true;
-	} catch(e) {
-		return false;
+var parent,
+	obj,
+	undef = new Types.TypeUndefined(),
+	value = new Types.TypeNumber(),
+	dataProp = new Types.TypeDataProperty(),
+	accessorProp = new Types.TypeAccessorProperty();
+value.value = 10;
+dataProp.value = value;
+	
+function reset(prop, inherit) {
+	obj = new Types.TypeObject();
+	if (inherit) {
+		parent = new Types.TypeObject();
+		obj.objectPrototype = parent;
+		parent._properties["foo"] = prop;
+	} else {
+		obj._properties["foo"] = prop;
 	}
 }
 
 module.exports = [{
 		name: "Property does not exist",
-		test: function(runNextTest) {
-			var obj = new Types.TypeObject();
-			runNextTest(test(obj.get("foo"), undefined));
+		testFunction: function() {
+			reset(undefined, false);
+			return obj.get("foo");
+		},
+		props: {
+			expectedReturnValue: undef
 		}
 	},{
 		name: "Property does not exist, object has prototype",
-		test: function(runNextTest) {
-			var parent = new Types.TypeObject(),
-				obj = new Types.TypeObject();
-			obj.objectPrototype = parent;
-			runNextTest(test(obj.get("foo"), undefined));
+		testFunction: function() {
+			reset(undefined, true);
+			return obj.get("foo");
+		},
+		props: {
+			expectedReturnValue: undef
 		}
 	},{
 		name: "Data Property",
-		test: function(runNextTest) {
-			var obj = new Types.TypeObject(),
-				prop = new Types.TypeDataProperty();
-			prop.value = new Types.TypeNumber();
-			prop.value.value = 10;
-			obj._properties["foo"] = prop;
-			runNextTest(test(obj.get("foo"), prop.value));
+		testFunction: function() {
+			reset(dataProp, false);
+			return obj.get("foo");
+		},
+		props: {
+			expectedReturnValue: value
 		}
 	},{
 		name: "Accessor Property, no getter",
-		test: function(runNextTest) {
-			var obj = new Types.TypeObject(),
-				prop = new Types.TypeAccessorProperty();
-			obj._properties["foo"] = prop;
-			runNextTest(test(obj.get("foo"), new Types.TypeUndefined()));
+		testFunction: function() {
+			reset(accessorProp, false);
+			return obj.get("foo");
+		},
+		props: {
+			expectedReturnValue: undef
 		}
 	},{
 		name: "Accessor Property, with getter",
-		test: function(runNextTest) {
-			/*var obj = new Types.TypeObject(),
-				prop = new Types.TypeAccessorProperty();
-			obj._properties["foo"] = prop;
-			runNextTest(test(obj.get("foo"), prop));*/
+		testFunction: function() {
+			/*reset(Types.TypeAccessorProperty, false);
+			return obj.get("foo");*/
 			console.log("IMPLEMENT ME");
-			runNextTest();
+		},
+		props: {
+			expectedReturnValue: value
 		}
 	},{
 		name: "Inherited Data Property",
-		test: function(runNextTest) {
-			var parent = new Types.TypeObject(),
-				obj = new Types.TypeObject(),
-				prop = new Types.TypeDataProperty();
-			prop.value = new Types.TypeNumber();
-			prop.value.value = 10;
-			parent._properties["foo"] = prop;
-			obj.objectPrototype = parent;
-			runNextTest(test(obj.get("foo"), prop.value));
+		testFunction: function() {
+			reset(dataProp, true);
+			return obj.get("foo");
+		},
+		props: {
+			expectedReturnValue: value
 		}
 	},{
 		name: "Inherited Accessor Property, no getter",
-		test: function(runNextTest) {
-			var parent = new Types.TypeObject(),
-				obj = new Types.TypeObject(),
-				prop = new Types.TypeAccessorProperty();
-			parent._properties["foo"] = prop;
-			obj.objectPrototype = parent;
-			runNextTest(test(obj.get("foo"), new Types.TypeUndefined()));
+		testFunction: function() {
+			reset(accessorProp, true);
+			return obj.get("foo");
+		},
+		props: {
+			expectedReturnValue: undef
 		}
 	},{
 		name: "Inherited Accessor Property, with getter",
-		test: function(runNextTest) {
-			/*var parent = new Types.TypeObject(),
-				obj = new Types.TypeObject(),
-				prop = new Types.TypeAccessorProperty();
-			parent._properties["foo"] = prop;
-			obj.objectPrototype = parent;
-			runNextTest(test(obj.get("foo"), prop));*/
+		testFunction: function() {
+			/*reset(Types.TypeAccessorProperty, true);
+			return obj.get("foo");*/
 			console.log("IMPLEMENT ME");
-			runNextTest();
+		},
+		props: {
+			expectedReturnValue: value
 		}
 	}
 ];

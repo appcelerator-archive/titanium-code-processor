@@ -2,64 +2,85 @@ var path = require("path"),
 	Types = require(path.join(require.main.exports.libPath, "Types")),
 	assert = require("assert");
 
-function test(value) {
-	try {
-		assert.ok(value);
-		return true;
-	} catch(e) {
-		return false;
-	}
-}
-
 module.exports = [{
 		name: "Number",
-		test: function(runNextTest) {
-			runNextTest(test(Types.isPrimitive(new Types.TypeNumber())));
+		testFunction: function() {
+			return Types.isPrimitive(new Types.TypeNumber());
+		},
+		props: {
+			expectedReturnValue: true
 		}
 	},{
 		name: "String",
-		test: function(runNextTest) {
-			runNextTest(test(Types.isPrimitive(new Types.TypeString())));
+		testFunction: function() {
+			return Types.isPrimitive(new Types.TypeString());
+		},
+		props: {
+			expectedReturnValue: true
 		}
 	},{
 		name: "Boolean",
-		test: function(runNextTest) {
-			runNextTest(test(Types.isPrimitive(new Types.TypeBoolean())));
+		testFunction: function() {
+			return Types.isPrimitive(new Types.TypeBoolean());
+		},
+		props: {
+			expectedReturnValue: true
 		}
 	},{
 		name: "Undefined",
-		test: function(runNextTest) {
-			runNextTest(test(Types.isPrimitive(new Types.TypeUndefined())));
+		testFunction: function() {
+			return Types.isPrimitive(new Types.TypeUndefined());
+		},
+		props: {
+			expectedReturnValue: true
 		}
 	},{
 		name: "Null",
-		test: function(runNextTest) {
-			runNextTest(test(Types.isPrimitive(new Types.TypeNull())));
+		testFunction: function() {
+			return Types.isPrimitive(new Types.TypeNull());
+		},
+		props: {
+			expectedReturnValue: true
 		}
 	},{
 		name: "Unknown",
-		test: function(runNextTest) {
-			runNextTest(test(!Types.isPrimitive(new Types.TypeUnknown())));
+		testFunction: function() {
+			return Types.isPrimitive(new Types.TypeUnknown());
+		},
+		props: {
+			expectedReturnValue: false
 		}
 	},{
 		name: "Object",
-		test: function(runNextTest) {
-			runNextTest(test(!Types.isPrimitive(new Types.TypeObject())));
+		testFunction: function() {
+			return Types.isPrimitive(new Types.TypeObject());
+		},
+		props: {
+			expectedReturnValue: false
 		}
 	},{
 		name: "String Object",
-		test: function(runNextTest) {
-			runNextTest(test(!Types.isPrimitive(new Types.TypeStringObject())));
+		testFunction: function() {
+			return Types.isPrimitive(new Types.TypeStringObject());
+		},
+		props: {
+			expectedReturnValue: false
 		}
 	},{
 		name: "Number Object",
-		test: function(runNextTest) {
-			runNextTest(test(!Types.isPrimitive(new Types.TypeNumberObject())));
+		testFunction: function() {
+			return Types.isPrimitive(new Types.TypeNumberObject());
+		},
+		props: {
+			expectedReturnValue: false
 		}
 	},{
 		name: "Boolean Object",
-		test: function(runNextTest) {
-			runNextTest(test(!Types.isPrimitive(new Types.TypeBooleanObject())));
+		testFunction: function() {
+			return Types.isPrimitive(new Types.TypeBooleanObject());
+		},
+		props: {
+			expectedReturnValue: false
 		}
 	}
 ];

@@ -2,39 +2,42 @@ var path = require("path"),
 	Types = require(path.join(require.main.exports.libPath, "Types")),
 	assert = require("assert");
 
-function test(value) {
-	try {
-		assert.ok(value);
-		return true;
-	} catch(e) {
-		return false;
-	}
-}
-
 module.exports = [{
 		name: "Same (empty objects)",
-		test: function(runNextTest) {
-			runNextTest(test(Types.sameDesc(new (function(){}), new (function(){}))));
+		testFunction: function() {
+			return Types.sameDesc(new (function(){}), new (function(){}));
+		},
+		props: {
+			expectedReturnValue: true
 		}
 	},{
 		name: "Same (undefined)",
-		test: function(runNextTest) {
-			runNextTest(test(Types.sameDesc(undefined, undefined)));
+		testFunction: function() {
+			return Types.sameDesc(undefined, undefined);
+		},
+		props: {
+			expectedReturnValue: true
 		}
 	},{
 		name: "Same (numbers)",
-		test: function(runNextTest) {
-			runNextTest(test(Types.sameDesc(10, 10)));
+		testFunction: function() {
+			return Types.sameDesc(10, 10);
+		},
+		props: {
+			expectedReturnValue: true
 		}
 	},{
 		name: "Same (strings)",
-		test: function(runNextTest) {
-			runNextTest(test(Types.sameDesc("foo", "foo")));
+		testFunction: function() {
+			return Types.sameDesc("foo", "foo");
+		},
+		props: {
+			expectedReturnValue: true
 		}
 	},{
 		name: "Same (non-empty objects)",
-		test: function(runNextTest) {
-			runNextTest(test(Types.sameDesc({
+		testFunction: function() {
+			return Types.sameDesc({
 				foo: "bar",
 				foo2: {
 					bar: "bar"
@@ -44,27 +47,39 @@ module.exports = [{
 				foo2: {
 					bar: "bar"
 				}
-			})));
+			});
+		},
+		props: {
+			expectedReturnValue: true
 		}
 	},{
 		name: "Different (numbers)",
-		test: function(runNextTest) {
-			runNextTest(test(!Types.sameDesc(10, 20)));
+		testFunction: function() {
+			return Types.sameDesc(10, 20);
+		},
+		props: {
+			expectedReturnValue: false
 		}
 	},{
 		name: "Different (strings)",
-		test: function(runNextTest) {
-			runNextTest(test(!Types.sameDesc("foo", "bar")));
+		testFunction: function() {
+			return Types.sameDesc("foo", "bar");
+		},
+		props: {
+			expectedReturnValue: false
 		}
 	},{
 		name: "Different (different types)",
-		test: function(runNextTest) {
-			runNextTest(test(!Types.sameDesc("foo", undefined)));
+		testFunction: function() {
+			return Types.sameDesc("foo", undefined);
+		},
+		props: {
+			expectedReturnValue: false
 		}
 	},{
 		name: "Different (non-empty objects, same fields, different values)",
-		test: function(runNextTest) {
-			runNextTest(test(!Types.sameDesc({
+		testFunction: function() {
+			return Types.sameDesc({
 				foo: "bar",
 				foo2: {
 					bar: "bar2"
@@ -74,12 +89,15 @@ module.exports = [{
 				foo2: {
 					bar: "bar"
 				}
-			})));
+			});
+		},
+		props: {
+			expectedReturnValue: false
 		}
 	},{
 		name: "Different (non-empty objects, different field names, same number of fields)",
-		test: function(runNextTest) {
-			runNextTest(test(!Types.sameDesc({
+		testFunction: function() {
+			return Types.sameDesc({
 				foo: "bar",
 				foo2: {
 					bar: "bar2"
@@ -89,12 +107,15 @@ module.exports = [{
 				foo2: {
 					bar2: "bar"
 				}
-			})));
+			});
+		},
+		props: {
+			expectedReturnValue: false
 		}
 	},{
 		name: "Different (non-empty objects, different fields)",
-		test: function(runNextTest) {
-			runNextTest(test(!Types.sameDesc({
+		testFunction: function() {
+			return Types.sameDesc({
 				foo: "bar",
 				foo2: {
 					bar: "bar2"
@@ -105,7 +126,10 @@ module.exports = [{
 					bar: "bar"
 				},
 				foo3: 10
-			})));
+			});
+		},
+		props: {
+			expectedReturnValue: false
 		}
 	}
 ];

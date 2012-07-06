@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
 var fs = require("fs"),
+	assert = require("assert"),
 	path = require("path"),
+	Types = require(path.join(__dirname, "..", "lib", "Types")),
 	testSuites = [];
 
 // Find the tests
@@ -51,17 +53,37 @@ function runNextTest() {
 		currentTest++;
 	}
 	
-	// Start the test and listen for the results
+	// Fetch the next test
 	var test = testSuites[currentTestSuite].tests[currentTest];
 	console.log("Testing: " + path.relative(path.join(__dirname, "tests"), testSuites[currentTestSuite].name) + " - " + test.name);
-	test.test(function(success) {
-		if (success) {
-			numPassedTests++;
-		} else {
-			console.log("\tFailed\n");
-			numFailedTests++;
+	
+	// Run the test, taking the test properties into account
+	var testFunction = test.testFunction,
+		props = test.props,
+		success;
+	try {
+		if (props.expectedException) {
+			try {
+				testFunction();
+			} catch(e) {
+				success = e.name === props.expectedException;
+			}
+		} else if(props.hasOwnProperty("expectedReturnValue")) {
+			var result = testFunction();
+			try {
+				assert.deepEqual(result, props.expectedReturnValue);
+				success = true;
+			} catch(e) {}
 		}
-		runNextTest();
-	});
+	} catch(e) {} // Squash any exceptions and leave success as false
+	
+	// Update the results and run the next test
+	if (success) {
+		numPassedTests++;
+	} else {
+		console.log("\tFailed\n");
+		numFailedTests++;
+	}
+	runNextTest();
 }
 runNextTest();

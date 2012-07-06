@@ -2,37 +2,40 @@ var path = require("path"),
 	Types = require(path.join(require.main.exports.libPath, "Types")),
 	assert = require("assert");
 
-function test(value) {
-	try {
-		assert.ok(value);
-		return true;
-	} catch(e) {
-		return false;
-	}
-}
-
 module.exports = [{
 		name: "Data",
-		test: function(runNextTest) {
-			runNextTest(test(!Types.isGenericDescriptor(new Types.TypeDataProperty())));
+		testFunction: function() {
+			return Types.isGenericDescriptor(new Types.TypeDataProperty());
+		},
+		props: {
+			expectedReturnValue: false
 		}
 	},{
 		name: "Accessor",
-		test: function(runNextTest) {
-			runNextTest(test(!Types.isGenericDescriptor(new Types.TypeAccessorProperty())));
+		testFunction: function() {
+			return Types.isGenericDescriptor(new Types.TypeAccessorProperty());
+		},
+		props: {
+			expectedReturnValue: false
 		}
 	},{
 		name: "Generic",
-		test: function(runNextTest) {
-			runNextTest(test(Types.isGenericDescriptor({
+		testFunction: function() {
+			return Types.isGenericDescriptor({
 				enumerable: false,
 				configurable: false
-			})));
+			});
+		},
+		props: {
+			expectedReturnValue: true
 		}
 	},{
 		name: "Undefined",
-		test: function(runNextTest) {
-			runNextTest(test(!Types.isGenericDescriptor()));
+		testFunction: function() {
+			return Types.isGenericDescriptor();
+		},
+		props: {
+			expectedReturnValue: false
 		}
 	}
 ];

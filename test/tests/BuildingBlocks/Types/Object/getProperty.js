@@ -2,64 +2,75 @@ var path = require("path"),
 	Types = require(path.join(require.main.exports.libPath, "Types")),
 	assert = require("assert");
 
-function test(value, expected) {
-	try {
-		assert.deepEqual(value, expected);
-		return true;
-	} catch(e) {
-		return false;
+var parent,
+	obj,
+	dataProp = new Types.TypeDataProperty(),
+	accessorProp = new Types.TypeAccessorProperty();
+	
+function reset(prop, inherit) {
+	obj = new Types.TypeObject();
+	if (inherit) {
+		parent = new Types.TypeObject();
+		obj.objectPrototype = parent;
+		parent._properties["foo"] = prop;
+	} else {
+		obj._properties["foo"] = prop;
 	}
 }
 
 module.exports = [{
 		name: "Property does not exist",
-		test: function(runNextTest) {
-			var obj = new Types.TypeObject();
-			runNextTest(test(obj.getProperty("foo"), undefined));
+		testFunction: function() {
+			reset(undefined, false);
+			return obj.getProperty("foo");
+		},
+		props: {
+			expectedReturnValue: undefined
 		}
 	},{
 		name: "Property does not exist, object has prototype",
-		test: function(runNextTest) {
-			var parent = new Types.TypeObject(),
-				obj = new Types.TypeObject();
-			obj.objectPrototype = parent;
-			runNextTest(test(obj.getProperty("foo"), undefined));
+		testFunction: function(runNextTest) {
+			reset(undefined, true);
+			return obj.getProperty("foo");
+		},
+		props: {
+			expectedReturnValue: undefined
 		}
 	},{
 		name: "Data Property",
-		test: function(runNextTest) {
-			var obj = new Types.TypeObject(),
-				prop = new Types.TypeDataProperty();
-			obj._properties["foo"] = prop;
-			runNextTest(test(obj.getProperty("foo"), prop));
+		testFunction: function() {
+			reset(dataProp, false);
+			return obj.getProperty("foo");
+		},
+		props: {
+			expectedReturnValue: dataProp
 		}
 	},{
 		name: "Accessor Property",
-		test: function(runNextTest) {
-			var obj = new Types.TypeObject(),
-				prop = new Types.TypeAccessorProperty();
-			obj._properties["foo"] = prop;
-			runNextTest(test(obj.getProperty("foo"), prop));
+		testFunction: function() {
+			reset(accessorProp, false);
+			return obj.getProperty("foo");
+		},
+		props: {
+			expectedReturnValue: accessorProp
 		}
 	},{
 		name: "Inherited Data Property",
-		test: function(runNextTest) {
-			var parent = new Types.TypeObject(),
-				obj = new Types.TypeObject(),
-				prop = new Types.TypeDataProperty();
-			parent._properties["foo"] = prop;
-			obj.objectPrototype = parent;
-			runNextTest(test(obj.getProperty("foo"), prop));
+		testFunction: function() {
+			reset(dataProp, true);
+			return obj.getProperty("foo");
+		},
+		props: {
+			expectedReturnValue: dataProp
 		}
 	},{
 		name: "Inherited Accessor Property",
-		test: function(runNextTest) {
-			var parent = new Types.TypeObject(),
-				obj = new Types.TypeObject(),
-				prop = new Types.TypeAccessorProperty();
-			parent._properties["foo"] = prop;
-			obj.objectPrototype = parent;
-			runNextTest(test(obj.getProperty("foo"), prop));
+		testFunction: function() {
+			reset(accessorProp, false);
+			return obj.getProperty("foo");
+		},
+		props: {
+			expectedReturnValue: accessorProp
 		}
 	}
 ];
