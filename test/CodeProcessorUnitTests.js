@@ -1,5 +1,19 @@
 #!/usr/bin/env node
 
+/**
+ * Test definition
+ * 
+ * @Object
+ * @name Test
+ * @param {String} name The name of the test
+ * @param {Function} testFunction The function to run that contains the test
+ * @param {Object} props The test properties
+ * @param {Boolean} props.throws Indicates that this test is expected to throw an exception
+ * @param {String} props.throwsType The type of error that is thrown. Specifically, it is the value of the Error.name 
+ *		property (e.g. "TypeError").
+ * @param props.expectedReturnValue The expected return value of the test function
+ */
+ 
 var fs = require("fs"),
 	assert = require("assert"),
 	path = require("path"),
@@ -74,6 +88,10 @@ function runNextTest() {
 				assert.deepEqual(result, props.expectedReturnValue);
 				success = true;
 			} catch(e) {}
+		}
+		
+		if (props.postEvaluation) {
+			success = success && props.postEvaluation();
 		}
 	} catch(e) {} // Squash any exceptions and leave success as false
 	
