@@ -1,7 +1,6 @@
 var path = require("path"),
 	assert = require("assert"),
-	Types = require(path.join(require.main.exports.libPath, "Types")),
-	Exceptions = require(path.join(require.main.exports.libPath, "Exceptions.js"));
+	Types = require(path.join(require.main.exports.libPath, "Types"));
 
 var parent,
 	obj,
@@ -32,6 +31,7 @@ function deepEqual(a, b) {
 }
 
 module.exports = [
+
 	// Step 3
 	{
 		name: "Property does not exist, extensible is false, throw is false",
@@ -240,7 +240,6 @@ module.exports = [
 			dataProp1.configurable = true;
 			accessorProp1.set = new Types.TypeObject();
 			obj._properties["foo"] = dataProp1;
-			debugger;
 			return obj.defineOwnProperty("foo", accessorProp1, true);
 		},
 		props: {
