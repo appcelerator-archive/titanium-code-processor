@@ -141,6 +141,14 @@ module.exports = [
 		props: {
 			expectedReturnValue: true
 		}
+	},{
+		name: "Property exists, old prop is inherited accessor, with setter",
+		testFunction: function() {
+			console.log("IMPLEMENT ME");
+		},
+		props: {
+			expectedReturnValue: true
+		}
 	},
 	
 	// Step 6
