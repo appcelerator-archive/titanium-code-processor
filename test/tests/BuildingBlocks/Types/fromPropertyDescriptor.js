@@ -69,7 +69,6 @@ module.exports = [{
 	},{
 		name: "Accessor Property",
 		testFunction: function() {
-			debugger;
 			var desc = new Types.TypeAccessorProperty(),
 				getProp = new Types.TypeDataProperty(),
 				setProp = new Types.TypeDataProperty();
