@@ -17,7 +17,6 @@
 var fs = require("fs"),
 	assert = require("assert"),
 	path = require("path"),
-	Types = require(path.join(__dirname, "..", "lib", "Types")),
 	testSuites = [];
 
 // Find the tests
