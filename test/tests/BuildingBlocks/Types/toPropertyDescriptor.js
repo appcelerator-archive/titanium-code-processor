@@ -81,7 +81,6 @@ module.exports = [{
 			obj._properties["get"] = getProp;
 			obj._properties["set"] = setProp;
 			
-			debugger;
 			return Types.toPropertyDescriptor(obj);
 		},
 		props: {
@@ -109,7 +108,6 @@ module.exports = [{
 			obj._properties["get"] = getProp;
 			obj._properties["set"] = setProp;
 			
-			debugger;
 			return Types.toPropertyDescriptor(obj);
 		},
 		props: {
@@ -137,7 +135,6 @@ module.exports = [{
 			obj._properties["get"] = getProp;
 			obj._properties["set"] = setProp;
 			
-			debugger;
 			return Types.toPropertyDescriptor(obj);
 		},
 		props: {
@@ -166,7 +163,6 @@ module.exports = [{
 			obj._properties["writeable"] = writeableProp;
 			obj._properties["set"] = setProp;
 			
-			debugger;
 			return Types.toPropertyDescriptor(obj);
 		},
 		props: {
