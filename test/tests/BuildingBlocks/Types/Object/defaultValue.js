@@ -5,7 +5,7 @@ var path = require("path"),
 module.exports = [{
 		name: "Default Value",
 		testFunction: function() {
-			console.log("IMPLEMENT ME");
+			console.log("IMPLEMENT ENTIRE TEST SUITE");
 		},
 		props: {
 			expectedReturnValue: true
