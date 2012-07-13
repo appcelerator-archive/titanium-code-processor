@@ -2,10 +2,10 @@ var path = require("path"),
 	Base = require(path.join(require.main.exports.libPath, "Base")),
 	assert = require("assert");
 
-var dataProp = new Base.DataDescriptor(),
-	accessorProp = new Base.AccessorDescriptor();
-	enumerableProp = new Base.DataDescriptor(),
-	configurableProp = new Base.DataDescriptor();
+var dataProp = new Base.DataPropertyDescriptor(),
+	accessorProp = new Base.AccessorPropertyDescriptor();
+	enumerableProp = new Base.DataPropertyDescriptor(),
+	configurableProp = new Base.DataPropertyDescriptor();
 
 enumerableProp.value = new Base.TypeBoolean();
 enumerableProp.value.value = false;
@@ -31,8 +31,8 @@ module.exports = [{
 		name: "Obj describes a data descriptor",
 		testFunction: function() {
 			var obj = new Base.TypeObject(),
-				valueProp = new Base.DataDescriptor(),
-				writeableProp = new Base.DataDescriptor();
+				valueProp = new Base.DataPropertyDescriptor(),
+				writeableProp = new Base.DataPropertyDescriptor();
 			
 			dataProp.value = new Base.TypeNumber();
 			dataProp.value.value = 10;
@@ -62,8 +62,8 @@ module.exports = [{
 		name: "Obj describes an accessor descriptor",
 		testFunction: function() {
 			var obj = new Base.TypeObject(),
-				getProp = new Base.DataDescriptor(),
-				setProp = new Base.DataDescriptor();
+				getProp = new Base.DataPropertyDescriptor(),
+				setProp = new Base.DataPropertyDescriptor();
 			
 			setProp.value = accessorProp.set = new Base.TypeObject();
 			setProp.value.call = {};
@@ -90,8 +90,8 @@ module.exports = [{
 		name: "Obj describes an accessor descriptor, non-callable setter",
 		testFunction: function() {
 			var obj = new Base.TypeObject(),
-				getProp = new Base.DataDescriptor(),
-				setProp = new Base.DataDescriptor();
+				getProp = new Base.DataPropertyDescriptor(),
+				setProp = new Base.DataPropertyDescriptor();
 			
 			setProp.value = accessorProp.set = new Base.TypeObject();
 			setProp.writeable = true;
@@ -117,8 +117,8 @@ module.exports = [{
 		name: "Obj describes an accessor descriptor, non-callable getter",
 		testFunction: function() {
 			var obj = new Base.TypeObject(),
-				getProp = new Base.DataDescriptor(),
-				setProp = new Base.DataDescriptor();
+				getProp = new Base.DataPropertyDescriptor(),
+				setProp = new Base.DataPropertyDescriptor();
 			
 			setProp.value = accessorProp.set = new Base.TypeUndefined();
 			setProp.writeable = true;
@@ -144,8 +144,8 @@ module.exports = [{
 		name: "Obj describes an amalgamation of accessor and data descriptor",
 		testFunction: function() {
 			var obj = new Base.TypeObject(),
-				writeableProp = new Base.DataDescriptor(),
-				setProp = new Base.DataDescriptor();
+				writeableProp = new Base.DataPropertyDescriptor(),
+				setProp = new Base.DataPropertyDescriptor();
 			
 			setProp.value = accessorProp.set = new Base.TypeUndefined();
 			setProp.writeable = true;

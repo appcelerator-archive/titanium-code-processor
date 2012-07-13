@@ -2,8 +2,8 @@ var path = require("path"),
 	Base = require(path.join(require.main.exports.libPath, "Base")),
 	assert = require("assert");
 
-var enumerableProp = new Base.DataDescriptor(),
-	configurableProp = new Base.DataDescriptor(),
+var enumerableProp = new Base.DataPropertyDescriptor(),
+	configurableProp = new Base.DataPropertyDescriptor(),
 	obj = new Base.TypeObject();
 
 enumerableProp.value = new Base.TypeBoolean();
@@ -38,9 +38,9 @@ module.exports = [{
 	},{
 		name: "Data Property",
 		testFunction: function() {
-			var desc = new Base.DataDescriptor(),
-				valueProp = new Base.DataDescriptor(),
-				writeableProp = new Base.DataDescriptor();
+			var desc = new Base.DataPropertyDescriptor(),
+				valueProp = new Base.DataPropertyDescriptor(),
+				writeableProp = new Base.DataPropertyDescriptor();
 			
 			desc.value = new Base.TypeNumber();
 			desc.value.value = 10;
@@ -69,9 +69,9 @@ module.exports = [{
 	},{
 		name: "Accessor Property",
 		testFunction: function() {
-			var desc = new Base.AccessorDescriptor(),
-				getProp = new Base.DataDescriptor(),
-				setProp = new Base.DataDescriptor();
+			var desc = new Base.AccessorPropertyDescriptor(),
+				getProp = new Base.DataPropertyDescriptor(),
+				setProp = new Base.DataPropertyDescriptor();
 			
 			desc.set = new Base.TypeObject();
 			
