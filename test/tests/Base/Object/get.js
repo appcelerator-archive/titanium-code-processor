@@ -6,8 +6,8 @@ var parent,
 	obj,
 	undef = new Base.TypeUndefined(),
 	value = new Base.TypeNumber(),
-	dataProp = new Base.TypeDataProperty(),
-	accessorProp = new Base.TypeAccessorProperty();
+	dataProp = new Base.DataDescriptor(),
+	accessorProp = new Base.AccessorDescriptor();
 value.value = 10;
 dataProp.value = value;
 	
@@ -61,7 +61,7 @@ module.exports = [{
 	},{
 		name: "Accessor Property, with getter",
 		testFunction: function() {
-			/*reset(Base.TypeAccessorProperty, false);
+			/*reset(Base.AccessorDescriptor, false);
 			return obj.get("foo");*/
 			console.log("IMPLEMENT ME");
 		},
@@ -89,7 +89,7 @@ module.exports = [{
 	},{
 		name: "Inherited Accessor Property, with getter",
 		testFunction: function() {
-			/*reset(Base.TypeAccessorProperty, true);
+			/*reset(Base.AccessorDescriptor, true);
 			return obj.get("foo");*/
 			console.log("IMPLEMENT ME");
 		},

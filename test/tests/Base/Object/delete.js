@@ -8,7 +8,7 @@ var parent,
 
 function reset(inherit) {
 	obj = new Base.TypeObject();
-	prop = new Base.TypeDataProperty();
+	prop = new Base.DataDescriptor();
 	if (inherit) {
 		parent = new Base.TypeObject();
 		obj.objectPrototype = parent;

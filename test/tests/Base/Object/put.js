@@ -14,10 +14,10 @@ number.value = 10;
 	
 function reset(inherit) {
 	obj = new Base.TypeObject();
-	dataProp1 = new Base.TypeDataProperty();
-	dataProp2 = new Base.TypeDataProperty();
-	accessorProp1 = new Base.TypeAccessorProperty();
-	accessorProp2 = new Base.TypeAccessorProperty();
+	dataProp1 = new Base.DataDescriptor();
+	dataProp2 = new Base.DataDescriptor();
+	accessorProp1 = new Base.AccessorDescriptor();
+	accessorProp2 = new Base.AccessorDescriptor();
 	if (inherit) {
 		parent = new Base.TypeObject();
 		obj.objectPrototype = parent;

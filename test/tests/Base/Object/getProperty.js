@@ -4,8 +4,8 @@ var path = require("path"),
 
 var parent,
 	obj,
-	dataProp = new Base.TypeDataProperty(),
-	accessorProp = new Base.TypeAccessorProperty();
+	dataProp = new Base.DataDescriptor(),
+	accessorProp = new Base.AccessorDescriptor();
 	
 function reset(prop, inherit) {
 	obj = new Base.TypeObject();

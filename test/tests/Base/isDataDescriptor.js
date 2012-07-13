@@ -5,7 +5,7 @@ var path = require("path"),
 module.exports = [{
 		name: "Data",
 		testFunction: function() {
-			return Base.isDataDescriptor(new Base.TypeDataProperty());
+			return Base.isDataDescriptor(new Base.DataDescriptor());
 		},
 		props: {
 			expectedReturnValue: true
@@ -13,7 +13,7 @@ module.exports = [{
 	},{
 		name: "Accessor",
 		testFunction: function() {
-			return Base.isDataDescriptor(new Base.TypeAccessorProperty());
+			return Base.isDataDescriptor(new Base.AccessorDescriptor());
 		},
 		props: {
 			expectedReturnValue: false
