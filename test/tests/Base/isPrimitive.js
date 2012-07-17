@@ -58,29 +58,5 @@ module.exports = [{
 		props: {
 			expectedReturnValue: false
 		}
-	},{
-		name: "String Object",
-		testFunction: function() {
-			return Base.isPrimitive(new Base.TypeStringObject());
-		},
-		props: {
-			expectedReturnValue: false
-		}
-	},{
-		name: "Number Object",
-		testFunction: function() {
-			return Base.isPrimitive(new Base.TypeNumberObject());
-		},
-		props: {
-			expectedReturnValue: false
-		}
-	},{
-		name: "Boolean Object",
-		testFunction: function() {
-			return Base.isPrimitive(new Base.TypeBooleanObject());
-		},
-		props: {
-			expectedReturnValue: false
-		}
 	}
 ];

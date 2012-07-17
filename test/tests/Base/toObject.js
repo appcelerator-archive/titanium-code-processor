@@ -2,9 +2,9 @@ var path = require("path"),
 	Base = require(path.join(require.main.exports.libPath, "Base")),
 	assert = require("assert");
 
-var booleanObject = new Base.TypeBooleanObject(),
-	numberObject = new Base.TypeNumberObject(),
-	stringObject = new Base.TypeStringObject(),
+var booleanObject = new Base.TypeObject(),
+	numberObject = new Base.TypeObject(),
+	stringObject = new Base.TypeObject(),
 	obj = new Base.TypeObject();
 
 module.exports = [{
