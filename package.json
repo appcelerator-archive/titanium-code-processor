@@ -12,11 +12,11 @@
     "uglify-js": "1.2.x",
     "winston": "0.5.x",
     "xml2js": "0.1.x",
-    "shelljs": "0.0.x"
+	"wrench": "1.3.x"
   },
   "devDependencies": {},
   "optionalDependencies": {},
-  "engines": {
-    "node": "*"
+  "engine": {
+    "node": ">=0.8"
   }
 }
