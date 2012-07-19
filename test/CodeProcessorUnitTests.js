@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+/* 
+ * Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.
+ */
 
 /**
  * Test definition

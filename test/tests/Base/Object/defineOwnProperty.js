@@ -1,3 +1,8 @@
+/* 
+ * Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.
+ */
+
 var path = require("path"),
 	assert = require("assert"),
 	Base = require(path.join(require.main.exports.libPath, "Base"));
