@@ -10,7 +10,7 @@ var path = require("path"),
 module.exports = [{
 		name: "Number",
 		testFunction: function() {
-			return Base.isPrimitive(new Base.TypeNumber());
+			return Base.isPrimitive(new Base.NumberType());
 		},
 		props: {
 			expectedReturnValue: true
@@ -18,7 +18,7 @@ module.exports = [{
 	},{
 		name: "String",
 		testFunction: function() {
-			return Base.isPrimitive(new Base.TypeString());
+			return Base.isPrimitive(new Base.StringType());
 		},
 		props: {
 			expectedReturnValue: true
@@ -26,7 +26,7 @@ module.exports = [{
 	},{
 		name: "Boolean",
 		testFunction: function() {
-			return Base.isPrimitive(new Base.TypeBoolean());
+			return Base.isPrimitive(new Base.BooleanType());
 		},
 		props: {
 			expectedReturnValue: true
@@ -34,7 +34,7 @@ module.exports = [{
 	},{
 		name: "Undefined",
 		testFunction: function() {
-			return Base.isPrimitive(new Base.TypeUndefined());
+			return Base.isPrimitive(new Base.UndefinedType());
 		},
 		props: {
 			expectedReturnValue: true
@@ -42,7 +42,7 @@ module.exports = [{
 	},{
 		name: "Null",
 		testFunction: function() {
-			return Base.isPrimitive(new Base.TypeNull());
+			return Base.isPrimitive(new Base.NullType());
 		},
 		props: {
 			expectedReturnValue: true
@@ -50,7 +50,7 @@ module.exports = [{
 	},{
 		name: "Unknown",
 		testFunction: function() {
-			return Base.isPrimitive(new Base.TypeUnknown());
+			return Base.isPrimitive(new Base.UnknownType());
 		},
 		props: {
 			expectedReturnValue: false
@@ -58,7 +58,7 @@ module.exports = [{
 	},{
 		name: "Object",
 		testFunction: function() {
-			return Base.isPrimitive(new Base.TypeObject());
+			return Base.isPrimitive(new Base.ObjectType());
 		},
 		props: {
 			expectedReturnValue: false

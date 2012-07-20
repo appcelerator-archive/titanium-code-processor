@@ -15,13 +15,13 @@ var parent,
 	accessorProp2;
 	
 function reset(inherit) {
-	obj = new Base.TypeObject();
+	obj = new Base.ObjectType();
 	dataProp1 = new Base.DataPropertyDescriptor();
 	dataProp2 = new Base.DataPropertyDescriptor();
 	accessorProp1 = new Base.AccessorPropertyDescriptor();
 	accessorProp2 = new Base.AccessorPropertyDescriptor();
 	if (inherit) {
-		parent = new Base.TypeObject();
+		parent = new Base.ObjectType();
 		obj.objectPrototype = parent;
 	}
 }
@@ -243,7 +243,7 @@ module.exports = [
 			reset(false);
 			dataProp1.enumerable = true;
 			dataProp1.configurable = true;
-			accessorProp1.set = new Base.TypeObject();
+			accessorProp1.set = new Base.ObjectType();
 			obj._properties["foo"] = dataProp1;
 			return obj.defineOwnProperty("foo", accessorProp1, true);
 		},
@@ -253,8 +253,8 @@ module.exports = [
 				return deepEqual(obj._properties["foo"], {
 					enumerable: false,
 					configurable: false,
-					set: new Base.TypeObject(),
-					get: new Base.TypeUndefined()
+					set: new Base.ObjectType(),
+					get: new Base.UndefinedType()
 				});
 			}
 		}
@@ -264,7 +264,7 @@ module.exports = [
 			reset(false);
 			accessorProp1.enumerable = true;
 			accessorProp1.configurable = true;
-			dataProp1.value = new Base.TypeBoolean();
+			dataProp1.value = new Base.BooleanType();
 			obj._properties["foo"] = accessorProp1;
 			return obj.defineOwnProperty("foo", dataProp1, true);
 		},
@@ -274,7 +274,7 @@ module.exports = [
 				return deepEqual(obj._properties["foo"], {
 					enumerable: false,
 					configurable: false,
-					value: new Base.TypeBoolean(),
+					value: new Base.BooleanType(),
 					writeable: false
 				});
 			}
@@ -311,7 +311,7 @@ module.exports = [
 		testFunction: function() {
 			reset(false);
 			dataProp1.configurable = false;
-			dataProp2.value = new Base.TypeBoolean();
+			dataProp2.value = new Base.BooleanType();
 			obj._properties["foo"] = dataProp1;
 			return obj.defineOwnProperty("foo", dataProp2, false);
 		},
@@ -323,7 +323,7 @@ module.exports = [
 		testFunction: function() {
 			reset(false);
 			dataProp1.configurable = false;
-			dataProp2.value = new Base.TypeBoolean();
+			dataProp2.value = new Base.BooleanType();
 			obj._properties["foo"] = dataProp1;
 			return obj.defineOwnProperty("foo", dataProp2, true);
 		},
@@ -335,7 +335,7 @@ module.exports = [
 		testFunction: function() {
 			reset(false);
 			dataProp1.configurable = true;
-			dataProp2.value = new Base.TypeBoolean();
+			dataProp2.value = new Base.BooleanType();
 			dataProp2.writeable = true,
 			dataProp2.enumerable = true,
 			obj._properties["foo"] = dataProp1;
@@ -355,7 +355,7 @@ module.exports = [
 		testFunction: function() {
 			reset(false);
 			accessorProp1.configurable = false;
-			accessorProp2.set = new Base.TypeObject();
+			accessorProp2.set = new Base.ObjectType();
 			obj._properties["foo"] = accessorProp1;
 			return obj.defineOwnProperty("foo", accessorProp2, false);
 		},
@@ -367,7 +367,7 @@ module.exports = [
 		testFunction: function() {
 			reset(false);
 			accessorProp1.configurable = false;
-			accessorProp2.set = new Base.TypeObject();
+			accessorProp2.set = new Base.ObjectType();
 			obj._properties["foo"] = accessorProp1;
 			return obj.defineOwnProperty("foo", accessorProp2, true);
 		},
@@ -379,7 +379,7 @@ module.exports = [
 		testFunction: function() {
 			reset(false);
 			accessorProp1.configurable = false;
-			accessorProp2.get = new Base.TypeObject();
+			accessorProp2.get = new Base.ObjectType();
 			obj._properties["foo"] = accessorProp1;
 			return obj.defineOwnProperty("foo", accessorProp2, false);
 		},
@@ -391,7 +391,7 @@ module.exports = [
 		testFunction: function() {
 			reset(false);
 			accessorProp1.configurable = false;
-			accessorProp2.get = new Base.TypeObject();
+			accessorProp2.get = new Base.ObjectType();
 			obj._properties["foo"] = accessorProp1;
 			return obj.defineOwnProperty("foo", accessorProp2, true);
 		},
@@ -414,8 +414,8 @@ module.exports = [
 		testFunction: function() {
 			reset(false);
 			accessorProp1.configurable = true;
-			accessorProp2.get = new Base.TypeObject();
-			accessorProp2.set = new Base.TypeObject();
+			accessorProp2.get = new Base.ObjectType();
+			accessorProp2.set = new Base.ObjectType();
 			obj._properties["foo"] = accessorProp1;
 			return obj.defineOwnProperty("foo", accessorProp2, false);
 		},

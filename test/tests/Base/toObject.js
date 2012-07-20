@@ -7,15 +7,15 @@ var path = require("path"),
 	Base = require(path.join(require.main.exports.libPath, "Base")),
 	assert = require("assert");
 
-var booleanObject = new Base.TypeObject(),
-	numberObject = new Base.TypeObject(),
-	stringObject = new Base.TypeObject(),
-	obj = new Base.TypeObject();
+var booleanObject = new Base.ObjectType(),
+	numberObject = new Base.ObjectType(),
+	stringObject = new Base.ObjectType(),
+	obj = new Base.ObjectType();
 
 module.exports = [{
 		name: "Undefined",
 		testFunction: function() {
-			return Base.toObject(new Base.TypeUndefined());
+			return Base.toObject(new Base.UndefinedType());
 		},
 		props: {
 			expectedException: "TypeError"
@@ -23,7 +23,7 @@ module.exports = [{
 	},{
 		name: "Null",
 		testFunction: function() {
-			return Base.toObject(new Base.TypeNull());
+			return Base.toObject(new Base.NullType());
 		},
 		props: {
 			expectedException: "TypeError"
@@ -31,7 +31,7 @@ module.exports = [{
 	},{
 		name: "Boolean, false",
 		testFunction: function() {
-			var bool = new Base.TypeBoolean();
+			var bool = new Base.BooleanType();
 			booleanObject.primitiveValue = bool.value = false;
 			return Base.toObject(bool);
 		},
@@ -41,7 +41,7 @@ module.exports = [{
 	},{
 		name: "Boolean, true",
 		testFunction: function() {
-			var bool = new Base.TypeBoolean();
+			var bool = new Base.BooleanType();
 			booleanObject.primitiveValue = bool.value = true;
 			return Base.toObject(bool);
 		},
@@ -51,7 +51,7 @@ module.exports = [{
 	},{
 		name: "Number, 0",
 		testFunction: function() {
-			var num = new Base.TypeNumber();
+			var num = new Base.NumberType();
 			numberObject.primitiveValue = num.value = 0;
 			return Base.toObject(num);
 		},
@@ -61,7 +61,7 @@ module.exports = [{
 	},{
 		name: "Number, 3.14159",
 		testFunction: function() {
-			var num = new Base.TypeNumber();
+			var num = new Base.NumberType();
 			numberObject.primitiveValue = num.value = 3.14159;
 			return Base.toObject(num);
 		},
@@ -71,7 +71,7 @@ module.exports = [{
 	},{
 		name: "Number, infinity",
 		testFunction: function() {
-			var num = new Base.TypeNumber();
+			var num = new Base.NumberType();
 			numberObject.primitiveValue = num.value = Infinity;
 			return Base.toObject(num);
 		},
@@ -81,7 +81,7 @@ module.exports = [{
 	},{
 		name: "String, empty",
 		testFunction: function() {
-			var	str = new Base.TypeString();
+			var	str = new Base.StringType();
 			stringObject.primitiveValue = str.value = "";
 			return Base.toObject(str);
 		},
@@ -91,7 +91,7 @@ module.exports = [{
 	},{
 		name: "String, non-empty",
 		testFunction: function() {
-			var	str = new Base.TypeString();
+			var	str = new Base.StringType();
 			stringObject.primitiveValue = str.value = " 100.45";
 			return Base.toObject(str);
 		},

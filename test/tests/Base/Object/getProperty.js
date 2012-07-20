@@ -13,9 +13,9 @@ var parent,
 	accessorProp = new Base.AccessorPropertyDescriptor();
 	
 function reset(prop, inherit) {
-	obj = new Base.TypeObject();
+	obj = new Base.ObjectType();
 	if (inherit) {
-		parent = new Base.TypeObject();
+		parent = new Base.ObjectType();
 		obj.objectPrototype = parent;
 		parent._properties["foo"] = prop;
 	} else {

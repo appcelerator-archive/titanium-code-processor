@@ -9,15 +9,15 @@ var path = require("path"),
 
 var enumerableProp = new Base.DataPropertyDescriptor(),
 	configurableProp = new Base.DataPropertyDescriptor(),
-	obj = new Base.TypeObject();
+	obj = new Base.ObjectType();
 
-enumerableProp.value = new Base.TypeBoolean();
+enumerableProp.value = new Base.BooleanType();
 enumerableProp.value.value = false;
 enumerableProp.writeable = true;
 enumerableProp.enumerable = true;
 enumerableProp.configurable = true;
 
-configurableProp.value = new Base.TypeBoolean();
+configurableProp.value = new Base.BooleanType();
 configurableProp.value.value = false;
 configurableProp.writeable = true;
 configurableProp.enumerable = true;
@@ -38,7 +38,7 @@ module.exports = [{
 			return Base.fromPropertyDescriptor();
 		},
 		props: {
-			expectedReturnValue: new Base.TypeUndefined()
+			expectedReturnValue: new Base.UndefinedType()
 		}
 	},{
 		name: "Data Property",
@@ -47,7 +47,7 @@ module.exports = [{
 				valueProp = new Base.DataPropertyDescriptor(),
 				writeableProp = new Base.DataPropertyDescriptor();
 			
-			desc.value = new Base.TypeNumber();
+			desc.value = new Base.NumberType();
 			desc.value.value = 10;
 			
 			valueProp.value = desc.value;
@@ -55,7 +55,7 @@ module.exports = [{
 			valueProp.enumerable = true;
 			valueProp.configurable = true;
 			
-			writeableProp.value = new Base.TypeBoolean();
+			writeableProp.value = new Base.BooleanType();
 			writeableProp.value.value = false;
 			writeableProp.writeable = true;
 			writeableProp.enumerable = true;
@@ -78,7 +78,7 @@ module.exports = [{
 				getProp = new Base.DataPropertyDescriptor(),
 				setProp = new Base.DataPropertyDescriptor();
 			
-			desc.set = new Base.TypeObject();
+			desc.set = new Base.ObjectType();
 			
 			getProp.value = desc.get;
 			getProp.writeable = true;

@@ -12,13 +12,13 @@ var dataProp = new Base.DataPropertyDescriptor(),
 	enumerableProp = new Base.DataPropertyDescriptor(),
 	configurableProp = new Base.DataPropertyDescriptor();
 
-enumerableProp.value = new Base.TypeBoolean();
+enumerableProp.value = new Base.BooleanType();
 enumerableProp.value.value = false;
 enumerableProp.writeable = true;
 enumerableProp.enumerable = true;
 enumerableProp.configurable = true;
 
-configurableProp.value = new Base.TypeBoolean();
+configurableProp.value = new Base.BooleanType();
 configurableProp.value.value = false;
 configurableProp.writeable = true;
 configurableProp.enumerable = true;
@@ -27,7 +27,7 @@ configurableProp.configurable = true;
 module.exports = [{
 		name: "Obj is not actually object",
 		testFunction: function() {
-			return Base.toPropertyDescriptor(new Base.TypeUndefined());
+			return Base.toPropertyDescriptor(new Base.UndefinedType());
 		},
 		props: {
 			expectedException: "TypeError"
@@ -35,11 +35,11 @@ module.exports = [{
 	},{
 		name: "Obj describes a data descriptor",
 		testFunction: function() {
-			var obj = new Base.TypeObject(),
+			var obj = new Base.ObjectType(),
 				valueProp = new Base.DataPropertyDescriptor(),
 				writeableProp = new Base.DataPropertyDescriptor();
 			
-			dataProp.value = new Base.TypeNumber();
+			dataProp.value = new Base.NumberType();
 			dataProp.value.value = 10;
 			
 			valueProp.value = dataProp.value;
@@ -47,7 +47,7 @@ module.exports = [{
 			valueProp.enumerable = true;
 			valueProp.configurable = true;
 			
-			writeableProp.value = new Base.TypeBoolean();
+			writeableProp.value = new Base.BooleanType();
 			writeableProp.value.value = false;
 			writeableProp.writeable = true;
 			writeableProp.enumerable = true;
@@ -66,17 +66,17 @@ module.exports = [{
 	},{
 		name: "Obj describes an accessor descriptor",
 		testFunction: function() {
-			var obj = new Base.TypeObject(),
+			var obj = new Base.ObjectType(),
 				getProp = new Base.DataPropertyDescriptor(),
 				setProp = new Base.DataPropertyDescriptor();
 			
-			setProp.value = accessorProp.set = new Base.TypeObject();
+			setProp.value = accessorProp.set = new Base.ObjectType();
 			setProp.value.call = {};
 			setProp.writeable = true;
 			setProp.enumerable = true;
 			setProp.configurable = true;
 			
-			getProp.value = accessorProp.get = new Base.TypeUndefined();
+			getProp.value = accessorProp.get = new Base.UndefinedType();
 			getProp.writeable = true;
 			getProp.enumerable = true;
 			getProp.configurable = true;
@@ -94,16 +94,16 @@ module.exports = [{
 	},{
 		name: "Obj describes an accessor descriptor, non-callable setter",
 		testFunction: function() {
-			var obj = new Base.TypeObject(),
+			var obj = new Base.ObjectType(),
 				getProp = new Base.DataPropertyDescriptor(),
 				setProp = new Base.DataPropertyDescriptor();
 			
-			setProp.value = accessorProp.set = new Base.TypeObject();
+			setProp.value = accessorProp.set = new Base.ObjectType();
 			setProp.writeable = true;
 			setProp.enumerable = true;
 			setProp.configurable = true;
 			
-			getProp.value = accessorProp.get = new Base.TypeUndefined();
+			getProp.value = accessorProp.get = new Base.UndefinedType();
 			getProp.writeable = true;
 			getProp.enumerable = true;
 			getProp.configurable = true;
@@ -121,16 +121,16 @@ module.exports = [{
 	},{
 		name: "Obj describes an accessor descriptor, non-callable getter",
 		testFunction: function() {
-			var obj = new Base.TypeObject(),
+			var obj = new Base.ObjectType(),
 				getProp = new Base.DataPropertyDescriptor(),
 				setProp = new Base.DataPropertyDescriptor();
 			
-			setProp.value = accessorProp.set = new Base.TypeUndefined();
+			setProp.value = accessorProp.set = new Base.UndefinedType();
 			setProp.writeable = true;
 			setProp.enumerable = true;
 			setProp.configurable = true;
 			
-			getProp.value = accessorProp.get = new Base.TypeObject();
+			getProp.value = accessorProp.get = new Base.ObjectType();
 			getProp.writeable = true;
 			getProp.enumerable = true;
 			getProp.configurable = true;
@@ -148,16 +148,16 @@ module.exports = [{
 	},{
 		name: "Obj describes an amalgamation of accessor and data descriptor",
 		testFunction: function() {
-			var obj = new Base.TypeObject(),
+			var obj = new Base.ObjectType(),
 				writeableProp = new Base.DataPropertyDescriptor(),
 				setProp = new Base.DataPropertyDescriptor();
 			
-			setProp.value = accessorProp.set = new Base.TypeUndefined();
+			setProp.value = accessorProp.set = new Base.UndefinedType();
 			setProp.writeable = true;
 			setProp.enumerable = true;
 			setProp.configurable = true;
 			
-			writeableProp.value = new Base.TypeBoolean();
+			writeableProp.value = new Base.BooleanType();
 			writeableProp.value.value = false;
 			writeableProp.writeable = true;
 			writeableProp.enumerable = true;

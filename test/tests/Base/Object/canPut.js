@@ -10,7 +10,7 @@ var path = require("path"),
 module.exports = [{
 		name: "Property does not exist",
 		testFunction: function() {
-			var obj = new Base.TypeObject();
+			var obj = new Base.ObjectType();
 			return obj.canPut("foo");
 		},
 		props: {
@@ -19,8 +19,8 @@ module.exports = [{
 	},{
 		name: "Property does not exist, object has prototype",
 		testFunction: function() {
-			var parent = new Base.TypeObject(),
-				obj = new Base.TypeObject();
+			var parent = new Base.ObjectType(),
+				obj = new Base.ObjectType();
 			obj.objectPrototype = parent;
 			return obj.canPut("foo");
 		},
@@ -30,7 +30,7 @@ module.exports = [{
 	},{
 		name: "Property does not exist, object not extensible",
 		testFunction: function() {
-			var obj = new Base.TypeObject();
+			var obj = new Base.ObjectType();
 			obj.extensible = false;
 			return obj.canPut("foo");
 		},
@@ -40,7 +40,7 @@ module.exports = [{
 	},{
 		name: "Data Property exists, non-writable",
 		testFunction: function() {
-			var obj = new Base.TypeObject(),
+			var obj = new Base.ObjectType(),
 				prop = new Base.DataPropertyDescriptor();
 			obj._properties["foo"] = prop;
 			return obj.canPut("foo");
@@ -51,7 +51,7 @@ module.exports = [{
 	},{
 		name: "Data Property exists, writable",
 		testFunction: function() {
-			var obj = new Base.TypeObject(),
+			var obj = new Base.ObjectType(),
 				prop = new Base.DataPropertyDescriptor();
 			prop.writeable = true;
 			obj._properties["foo"] = prop;
@@ -63,7 +63,7 @@ module.exports = [{
 	},{
 		name: "Accessor Property exists, no setter",
 		testFunction: function() {
-			var obj = new Base.TypeObject(),
+			var obj = new Base.ObjectType(),
 				prop = new Base.AccessorPropertyDescriptor();
 			obj._properties["foo"] = prop;
 			return obj.canPut("foo");
@@ -74,9 +74,9 @@ module.exports = [{
 	},{
 		name: "Accessor Property exists, with setter",
 		testFunction: function() {
-			var obj = new Base.TypeObject(),
+			var obj = new Base.ObjectType(),
 				prop = new Base.AccessorPropertyDescriptor();
-			prop.set = new Base.TypeObject();
+			prop.set = new Base.ObjectType();
 			obj._properties["foo"] = prop;
 			return obj.canPut("foo");
 		},
@@ -86,8 +86,8 @@ module.exports = [{
 	},{
 		name: "Inherited Data Property exists, non-writable",
 		testFunction: function() {
-			var parent = new Base.TypeObject(),
-				obj = new Base.TypeObject(),
+			var parent = new Base.ObjectType(),
+				obj = new Base.ObjectType(),
 				prop = new Base.DataPropertyDescriptor();
 			parent._properties["foo"] = prop;
 			obj.objectPrototype = parent;
@@ -99,8 +99,8 @@ module.exports = [{
 	},{
 		name: "Inherited Data Property exists, writable",
 		testFunction: function() {
-			var parent = new Base.TypeObject(),
-				obj = new Base.TypeObject(),
+			var parent = new Base.ObjectType(),
+				obj = new Base.ObjectType(),
 				prop = new Base.DataPropertyDescriptor();
 			prop.writeable = true;
 			parent._properties["foo"] = prop;
@@ -113,8 +113,8 @@ module.exports = [{
 	},{
 		name: "Inherited Accessor Property exists, no setter",
 		testFunction: function() {
-			var parent = new Base.TypeObject(),
-				obj = new Base.TypeObject(),
+			var parent = new Base.ObjectType(),
+				obj = new Base.ObjectType(),
 				prop = new Base.AccessorPropertyDescriptor();
 			parent._properties["foo"] = prop;
 			obj.objectPrototype = parent;
@@ -126,10 +126,10 @@ module.exports = [{
 	},{
 		name: "Inherited Accessor Property exists, with setter",
 		testFunction: function() {
-			var parent = new Base.TypeObject(),
-				obj = new Base.TypeObject(),
+			var parent = new Base.ObjectType(),
+				obj = new Base.ObjectType(),
 				prop = new Base.AccessorPropertyDescriptor();
-			prop.set = new Base.TypeObject();
+			prop.set = new Base.ObjectType();
 			parent._properties["foo"] = prop;
 			obj.objectPrototype = parent;
 			return obj.canPut("foo");

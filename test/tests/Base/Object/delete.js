@@ -12,10 +12,10 @@ var parent,
 	prop;
 
 function reset(inherit) {
-	obj = new Base.TypeObject();
+	obj = new Base.ObjectType();
 	prop = new Base.DataPropertyDescriptor();
 	if (inherit) {
-		parent = new Base.TypeObject();
+		parent = new Base.ObjectType();
 		obj.objectPrototype = parent;
 	}
 }

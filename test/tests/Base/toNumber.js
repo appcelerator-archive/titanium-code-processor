@@ -7,13 +7,13 @@ var path = require("path"),
 	Base = require(path.join(require.main.exports.libPath, "Base")),
 	assert = require("assert");
 
-var numResult = new Base.TypeNumber(),
+var numResult = new Base.NumberType(),
 	temp;
 
 module.exports = [{
 		name: "Undefined",
 		testFunction: function() {
-			temp = Base.toNumber(new Base.TypeUndefined());
+			temp = Base.toNumber(new Base.UndefinedType());
 		},
 		props: {
 			expectedReturnValue: undefined, // Can't use return type since NaN === NaN is false
@@ -25,7 +25,7 @@ module.exports = [{
 		name: "Null",
 		testFunction: function() {
 			numResult.value = 0;
-			return Base.toNumber(new Base.TypeNull());
+			return Base.toNumber(new Base.NullType());
 		},
 		props: {
 			expectedReturnValue: numResult
@@ -33,7 +33,7 @@ module.exports = [{
 	},{
 		name: "Boolean, false",
 		testFunction: function() {
-			var bool = new Base.TypeBoolean();
+			var bool = new Base.BooleanType();
 			bool.value = false;
 			numResult.value = 0;
 			return Base.toNumber(bool);
@@ -44,7 +44,7 @@ module.exports = [{
 	},{
 		name: "Boolean, true",
 		testFunction: function() {
-			var bool = new Base.TypeBoolean();
+			var bool = new Base.BooleanType();
 			bool.value = true;
 			numResult.value = 1;
 			return Base.toNumber(bool);
@@ -55,7 +55,7 @@ module.exports = [{
 	},{
 		name: "Number, 0",
 		testFunction: function() {
-			var num = new Base.TypeNumber();
+			var num = new Base.NumberType();
 			num.value = 0;
 			numResult.value = 0;
 			return Base.toNumber(num);
@@ -66,7 +66,7 @@ module.exports = [{
 	},{
 		name: "Number, NaN",
 		testFunction: function() {
-			var num = new Base.TypeNumber();
+			var num = new Base.NumberType();
 			num.value = NaN;
 			numResult.value = NaN;
 			temp = Base.toNumber(num);
@@ -80,7 +80,7 @@ module.exports = [{
 	},{
 		name: "Number, 100.5e-20",
 		testFunction: function() {
-			var num = new Base.TypeNumber();
+			var num = new Base.NumberType();
 			num.value = 1.005e-20;
 			numResult.value = 1.005e-20;
 			return Base.toNumber(num);
@@ -91,7 +91,7 @@ module.exports = [{
 	},{
 		name: "String, empty",
 		testFunction: function() {
-			var	str = new Base.TypeString();
+			var	str = new Base.StringType();
 			str.value = "";
 			numResult.value = 0;
 			return Base.toNumber(str);
@@ -102,7 +102,7 @@ module.exports = [{
 	},{
 		name: "String, non-empty",
 		testFunction: function() {
-			var	str = new Base.TypeString();
+			var	str = new Base.StringType();
 			str.value = " 100.45";
 			numResult.value = 100.45;
 			return Base.toNumber(str);

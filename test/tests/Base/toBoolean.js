@@ -7,15 +7,15 @@ var path = require("path"),
 	Base = require(path.join(require.main.exports.libPath, "Base")),
 	assert = require("assert");
 
-var trueBoolean = new Base.TypeBoolean(),
-	falseBoolean = new Base.TypeBoolean();
+var trueBoolean = new Base.BooleanType(),
+	falseBoolean = new Base.BooleanType();
 trueBoolean.value = true;
 falseBoolean.value = false;
 
 module.exports = [{
 		name: "Undefined",
 		testFunction: function() {
-			return Base.toBoolean(new Base.TypeUndefined());
+			return Base.toBoolean(new Base.UndefinedType());
 		},
 		props: {
 			expectedReturnValue: falseBoolean
@@ -23,7 +23,7 @@ module.exports = [{
 	},{
 		name: "Null",
 		testFunction: function() {
-			return Base.toBoolean(new Base.TypeNull());
+			return Base.toBoolean(new Base.NullType());
 		},
 		props: {
 			expectedReturnValue: falseBoolean
@@ -31,7 +31,7 @@ module.exports = [{
 	},{
 		name: "Boolean, false",
 		testFunction: function() {
-			var bool = new Base.TypeBoolean();
+			var bool = new Base.BooleanType();
 			bool.value = false;
 			return Base.toBoolean(bool);
 		},
@@ -41,7 +41,7 @@ module.exports = [{
 	},{
 		name: "Boolean, true",
 		testFunction: function() {
-			var bool = new Base.TypeBoolean();
+			var bool = new Base.BooleanType();
 			bool.value = true;
 			return Base.toBoolean(bool);
 		},
@@ -51,7 +51,7 @@ module.exports = [{
 	},{
 		name: "Number, 0",
 		testFunction: function() {
-			var num = new Base.TypeNumber();
+			var num = new Base.NumberType();
 			num.value = 0;
 			return Base.toBoolean(num);
 		},
@@ -61,7 +61,7 @@ module.exports = [{
 	},{
 		name: "Number, NaN",
 		testFunction: function() {
-			var num = new Base.TypeNumber();
+			var num = new Base.NumberType();
 			num.value = NaN;
 			return Base.toBoolean(num);
 		},
@@ -71,7 +71,7 @@ module.exports = [{
 	},{
 		name: "Number, 100",
 		testFunction: function() {
-			var num = new Base.TypeNumber();
+			var num = new Base.NumberType();
 			num.value = 100;
 			return Base.toBoolean(num);
 		},
@@ -81,7 +81,7 @@ module.exports = [{
 	},{
 		name: "String, empty",
 		testFunction: function() {
-			var	str = new Base.TypeString();
+			var	str = new Base.StringType();
 			str.value = "";
 			return Base.toBoolean(str);
 		},
@@ -91,7 +91,7 @@ module.exports = [{
 	},{
 		name: "String, non-empty",
 		testFunction: function() {
-			var	str = new Base.TypeString();
+			var	str = new Base.StringType();
 			str.value = "hello";
 			return Base.toBoolean(str);
 		},
@@ -101,7 +101,7 @@ module.exports = [{
 	},{
 		name: "Object",
 		testFunction: function() {
-			return Base.toBoolean(new Base.TypeObject());
+			return Base.toBoolean(new Base.ObjectType());
 		},
 		props: {
 			expectedReturnValue: trueBoolean

@@ -13,18 +13,18 @@ var parent,
 	dataProp2,
 	accessorProp1,
 	accessorProp2,
-	number = new Base.TypeNumber(),
-	undef = new Base.TypeUndefined();
+	number = new Base.NumberType(),
+	undef = new Base.UndefinedType();
 number.value = 10;
 	
 function reset(inherit) {
-	obj = new Base.TypeObject();
+	obj = new Base.ObjectType();
 	dataProp1 = new Base.DataPropertyDescriptor();
 	dataProp2 = new Base.DataPropertyDescriptor();
 	accessorProp1 = new Base.AccessorPropertyDescriptor();
 	accessorProp2 = new Base.AccessorPropertyDescriptor();
 	if (inherit) {
-		parent = new Base.TypeObject();
+		parent = new Base.ObjectType();
 		obj.objectPrototype = parent;
 	}
 }

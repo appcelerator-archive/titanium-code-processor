@@ -9,17 +9,17 @@ var path = require("path"),
 
 var parent,
 	obj,
-	undef = new Base.TypeUndefined(),
-	value = new Base.TypeNumber(),
+	undef = new Base.UndefinedType(),
+	value = new Base.NumberType(),
 	dataProp = new Base.DataPropertyDescriptor(),
 	accessorProp = new Base.AccessorPropertyDescriptor();
 value.value = 10;
 dataProp.value = value;
 	
 function reset(prop, inherit) {
-	obj = new Base.TypeObject();
+	obj = new Base.ObjectType();
 	if (inherit) {
-		parent = new Base.TypeObject();
+		parent = new Base.ObjectType();
 		obj.objectPrototype = parent;
 		parent._properties["foo"] = prop;
 	} else {

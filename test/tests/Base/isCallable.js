@@ -10,7 +10,7 @@ var path = require("path"),
 module.exports = [{
 		name: "Undefined",
 		testFunction: function() {
-			return Base.isCallable(new Base.TypeUndefined());
+			return Base.isCallable(new Base.UndefinedType());
 		},
 		props: {
 			expectedReturnValue: false
@@ -18,7 +18,7 @@ module.exports = [{
 	},{
 		name: "Null",
 		testFunction: function() {
-			return Base.isCallable(new Base.TypeNull());
+			return Base.isCallable(new Base.NullType());
 		},
 		props: {
 			expectedReturnValue: false
@@ -26,7 +26,7 @@ module.exports = [{
 	},{
 		name: "Boolean",
 		testFunction: function() {
-			return Base.isCallable(new Base.TypeBoolean());
+			return Base.isCallable(new Base.BooleanType());
 		},
 		props: {
 			expectedReturnValue: false
@@ -34,7 +34,7 @@ module.exports = [{
 	},{
 		name: "Number",
 		testFunction: function() {
-			return Base.isCallable(new Base.TypeNumber());
+			return Base.isCallable(new Base.NumberType());
 		},
 		props: {
 			expectedReturnValue: false
@@ -42,7 +42,7 @@ module.exports = [{
 	},{
 		name: "String",
 		testFunction: function() {
-			var	str = new Base.TypeString();
+			var	str = new Base.StringType();
 			str.call = function() {};
 			return Base.isCallable(str);
 		},
@@ -52,7 +52,7 @@ module.exports = [{
 	},{
 		name: "Non-callable Object",
 		testFunction: function() {
-			return Base.isCallable(new Base.TypeObject());
+			return Base.isCallable(new Base.ObjectType());
 		},
 		props: {
 			expectedReturnValue: false
@@ -60,7 +60,7 @@ module.exports = [{
 	},{
 		name: "Callable Object",
 		testFunction: function() {
-			var	obj = new Base.TypeObject();
+			var	obj = new Base.ObjectType();
 			obj.call = function() {};
 			return Base.isCallable(obj);
 		},

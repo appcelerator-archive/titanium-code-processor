@@ -10,7 +10,7 @@ var path = require("path"),
 module.exports = [{
 		name: "Undefined",
 		testFunction: function() {
-			return Base.checkObjectCoercible(new Base.TypeUndefined());
+			return Base.checkObjectCoercible(new Base.UndefinedType());
 		},
 		props: {
 			expectedException: "TypeError"
@@ -18,7 +18,7 @@ module.exports = [{
 	},{
 		name: "Null",
 		testFunction: function() {
-			return Base.checkObjectCoercible(new Base.TypeNull());
+			return Base.checkObjectCoercible(new Base.NullType());
 		},
 		props: {
 			expectedException: "TypeError"
@@ -26,7 +26,7 @@ module.exports = [{
 	},{
 		name: "Boolean",
 		testFunction: function() {
-			return Base.checkObjectCoercible(new Base.TypeBoolean());
+			return Base.checkObjectCoercible(new Base.BooleanType());
 		},
 		props: {
 			expectedReturnValue: undefined
@@ -34,7 +34,7 @@ module.exports = [{
 	},{
 		name: "Number",
 		testFunction: function() {
-			return Base.checkObjectCoercible(new Base.TypeNumber());
+			return Base.checkObjectCoercible(new Base.NumberType());
 		},
 		props: {
 			expectedReturnValue: undefined
@@ -42,7 +42,7 @@ module.exports = [{
 	},{
 		name: "String",
 		testFunction: function() {
-			return Base.checkObjectCoercible(new Base.TypeString());
+			return Base.checkObjectCoercible(new Base.StringType());
 		},
 		props: {
 			expectedReturnValue: undefined
@@ -50,7 +50,7 @@ module.exports = [{
 	},{
 		name: "Object",
 		testFunction: function() {
-			return Base.checkObjectCoercible(new Base.TypeObject());
+			return Base.checkObjectCoercible(new Base.ObjectType());
 		},
 		props: {
 			expectedReturnValue: undefined
