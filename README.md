@@ -1,4 +1,4 @@
-ti-jitsu
+Titanium Code Processor
 ========
 
-Code analysis Node.JS modules for Titanium mobile
+Code analysis node.js modules for Titanium mobile
