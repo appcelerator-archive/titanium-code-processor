@@ -1,0 +1,18 @@
+{
+  "author": "Allen Yeung <ayeung@appcelerator.com> (https://github.com/ayeung/)",
+  "name": "ti-api-injector",
+  "description": "A plugin for ti-code-processor that injects Titanium APIs",
+  "version": "0.1.0",
+  "homepage": "https://github.com/ayeung/ti-api-injector.git",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ayeung/ti-api-injector.git"
+  },
+  "main": "lib/ApiInjector.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  }
+}
