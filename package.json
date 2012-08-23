@@ -1,22 +1,20 @@
 {
-  "author": "Bryan Hughes <bhughes@appcelerator.com>",
-  "name": "ti-code-processor",
-  "description": "A code processing tool for Titanium Mobile",
-  "version": "0.1.0",
-  "homepage": "https://github.com/bryan-m-hughes/ti-code-processor",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/bryan-m-hughes/ti-code-processor.git"
-  },
-  "main": "lib/CodeProcessor.js",
-  "dependencies": {
-    "uglify-js": "1.2.x",
-    "xml2js": "0.1.x",
-	"wrench": "1.3.x"
-  },
-  "devDependencies": {},
-  "optionalDependencies": {},
-  "engine": {
-    "node": ">=0.8"
-  }
+	"author": "Bryan Hughes <bhughes@appcelerator.com>",
+	"name": "ti-code-processor",
+	"description": "A code processing tool for Titanium Mobile",
+	"version": "0.1.0",
+	"homepage": "https://github.com/bryan-m-hughes/ti-code-processor",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/bryan-m-hughes/ti-code-processor.git"
+	},
+	"main": "lib/CodeProcessor.js",
+	"dependencies": {
+		"uglify-js": "1.2.x",
+		"xml2js": "0.1.x",
+		"wrench": "1.3.x"
+	},
+	"engine": {
+	"node": ">=0.8"
+	}
 }
