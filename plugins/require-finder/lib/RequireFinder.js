@@ -3,41 +3,44 @@
  * @author Bryan Hughes <bhughes@appcelerator.com>
  */
  
-// ******** Requires ********
+var results = {
+	resolved: [],
+	unresolved: [],
+	missing: []
+};
 
-var util = require("util"),
-	CodeProcessor = require("ti-code-processor"),
-	Messaging = CodeProcessor.Messaging;
-
-// ******** Event Documentation ********
-
-/**
- * Indicates that results are available. Registering for this callback is the only way to obtain the results of a plugin.
- *
- * @name RequireFinder#resultsAvailable
- * @event
- * @param {RequireFinderResults} results The required()'d and Ti.include()'d modules/files.
- */
-
-// ******** Methods ********
+// ******** Plugin API Methods ********
 
 /**
- * Creates an instance of the require finder plugin that is associated with the provided code processor.
- *
- * @class A plugin hooks into a {@link CodeProcessor} to provide useful information on some aspect of the project. A
- * 		plugin could be created, for example, that scans a project for all require() statements and returns a list of
- * 		all required files.
- *
+ * Creates an instance of the require provider plugin
+ * 
+ * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
+ * 
  * @constructor
- * @param {CodeProcessor} codeProcessor The {@link CodeProcessor} to associate the plugin with.
- * @throws {InvalidArguments} Thrown when a valid {@link CodeProcessor} is not supplied.
+ * @param {Object} libs A dictionary containing useful libs from {@link module:CodeProcessor} so they don't have to be
+ *		required()'d individually using brittle hard-coded paths.
  */
-var RequireFinder = module.exports = function() {
+module.exports = function (libs) {
+	libs.Messaging.on("requireUnresolved", function(e) {
+		results.unresolved.push(e.name);
+	});
+	libs.Messaging.on("requireResolved", function(e) {
+		results.resolved.push(e.name);
+	});
+	libs.Messaging.on("requireMissing", function(e) {
+		results.missing.push(e.name);
+	});
+}
 
-	// Initialize the results
-	this._results = {
-		includes: [],
-		requires: []
-	};
-	Messaging.log("debug", "Require-finder initialized", "(ti-require-finder)");
+/**
+* Gets the results of the plugin
+* 
+* @method
+* @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
+*		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
+*		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
+*		method.
+*/
+module.exports.prototype.getResults = function getResults() {
+	return results;
 };
