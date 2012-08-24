@@ -55,14 +55,13 @@ module.exports = function (libs) {
 				name = path.resolve(path.join(path.dirname(name[0] !== "." ? Runtime.fileStack[0] : Runtime.getCurrentFile()), name));
 				name += isModule ? ".js" : "";
 				
-				// Make sure that the file exists
+				// Make sure that the file exists and then process it
 				if (fs.existsSync(name)) {
-				
-					// Process the file
-					result = processFile(name, isModule, useCurrentContext);
+					
 					Messaging.fireEvent("requireResolved", {
 						name: name
 					});
+					result = processFile(name, isModule, useCurrentContext)[1];
 					
 				} else {
 					Messaging.log("warn", (useCurrentContext ? "Ti.include()'d" : "Require()'d") + " file '" + name + "' does not exist");
