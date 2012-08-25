@@ -125,7 +125,6 @@ module.exports = function (libs) {
 	 * @see ECMA-262 Spec Chapter 13.2.1
 	 */
 	IncludeFunction.prototype.call = function call(thisVal, args) {
-		debugger;
 		return callHelper(args, true);
 	};
 	

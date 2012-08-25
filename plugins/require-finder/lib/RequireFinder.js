@@ -30,7 +30,7 @@ module.exports = function (libs) {
 	libs.Messaging.on("requireMissing", function(e) {
 		results.missing.push(e.name);
 	});
-}
+};
 
 /**
 * Gets the results of the plugin
