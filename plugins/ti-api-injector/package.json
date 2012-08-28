@@ -13,6 +13,6 @@
   "devDependencies": {},
   "optionalDependencies": {},
   "engines": {
-    "node": "*"
+    "node": ">=0.8"
   }
 }
