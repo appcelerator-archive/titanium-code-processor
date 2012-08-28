@@ -52,7 +52,7 @@ module.exports = function(CodeProcessor) {
 			for (i = 0; i < typesArray.length; i++) {
 				addType(typesArray[i], aliases);
 			}
-		};
+		}
 	);
 }
 
