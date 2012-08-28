@@ -19,23 +19,23 @@ module.exports = function(CodeProcessor) {
 	Messaging = CodeProcessor.Messaging;
 	Runtime = CodeProcessor.Runtime;
 	Base = CodeProcessor.Base;
-	
+
 	util.inherits(exports.TiFunctionType, Base.FunctionType);
+
+	// TODO: Find the sdk path from code processor instead
+	var titaniumSDKPath = "/Library/Application Support/Titanium/mobilesdk/osx/2.1.0.GA/"	
+
+	if (!titaniumSDKPath) {
+		Messaging.log("error", "Titanium SDK was not provided, could not inject APIs");
+		process.exit(1);
+	}
+
+	// Read in jsca file as json
+	var jscaString = fs.readFileSync(path.join(titaniumSDKPath, "api.jsca"), 'utf8'),
+		jscaJSON = JSON.parse(jscaString);
 
 	// Start injection process when a "projectProcessingBegin" event is fired from the code processor
 	Messaging.on("projectProcessingBegin", function () {
-			// TODO: Find the sdk path from code processor instead
-			var titaniumSDKPath = "/Library/Application Support/Titanium/mobilesdk/osx/2.1.0.GA/"	
-
-			if (!titaniumSDKPath) {
-				Messaging.log("error", "Titanium SDK was not provided, could not inject APIs");
-				process.exit(1);
-			}
-
-			// Read in jsca file as json
-			var jscaString = fs.readFileSync(path.join(titaniumSDKPath, "api.jsca"), 'utf8');
-
-			var jscaJSON = JSON.parse(jscaString);
 
 			// Iterate through the json object and inject all the APIs
 			var typesArray = jscaJSON['types'],
@@ -67,7 +67,7 @@ module.exports = function(CodeProcessor) {
 function addType(type, aliases) {
 	var globalObject = Runtime.globalObject,
 		name = type.name.split("."),
-	// Only need to keep track of the current alias, since there can only be one top-level alias
+		// Only need to keep track of the current alias, since there can only be one top-level alias
 		currentNamespace, currentAlias,
 		i = 0;
 	
