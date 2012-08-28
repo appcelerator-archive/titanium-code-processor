@@ -27,7 +27,6 @@ module.exports = function (libs) {
 		Base = libs.Base,
 		Messaging = libs.Messaging,
 		Runtime = libs.Runtime,
-		Context = libs.Context,
 		processFile = libs.processFile,
 		pluginRegExp = /^(.+?)\!(.*)$/,
 		fileRegExp = /\.js$/;
@@ -87,7 +86,7 @@ module.exports = function (libs) {
 	function RequireFunction(className) {
 		Base.ObjectType.call(this, className || "Function");
 	}
-	util.inherits(RequireFunction, Context.FunctionType);
+	util.inherits(RequireFunction, Base.FunctionType);
 
 	/**
 	 * Calls the require function
@@ -113,7 +112,7 @@ module.exports = function (libs) {
 	function IncludeFunction(className) {
 		Base.ObjectType.call(this, className || "Function");
 	}
-	util.inherits(IncludeFunction, Context.FunctionType);
+	util.inherits(IncludeFunction, Base.FunctionType);
 
 	/**
 	 * Calls the require function
