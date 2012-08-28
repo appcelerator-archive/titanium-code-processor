@@ -1,4 +1,4 @@
-ti-api-injector
+APIInjector
 ===============
 
 This plugin injects Titanium APIs into the code processor.

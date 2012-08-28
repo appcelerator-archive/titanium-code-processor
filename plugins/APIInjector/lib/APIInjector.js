@@ -4,7 +4,7 @@
  * 
  * Injects Titanium APIs into ti-code-processor
  * 
- * @module ApiInjector
+ * @module APIIjector
  * @author Allen Yeung &lt;<a href="mailto:ayeung@appcelerator.com">ayeung@appcelerator.com</a>&gt;
  */
 
@@ -23,44 +23,38 @@ module.exports = function(CodeProcessor) {
 	util.inherits(exports.TiFunctionType, Base.FunctionType);
 
 	// Start injection process when a "projectProcessingBegin" event is fired from the code processor
-	Messaging.on("projectProcessingBegin", apiInjector);
+	Messaging.on("projectProcessingBegin", function () {
+			// TODO: Find the sdk path from code processor instead
+			var titaniumSDKPath = "/Library/Application Support/Titanium/mobilesdk/osx/2.1.0.GA/"	
+
+			if (!titaniumSDKPath) {
+				Messaging.log("error", "Titanium SDK was not provided, could not inject APIs");
+				process.exit(1);
+			}
+
+			// Read in jsca file as json
+			var jscaString = fs.readFileSync(path.join(titaniumSDKPath, "api.jsca"), 'utf8');
+
+			var jscaJSON = JSON.parse(jscaString);
+
+			// Iterate through the json object and inject all the APIs
+			var typesArray = jscaJSON['types'],
+				aliasesArray = jscaJSON['aliases'],
+				aliases = {},
+				i = 0;
+
+			// Create aliases object
+			for (; i < aliasesArray.length; i++) {
+				aliases[aliasesArray[i].type] = aliasesArray[i].name;
+			}
+
+			// Loop through all types and inject them into global object
+			for (i = 0; i < typesArray.length; i++) {
+				addType(typesArray[i], aliases);
+			}
+		};
+	);
 }
-
-/**
- * The main function to perform the API injection.
- */
-function apiInjector () {
-	
-	// TODO: Find the sdk path from code processor instead
-	var titaniumSDKPath = "/Library/Application Support/Titanium/mobilesdk/osx/2.1.0.GA/"	
-	
-	if (!titaniumSDKPath) {
-		Messaging.log("error", "Titanium SDK was not provided, could not inject APIs");
-		process.exit(1);
-	}
-	
-	// Read in jsca file as json
-	var jscaString = fs.readFileSync(path.join(titaniumSDKPath, "api.jsca"), 'utf8');
-	
-	var jscaJSON = JSON.parse(jscaString);
-
-	// Iterate through the json object and inject all the APIs
-	var typesArray = jscaJSON['types'],
-		aliasesArray = jscaJSON['aliases'],
-		aliases = {},
-		i = 0;
-		
-	// Create aliases object
-	for (; i < aliasesArray.length; i++) {
-		aliases[aliasesArray[i].type] = aliasesArray[i].name;
-	}
-	
-	// Loop through all types and inject them into global object
-	for (i = 0; i < typesArray.length; i++) {
-		addType(typesArray[i], aliases);
-	}
-};
-
 
 /**
  * Creates given type and adds it to the global object
