@@ -8,10 +8,22 @@
 var CodeProcessor = require("ti-code-processor"),
 	Base = CodeProcessor.Base;
 
+/**
+ * @classdesc A Titanium function object type
+ *
+ * @constructor
+ * @extends module:Base.ObjectType
+ */
 exports.FunctionType = function() {
 	Base.ObjectType.call(this, "Function");
 }
 
+/**
+* Calls the function
+* 
+* @method
+* @returns {module:Base.UnknownType} An unknown type since we don't know the value of a Titanium function
+*/
 exports.FunctionType.prototype.call = function call(thisVal, args) {
 	return new Base.UnknownType();
 }
