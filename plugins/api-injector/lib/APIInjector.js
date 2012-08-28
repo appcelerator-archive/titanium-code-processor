@@ -23,7 +23,7 @@ module.exports = function(CodeProcessor) {
 	util.inherits(exports.TiFunctionType, Base.FunctionType);
 
 	// TODO: Find the sdk path from code processor instead
-	var titaniumSDKPath = "/Library/Application Support/Titanium/mobilesdk/osx/2.1.0.GA/"	
+	var titaniumSDKPath = "/Library/Application Support/Titanium/mobilesdk/osx/2.1.0.GA/";
 
 	if (!titaniumSDKPath) {
 		Messaging.log("error", "Titanium SDK was not provided, could not inject APIs");
@@ -38,8 +38,8 @@ module.exports = function(CodeProcessor) {
 	Messaging.on("projectProcessingBegin", function () {
 
 			// Iterate through the json object and inject all the APIs
-			var typesArray = jscaJSON['types'],
-				aliasesArray = jscaJSON['aliases'],
+			var typesArray = jscaJSON.types,
+				aliasesArray = jscaJSON.aliases,
 				aliases = {},
 				i = 0;
 
@@ -54,7 +54,7 @@ module.exports = function(CodeProcessor) {
 			}
 		}
 	);
-}
+};
 
 /**
  * Creates given type and adds it to the global object
@@ -144,7 +144,7 @@ function processFunction(func, parent) {
 	var funcName = func.name;
 	
 	if (!parent.hasProperty(funcName)) {
-		parent.put(funcName,  new exports.TiFunctionType, false);
+		parent.put(funcName,  new exports.TiFunctionType(), false);
 	}
 }
 
@@ -174,7 +174,7 @@ function processProperty(prop, parent) {
  */
 exports.TiFunctionType = function() {
 	Base.ObjectType.call(this, "Function");
-}
+};
 
 /**
 * Calls the function
@@ -184,7 +184,7 @@ exports.TiFunctionType = function() {
 */
 exports.TiFunctionType.prototype.call = function call(thisVal, args) {
 	return new Base.UnknownType();
-}
+};
 
 /**
 * Constructor for TiFunctionType
@@ -194,7 +194,7 @@ exports.TiFunctionType.prototype.call = function call(thisVal, args) {
 */
 exports.TiFunctionType.prototype.constructor = function constructor() {
 	return new Base.UnknownType();
-}
+};
 
 /**
 * Gets the results of the plugin
