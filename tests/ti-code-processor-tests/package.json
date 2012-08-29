@@ -1,0 +1,20 @@
+{
+  "author": "Allen Yeung <ayeung@appcelerator.com> (https://github.com/ayeung/)",
+  "name": "ti-code-processor-tests",
+  "description": "A plugin for ti-code-processor unit tests",
+  "version": "0.1.0",
+  "main": "lib/codeProcessorTest.js",
+  "scripts": {
+    "start": "node bin/codeProcessorTest"
+  },
+  "dependencies": {
+    "nomnom": "1.5.x",
+    "winston": "0.5.x",
+    "taskman": "0.1.x"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": ">=0.8"
+  }
+}
