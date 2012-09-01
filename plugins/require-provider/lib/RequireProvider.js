@@ -133,20 +133,20 @@ module.exports = function (libs) {
 			tiobj;
 		
 		// Create the require method
-		globalEnvironmentRecord.createMutableBinding("require", false);
-		globalEnvironmentRecord.setMutableBinding("require", new RequireFunction(), false);
+		globalEnvironmentRecord.createMutableBinding("require", false, true);
+		globalEnvironmentRecord.setMutableBinding("require", new RequireFunction(), false, true);
 		
 		// Create the Ti.Include method
 		if (globalEnvironmentRecord.hasBinding("Ti")) {
 			tiobj = globalEnvironmentRecord.getBindingValue("Ti");
 		} else {
 			tiobj = new Base.ObjectType();
-			globalEnvironmentRecord.createMutableBinding("Ti", false);
-			globalEnvironmentRecord.setMutableBinding("Ti", tiobj, false);
-			globalEnvironmentRecord.createMutableBinding("Titanium", false);
-			globalEnvironmentRecord.setMutableBinding("Titanium", tiobj, false);			
+			globalEnvironmentRecord.createMutableBinding("Ti", false, true);
+			globalEnvironmentRecord.setMutableBinding("Ti", tiobj, false, true);
+			globalEnvironmentRecord.createMutableBinding("Titanium", false, true);
+			globalEnvironmentRecord.setMutableBinding("Titanium", tiobj, false, true);			
 		}
-		tiobj.put("include", new IncludeFunction(), false);
+		tiobj.put("include", new IncludeFunction(), false, true);
 	});
 };
 
