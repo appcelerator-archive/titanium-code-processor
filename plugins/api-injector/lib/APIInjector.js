@@ -4,7 +4,7 @@
  * 
  * Injects Titanium APIs into ti-code-processor
  * 
- * @module APIIjector
+ * @module plugins/APIIjector
  * @author Allen Yeung &lt;<a href="mailto:ayeung@appcelerator.com">ayeung@appcelerator.com</a>&gt;
  */
 
