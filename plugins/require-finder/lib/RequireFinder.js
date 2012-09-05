@@ -1,7 +1,11 @@
 /**
- * @fileoverview This file provides the definition for the require finder plugin for ti-code-processor.
- * @author Bryan Hughes <bhughes@appcelerator.com>
+ * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.</p>
+ * 
+ * @module plugins/RequireFinder
+ * @author Bryan Hughes &lt;<a href="mailto:bhughes@appcelerator.com">bhughes@appcelerator.com</a>&gt;
  */
+
  
 var results = {
 	resolved: [],
