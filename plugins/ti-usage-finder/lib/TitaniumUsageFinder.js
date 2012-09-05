@@ -4,10 +4,10 @@
  * 
  * This plugin finds the Titanium APIs that are used.
  * 
- * @module TitaniumUsageFinder
+ * @module plugin/TitaniumUsageFinder
  * @author Allen Yeung &lt;<a href="mailto:ayeung@appcelerator.com">ayeung@appcelerator.com</a>&gt;
  */
- 
+
 var results = {};
 
 // ******** Plugin API Methods ********

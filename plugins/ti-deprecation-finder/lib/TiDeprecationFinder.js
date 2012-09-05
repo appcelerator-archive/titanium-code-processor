@@ -4,7 +4,7 @@
  * 
  * This plugin finds the deprecated Titanium APIs that are used.
  * 
- * @module TiDeprecationFinder
+ * @module plugin/TiDeprecationFinder
  * @author Allen Yeung &lt;<a href="mailto:ayeung@appcelerator.com">ayeung@appcelerator.com</a>&gt;
  */
  
@@ -23,10 +23,13 @@ var results = {};
  */
 module.exports = function (libs) {
 	libs.Messaging.on("deprecatedTiPropReferenced", function(e) {
-		if (results[e.name]) {
-			results[e.name] += 1;
+		var name = e.name;
+		libs.Messaging.reportWarning({description: "Deprecated Titanium API detected: " + name});
+
+		if (results[name]) {
+			results[name] += 1;
 		} else {
-			results[e.name] = 1;
+			results[name] = 1;
 		}
 	});
 };

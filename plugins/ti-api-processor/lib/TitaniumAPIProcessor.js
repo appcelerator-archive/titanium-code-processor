@@ -4,7 +4,7 @@
  *
  * Processes Titanium APIs for the code processor
  *
- * @module TitaniumAPIProcessor
+ * @module plugin/TitaniumAPIProcessor
  * @author Allen Yeung &lt;<a href="mailto:ayeung@appcelerator.com">ayeung@appcelerator.com</a>&gt;
  */
 
@@ -20,7 +20,7 @@ var fs = require("fs"),
 
 module.exports = function(CodeProcessor) {
 	// TODO: Find the sdk path from code processor instead
-	// var titaniumSDKPath = "/Users/ayeung/titanium/titanium_mobile/dist/mobilesdk-2.2.0-osx/mobilesdk/osx/2.2.0",
+	// var titaniumSDKPath = "/Users/ayeung/titanium/titanium_mobile/dist/mobilesdk/osx/2.2.0",
 	var titaniumSDKPath = "/Library/Application Support/Titanium/mobilesdk/osx/2.1.0.GA/",
 	 	jscaString;
 
