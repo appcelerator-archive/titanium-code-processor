@@ -43,12 +43,12 @@ module.exports = function (libs) {
 			
 			if (Base.type(name) === "Unknown") {
 
-				Messaging.fireEvent("requireUnresolved", {
+				Messaging.fireEvent("requireUnresolved", Runtime.mixinLocationInformation({
 					name: "<Could not evaluate require path>"
-				});
-				Messaging.reportWarning({
+				}));
+				Messaging.reportWarning(Runtime.mixinLocationInformation({
 					description: "Could not evaluate require path"
-				});
+				}));
 				return result;
 			}
 			
@@ -56,9 +56,9 @@ module.exports = function (libs) {
 	
 			// We don't process plugins or urls at compile time
 			if (pluginRegExp.test(name) || name.indexOf(":") !== -1) {
-				Messaging.fireEvent("requireUnresolved", {
+				Messaging.fireEvent("requireUnresolved", Runtime.mixinLocationInformation({
 					name: name
-				});
+				}));
 			} else {
 		
 				// Resolve the path
@@ -69,18 +69,18 @@ module.exports = function (libs) {
 				// Make sure that the file exists and then process it
 				if (fs.existsSync(name)) {
 					
-					Messaging.fireEvent("requireResolved", {
+					Messaging.fireEvent("requireResolved", Runtime.mixinLocationInformation({
 						name: name
-					});
+					}));
 					result = processFile(name, isModule, useCurrentContext)[1];
 					
 				} else {
-					Messaging.fireEvent("requireMissing", {
+					Messaging.fireEvent("requireMissing", Runtime.mixinLocationInformation({
 						name: name
-					});
-					Messaging.reportError({
+					}));
+					Messaging.reportError(Runtime.mixinLocationInformation({
 						description: "Require path does not exist: '" + Base.toString(Base.getValue(args[0])).value + "'"
-					});
+					}));
 				}
 			}
 			
