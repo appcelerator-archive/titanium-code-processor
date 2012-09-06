@@ -34,16 +34,28 @@ module.exports = function (libs) {
 		function callHelper(args, useCurrentContext) {
 			// Validate and parse the args
 			var name = args && Base.getValue(args[0]),
-				result,
+				result = new Base.UnknownType(),
 				isModule;
-			if (!name || Base.type(name) !== "String") {
-				throw new Exceptions.TypeError("Invalid require path '" + args[0] + "'");
+			
+			if (!name) {
+				name = new Base.UndefinedType();
 			}
-			name = name.value;
+			
+			if (Base.type(name) === "Unknown") {
+
+				Messaging.fireEvent("requireUnresolved", {
+					name: "<Could not evaluate require path>"
+				});
+				Messaging.reportWarning({
+					description: "Could not evaluate require path"
+				});
+				return result;
+			}
+			
+			name = Base.toString(name).value;
 	
 			// We don't process plugins or urls at compile time
 			if (pluginRegExp.test(name) || name.indexOf(":") !== -1) {
-				result = new Base.UnknownType();
 				Messaging.fireEvent("requireUnresolved", {
 					name: name
 				});
@@ -63,15 +75,15 @@ module.exports = function (libs) {
 					result = processFile(name, isModule, useCurrentContext)[1];
 					
 				} else {
-					Messaging.log("warn", (useCurrentContext ? "Ti.include()'d" : "Require()'d") + " file '" + name + "' does not exist");
 					Messaging.fireEvent("requireMissing", {
 						name: name
 					});
+					Messaging.reportError({
+						description: "Require path does not exist: '" + Base.toString(Base.getValue(args[0])).value + "'"
+					});
 				}
 			}
-			if (!result) {
-				result = new Base.UndefinedType();
-			}
+			
 			return result;
 		}
 	
