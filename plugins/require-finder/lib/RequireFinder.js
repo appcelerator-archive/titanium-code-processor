@@ -25,14 +25,14 @@ var results = {
  *		required()'d individually using brittle hard-coded paths.
  */
 module.exports = function (libs) {
-	libs.Messaging.on("requireUnresolved", function(e) {
-		results.unresolved.push(e.name);
+	libs.Runtime.on("requireUnresolved", function(e) {
+		results.unresolved.push(e);
 	});
-	libs.Messaging.on("requireResolved", function(e) {
-		results.resolved.push(e.name);
+	libs.Runtime.on("requireResolved", function(e) {
+		results.resolved.push(e);
 	});
-	libs.Messaging.on("requireMissing", function(e) {
-		results.missing.push(e.name);
+	libs.Runtime.on("requireMissing", function(e) {
+		results.missing.push(e);
 	});
 };
 

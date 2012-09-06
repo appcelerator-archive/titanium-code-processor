@@ -25,28 +25,42 @@ module.exports = function (libs) {
 		fs = require("fs"),
 		Exceptions = libs.Exceptions,
 		Base = libs.Base,
-		Messaging = libs.Messaging,
 		Runtime = libs.Runtime,
 		processFile = libs.processFile,
 		pluginRegExp = /^(.+?)\!(.*)$/,
-		fileRegExp = /\.js$/;
+		fileRegExp = /\.js$/,
+		eventDescription;
 	
 		function callHelper(args, useCurrentContext) {
 			// Validate and parse the args
 			var name = args && Base.getValue(args[0]),
-				result,
+				result = new Base.UnknownType(),
 				isModule;
-			if (!name || Base.type(name) !== "String") {
-				throw new Exceptions.TypeError("Invalid require path '" + args[0] + "'");
+			
+			if (!name) {
+				name = new Base.UndefinedType();
 			}
-			name = name.value;
+			
+			if (Base.type(name) === "Unknown") {
+				
+				eventDescription = "A value that could not be evaluated was passed to require";
+				Runtime.fireEvent("requireUnresolved", eventDescription, {
+					name: "<Could not evaluate require path>"
+				});
+				Runtime.reportWarning("requireUnresolved", eventDescription, {
+					name: "<Could not evaluate require path>"
+				});
+				return result;
+			}
+			
+			name = Base.toString(name).value;
 	
 			// We don't process plugins or urls at compile time
 			if (pluginRegExp.test(name) || name.indexOf(":") !== -1) {
-				result = new Base.UnknownType();
-				Messaging.fireEvent("requireUnresolved", {
-					name: name
-				});
+				Runtime.fireEvent("requireUnresolved", 
+					"Plugins and URLS can not be evaluated at compile-time and will be deferred to runtime.", {
+						name: name
+					});
 			} else {
 		
 				// Resolve the path
@@ -57,21 +71,22 @@ module.exports = function (libs) {
 				// Make sure that the file exists and then process it
 				if (fs.existsSync(name)) {
 					
-					Messaging.fireEvent("requireResolved", {
+					Runtime.fireEvent("requireResolved", "The require path '" + name + "' was resolved", {
 						name: name
 					});
 					result = processFile(name, isModule, useCurrentContext)[1];
 					
 				} else {
-					Messaging.log("warn", (useCurrentContext ? "Ti.include()'d" : "Require()'d") + " file '" + name + "' does not exist");
-					Messaging.fireEvent("requireMissing", {
+					eventDescription = "The require path '" + name + "' was resolved";
+					Runtime.fireEvent("requireMissing", eventDescription, {
+						name: name
+					});
+					Runtime.reportError("requireMissing", eventDescription, {
 						name: name
 					});
 				}
 			}
-			if (!result) {
-				result = new Base.UndefinedType();
-			}
+			
 			return result;
 		}
 	
@@ -128,7 +143,7 @@ module.exports = function (libs) {
 	};
 	
 	// Inject the require method
-	Messaging.on("projectProcessingBegin", function () {
+	Runtime.on("projectProcessingBegin", function () {
 		var globalEnvironmentRecord = Runtime.globalContext.lexicalEnvironment.envRec,
 			tiobj;
 		
