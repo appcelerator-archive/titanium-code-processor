@@ -25,7 +25,6 @@ module.exports = function (libs) {
 		fs = require("fs"),
 		Exceptions = libs.Exceptions,
 		Base = libs.Base,
-		Messaging = libs.Messaging,
 		Runtime = libs.Runtime,
 		processFile = libs.processFile,
 		pluginRegExp = /^(.+?)\!(.*)$/,
@@ -43,10 +42,10 @@ module.exports = function (libs) {
 			
 			if (Base.type(name) === "Unknown") {
 
-				Messaging.fireEvent("requireUnresolved", Runtime.mixinLocationInformation({
+				Runtime.fireEvent("requireUnresolved", Runtime.mixinLocationInformation({
 					name: "<Could not evaluate require path>"
 				}));
-				Messaging.reportWarning(Runtime.mixinLocationInformation({
+				Runtime.reportWarning(Runtime.mixinLocationInformation({
 					description: "Could not evaluate require path"
 				}));
 				return result;
@@ -56,7 +55,7 @@ module.exports = function (libs) {
 	
 			// We don't process plugins or urls at compile time
 			if (pluginRegExp.test(name) || name.indexOf(":") !== -1) {
-				Messaging.fireEvent("requireUnresolved", Runtime.mixinLocationInformation({
+				Runtime.fireEvent("requireUnresolved", Runtime.mixinLocationInformation({
 					name: name
 				}));
 			} else {
@@ -69,16 +68,16 @@ module.exports = function (libs) {
 				// Make sure that the file exists and then process it
 				if (fs.existsSync(name)) {
 					
-					Messaging.fireEvent("requireResolved", Runtime.mixinLocationInformation({
+					Runtime.fireEvent("requireResolved", Runtime.mixinLocationInformation({
 						name: name
 					}));
 					result = processFile(name, isModule, useCurrentContext)[1];
 					
 				} else {
-					Messaging.fireEvent("requireMissing", Runtime.mixinLocationInformation({
+					Runtime.fireEvent("requireMissing", Runtime.mixinLocationInformation({
 						name: name
 					}));
-					Messaging.reportError(Runtime.mixinLocationInformation({
+					Runtime.reportError(Runtime.mixinLocationInformation({
 						description: "Require path does not exist: '" + Base.toString(Base.getValue(args[0])).value + "'"
 					}));
 				}
@@ -140,7 +139,7 @@ module.exports = function (libs) {
 	};
 	
 	// Inject the require method
-	Messaging.on("projectProcessingBegin", function () {
+	Runtime.on("projectProcessingBegin", function () {
 		var globalEnvironmentRecord = Runtime.globalContext.lexicalEnvironment.envRec,
 			tiobj;
 		
