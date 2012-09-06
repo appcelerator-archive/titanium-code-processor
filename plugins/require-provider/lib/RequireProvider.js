@@ -28,7 +28,8 @@ module.exports = function (libs) {
 		Runtime = libs.Runtime,
 		processFile = libs.processFile,
 		pluginRegExp = /^(.+?)\!(.*)$/,
-		fileRegExp = /\.js$/;
+		fileRegExp = /\.js$/,
+		eventDescription;
 	
 		function callHelper(args, useCurrentContext) {
 			// Validate and parse the args
@@ -41,12 +42,13 @@ module.exports = function (libs) {
 			}
 			
 			if (Base.type(name) === "Unknown") {
-
-				Runtime.fireEvent("requireUnresolved", {
+				
+				eventDescription = "A value that could not be evaluated was passed to require";
+				Runtime.fireEvent("requireUnresolved", eventDescription, {
 					name: "<Could not evaluate require path>"
 				});
-				Runtime.reportWarning({
-					description: "Could not evaluate require path"
+				Runtime.reportWarning("requireUnresolved", eventDescription, {
+					name: "<Could not evaluate require path>"
 				});
 				return result;
 			}
@@ -55,9 +57,10 @@ module.exports = function (libs) {
 	
 			// We don't process plugins or urls at compile time
 			if (pluginRegExp.test(name) || name.indexOf(":") !== -1) {
-				Runtime.fireEvent("requireUnresolved", {
-					name: name
-				});
+				Runtime.fireEvent("requireUnresolved", 
+					"Plugins and URLS can not be evaluated at compile-time and will be deferred to runtime.", {
+						name: name
+					});
 			} else {
 		
 				// Resolve the path
@@ -68,17 +71,18 @@ module.exports = function (libs) {
 				// Make sure that the file exists and then process it
 				if (fs.existsSync(name)) {
 					
-					Runtime.fireEvent("requireResolved", {
+					Runtime.fireEvent("requireResolved", "The require path '" + name + "' was resolved", {
 						name: name
 					});
 					result = processFile(name, isModule, useCurrentContext)[1];
 					
 				} else {
-					Runtime.fireEvent("requireMissing", {
+					eventDescription = "The require path '" + name + "' was resolved";
+					Runtime.fireEvent("requireMissing", eventDescription, {
 						name: name
 					});
-					Runtime.reportError({
-						description: "Require path does not exist: '" + Base.toString(Base.getValue(args[0])).value + "'"
+					Runtime.reportError("requireMissing", eventDescription, {
+						name: name
 					});
 				}
 			}
