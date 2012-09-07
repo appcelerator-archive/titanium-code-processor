@@ -23,7 +23,7 @@ var results = {};
  */
 module.exports = function (libs) {
 	libs.Runtime.on("tiPropReferenced", function(e) {
-		var name = e.data.name;
+		var name = e.data.fullName;
 		if (results[name]) {
 			results[name] += 1;
 		} else {

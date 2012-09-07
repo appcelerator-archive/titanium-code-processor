@@ -43,7 +43,9 @@ module.exports = function(CodeProcessor) {
 			parentType,
 			returnApi = {},
 			i = 0,
-			len;
+			len,
+			result,
+			injectResult;
 
 		if (returnTypeJsca) {
 
@@ -55,16 +57,16 @@ module.exports = function(CodeProcessor) {
 			addType(returnTypeJsca, returnApi, false);
 
 			objectType = new Base.ObjectType();
+			// Set returnTypeName so we can use it for 'create' methods below
+			returnTypeName = returnTypeJsca.name.split(".");
 
 			// The first node must be Titanium. Create an object for the Titanium node, then proceed to inject its children to the newly created object
 			for (propertyName in returnApi["Titanium"]) {
-				inject(objectType, returnApi["Titanium"][propertyName], propertyName, ["Titanium"]);
-			}
-
-			// After constructing the object, go through and update objectType to make sure it is pointing to the right object according to returnTypeName
-			returnTypeName = returnTypeJsca.name.split(".");
-			for (i = 1, len = returnTypeName.length; i < len; i++) {
-				objectType = objectType.get(returnTypeName[i]);
+				injectResult = inject(objectType, returnApi["Titanium"][propertyName], propertyName, ["Titanium"], undefined, returnTypeJsca.name);
+				// Set result only if it's undefined
+				if (!result) {
+					result = injectResult;
+				}
 			}
 		}
 
@@ -92,7 +94,7 @@ module.exports = function(CodeProcessor) {
 			}
 		}
 
-		return objectType ? objectType : new Base.UndefinedType();
+		return result ? result : new Base.UndefinedType();
 	};
 
 	TiFunctionType.prototype.constructor = function constructor() {
@@ -203,15 +205,12 @@ function addType(type, parent, skipInternal) {
  * @param {Array} parentName The name of the parent
  * @param {String} alias The alias of the name we are going to inject
  */
-function inject(parent, node, name, parentName, alias) {
+function inject(parent, node, name, parentName, alias, returnNodeName) {
 	var objectType,
-		functionType,
-		propertyType,
 		propertyName,
 		// Create a deep copy of parentName so we don't modify the original
 		parentName = parentName.slice(),
-		currentNode = node,
-		result = {};
+		result;
 
 	// When injecting children, we will hit the 'deprecated' property.  In that case, it could be undefined or a boolean value.
 	// If it's undefined, just return here.
@@ -238,8 +237,14 @@ function inject(parent, node, name, parentName, alias) {
 
 		// inject children
 		for (propertyName in node) {
-			inject(objectType, node[propertyName], propertyName, parentName);
+			result = inject(objectType, node[propertyName], propertyName, parentName, undefined, returnNodeName);
 		}
+
+		if (parentName.join('.') === returnNodeName) {
+			result = objectType;
+		}
+
+		return result;
 	}
 }
 
