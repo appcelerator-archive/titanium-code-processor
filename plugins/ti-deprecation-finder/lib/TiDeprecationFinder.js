@@ -22,14 +22,19 @@ var results = {};
  *		required()'d individually using brittle hard-coded paths.
  */
 module.exports = function (libs) {
-	libs.Messaging.on("deprecatedTiPropReferenced", function(e) {
-		var name = e.name;
-		libs.Messaging.reportWarning({description: "Deprecated Titanium API detected: " + name});
+	libs.Runtime.on("tiPropReferenced", function(e) {
+		var name = e.data.fullName
+			deprecated = e.data.deprecated;
 
-		if (results[name]) {
-			results[name] += 1;
-		} else {
-			results[name] = 1;
+		if (deprecated) {
+			// TODO: Change deprecated message when we have the 'deprecated since' info from jsca
+			libs.Runtime.reportWarning("deprecatedTiPropReferenced", "Deprecated Titanium API detected: " + name);
+
+			if (results[name]) {
+				results[name] += 1;
+			} else {
+				results[name] = 1;
+			}
 		}
 	});
 };

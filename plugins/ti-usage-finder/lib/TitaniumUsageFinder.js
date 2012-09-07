@@ -22,11 +22,12 @@ var results = {};
  *		required()'d individually using brittle hard-coded paths.
  */
 module.exports = function (libs) {
-	libs.Messaging.on("tiPropReferenced", function(e) {
-		if (results[e.name]) {
-			results[e.name] += 1;
+	libs.Runtime.on("tiPropReferenced", function(e) {
+		var name = e.data.name;
+		if (results[name]) {
+			results[name] += 1;
 		} else {
-			results[e.name] = 1;
+			results[name] = 1;
 		}
 	});
 };

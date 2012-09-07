@@ -11,7 +11,6 @@
 var fs = require("fs"),
 	path = require("path"),
 	util = require("util"),
-	Messaging,
 	Runtime,
 	Base,
 	apis = {},
@@ -20,11 +19,10 @@ var fs = require("fs"),
 
 module.exports = function(CodeProcessor) {
 	// TODO: Find the sdk path from code processor instead
-	// var titaniumSDKPath = "/Users/ayeung/titanium/titanium_mobile/dist/mobilesdk/osx/2.2.0",
-	var titaniumSDKPath = "/Library/Application Support/Titanium/mobilesdk/osx/2.1.0.GA/",
+	var titaniumSDKPath = "/Users/ayeung/titanium/titanium_mobile/dist/mobilesdk/osx/2.2.0",
+	// var titaniumSDKPath = "/Library/Application Support/Titanium/mobilesdk/osx/2.1.0.GA/",
 	 	jscaString;
 
-	Messaging = CodeProcessor.Messaging;
 	Runtime = CodeProcessor.Runtime;
 	Base = CodeProcessor.Base;
 
@@ -44,7 +42,8 @@ module.exports = function(CodeProcessor) {
 			propertyName,
 			parentType,
 			returnApi = {},
-			i = 0;
+			i = 0,
+			len;
 
 		if (returnTypeJsca) {
 
@@ -64,12 +63,12 @@ module.exports = function(CodeProcessor) {
 
 			// After constructing the object, go through and update objectType to make sure it is pointing to the right object according to returnTypeName
 			returnTypeName = returnTypeJsca.name.split(".");
-			for (i = 1; i < returnTypeName.length; i++) {
+			for (i = 1, len = returnTypeName.length; i < len; i++) {
 				objectType = objectType.get(returnTypeName[i]);
 			}
 		}
 
-		// When the function name is applyProperties, we want to a propertyReferenced event
+		// When the function name is applyProperties, we want to fire a propertyReferenced event
 		if (funcName.match(/^create|^applyProperties$/) && args.length > 0) {
 
 			// applyProperties does not go through the logic above, so we have to construct the returnApi tree here.
@@ -86,8 +85,10 @@ module.exports = function(CodeProcessor) {
 				returnApi = returnApi[funcRootNameArray[i]];
 			}
 
+			// Loop through all the properties of an object argument, and fire off property referenced events for each property.
 			for (propertyName in args[0]._properties) {
-				reportPropertyReferenced(propertyName, this.fullFuncName, returnApi);
+				// Use the returnTypeName as parentName when there is one (there should be one in create functions)
+				reportPropertyReferenced(propertyName, returnTypeName ? returnTypeName : funcRootNameArray, returnApi);
 			}
 		}
 
@@ -99,8 +100,8 @@ module.exports = function(CodeProcessor) {
 	};
 
 	if (!titaniumSDKPath) {
-		Messaging.log("error", "Titanium SDK was not provided, could not inject APIs");
-		process.exit(1);
+		Runtime.log("error", "Titanium SDK was not provided, could not inject APIs");
+		return;
 	}
 
 	// Read in jsca file as json
@@ -108,7 +109,7 @@ module.exports = function(CodeProcessor) {
 	jscaJSON = JSON.parse(jscaString);
 
 	// Start injection process when a "projectProcessingBegin" event is fired from the code processor
-	Messaging.on("projectProcessingBegin", function() {
+	Runtime.on("projectProcessingBegin", function() {
 
 		// Iterate through the json object and inject all the APIs
 		var globalObject = Runtime.globalObject,
@@ -163,7 +164,7 @@ function addType(type, parent, skipInternal) {
 		 * For example, in Titanium.UI, we only want to add the deprecation flag on UI, not Titanium.
 		 * Otherwise, we would report the deprecation incorrectly later on. 
 		 */
-		if (i === (name.length - 1)) {
+		if (i === name.length - 1) {
 			typeDeprecated = type.deprecated;
 		}
 
@@ -207,7 +208,8 @@ function inject(parent, node, name, parentName, alias) {
 		functionType,
 		propertyType,
 		propertyName,
-		fParentName = parentName.slice(),
+		// Create a deep copy of parentName so we don't modify the original
+		parentName = parentName.slice(),
 		currentNode = node,
 		result = {};
 
@@ -216,8 +218,8 @@ function inject(parent, node, name, parentName, alias) {
 	if (!node) {
 		return;
 	} else if (node.nodeType === "function") {
-		fParentName.push(name);
-		parent.put(name, new TiFunctionType(node.returnTypeJsca, fParentName), false);
+		parentName.push(name);
+		parent.put(name, new TiFunctionType(node.returnTypeJsca, parentName), false);
 	} else if (node.nodeType === "property") {
 		parent.put(name, new Base.UnknownType(), false);
 	} else if ( typeof node === "object") {
@@ -228,15 +230,15 @@ function inject(parent, node, name, parentName, alias) {
 			parent.put(alias, objectType, false);
 		}
 
-		objectType.on("propertyReferenced", function(data) {
-			reportPropertyReferenced(data.name, fParentName, node);
+		objectType.on("propertyReferenced", function(e) {
+			reportPropertyReferenced(e.data.name, parentName, node);
 		});
 
-		fParentName.push(name);
+		parentName.push(name);
 
 		// inject children
 		for (propertyName in node) {
-			inject(objectType, node[propertyName], propertyName, fParentName);
+			inject(objectType, node[propertyName], propertyName, parentName);
 		}
 	}
 }
@@ -282,7 +284,7 @@ function processFunction(func, parent) {
 	// If the returnTypes are undefined, leave jsca as undefined
 	if (returnTypes) {
 		returnType = returnTypes[0].type;
-		if (returnTypes.length === 1 && !isPrimitiveType(returnType)) {
+		if (returnTypes.length === 1 && !isPrimitiveType(returnType) && returnType !== "Array") {
 			jsca = findTypeByName(returnType);
 		} else {
 			// mark jsca as unknown when it's a primitive type or there is more than one return type
@@ -332,7 +334,8 @@ function processProperty(prop, parent) {
  * @returns {Object} A jsca object that was found
  */
 function findTypeByName(name) {
-	var typesArray = jscaJSON.types, i;
+	var typesArray = jscaJSON.types,
+		i;
 
 	for ( i = 0; i < typesArray.length; i++) {
 		if (typesArray[i].name === name) {
@@ -350,11 +353,11 @@ function findTypeByName(name) {
  * @returns {Boolean} A boolean value on whether the given type is primitive
  */
 function isPrimitiveType(type) {
-	return (type === "Number" || type === "Boolean" || type === "String" || type === "Array");
+	return (type === "Number" || type === "Boolean" || type === "String");
 }
 
 /**
- * Reports that a property was referenced or deprecated
+ * Reports that a property was referenced
  *
  * @private
  * @method
@@ -363,20 +366,16 @@ function isPrimitiveType(type) {
  * @param {String} node The node for the property referenced
  */
 function reportPropertyReferenced(propertyName, parentName, node) {
-	var propertyNode;
+	var propertyNode = node[propertyName],
+		// Create a deep copy so we don't change the original
+		parentName = parentName.slice();
 
-	Messaging.fireEvent("tiPropReferenced", {
-		name : propertyName
+	parentName.push(propertyName);
+	Runtime.fireEvent("tiPropReferenced", "Titanium property referenced: " + propertyName, {
+		name : propertyName,
+		deprecated: propertyNode && propertyNode.deprecated,
+		fullName: parentName.join('.')
 	});
-
-	// Check for deprecation and fire off event if it is deprecated
-	propertyNode = node[propertyName];
-	if (propertyNode && propertyNode.deprecated) {
-		parentName.push(propertyName);
-		Messaging.fireEvent("deprecatedTiPropReferenced", {
-			name : parentName.join('.')
-		});
-	}
 }
 
 /**
