@@ -8,6 +8,9 @@
 		"type": "git",
 		"url": "https://github.com/appcelerator/node-code-processor.git"
 	},
+	"scripts": {
+		"test": "node tests/bin/codeProcessorTest"
+	},
 	"main": "lib/CodeProcessor.js",
 	"dependencies": {
 		"uglify-js": "1.2.x",

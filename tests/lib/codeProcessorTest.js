@@ -7,19 +7,18 @@
  */
 
 // ******** Requires and File-Level Variables ********
-
+debugger
 var winston = require("winston"),
 	NomNom = require("nomnom"),
 	path = require("path"),
-	Task = require("taskman")
-	CodeProcessor = require("ti-code-processor")
+	CodeProcessor = require("node-code-processor"),
 	childProcess = require('child_process');
 
 // ******** Helper Methods ********
 
 function log(level, message) {
 	if (level === "debug") {
-		message = "(ti-code-processor-tests) " + message;
+		message = "(node-code-processor-tests) " + message;
 	}
 	logger.log(level, message);
 }

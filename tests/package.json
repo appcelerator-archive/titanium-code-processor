@@ -9,8 +9,7 @@
   },
   "dependencies": {
     "nomnom": "1.5.x",
-    "winston": "0.5.x",
-    "taskman": "0.1.x"
+    "winston": "0.5.x"
   },
   "devDependencies": {},
   "optionalDependencies": {},
