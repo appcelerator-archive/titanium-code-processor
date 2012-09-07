@@ -1,7 +1,11 @@
 /**
- * @fileoverview This file provides the definition for the require finder plugin for ti-code-processor.
- * @author Bryan Hughes <bhughes@appcelerator.com>
+ * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.</p>
+ * 
+ * @module plugins/RequireFinder
+ * @author Bryan Hughes &lt;<a href="mailto:bhughes@appcelerator.com">bhughes@appcelerator.com</a>&gt;
  */
+
  
 var results = {
 	resolved: [],
@@ -21,14 +25,14 @@ var results = {
  *		required()'d individually using brittle hard-coded paths.
  */
 module.exports = function (libs) {
-	libs.Messaging.on("requireUnresolved", function(e) {
-		results.unresolved.push(e.name);
+	libs.Runtime.on("requireUnresolved", function(e) {
+		results.unresolved.push(e);
 	});
-	libs.Messaging.on("requireResolved", function(e) {
-		results.resolved.push(e.name);
+	libs.Runtime.on("requireResolved", function(e) {
+		results.resolved.push(e);
 	});
-	libs.Messaging.on("requireMissing", function(e) {
-		results.missing.push(e.name);
+	libs.Runtime.on("requireMissing", function(e) {
+		results.missing.push(e);
 	});
 };
 
