@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+
+/**
+ * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.</p>
+ * 
+ * Provides a CLI for the code processor tests
+ * @author Allen Yeung <ayeung@appcelerator.com> and Bryan Hughes <bhughes@appcelerator.com>
+ */
+
+// ******** Requires and File-Level Variables ********
+
+var path = require("path"),
+	childProcess = require("child_process");
+	
+// We are running something like:
+// tools/packaging/test262.py --command "<path to runTest>"
+console.log(path.resolve("bin/runTest"));
+var test262 = childProcess.spawn("tools/packaging/test262.py", ["--command", path.resolve("bin/runTest")], {
+	cwd: path.resolve("third-party/test262"),
+	stdio: "inherit"
+});
+	
+test262.on("exit", function(code){
+	console.log("info", "Code processor unit tests completed " + (code === 0 ? "unsuccessfully" : "successfully") + ".");
+});

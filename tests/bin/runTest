@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+
+/**
+ * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.</p>
+ * 
+ * Provides a CLI for the code processor tests
+ * @author Allen Yeung <ayeung@appcelerator.com> and Bryan Hughes <bhughes@appcelerator.com>
+ */
+
+var result,
+	CodeProcessor = require("node-code-processor");
+
+try {
+	debugger;
+	result = CodeProcessor.process([process.argv[2]], [], null, {}, {
+		invokeMethods: true,
+		evaluateLoops: true
+	});
+	if (result && result[0] === "throw") {
+		process.exit(1);
+	}
+} catch(e) {
+	console.log("Test crashed: " + e);
+	process.exit(-1);
+}
