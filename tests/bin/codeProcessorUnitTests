@@ -8,14 +8,10 @@
  * @author Allen Yeung <ayeung@appcelerator.com> and Bryan Hughes <bhughes@appcelerator.com>
  */
 
-// ******** Requires and File-Level Variables ********
-
 var path = require("path"),
 	childProcess = require("child_process");
 	
-// We are running something like:
-// tools/packaging/test262.py --command "<path to runTest>"
-console.log(path.resolve("bin/runTest"));
+// We are running something like: tools/packaging/test262.py --command "<path to runTest>"
 var test262 = childProcess.spawn("tools/packaging/test262.py", ["--command", path.resolve("bin/runTest")], {
 	cwd: path.resolve("third-party/test262"),
 	stdio: "inherit"

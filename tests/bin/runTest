@@ -11,16 +11,10 @@
 var result,
 	CodeProcessor = require("node-code-processor");
 
-try {
-	debugger;
-	result = CodeProcessor.process([process.argv[2]], [], null, {}, {
-		invokeMethods: true,
-		evaluateLoops: true
-	});
-	if (result && result[0] === "throw") {
-		process.exit(1);
-	}
-} catch(e) {
-	console.log("Test crashed: " + e);
-	process.exit(-1);
+result = CodeProcessor.process([process.argv[2]], [], null, {}, {
+	invokeMethods: true,
+	evaluateLoops: true
+});
+if (result && result[0] === "throw") {
+	process.exit(1);
 }
