@@ -6,7 +6,15 @@
  * @author Bryan Hughes &lt;<a href="mailto:bhughes@appcelerator.com">bhughes@appcelerator.com</a>&gt;
  */
 
-// ******** Plugin API Methods ********
+var util = require("util"),
+	path = require("path"),
+	fs = require("fs"),
+	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, "Exceptions")),
+	Base = require(path.join(global.nodeCodeProcessorLibDir, "Base")),
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),Runtim
+	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, "CodeProcessor")),
+	pluginRegExp = /^(.+?)\!(.*)$/,
+	fileRegExp = /\.js$/;
 
 /**
  * Creates an instance of the require provider plugin
@@ -14,81 +22,70 @@
  * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
  * 
  * @constructor
- * @param {Object} libs A dictionary containing useful libs from {@link module:CodeProcessor} so they don't have to be
- *		required()'d individually using brittle hard-coded paths.
  */
-module.exports = function (libs) {
+module.exports = function (cli) {
 	
 	// Store the code processor methods we need
-	var util = require("util"),
-		path = require("path"),
-		fs = require("fs"),
-		Exceptions = libs.Exceptions,
-		Base = libs.Base,
-		Runtime = libs.Runtime,
-		processFile = libs.processFile,
-		pluginRegExp = /^(.+?)\!(.*)$/,
-		fileRegExp = /\.js$/,
-		eventDescription;
+	var eventDescription;
 	
-		function callHelper(args, useCurrentContext) {
-			// Validate and parse the args
-			var name = args && Base.getValue(args[0]),
-				result = new Base.UnknownType(),
-				isModule;
+	function callHelper(args, useCurrentContext) {
+		// Validate and parse the args
+		var name = args && Base.getValue(args[0]),
+			result = new Base.UnknownType(),
+			isModule;
 			
-			if (!name) {
-				name = new Base.UndefinedType();
-			}
+		if (!name) {
+			name = new Base.UndefinedType();
+		}
 			
-			if (Base.type(name) === "Unknown") {
+		if (Base.type(name) === "Unknown") {
 				
-				eventDescription = "A value that could not be evaluated was passed to require";
-				Runtime.fireEvent("requireUnresolved", eventDescription, {
-					name: "<Could not evaluate require path>"
-				});
-				Runtime.reportWarning("requireUnresolved", eventDescription, {
-					name: "<Could not evaluate require path>"
-				});
-				return result;
-			}
-			
-			name = Base.toString(name).value;
-	
-			// We don't process plugins or urls at compile time
-			if (pluginRegExp.test(name) || name.indexOf(":") !== -1) {
-				Runtime.fireEvent("requireUnresolved", 
-					"Plugins and URLS can not be evaluated at compile-time and will be deferred to runtime.", {
-						name: name
-					});
-			} else {
-		
-				// Resolve the path
-				isModule = name[0] !== "/" && !name.match(fileRegExp);
-				name = path.resolve(path.join(path.dirname(name[0] !== "." ? Runtime.fileStack[0] : Runtime.getCurrentFile()), name));
-				name += isModule ? ".js" : "";
-				
-				// Make sure that the file exists and then process it
-				if (fs.existsSync(name)) {
-					
-					Runtime.fireEvent("requireResolved", "The require path '" + name + "' was resolved", {
-						name: name
-					});
-					result = processFile(name, isModule, useCurrentContext)[1];
-					
-				} else {
-					eventDescription = "The require path '" + name + "' was resolved";
-					Runtime.fireEvent("requireMissing", eventDescription, {
-						name: name
-					});
-					Runtime.reportError("requireMissing", eventDescription, {
-						name: name
-					});
-				}
-			}
-			
+			eventDescription = "A value that could not be evaluated was passed to require";
+			Runtime.fireEvent("requireUnresolved", eventDescription, {
+				name: "<Could not evaluate require path>"
+			});
+			Runtime.reportWarning("requireUnresolved", eventDescription, {
+				name: "<Could not evaluate require path>"
+			});
 			return result;
 		}
+			
+		name = Base.toString(name).value;
+	
+		// We don't process plugins or urls at compile time
+		if (pluginRegExp.test(name) || name.indexOf(":") !== -1) {
+			Runtime.fireEvent("requireUnresolved", 
+				"Plugins and URLS can not be evaluated at compile-time and will be deferred to runtime.", {
+					name: name
+				});
+		} else {
+		
+			// Resolve the path
+			isModule = name[0] !== "/" && !name.match(fileRegExp);
+			name = path.resolve(path.join(path.dirname(name[0] !== "." ? Runtime.fileStack[0] : Runtime.getCurrentFile()), name));
+			name += isModule ? ".js" : "";
+				
+			// Make sure that the file exists and then process it
+			if (fs.existsSync(name)) {
+					
+				Runtime.fireEvent("requireResolved", "The require path '" + name + "' was resolved", {
+					name: name
+				});
+				result = CodeProcessor.processFile(name, isModule, useCurrentContext)[1];
+					
+			} else {
+				eventDescription = "The require path '" + name + "' was resolved";
+				Runtime.fireEvent("requireMissing", eventDescription, {
+					name: name
+				});
+				Runtime.reportError("requireMissing", eventDescription, {
+					name: name
+				});
+			}
+		}
+			
+		return result;
+	}
 	
 	/**
 	 * @classdesc Customized require() function that doesn't actually execute code in the interpreter, but rather does it here.
