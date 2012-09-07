@@ -56,7 +56,8 @@ var util = require("util"),
 	projectRoot = ".",
 	plugins,
 	entryPoint,
-	startTime;
+	startTime,
+	result;
 
 // Parse the config options
 if (parsedOptions.config) {
@@ -76,9 +77,7 @@ if (parsedOptions[0]) {
 }
 projectRoot = path.resolve(projectRoot);
 
-// ******** Code Processing ********
-
-// Register any plugins
+// Get the list of plugins
 plugins = parsedOptions.plugin || [];
 
 // Make sure that the project exists
@@ -96,7 +95,7 @@ winston.log("debug", "Processing app entry point '" + entryPoint + "'");
 // Process the code
 startTime = (new Date()).getTime();
 			
-CodeProcessor.process([entryPoint], plugins, winston, options);
+result = CodeProcessor.process([entryPoint], plugins, winston, options);
 			
 winston.log("info", "Code processing finished successfully in " + ((new Date()).getTime() - startTime) + " ms.");
 winston.log("info", util.inspect(CodeProcessor.getResults(), false, 4));
