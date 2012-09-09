@@ -9,11 +9,14 @@
  */
 
 var result,
-	CodeProcessor = require("node-code-processor");
+	CodeProcessor = require("node-code-processor"),
+	fileName = process.argv[2];
 
-result = CodeProcessor.process([process.argv[2]], [], null, {}, {
+console.log("Processing file " + fileName);
+result = CodeProcessor.process([fileName], [], null, {}, {
 	invokeMethods: true,
-	evaluateLoops: true
+	evaluateLoops: true,
+	executionTimeLimit: 2000
 });
 if (result && result[0] === "throw") {
 	process.exit(1);
