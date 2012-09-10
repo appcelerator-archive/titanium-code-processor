@@ -4,11 +4,14 @@
  * 
  * This plugin finds the Titanium APIs that are used.
  * 
- * @module plugin/TitaniumUsageFinder
+ * @module plugin/TiAPIUsageFinder
  * @author Allen Yeung &lt;<a href="mailto:ayeung@appcelerator.com">ayeung@appcelerator.com</a>&gt;
  */
 
-var results = {};
+var path = require("path"),
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
+	
+	results = {};
 
 // ******** Plugin API Methods ********
 
@@ -21,8 +24,8 @@ var results = {};
  * @param {Object} libs A dictionary containing useful libs from {@link module:CodeProcessor} so they don't have to be
  *		required()'d individually using brittle hard-coded paths.
  */
-module.exports = function (libs) {
-	libs.Runtime.on("tiPropReferenced", function(e) {
+module.exports = function (cli) {
+	Runtime.on("tiPropReferenced", function(e) {
 		var name = e.data.fullName;
 		if (results[name]) {
 			results[name] += 1;
@@ -31,6 +34,13 @@ module.exports = function (libs) {
 		}
 	});
 };
+
+/**
+ * Initializes the plugin
+ * 
+ * @method
+ */
+module.exports.prototype.init = function init() {};
 
 /**
 * Gets the results of the plugin

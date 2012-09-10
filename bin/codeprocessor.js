@@ -95,7 +95,11 @@ winston.log("debug", "Processing app entry point '" + entryPoint + "'");
 // Process the code
 startTime = (new Date()).getTime();
 			
-result = CodeProcessor.process([entryPoint], plugins, winston, options);
+result = CodeProcessor.process([entryPoint], plugins, winston, {
+	env: {
+		sdk: "/Library/Application Support/Titanium/mobilesdk/osx/2.2.0"
+	}
+}, options);
 			
 winston.log("info", "Code processing finished successfully in " + ((new Date()).getTime() - startTime) + " ms.");
 winston.log("info", util.inspect(CodeProcessor.getResults(), false, 4));
