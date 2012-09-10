@@ -19,8 +19,8 @@ var fs = require("fs"),
 
 module.exports = function(CodeProcessor) {
 	// TODO: Find the sdk path from code processor instead
-	var titaniumSDKPath = "/Users/ayeung/titanium/titanium_mobile/dist/mobilesdk/osx/2.2.0",
-	// var titaniumSDKPath = "/Library/Application Support/Titanium/mobilesdk/osx/2.1.0.GA/",
+	// var titaniumSDKPath = "/Users/ayeung/titanium/titanium_mobile/dist/mobilesdk/osx/2.2.0",
+	var titaniumSDKPath = "/Library/Application Support/Titanium/mobilesdk/osx/2.1.0.GA/",
 	 	jscaString;
 
 	Runtime = CodeProcessor.Runtime;
@@ -218,12 +218,12 @@ function inject(parent, node, name, parentName, alias, returnNodeName) {
 		return;
 	} else if (node.nodeType === "function") {
 		parentName.push(name);
-		parent.put(name, new TiFunctionType(node.returnTypeJsca, parentName), false);
+		parent.put(name, new TiFunctionType(node.returnTypeJsca, parentName), false, true);
 	} else if (node.nodeType === "property") {
-		parent.put(name, new Base.UnknownType(), false);
+		parent.put(name, new Base.UnknownType(), false, true);
 	} else if ( typeof node === "object") {
 		objectType = new Base.ObjectType();
-		parent.put(name, objectType, false);
+		parent.put(name, objectType, false, true);
 
 		if (alias) {
 			parent.put(alias, objectType, false);
