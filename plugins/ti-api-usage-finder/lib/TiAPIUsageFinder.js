@@ -8,7 +8,10 @@
  * @author Allen Yeung &lt;<a href="mailto:ayeung@appcelerator.com">ayeung@appcelerator.com</a>&gt;
  */
 
-var results = {};
+var path = require("path"),
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
+	
+	results = {};
 
 // ******** Plugin API Methods ********
 
@@ -22,7 +25,7 @@ var results = {};
  *		required()'d individually using brittle hard-coded paths.
  */
 module.exports = function (libs) {
-	libs.Runtime.on("tiPropReferenced", function(e) {
+	Runtime.on("tiPropReferenced", function(e) {
 		var name = e.data.fullName;
 		if (results[name]) {
 			results[name] += 1;
@@ -31,6 +34,13 @@ module.exports = function (libs) {
 		}
 	});
 };
+
+/**
+ * Initializes the plugin
+ * 
+ * @method
+ */
+module.exports.prototype.init = function init() {};
 
 /**
 * Gets the results of the plugin
