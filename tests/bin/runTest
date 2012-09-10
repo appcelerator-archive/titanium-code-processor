@@ -8,12 +8,23 @@
  * @author Allen Yeung <ayeung@appcelerator.com> and Bryan Hughes <bhughes@appcelerator.com>
  */
 
-var result,
+var fs = require("fs"),
+	winston = require("winston"),
+	path = require("path"),
+	result,
 	CodeProcessor = require("node-code-processor"),
-	fileName = process.argv[2];
+	filename = process.argv[2],
+	logger = new (winston.Logger)({
+		transports: [
+			new (winston.transports.File)({
+				filename: path.resolve(path.join("logs", path.basename(filename.replace(".js$", ".log"))))
+			})
+		]
+	});
 
-console.log("Processing file " + fileName);
-result = CodeProcessor.process([fileName], [], null, {}, {
+logger.log("info", "Testing file: " + filename);
+
+result = CodeProcessor.process([filename], [], logger, {}, {
 	invokeMethods: true,
 	evaluateLoops: true,
 	executionTimeLimit: 2000
