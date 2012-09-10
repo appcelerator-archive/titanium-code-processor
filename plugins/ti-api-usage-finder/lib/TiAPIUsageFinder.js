@@ -4,7 +4,7 @@
  * 
  * This plugin finds the Titanium APIs that are used.
  * 
- * @module plugin/TitaniumUsageFinder
+ * @module plugin/TiAPIUsageFinder
  * @author Allen Yeung &lt;<a href="mailto:ayeung@appcelerator.com">ayeung@appcelerator.com</a>&gt;
  */
 
@@ -24,7 +24,7 @@ var path = require("path"),
  * @param {Object} libs A dictionary containing useful libs from {@link module:CodeProcessor} so they don't have to be
  *		required()'d individually using brittle hard-coded paths.
  */
-module.exports = function (libs) {
+module.exports = function (cli) {
 	Runtime.on("tiPropReferenced", function(e) {
 		var name = e.data.fullName;
 		if (results[name]) {

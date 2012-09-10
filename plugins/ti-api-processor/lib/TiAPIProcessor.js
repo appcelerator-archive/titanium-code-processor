@@ -4,7 +4,7 @@
  *
  * Processes Titanium APIs for the code processor
  *
- * @module plugin/TitaniumAPIProcessor
+ * @module plugin/TiAPIProcessor
  * @author Allen Yeung &lt;<a href="mailto:ayeung@appcelerator.com">ayeung@appcelerator.com</a>&gt;
  */
 
@@ -61,7 +61,7 @@ module.exports.prototype.init = function init() {
 	for (name in apis) {
 		inject(globalObject, apis[name], name, [], aliases[name]);
 	}
-}
+};
 
 /**
  * Gets the results of the plugin
@@ -88,7 +88,7 @@ function TiFunctionType(returnTypeJsca, fullFuncName, className) {
 	Base.ObjectType.call(this, className || "Function");
 	this.returnTypeJsca = returnTypeJsca;
 	this.fullFuncName = fullFuncName;
-};
+}
 util.inherits(TiFunctionType, Base.FunctionTypeBase);
 
 /**
@@ -110,7 +110,6 @@ TiFunctionType.prototype.call = function call(thisVal, args) {
 		parentType,
 		returnApi = {},
 		i = 0,
-		len,
 		result,
 		injectResult;
 
@@ -128,8 +127,8 @@ TiFunctionType.prototype.call = function call(thisVal, args) {
 		returnTypeName = returnTypeJsca.name.split(".");
 
 		// The first node must be Titanium. Create an object for the Titanium node, then proceed to inject its children to the newly created object
-		for (propertyName in returnApi["Titanium"]) {
-			injectResult = inject(objectType, returnApi["Titanium"][propertyName], propertyName, ["Titanium"], undefined, returnTypeJsca.name);
+		for (propertyName in returnApi.Titanium) {
+			injectResult = inject(objectType, returnApi.Titanium[propertyName], propertyName, ["Titanium"], undefined, returnTypeJsca.name);
 			// Set result only if it's undefined
 			if (!result) {
 				result = injectResult;
@@ -236,10 +235,11 @@ function addType(type, parent, skipInternal) {
 function inject(parent, node, name, parentName, alias, returnNodeName) {
 	var objectType,
 		propertyName,
-		// Create a deep copy of parentName so we don't modify the original
-		parentName = parentName.slice(),
 		result;
-
+		
+	// Create a deep copy of parentName so we don't modify the original
+	parentName = parentName.slice();
+		
 	// When injecting children, we will hit the 'deprecated' property.  In that case, it could be undefined or a boolean value.
 	// If it's undefined, just return here.
 	if (!node) {
@@ -399,10 +399,11 @@ function findTypeByName(name) {
  * @param {String} node The node for the property referenced
  */
 function reportPropertyReferenced(propertyName, parentName, node) {
-	var propertyNode = node[propertyName],
-		// Create a deep copy so we don't change the original
-		parentName = parentName.slice();
-
+	var propertyNode = node[propertyName];
+	
+	// Create a deep copy so we don't change the original
+	parentName = parentName.slice();
+	
 	parentName.push(propertyName);
 	Runtime.fireEvent("tiPropReferenced", "Titanium property referenced: " + propertyName, {
 		name : propertyName,

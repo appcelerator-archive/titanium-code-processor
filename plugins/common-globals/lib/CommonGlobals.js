@@ -2,7 +2,7 @@
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  * 
- * @module plugins/ExtraGlobals
+ * @module plugins/CommonGlobals
  * @author Bryan Hughes &lt;<a href="mailto:bhughes@appcelerator.com">bhughes@appcelerator.com</a>&gt;
  */
 
@@ -10,7 +10,9 @@ var path = require("path"),
 	util = require("util"),
 	
 	Base = require(path.join(global.nodeCodeProcessorLibDir, "Base")),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime"));
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
+	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, "Exceptions")),
+	RuleProcessor = require(path.join(global.nodeCodeProcessorLibDir, "RuleProcessor"));
 
 // ******** Plugin API Methods ********
 
@@ -162,14 +164,17 @@ SetIntervalFunc.prototype.call = function call(thisVal, args) {
 	
 	var func = args[0],
 		eventDescription,
-		eventData;
+		eventData,
+		result;
 	
 	if (++Runtime.recursionCount === Runtime.options.maxRecursionLimit) {
 		
 		// Fire an event and report a warning
 		eventDescription = "Maximum application recursion limit of " + Runtime.options.maxRecursionLimit + 
 			" reached, could not fully process code";
-		eventData = RuleProcessor.createRuleEventInfo(ast, {});
+		eventData = {
+			ruleName: "call"
+		};
 		Runtime.fireEvent("maxRecusionLimitReached", eventDescription, eventData);
 		Runtime.reportWarning("maxRecusionLimitReached", eventDescription, eventData);
 			
@@ -188,11 +193,14 @@ SetIntervalFunc.prototype.call = function call(thisVal, args) {
 			Runtime.ambiguousCode++;
 			func.call(new Base.UndefinedType(), args);
 			Runtime.ambiguousCode--;
+			result = new Base.UndefinedType();
+		} else {
+			result = new Base.UnknownType();
 		}
 	}
 	Runtime.recursionCount--;
 	
-	return new Base.UndefinedType();
+	return result;
 };
 
 /**
@@ -209,14 +217,17 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 	
 	var func = args[0],
 		eventDescription,
-		eventData;
+		eventData,
+		result;
 	
 	if (++Runtime.recursionCount === Runtime.options.maxRecursionLimit) {
 		
 		// Fire an event and report a warning
 		eventDescription = "Maximum application recursion limit of " + Runtime.options.maxRecursionLimit + 
 			" reached, could not fully process code";
-		eventData = RuleProcessor.createRuleEventInfo(ast, {});
+		eventData = {
+			ruleName: "call"
+		};
 		Runtime.fireEvent("maxRecusionLimitReached", eventDescription, eventData);
 		Runtime.reportWarning("maxRecusionLimitReached", eventDescription, eventData);
 			
@@ -235,9 +246,12 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 			Runtime.ambiguousCode++;
 			func.call(new Base.UndefinedType(), args);
 			Runtime.ambiguousCode--;
+			result = new Base.UndefinedType();
+		} else {
+			result = new Base.UnknownType();
 		}
 	}
 	Runtime.recursionCount--;
 	
-	return new Base.UndefinedType();
+	return result;
 };

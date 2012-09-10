@@ -9,7 +9,6 @@
 var util = require("util"),
 	path = require("path"),
 	fs = require("fs"),
-	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, "Exceptions")),
 	Base = require(path.join(global.nodeCodeProcessorLibDir, "Base")),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
 	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, "CodeProcessor")),
