@@ -7,11 +7,13 @@
  */
 
  
-var results = {
-	resolved: [],
-	unresolved: [],
-	missing: []
-};
+var path = require("path"),
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
+	results = {
+		resolved: [],
+		unresolved: [],
+		missing: []
+	};
 
 // ******** Plugin API Methods ********
 
@@ -21,20 +23,25 @@ var results = {
  * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
  * 
  * @constructor
- * @param {Object} libs A dictionary containing useful libs from {@link module:CodeProcessor} so they don't have to be
- *		required()'d individually using brittle hard-coded paths.
  */
-module.exports = function (libs) {
-	libs.Runtime.on("requireUnresolved", function(e) {
+module.exports = function (cli) {
+	Runtime.on("requireUnresolved", function(e) {
 		results.unresolved.push(e);
 	});
-	libs.Runtime.on("requireResolved", function(e) {
+	Runtime.on("requireResolved", function(e) {
 		results.resolved.push(e);
 	});
-	libs.Runtime.on("requireMissing", function(e) {
+	Runtime.on("requireMissing", function(e) {
 		results.missing.push(e);
 	});
 };
+
+/**
+ * Initializes the plugin
+ * 
+ * @method
+ */
+module.exports.prototype.init = function init() {};
 
 /**
 * Gets the results of the plugin
