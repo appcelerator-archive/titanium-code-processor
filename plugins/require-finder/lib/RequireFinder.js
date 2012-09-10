@@ -37,6 +37,13 @@ module.exports = function (cli) {
 };
 
 /**
+ * Initializes the plugin
+ * 
+ * @method
+ */
+module.exports.prototype.init = function init() {};
+
+/**
 * Gets the results of the plugin
 * 
 * @method
