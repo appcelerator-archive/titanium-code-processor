@@ -408,6 +408,6 @@ function reportPropertyReferenced(propertyName, parentName, node) {
 	Runtime.fireEvent("tiPropReferenced", "Titanium property referenced: " + propertyName, {
 		name : propertyName,
 		deprecated: propertyNode && propertyNode.deprecated,
-		fullName: parentName.join('.')
+		api: parentName
 	});
 }
