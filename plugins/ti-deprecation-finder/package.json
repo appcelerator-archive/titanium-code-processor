@@ -1,0 +1,13 @@
+{
+  "author": "Allen Yeung <ayeung@appcelerator.com> (https://github.com/ayeung/)",
+  "name": "ti-deprecation-finder",
+  "description": "A plugin for ti-code-processor that finds the deprecated Titanium APIs that are used",
+  "version": "0.1.0",
+  "main": "lib/TiDeprecationFinder.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": ">=0.8"
+  }
+}

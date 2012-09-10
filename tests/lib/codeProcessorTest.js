@@ -7,7 +7,6 @@
  */
 
 // ******** Requires and File-Level Variables ********
-debugger
 var winston = require("winston"),
 	NomNom = require("nomnom"),
 	path = require("path"),
