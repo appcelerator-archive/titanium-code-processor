@@ -236,32 +236,20 @@ function addType(type, parent, skipInternal) {
 	var name = type.name.split("."),
 		properties = type.properties,
 		functions = type.functions,
-		currentNamespace,
+		currentNamespace = parent,
 		i = 0,
-		typeDeprecated;
+		len = name.length - 1;
 
 	if (skipInternal && type.isInternal) {
 		return;
 	}
 
-	for (; i < name.length; i++) {
+	for (; i < len; i++) {
 
-		/* Only set the deprecated property if it's the last node in the namespace.
-		 * For example, in Titanium.UI, we only want to add the deprecation flag on UI, not Titanium.
-		 * Otherwise, we would report the deprecation incorrectly later on. 
-		 */
-		if (i === name.length - 1) {
-			typeDeprecated = type.deprecated;
-		}
-
-		// During the first iteration, add namespace to the global object
-		if (i === 0) {
-			currentNamespace = addNamespace(name[i], parent, typeDeprecated);
-		} else {
-			// Add current namespace as a child of the pervious one
-			currentNamespace = addNamespace(name[i], currentNamespace, typeDeprecated);
-		}
+		// Add current namespace as a child of the pervious one
+		currentNamespace = addNamespace(name[i], currentNamespace, false);
 	}
+	currentNamespace = addNamespace(name[len], currentNamespace, type._deprecated);
 
 	// Add functions
 	if (functions) {
@@ -301,14 +289,14 @@ function inject(parent, node, name, parentName, alias, returnNodeName) {
 	// If it's undefined, just return here.
 	if (!node) {
 		return;
-	} else if (node.nodeType === "function") {
+	} else if (node._nodeType === "function") {
 		parentName.push(name);
 		if (name === "addEventListener") {
 			parent.put(name, new AddEventListenerFunc(), false, true);
 		} else {
-			parent.put(name, new TiFunctionType(node.returnTypeJsca, parentName), false, true);
+			parent.put(name, new TiFunctionType(node._returnTypeJsca, parentName), false, true);
 		}
-	} else if (node.nodeType === "property") {
+	} else if (node._nodeType === "property") {
 		if (parentName.join(".") + "." + name === "Titanium.Platform.osname" && osname) {
 			parent.put(name, new Base.StringType(osname), false, true);
 		} else { 
@@ -354,7 +342,7 @@ function inject(parent, node, name, parentName, alias, returnNodeName) {
 function addNamespace(name, parent, deprecated) {
 	if (!parent[name]) {
 		parent[name] = {
-			deprecated : deprecated
+			_deprecated : deprecated
 		};
 	}
 	return parent[name];
@@ -392,10 +380,10 @@ function processFunction(func, parent) {
 
 	if (!parent[funcName]) {
 		parent[funcName] = {
-			nodeType : "function",
-			returnTypeJsca : jsca,
-			deprecated : func.deprecated,
-			platforms: func.userAgents
+			_nodeType : "function",
+			_returnTypeJsca : jsca,
+			_deprecated : func._deprecated,
+			_platforms: func.userAgents
 		};
 	}
 }
@@ -418,9 +406,9 @@ function processProperty(prop, parent) {
 	
 	if (!parent[propName]) {
 		parent[propName] = {
-			nodeType : "property",
-			deprecated : prop.deprecated,
-			platforms: prop.userAgents
+			_nodeType : "property",
+			_deprecated : prop._deprecated,
+			_platforms: prop.userAgents
 		};
 	}
 }
@@ -462,8 +450,9 @@ function reportPropertyReferenced(propertyName, parentName, node) {
 	parentName.push(propertyName);
 	Runtime.fireEvent("tiPropReferenced", "Titanium property referenced: " + propertyName, {
 		name : propertyName,
-		deprecated: propertyNode && propertyNode.deprecated,
-		api: parentName
+		deprecated: propertyNode && propertyNode._deprecated,
+		api: parentName,
+		platforms: propertyNode && propertyNode._platforms
 	});
 }
 
