@@ -26,7 +26,7 @@ module.exports = function (cli) {
 	Runtime.on("tiPropReferenced", function(e) {
 		var name = e.data.api.join(".");
 
-		if (e.data.deprecated) {
+		if (e.data._deprecated) {
 			// TODO: Change deprecated message when we have the 'deprecated since' info from jsca
 			Runtime.reportWarning("deprecatedTiPropReferenced", "'" + name + "' has been deprecated");
 

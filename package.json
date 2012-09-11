@@ -1,12 +1,12 @@
 {
 	"author": "Bryan Hughes <bhughes@appcelerator.com>",
-	"name": "node-code-processor",
+	"name": "titanium-code-processor",
 	"description": "A code processing tool for Titanium Mobile",
 	"version": "0.1.0",
-	"homepage": "https://github.com/appcelerator/node-code-processor",
+	"homepage": "https://github.com/appcelerator/titanium-code-processor",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/appcelerator/node-code-processor.git"
+		"url": "https://github.com/appcelerator/titanium-code-processor.git"
 	},
 	"scripts": {
 		"test": "node tests/bin/codeProcessorTest"
