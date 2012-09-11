@@ -14,6 +14,7 @@ var fs = require("fs"),
 	
 	Base = require(path.join(global.nodeCodeProcessorLibDir, "Base")),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
+	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, "Exceptions")),
 	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, "CodeProcessor")),	
 	
 	apis = {},
@@ -175,7 +176,6 @@ function AddEventListenerFunc(className) {
 util.inherits(AddEventListenerFunc, Base.FunctionTypeBase);
 AddEventListenerFunc.prototype.call = function call(thisVal, args) {
 
-	debugger;
 	var func = args[1],
 		eventDescription,
 		eventData,
