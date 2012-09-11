@@ -21,12 +21,10 @@ var path = require("path"),
  * @classdesc Captures and keeps track of Titanium APIs that are used.
  * 
  * @constructor
- * @param {Object} libs A dictionary containing useful libs from {@link module:CodeProcessor} so they don't have to be
- *		required()'d individually using brittle hard-coded paths.
  */
 module.exports = function (cli) {
 	Runtime.on("tiPropReferenced", function(e) {
-		var name = e.data.fullName;
+		var name = e.data.api.join(".");
 		if (results[name]) {
 			results[name] += 1;
 		} else {

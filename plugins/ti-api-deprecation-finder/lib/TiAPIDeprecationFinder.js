@@ -21,12 +21,10 @@ var path = require("path"),
  * @classdesc Finds all of the deprecated Titanium APIs that are used.
  * 
  * @constructor
- * @param {Object} libs A dictionary containing useful libs from {@link module:CodeProcessor} so they don't have to be
- *		required()'d individually using brittle hard-coded paths.
  */
 module.exports = function (cli) {
 	Runtime.on("tiPropReferenced", function(e) {
-		var name = e.data.fullName;
+		var name = e.data.api.join(".");
 
 		if (e.data.deprecated) {
 			// TODO: Change deprecated message when we have the 'deprecated since' info from jsca
