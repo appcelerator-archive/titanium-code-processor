@@ -163,6 +163,60 @@ TiFunctionType.prototype.call = function call(thisVal, args) {
 	return result ? result : new Base.UndefinedType();
 };
 
+/**
+ * addEventListener method
+ * 
+ * @private
+ */
+function AddEventListenerFunc(className) {
+	Base.ObjectType.call(this, className || "Function");
+	this.put("length", new Base.NumberType(2), false, true);
+}
+util.inherits(AddEventListenerFunc, Base.FunctionTypeBase);
+AddEventListenerFunc.prototype.call = function call(thisVal, args) {
+
+	debugger;
+	var func = args[1],
+		eventDescription,
+		eventData,
+		result;
+	
+	if (++Runtime.recursionCount === Runtime.options.maxRecursionLimit) {
+		
+		// Fire an event and report a warning
+		eventDescription = "Maximum application recursion limit of " + Runtime.options.maxRecursionLimit + 
+			" reached, could not fully process code";
+		eventData = {
+			ruleName: "call"
+		};
+		Runtime.fireEvent("maxRecusionLimitReached", eventDescription, eventData);
+		Runtime.reportWarning("maxRecusionLimitReached", eventDescription, eventData);
+			
+		// Set the result to unknown
+		result = new Base.UnknownType();
+		
+	} else {
+		
+		// Make sure func is actually a function
+		if (Base.type(func) !== "Unknown") {
+			if (func.className !== "Function" || !Base.isCallable(func)) {
+				throw new Exceptions.TypeError();
+			}
+			
+			// Call the function, discarding the result
+			Runtime.ambiguousCode++;
+			func.call(new Base.UndefinedType(), args);
+			Runtime.ambiguousCode--;
+			result = new Base.UndefinedType();
+		} else {
+			result = new Base.UnknownType();
+		}
+	}
+	Runtime.recursionCount--;
+	
+	return result;
+};
+
 // ******** Helper Methods ********
 
 /**
@@ -246,7 +300,11 @@ function inject(parent, node, name, parentName, alias, returnNodeName) {
 		return;
 	} else if (node.nodeType === "function") {
 		parentName.push(name);
-		parent.put(name, new TiFunctionType(node.returnTypeJsca, parentName), false, true);
+		if (name === "addEventListener") {
+			parent.put(name, new AddEventListenerFunc(), false, true);
+		} else {
+			parent.put(name, new TiFunctionType(node.returnTypeJsca, parentName), false, true);
+		}
 	} else if (node.nodeType === "property") {
 		parent.put(name, new Base.UnknownType(), false, true);
 	} else if ( typeof node === "object") {
