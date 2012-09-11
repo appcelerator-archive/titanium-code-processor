@@ -5,7 +5,8 @@
  * Processes Titanium APIs for the code processor
  *
  * @module plugin/TiAPIProcessor
- * @author Allen Yeung &lt;<a href="mailto:ayeung@appcelerator.com">ayeung@appcelerator.com</a>&gt;
+ * @author Allen Yeung &lt;<a href="mailto:ayeung@appcelerator.com">ayeung@appcelerator.com</a>&gt; and
+ *		Bryan Hughes &lt;<a href="mailto:bhughes@appcelerator.com">bhughes@appcelerator.com</a>&gt;
  */
 
 var fs = require("fs"),
@@ -18,7 +19,8 @@ var fs = require("fs"),
 	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, "CodeProcessor")),	
 	
 	apis = {},
-	jscaJSON;
+	jscaJSON,
+	osname;
 
 // ******** Plugin API Methods ********
 
@@ -31,6 +33,7 @@ var fs = require("fs"),
  */
 module.exports = function(cli) {
 	jscaJSON = JSON.parse(fs.readFileSync(path.join(cli.env.sdk, "api.jsca")));
+	osname = cli.env.osname;
 };
 
 /**
@@ -306,7 +309,11 @@ function inject(parent, node, name, parentName, alias, returnNodeName) {
 			parent.put(name, new TiFunctionType(node.returnTypeJsca, parentName), false, true);
 		}
 	} else if (node.nodeType === "property") {
-		parent.put(name, new Base.UnknownType(), false, true);
+		if (parentName.join(".") + "." + name === "Titanium.Platform.osname" && osname) {
+			parent.put(name, new Base.StringType(osname), false, true);
+		} else { 
+			parent.put(name, new Base.UnknownType(), false, true);
+		}
 	} else if ( typeof node === "object") {
 		objectType = new Base.ObjectType();
 		parent.put(name, objectType, false, true);
@@ -354,18 +361,6 @@ function addNamespace(name, parent, deprecated) {
 }
 
 /**
- * Checks whether the given type is primitive
- *
- * @private
- * @method
- * @param {String} type The name of the type
- * @returns {Boolean} A boolean value on whether the given type is primitive
- */
-function isPrimitiveType(type) {
-	return (type === "Number" || type === "Boolean" || type === "String");
-}
-
-/**
  * Processes the given function and adds it as a child of the given parent (if it doesn't already exist)
  *
  * @private
@@ -399,7 +394,8 @@ function processFunction(func, parent) {
 		parent[funcName] = {
 			nodeType : "function",
 			returnTypeJsca : jsca,
-			deprecated : func.deprecated
+			deprecated : func.deprecated,
+			platforms: func.userAgents
 		};
 	}
 }
@@ -419,11 +415,12 @@ function processProperty(prop, parent) {
 	if (prop.isInternal) {
 		return;
 	}
-
+	
 	if (!parent[propName]) {
 		parent[propName] = {
 			nodeType : "property",
-			deprecated : prop.deprecated
+			deprecated : prop.deprecated,
+			platforms: prop.userAgents
 		};
 	}
 }
@@ -468,4 +465,16 @@ function reportPropertyReferenced(propertyName, parentName, node) {
 		deprecated: propertyNode && propertyNode.deprecated,
 		api: parentName
 	});
+}
+
+/**
+ * Checks whether the given type is primitive
+ *
+ * @private
+ * @method
+ * @param {String} type The name of the type
+ * @returns {Boolean} A boolean value on whether the given type is primitive
+ */
+function isPrimitiveType(type) {
+	return (type === "Number" || type === "Boolean" || type === "String");
 }

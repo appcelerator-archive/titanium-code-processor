@@ -46,6 +46,12 @@ var util = require("util"),
 			help: "The logging level",
 			choices: ["emergency", "alert", "critical", "error", "warn", "notice", "info", "debug"]
 		})
+		.option("osname", {
+			abbr: "o",
+			metavar: "PLATFORM",
+			help: "The name of the OS being built-for. Reflected in code via Ti.Platform.osname",
+			choices: ["ios", "iphone", "ipad", "android", "mobileweb"]
+		})
 		.script("codeprocessor [project-dir]")
 		.help("Processes the supplied project using the given plugins.")
 		.nom(),
@@ -94,10 +100,11 @@ winston.log("debug", "Processing app entry point '" + entryPoint + "'");
 
 // Process the code
 startTime = (new Date()).getTime();
-			
+
 result = CodeProcessor.process([entryPoint], plugins, winston, {
 	env: {
-		sdk: "/Library/Application Support/Titanium/mobilesdk/osx/2.2.0"
+		sdk: "/Library/Application Support/Titanium/mobilesdk/osx/2.2.0",
+		osname: parsedOptions.osname
 	}
 }, options);
 			
