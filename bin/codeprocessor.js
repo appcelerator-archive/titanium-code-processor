@@ -15,7 +15,7 @@ var util = require("util"),
 	winston = require("winston"),
 	wrench = require("wrench"),
 	
-	CodeProcessor = require("node-code-processor"),
+	CodeProcessor = require("titanium-code-processor"),
 
 // ******** CLI Options Parsing ********
 
