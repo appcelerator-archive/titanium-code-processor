@@ -15,7 +15,7 @@ var util = require("util"),
 	winston = require("winston"),
 	wrench = require("wrench"),
 	
-	CodeProcessor = require("titanium-code-processor"),
+	CodeProcessor = require(path.resolve(path.join(__dirname, ".."))),
 
 // ******** CLI Options Parsing ********
 
