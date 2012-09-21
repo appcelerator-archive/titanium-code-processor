@@ -14,7 +14,10 @@
 	"main": "lib/CodeProcessor.js",
 	"dependencies": {
 		"uglify-js": "1.2.x",
-		"wrench": "1.3.x"
+		"wrench": "1.3.x",
+		"nomnom": "1.5.x",
+		"winston": "0.6.x",
+		"xml2js": "0.2.x"
 	},
 	"engine": {
 	"node": ">=0.8"
