@@ -22,11 +22,10 @@ var path = require("path"),
  * 
  * @constructor
  */
-module.exports = function (cli) {
+module.exports = function (options) {
 	
-	var osname = cli.env.osname;
-	
-	Runtime.on("tiPropReferenced", function(e) {
+	var platform = options.platform;
+	platform && Runtime.on("tiPropReferenced", function(e) {
 		var platformList = e.data.platforms,
 			i = 0,
 			len = platformList ? platformList.length : 0,
@@ -34,13 +33,13 @@ module.exports = function (cli) {
 			name = e.data.api.join(".");
 		if (len) {
 			for(; i < len; i++) {
-				if (osname === platformList[i].platform) {
+				if (platform === platformList[i].platform) {
 					isSupported = true;
 				}
 			}
 			if (!isSupported) {
 				Runtime.reportWarning("invalidPlatformReferenced", "Property '" + name + 
-					"' is not supported on " + osname);
+					"' is not supported on " + platform);
 
 				if (results[name]) {
 					results[name] += 1;

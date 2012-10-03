@@ -22,7 +22,7 @@ var path = require("path"),
  * 
  * @constructor
  */
-module.exports = function (cli) {
+module.exports = function () {
 	Runtime.on("tiPropReferenced", function(e) {
 		var name = e.data.api.join(".");
 

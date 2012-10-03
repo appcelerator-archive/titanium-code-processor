@@ -23,7 +23,7 @@ var path = require("path"),
  * 
  * @constructor
  */
-module.exports = function (cli) {};
+module.exports = function () {};
 
 /**
  * Initializes the plugin

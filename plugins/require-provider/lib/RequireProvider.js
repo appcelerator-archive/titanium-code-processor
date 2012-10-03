@@ -135,7 +135,7 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
  * 
  * @constructor
  */
-module.exports = function (cli) {};
+module.exports = function () {};
 
 /**
  * Initializes the plugin

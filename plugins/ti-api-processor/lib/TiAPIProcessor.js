@@ -20,7 +20,7 @@ var fs = require("fs"),
 	
 	apis = {},
 	jscaJSON,
-	osname;
+	platform;
 
 // ******** Plugin API Methods ********
 
@@ -31,9 +31,9 @@ var fs = require("fs"),
  * 
  * @constructor
  */
-module.exports = function(cli) {
-	jscaJSON = JSON.parse(fs.readFileSync(path.join(cli.env.sdk, "api.jsca")));
-	osname = cli.env.osname;
+module.exports = function(options) {
+	jscaJSON = JSON.parse(fs.readFileSync(path.join(options.sdkPath, "api.jsca")));
+	platform = options.platform;
 };
 
 /**
@@ -297,8 +297,8 @@ function inject(parent, node, name, parentName, alias, returnNodeName) {
 			parent.put(name, new TiFunctionType(node._returnTypeJsca, parentName), false, true);
 		}
 	} else if (node._nodeType === "property") {
-		if (parentName.join(".") + "." + name === "Titanium.Platform.osname" && osname) {
-			parent.put(name, new Base.StringType(osname), false, true);
+		if (parentName.join(".") + "." + name === "Titanium.Platform.osname" && platform) {
+			parent.put(name, new Base.StringType(platform), false, true);
 		} else { 
 			parent.put(name, new Base.UnknownType(), false, true);
 		}
