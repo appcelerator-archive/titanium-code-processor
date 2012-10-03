@@ -25,30 +25,32 @@ var path = require("path"),
 module.exports = function (options) {
 	
 	var platform = options.platform;
-	platform && Runtime.on("tiPropReferenced", function(e) {
-		var platformList = e.data.platforms,
-			i = 0,
-			len = platformList ? platformList.length : 0,
-			isSupported = false,
-			name = e.data.api.join(".");
-		if (len) {
-			for(; i < len; i++) {
-				if (platform === platformList[i].platform) {
-					isSupported = true;
+	if (platform) {
+		Runtime.on("tiPropReferenced", function(e) {
+			var platformList = e.data.platforms,
+				i = 0,
+				len = platformList ? platformList.length : 0,
+				isSupported = false,
+				name = e.data.api.join(".");
+			if (len) {
+				for(; i < len; i++) {
+					if (platform === platformList[i].platform) {
+						isSupported = true;
+					}
 				}
-			}
-			if (!isSupported) {
-				Runtime.reportWarning("invalidPlatformReferenced", "Property '" + name + 
-					"' is not supported on " + platform);
+				if (!isSupported) {
+					Runtime.reportWarning("invalidPlatformReferenced", "Property '" + name + 
+						"' is not supported on " + platform);
 
-				if (results[name]) {
-					results[name] += 1;
-				} else {
-					results[name] = 1;
+					if (results[name]) {
+						results[name] += 1;
+					} else {
+						results[name] = 1;
+					}
 				}
 			}
-		}
-	});
+		});
+	}
 };
 
 /**
