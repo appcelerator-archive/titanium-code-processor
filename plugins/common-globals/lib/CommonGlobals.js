@@ -22,13 +22,15 @@ var path = require("path"),
  * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
  * 
  * @constructor
+ * @name module:plugins/CommonGlobals
  */
-module.exports = function (cli) {};
+module.exports = function () {};
 
 /**
  * Initializes the plugin
  * 
  * @method
+ * @name module:plugins/CommonGlobals#init
  */
 module.exports.prototype.init = function init() {
 	
@@ -53,10 +55,8 @@ module.exports.prototype.init = function init() {
 * Gets the results of the plugin
 * 
 * @method
-* @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
-*		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
-*		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
-*		method.
+ * @name module:plugins/CommonGlobals#getResults
+* @returns {Object} An empty object
 */
 module.exports.prototype.getResults = function getResults() {
 	return {};
