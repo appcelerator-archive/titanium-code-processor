@@ -4,7 +4,7 @@
  * 
  * This plugin finds the deprecated Titanium APIs that are used.
  * 
- * @module plugin/TiAPIDeprecationFinder
+ * @module plugins/TiAPIDeprecationFinder
  * @author Allen Yeung &lt;<a href="mailto:ayeung@appcelerator.com">ayeung@appcelerator.com</a>&gt;
  */
  
@@ -21,14 +21,15 @@ var path = require("path"),
  * @classdesc Finds all of the deprecated Titanium APIs that are used.
  * 
  * @constructor
+ * @name module:plugins/TiAPIDeprecationFinder
  */
 module.exports = function () {
-	Runtime.on("tiPropReferenced", function(e) {
-		var name = e.data.api.join(".");
+	Runtime.on("tiPropertyReferenced", function(e) {
+		var name = e.data.name;
 
-		if (e.data._deprecated) {
+		if (e.data.node.deprecated) {
 			// TODO: Change deprecated message when we have the 'deprecated since' info from jsca
-			Runtime.reportWarning("deprecatedTiPropReferenced", "'" + name + "' has been deprecated");
+			Runtime.reportWarning("deprecatedTiPropertyReferenced", "'" + name + "' has been deprecated");
 
 			if (results[name]) {
 				results[name] += 1;
@@ -43,6 +44,7 @@ module.exports = function () {
  * Initializes the plugin
  * 
  * @method
+ * @name module:plugins/TiAPIDeprecationFinder#init
  */
 module.exports.prototype.init = function init() {};
 
@@ -50,6 +52,7 @@ module.exports.prototype.init = function init() {};
 * Gets the results of the plugin
 * 
 * @method
+ * @name module:plugins/TiAPIDeprecationFinder#getResults
 * @returns {Object} A dictionary of the deprecated Titanium APIs that were used along with a count of how many times they were used.
 */
 module.exports.prototype.getResults = function getResults() {

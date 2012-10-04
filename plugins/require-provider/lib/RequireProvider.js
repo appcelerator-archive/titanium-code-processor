@@ -134,6 +134,7 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
  * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
  * 
  * @constructor
+ * @name module:plugins/RequireProvider
  */
 module.exports = function () {};
 
@@ -141,6 +142,7 @@ module.exports = function () {};
  * Initializes the plugin
  * 
  * @method
+ * @name module:plugins/RequireProvider#init
  */
 module.exports.prototype.init = function init() {
 	
@@ -168,6 +170,7 @@ module.exports.prototype.init = function init() {
 * Gets the results of the plugin
 * 
 * @method
+ * @name module:plugins/RequireProvider#getResults
 * @returns {Object} An empty object.
 */
 module.exports.prototype.getResults = function getResults() {

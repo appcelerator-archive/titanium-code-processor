@@ -23,6 +23,7 @@ var path = require("path"),
  * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
  * 
  * @constructor
+ * @name module:plugins/RequireFinder
  */
 module.exports = function () {
 	Runtime.on("requireUnresolved", function(e) {
@@ -40,6 +41,7 @@ module.exports = function () {
  * Initializes the plugin
  * 
  * @method
+ * @name module:plugins/RequireFinder#init
  */
 module.exports.prototype.init = function init() {};
 
@@ -47,6 +49,7 @@ module.exports.prototype.init = function init() {};
 * Gets the results of the plugin
 * 
 * @method
+ * @name module:plugins/RequireFinder#getResults
 * @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
 *		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
 *		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
