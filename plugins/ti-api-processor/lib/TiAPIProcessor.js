@@ -4,9 +4,8 @@
  *
  * Processes Titanium APIs for the code processor
  *
- * @module plugin/TiAPIProcessor
- * @author Allen Yeung &lt;<a href="mailto:ayeung@appcelerator.com">ayeung@appcelerator.com</a>&gt; and
- *		Bryan Hughes &lt;<a href="mailto:bhughes@appcelerator.com">bhughes@appcelerator.com</a>&gt;
+ * @module plugins/TiAPIProcessor
+ * @author Bryan Hughes &lt;<a href="mailto:bhughes@appcelerator.com">bhughes@appcelerator.com</a>&gt;
  */
 
 var fs = require("fs"),
@@ -16,11 +15,12 @@ var fs = require("fs"),
 	Base = require(path.join(global.nodeCodeProcessorLibDir, "Base")),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
 	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, "Exceptions")),
-	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, "CodeProcessor")),	
+	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, "CodeProcessor")),
 	
-	apis = {},
-	jscaJSON,
-	osname;
+	jsca,
+	platform,
+	
+	api = { children: {} };
 
 // ******** Plugin API Methods ********
 
@@ -30,73 +30,96 @@ var fs = require("fs"),
  * @classdesc Injects a stub of the Titanium Mobile API into the global namespace
  * 
  * @constructor
+ * @name module:plugins/TiAPIProcessor
  */
-module.exports = function(cli) {
-	jscaJSON = JSON.parse(fs.readFileSync(path.join(cli.env.sdk, "api.jsca")));
-	osname = cli.env.osname;
+module.exports = function(options) {
+	jsca = JSON.parse(fs.readFileSync(path.join(options.sdkPath, "api.jsca")));
+	platform = options.platform;
 };
 
 /**
  * Initializes the plugin
  * 
  * @method
+ * @name module:plugins/TiAPIProcessor#init
  */
 module.exports.prototype.init = function init() {
 	
 	// Iterate through the json object and inject all the APIs
-	var globalObject = Runtime.globalObject,
-		typesArray = jscaJSON.types,
-		aliasesArray = jscaJSON.aliases,
-		aliases = {},
-		i = 0,
-		name;
-
-	// Create aliases object
-	for (; i < aliasesArray.length; i++) {
-		aliases[aliasesArray[i].type] = aliasesArray[i].name;
+	var typesToInsert = {},
+		globalObject = Runtime.globalObject,
+		types = jsca.types,
+		type,
+		aliases = jsca.aliases,
+		alias,
+		i, j,
+		len,
+		name,
+		root,
+		obj;
+	
+	// Create the API tree
+	for (i = 0, len = types.length; i < len; i++) {
+		type = types[i];
+		root = api;
+		name = type.name.split('.');
+		for(j = 0; j < name.length; j++) {
+			root.children[name[j]] || (root.children[name[j]] = { children: {} });
+			root = root.children[name[j]];
+		}
+		root.node = type;
 	}
 
-	// Loop through all types and construct a tree of all the types
-	for (i = 0; i < typesArray.length; i++) {
-		addType(typesArray[i], apis, true);
+	// Create the list of aliases and global objects
+	for(i = 0, aliases.length; i < len; i++) {
+		alias = aliases[i];
+		if (alias) {
+			type = alias.type;
+			typesToInsert[type] || (typesToInsert[type] = []);
+			typesToInsert[type].push(alias.name)
+		}
 	}
-
-	// Inject the tree that was constructed into the global object
-	for (name in apis) {
-		inject(globalObject, apis[name], name, [], aliases[name]);
+	
+	// Inject the global objects
+	for(p in typesToInsert) {
+		obj = createObject(api.children[p]);
+		globalObject.put(p, obj, false, true);
+		for(i = 0, len = typesToInsert[p].length; i < len; i++) {
+			globalObject.put(typesToInsert[p][i], obj, false, true);
+		}
 	}
 };
 
 /**
  * Gets the results of the plugin
  *
- * @private
  * @method
+ * @name module:plugins/TiAPIProcessor#getResults
  * @returns {Object} An empty object.
  */
 module.exports.prototype.getResults = function getResults() {
 	return {};
 };
 
-// ******** Titanium Namespace Function ********
+// ******** Function Type ********
 
 /**
- * @classdesc Customized require() function that doesn't actually execute code in the interpreter, but rather does it here.
+ * @classdesc Specialized function that returns information based on the JSCA
  * 
  * @constructor
  * @private
+ * @param {Array[String]|undefined} returnTypes An array of return types, or undefined
  * @param {String} [className] The name of the class, defaults to "Function." This parameter should only be used by a 
  *		constructor for an object extending this one.
  */
-function TiFunctionType(returnTypeJsca, fullFuncName, className) {
+function RequireFunction(returnTypes, className) {
 	Base.ObjectType.call(this, className || "Function");
-	this.returnTypeJsca = returnTypeJsca;
-	this.fullFuncName = fullFuncName;
+	this._returnTypes = returnTypes;
 }
-util.inherits(TiFunctionType, Base.FunctionTypeBase);
+util.inherits(RequireFunction, Base.FunctionType);
 
 /**
- * Calls the function
+ * Calls the require function
  * 
  * @method
  * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
@@ -104,366 +127,177 @@ util.inherits(TiFunctionType, Base.FunctionTypeBase);
  * @returns {module:Base.BaseType} The return value from the function
  * @see ECMA-262 Spec Chapter 13.2.1
  */
-TiFunctionType.prototype.call = function call(thisVal, args) {
-	var returnTypeJsca = this.returnTypeJsca,
-		returnTypeName,
-		funcRootNameArray = this.fullFuncName.slice(0, this.fullFuncName.length - 1),
-		funcName = this.fullFuncName[this.fullFuncName.length - 1],
-		objectType,
-		propertyName,
-		parentType,
-		returnApi = {},
-		i = 0,
-		result,
-		injectResult;
-
-	if (returnTypeJsca) {
-
-		if (returnTypeJsca === "unknown") {
-			return new Base.UnknownType();
+RequireFunction.prototype.call = function call(thisVal, args) {
+	var returnType,
+		root = api,
+		parent,
+		i, len;
+	if (this._returnTypes && this._returnTypes.length === 1) {
+		returnType = this._returnTypes[0].type.split('.');
+		for(i = 0, len = returnType.length; i < len; i++) {
+			root = root.children[returnType[i]];
 		}
-
-		// Convert JSCA type to local tree-like structure
-		addType(returnTypeJsca, returnApi, false);
-
-		objectType = new Base.ObjectType();
-		// Set returnTypeName so we can use it for 'create' methods below
-		returnTypeName = returnTypeJsca.name.split(".");
-
-		// The first node must be Titanium. Create an object for the Titanium node, then proceed to inject its children to the newly created object
-		for (propertyName in returnApi.Titanium) {
-			injectResult = inject(objectType, returnApi.Titanium[propertyName], propertyName, ["Titanium"], undefined, returnTypeJsca.name);
-			// Set result only if it's undefined
-			if (!result) {
-				result = injectResult;
-			}
-		}
+		value = createObject(root)
+		Runtime.fireEvent("tiPropertyReferenced", "Property '" + p + "' was referenced" + p, {
+			name: this._returnTypes[0].type,
+			node: root.node
+		});
+		return value;
+	} else {
+		return new Base.UndefinedType();
 	}
+};
 
-	// When the function name is applyProperties, we want to fire a propertyReferenced event
-	if (funcName.match(/^create|^applyProperties$/) && args.length > 0) {
+// ******** Object Type ********
 
-		// applyProperties does not go through the logic above, so we have to construct the returnApi tree here.
-		if (funcName === "applyProperties") {
-			parentType = findTypeByName(funcRootNameArray.join('.'));
-			if (parentType) {
-				// Convert JSCA type to local tree-like structure
-				addType(parentType, returnApi, false);
-			}
-		}
+/**
+ * @classdesc A custom object implementation that hooks into get, put, and delete so it can fire the appropriate Ti events
+ * 
+ * @constructor
+ * @private
+ * @extends module:Base.ObjectType
+ * @param {Object} api The api describing the object
+ * @param {Object} api.node The JSCA node for the object
+ * @param {Object} api.children Any children of this object (i.e. separate JSCA types that are properties)
+ */
+exports.TiObjectType = TiObjectType;
+function TiObjectType(api, className) {
+	this._api = api;
+	Base.ObjectType.call(this, className || "Object");
+}
+util.inherits(TiObjectType, Base.ObjectType);
 
-		// Move returnApi to the correct child.
-		for (i = 0; i < funcRootNameArray.length; i++) {
-			returnApi = returnApi[funcRootNameArray[i]];
-		}
-
-		// Loop through all the properties of an object argument, and fire off property referenced events for each property.
-		for (propertyName in args[0]._properties) {
-			// Use the returnTypeName as parentName when there is one (there should be one in create functions)
-			reportPropertyReferenced(propertyName, returnTypeName ? returnTypeName : funcRootNameArray, returnApi);
-		}
-	}
-
-	return result ? result : new Base.UndefinedType();
+/**
+ * Indicates that a titanium property was referenced (i.e. read).
+ *
+ * @name module:plugins/TiAPIProcessor.TiObjectType#tiPropertyReferenced
+ * @event
+ * @param {String} name The name of the property that was referenced
+ * @param {{@link module:Base.DataPropertyDescriptor}|{@link module:Base.AccessorPropertyDescriptor}|undefined} The
+ *		descriptor fetched, if it could be found.
+ */
+/**
+ * ECMA-262 Spec: <em>Returns the value of the named property.</em>
+ * 
+ * @method
+ * @param {String} p The name of the property to fetch
+ * @returns {{@link module:Base.BaseType}} The value of the property, or a new instance of 
+ *		{@link module:Base.UndefinedType} if the property does not exist
+ * @see ECMA-262 Spec Chapter 8.12.3
+ */
+exports.TiObjectType.prototype.get = function get(p) {
+	var value = Base.ObjectType.prototype.get.apply(this, arguments);
+	Runtime.fireEvent("tiPropertyReferenced", "Property '" + p + "' was referenced" + p, {
+		name: this._api.node.name + '.' + p,
+		node: value._api ? value._api.node : value._property ? value._property : value._function
+	});
+	return value;
 };
 
 /**
- * addEventListener method
- * 
- * @private
+ * Indicates that a titanium property was set (i.e. written).
+ *
+ * @name module:plugins/TiAPIProcessor.TiObjectType#tiPropertySet
+ * @event
+ * @param {String} name The name of the property that was set
+ * @param {module:Base.BaseType} value The value that was set
  */
-function AddEventListenerFunc(className) {
-	Base.ObjectType.call(this, className || "Function");
-	this.put("length", new Base.NumberType(2), false, true);
-}
-util.inherits(AddEventListenerFunc, Base.FunctionTypeBase);
-AddEventListenerFunc.prototype.call = function call(thisVal, args) {
-
-	var func = args[1],
-		eventDescription,
-		eventData,
-		result;
-	
-	if (++Runtime.recursionCount === Runtime.options.maxRecursionLimit) {
-		
-		// Fire an event and report a warning
-		eventDescription = "Maximum application recursion limit of " + Runtime.options.maxRecursionLimit + 
-			" reached, could not fully process code";
-		eventData = {
-			ruleName: "call"
-		};
-		Runtime.fireEvent("maxRecusionLimitReached", eventDescription, eventData);
-		Runtime.reportWarning("maxRecusionLimitReached", eventDescription, eventData);
-			
-		// Set the result to unknown
-		result = new Base.UnknownType();
-		
-	} else {
-		
-		// Make sure func is actually a function
-		if (Base.type(func) !== "Unknown") {
-			if (func.className !== "Function" || !Base.isCallable(func)) {
-				throw new Exceptions.TypeError();
-			}
-			
-			// Call the function, discarding the result
-			Runtime.ambiguousCode++;
-			func.call(new Base.UndefinedType(), args);
-			Runtime.ambiguousCode--;
-			result = new Base.UndefinedType();
-		} else {
-			result = new Base.UnknownType();
-		}
+/**
+ * ECMA-262 Spec: <em>Sets the specified named property to the value of the second parameter. The flag controls failure 
+ * handling.</em>
+ * 
+ * @method
+ * @param {String} p The name of the parameter to set the value as
+ * @param {module:Base.BaseType} v The value to set
+ * @param {Boolean} throwFlag Whether or not to throw an exception on error (related to strict mode)
+ * @param {Boolean} suppressEvent Suppresses the "propertySet" event (used when setting prototypes)
+ * @throws {{@link module:Exceptions.TypeError}} Thrown when the property cannot be put and throwFlag is true
+ * @see ECMA-262 Spec Chapter 8.12.5
+ */
+exports.TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent) {
+	Base.ObjectType.prototype.put.apply(this, arguments);
+	if (!suppressEvent) {
+		Runtime.fireEvent("tiPropertySet", "Property '" + p + "' was set", {
+			name: this._api.node.name + '.' + p,
+			node: v._api ? v._api.node : v._property ? v._property : v._function
+		});
 	}
-	Runtime.recursionCount--;
-	
-	return result;
+};
+
+/**
+ * Indicates that a titanium property was deleted
+ *
+ * @name module:plugins/TiAPIProcessor.TiObjectType#tiPropertyDeleted
+ * @event
+ * @param {String} name The name of the property referenced
+ */
+/**
+ * ECMA-262 Spec: <em>Removes the specified named own property from the object. The flag controls failure handling.</em>
+ * 
+ * @method
+ * @param {String} p The name of the parameter to delete
+ * @param {Boolean} throwFlag Whether or not to throw an exception on error (related to strict mode)
+ * @returns {Boolean} Whether or not the object was deleted succesfully
+ * @throws {{@link module:Exceptions.TypeError}} Thrown when the property cannot be deleted and throwFlag is true
+ * @see ECMA-262 Spec Chapter 8.12.7
+ */
+exports.TiObjectType.prototype.delete = function objDelete(p, throwFlag) {
+	var success = Base.ObjectType.prototype["delete"].apply(this, arguments);
+	Runtime.fireEvent("tiPropertyDeleted", "Property '" + p + "' was deleted", {
+		name: this._api.node.name + '.' + p,
+		success: success
+	});
+	return success;
 };
 
 // ******** Helper Methods ********
 
 /**
- * Creates given type and adds it to the parent object
- *
+ * Creates a titanium object from an API node
+ * 
  * @private
  * @method
- * @param {Object} type A type object that contains information about the type (includes name, property, functions etc)
- * @param {Object} parent The parent that we want to add the type to
- * @param {Object} skipInternal A flag to determine whether to skip internal properties
  */
-function addType(type, parent, skipInternal) {
-
-	var name = type.name.split("."),
-		properties = type.properties,
-		functions = type.functions,
-		currentNamespace = parent,
-		i = 0,
-		len = name.length - 1;
-
-	if (skipInternal && type.isInternal) {
-		return;
-	}
-
-	for (; i < len; i++) {
-
-		// Add current namespace as a child of the pervious one
-		currentNamespace = addNamespace(name[i], currentNamespace, false);
-	}
-	currentNamespace = addNamespace(name[len], currentNamespace, type._deprecated);
-
-	// Add functions
-	if (functions) {
-		for (i = 0; i < functions.length; i++) {
-			processFunction(functions[i], currentNamespace);
-		}
-	}
-
-	// Add properties
-	if (properties) {
-		for (i = 0; i < properties.length; i++) {
-			processProperty(properties[i], currentNamespace);
-		}
-	}
-}
-
-/**
- * Takes in a node and recursively injects it and its children to the given parent
- *
- * @private
- * @method
- * @param {module:Base.ObjectType} parent The parent object type that we want to add to
- * @param {Object} node The node that we want to inject into the code processor
- * @param {String} name The current name of the node we want to inject
- * @param {Array} parentName The name of the parent
- * @param {String} alias The alias of the name we are going to inject
- */
-function inject(parent, node, name, parentName, alias, returnNodeName) {
-	var objectType,
-		propertyName,
-		result;
-		
-	// Create a deep copy of parentName so we don't modify the original
-	parentName = parentName.slice();
-		
-	// When injecting children, we will hit the 'deprecated' property.  In that case, it could be undefined or a boolean value.
-	// If it's undefined, just return here.
-	if (!node) {
-		return;
-	} else if (node._nodeType === "function") {
-		parentName.push(name);
-		if (name === "addEventListener") {
-			parent.put(name, new AddEventListenerFunc(), false, true);
+function createObject(apiNode) {
+	var obj = new TiObjectType(apiNode),
+		properties = apiNode.node.properties,
+		property,
+		functions = apiNode.node.functions,
+		func,
+		children = apiNode.children,
+		child,
+		value,
+		name,
+		type,
+		p, i, len;
+	
+	// Add the properties
+	for(i = 0, len = properties.length; i < len; i++) {
+		property = properties[i];
+		name = property.name;
+		type = property.type;
+		if (type in api.children) {
+			value = createObject(api.children[type]);
 		} else {
-			parent.put(name, new TiFunctionType(node._returnTypeJsca, parentName), false, true);
+			value = new Base.UnknownType();
 		}
-	} else if (node._nodeType === "property") {
-		if (parentName.join(".") + "." + name === "Titanium.Platform.osname" && osname) {
-			parent.put(name, new Base.StringType(osname), false, true);
-		} else { 
-			parent.put(name, new Base.UnknownType(), false, true);
-		}
-	} else if ( typeof node === "object") {
-		objectType = new Base.ObjectType();
-		parent.put(name, objectType, false, true);
-
-		if (alias) {
-			parent.put(alias, objectType, false, true);
-		}
-
-		objectType.on("propertyReferenced", function(e) {
-			reportPropertyReferenced(e.data.name, parentName, node);
-		});
-
-		parentName.push(name);
-
-		// inject children
-		for (propertyName in node) {
-			result = inject(objectType, node[propertyName], propertyName, parentName, undefined, returnNodeName);
-		}
-
-		if (parentName.join('.') === returnNodeName) {
-			result = objectType;
-		}
-
-		return result;
-	}
-}
-
-/**
- * Creates and adds a namespace with the given name to the given parent (if it doesn't already exist)
- *
- * @private
- * @method
- * @param {String} name The name of the namespace to add
- * @param {Object} parent The parent of the given namespace
- * @param {Boolean} deprecated A boolean flag to specify whether the namespace is deprecated
- * @returns {Object} The namespace object that was added
- */
-function addNamespace(name, parent, deprecated) {
-	if (!parent[name]) {
-		parent[name] = {
-			_deprecated : deprecated
-		};
-	}
-	return parent[name];
-}
-
-/**
- * Processes the given function and adds it as a child of the given parent (if it doesn't already exist)
- *
- * @private
- * @method
- * @param {Object} func The function object to process
- * @param {String} func.name The name of the function to process
- * @param {Object} parent The parent of the given func
- */
-function processFunction(func, parent) {
-	var funcName = func.name,
-		jsca,
-		returnTypes = func.returnTypes,
-		returnType;
-
-	if (func.isInternal) {
-		return;
-	}
-
-	// If the returnTypes are undefined, leave jsca as undefined
-	if (returnTypes) {
-		returnType = returnTypes[0].type;
-		if (returnTypes.length === 1 && !isPrimitiveType(returnType) && returnType !== "Array") {
-			jsca = findTypeByName(returnType);
-		} else {
-			// mark jsca as unknown when it's a primitive type or there is more than one return type
-			jsca = "unknown";
-		}
-	}
-
-	if (!parent[funcName]) {
-		parent[funcName] = {
-			_nodeType : "function",
-			_returnTypeJsca : jsca,
-			_deprecated : func._deprecated,
-			_platforms: func.userAgents
-		};
-	}
-}
-
-/**
- * Processes the given property and adds it as a child of the given parent (if it doesn't already exist)
- *
- * @private
- * @method
- * @param {Object} prop The property object that to process
- * @param {String} prop.name The name of the property to add
- * @param {Object} parent The parent of the given property
- */
-function processProperty(prop, parent) {
-	var propName = prop.name;
-
-	if (prop.isInternal) {
-		return;
+		value._property = property;
+		obj.put(name, value, false, true);
 	}
 	
-	if (!parent[propName]) {
-		parent[propName] = {
-			_nodeType : "property",
-			_deprecated : prop._deprecated,
-			_platforms: prop.userAgents
-		};
+	// Add the methods
+	for(i = 0, len = functions.length; i < len; i++) {
+		func = functions[i];
+		value = new RequireFunction(func.returnTypes);
+		value._function = func;
+		obj.put(func.name, value, false, true);
 	}
-}
-
-/**
- * Finds the type object from jsca based on the given name
- *
- * @private
- * @method
- * @param {String} name The name of the type
- * @returns {Object} A jsca object that was found
- */
-function findTypeByName(name) {
-	var typesArray = jscaJSON.types,
-		i;
-
-	for ( i = 0; i < typesArray.length; i++) {
-		if (typesArray[i].name === name) {
-			return typesArray[i];
-		}
+	
+	// Add the children
+	for(p in children) {
+		obj.put(p, createObject(children[p]))
 	}
-}
-
-/**
- * Reports that a property was referenced
- *
- * @private
- * @method
- * @param {String} propertyName The propery name that was referenced
- * @param {Array} parentName The parent name of the property referenced
- * @param {String} node The node for the property referenced
- */
-function reportPropertyReferenced(propertyName, parentName, node) {
-	var propertyNode = node[propertyName];
 	
-	// Create a deep copy so we don't change the original
-	parentName = parentName.slice();
-	
-	parentName.push(propertyName);
-	Runtime.fireEvent("tiPropReferenced", "Titanium property referenced: " + propertyName, {
-		name : propertyName,
-		deprecated: propertyNode && propertyNode._deprecated,
-		api: parentName,
-		platforms: propertyNode && propertyNode._platforms
-	});
-}
-
-/**
- * Checks whether the given type is primitive
- *
- * @private
- * @method
- * @param {String} type The name of the type
- * @returns {Boolean} A boolean value on whether the given type is primitive
- */
-function isPrimitiveType(type) {
-	return (type === "Number" || type === "Boolean" || type === "String");
+	// Return the newly created object
+	return obj;
 }
