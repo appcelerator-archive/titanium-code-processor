@@ -112,7 +112,7 @@ entryPoint = path.join(projectRoot, "Resources", "app.js");
 if (!fs.existsSync(entryPoint)) {
 	throw new Error("Error: Project entry point '" + entryPoint + "' does not exist.");
 }
-logger.log("debug", "Processing app entry point '" + entryPoint + "'");
+logger.log("info", "Processing app entry point '" + entryPoint + "'");
 
 // Process the code
 startTime = (new Date()).getTime();
