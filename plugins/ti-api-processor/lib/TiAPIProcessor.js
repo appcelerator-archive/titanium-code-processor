@@ -17,6 +17,8 @@ var fs = require("fs"),
 	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, "Exceptions")),
 	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, "CodeProcessor")),
 	
+	RequireProvider = require('../../require-provider'),
+	
 	jsca,
 	platform,
 	
@@ -250,6 +252,33 @@ exports.TiObjectType.prototype.delete = function objDelete(p, throwFlag) {
 	return success;
 };
 
+/**
+ * @classdesc Customized require() function that doesn't actually execute code in the interpreter, but rather does it here.
+ * 
+ * @constructor
+ * @private
+ * @param {String} [className] The name of the class, defaults to "Function." This parameter should only be used by a 
+ *		constructor for an object extending this one.
+ */
+function IncludeFunction(className) {
+	Base.ObjectType.call(this, className || "Function");
+}
+util.inherits(IncludeFunction, Base.FunctionType);
+
+/**
+ * Calls the require function
+ * 
+ * @method
+ * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
+ * @param (Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
+ * @returns {module:Base.BaseType} The return value from the function
+ * @see ECMA-262 Spec Chapter 13.2.1
+ */
+IncludeFunction.prototype.call = function call(thisVal, args) {
+	console.log('include', args[0].value, Runtime.fileStack);
+	return RequireProvider.callHelper(args, true);
+};
+
 // ******** Helper Methods ********
 
 /**
@@ -276,7 +305,9 @@ function createObject(apiNode) {
 		property = properties[i];
 		name = property.name;
 		type = property.type;
-		if (type in api.children) {
+		if (name === 'osname' && apiNode.node.name === 'Titanium.Platform') {
+			value = new Base.StringType(platform);
+		} else if (type in api.children) {
 			value = createObject(api.children[type]);
 		} else {
 			value = new Base.UnknownType();
@@ -288,7 +319,11 @@ function createObject(apiNode) {
 	// Add the methods
 	for(i = 0, len = functions.length; i < len; i++) {
 		func = functions[i];
-		value = new RequireFunction(func.returnTypes);
+		if (func.name === 'include' && apiNode.node.name === 'Titanium') {
+			value = new IncludeFunction();
+		} else {
+			value = new RequireFunction(func.returnTypes);
+		}
 		value._function = func;
 		obj.put(func.name, value, false, true);
 	}

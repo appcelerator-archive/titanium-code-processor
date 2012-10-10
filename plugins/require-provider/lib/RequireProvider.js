@@ -15,7 +15,26 @@ var util = require("util"),
 	pluginRegExp = /^(.+?)\!(.*)$/,
 	fileRegExp = /\.js$/;
 
-function callHelper(args, useCurrentContext) {
+
+/**
+ * Creates an instance of the require provider plugin
+ * 
+ * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
+ * 
+ * @constructor
+ * @name module:plugins/RequireProvider
+ */
+module.exports = function () {};
+
+/**
+ * Performs the function call that requires/includes a file
+ * 
+ * @method
+ * @param {Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
+ * @param {Boolean} useCurrentContext Indicates whether this operation should use the current contect or create a new one
+ */
+module.exports.callHelper = callHelper;
+function callHelper(args, isInclude) {
 	
 	// Validate and parse the args
 	var name = args && Base.getValue(args[0]),
@@ -60,7 +79,10 @@ function callHelper(args, useCurrentContext) {
 			Runtime.fireEvent("requireResolved", "The require path '" + name + "' was resolved", {
 				name: name
 			});
-			result = CodeProcessor.processFile(name, isModule, useCurrentContext)[1];
+			result = CodeProcessor.processFile(name, isModule, isInclude);
+			if (!isInclude) {
+				result = result[1];
+			}
 					
 		} else {
 			eventDescription = "The require path '" + name + "' was resolved";
@@ -72,7 +94,6 @@ function callHelper(args, useCurrentContext) {
 			});
 		}
 	}
-			
 	return result;
 }
 
@@ -94,49 +115,14 @@ util.inherits(RequireFunction, Base.FunctionType);
  * 
  * @method
  * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
- * @param (Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
+ * @param {Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
  * @returns {module:Base.BaseType} The return value from the function
  * @see ECMA-262 Spec Chapter 13.2.1
  */
 RequireFunction.prototype.call = function call(thisVal, args) {
+	console.log('require', args[0].value, Runtime.fileStack);
 	return callHelper(args, false);
 };
-	
-/**
- * @classdesc Customized require() function that doesn't actually execute code in the interpreter, but rather does it here.
- * 
- * @constructor
- * @private
- * @param {String} [className] The name of the class, defaults to "Function." This parameter should only be used by a 
- *		constructor for an object extending this one.
- */
-function IncludeFunction(className) {
-	Base.ObjectType.call(this, className || "Function");
-}
-util.inherits(IncludeFunction, Base.FunctionType);
-
-/**
- * Calls the require function
- * 
- * @method
- * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
- * @param (Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
- * @returns {module:Base.BaseType} The return value from the function
- * @see ECMA-262 Spec Chapter 13.2.1
- */
-IncludeFunction.prototype.call = function call(thisVal, args) {
-	return callHelper(args, true);
-};
-
-/**
- * Creates an instance of the require provider plugin
- * 
- * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
- * 
- * @constructor
- * @name module:plugins/RequireProvider
- */
-module.exports = function () {};
 
 /**
  * Initializes the plugin
@@ -152,18 +138,6 @@ module.exports.prototype.init = function init() {
 	// Create the require method
 	globalEnvironmentRecord.createMutableBinding("require", false, true);
 	globalEnvironmentRecord.setMutableBinding("require", new RequireFunction(), false, true);
-		
-	// Create the Ti.Include method
-	if (globalEnvironmentRecord.hasBinding("Ti")) {
-		tiobj = globalEnvironmentRecord.getBindingValue("Ti");
-	} else {
-		tiobj = new Base.ObjectType();
-		globalEnvironmentRecord.createMutableBinding("Ti", false, true);
-		globalEnvironmentRecord.setMutableBinding("Ti", tiobj, false, true);
-		globalEnvironmentRecord.createMutableBinding("Titanium", false, true);
-		globalEnvironmentRecord.setMutableBinding("Titanium", tiobj, false, true);			
-	}
-	tiobj.put("include", new IncludeFunction(), false, true);
 };
 
 /**
