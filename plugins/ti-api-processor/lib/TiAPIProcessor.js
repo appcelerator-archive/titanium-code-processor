@@ -49,7 +49,7 @@ module.exports.prototype.init = function init() {
 	
 	// Iterate through the json object and inject all the APIs
 	var typesToInsert = {},
-		globalObject = Runtime.globalObject,
+		globalObject = Runtime.getGlobalObject(),
 		types = jsca.types,
 		type,
 		aliases = jsca.aliases,
@@ -275,7 +275,6 @@ util.inherits(IncludeFunction, Base.FunctionType);
  * @see ECMA-262 Spec Chapter 13.2.1
  */
 IncludeFunction.prototype.call = function call(thisVal, args) {
-	console.log('include', args[0].value, Runtime.fileStack);
 	return RequireProvider.callHelper(args, true);
 };
 

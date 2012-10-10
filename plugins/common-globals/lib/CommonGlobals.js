@@ -34,7 +34,7 @@ module.exports = function () {};
  */
 module.exports.prototype.init = function init() {
 	
-	var globalEnvironmentRecord = Runtime.globalContext.lexicalEnvironment.envRec;
+	var globalEnvironmentRecord = Runtime.getGlobalContext().lexicalEnvironment.envRec;
 	
 	function addObject(name, value) {
 		globalEnvironmentRecord.createMutableBinding(name, false, true);

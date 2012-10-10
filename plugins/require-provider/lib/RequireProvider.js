@@ -41,13 +41,13 @@ function callHelper(args, isInclude) {
 		result = new Base.UnknownType(),
 		isModule,
 		eventDescription;
-			
+		
 	if (!name) {
 		name = new Base.UndefinedType();
 	}
-			
+	
 	if (Base.type(name) === "Unknown") {
-				
+		
 		eventDescription = "A value that could not be evaluated was passed to require";
 		Runtime.fireEvent("requireUnresolved", eventDescription, {
 			name: "<Could not evaluate require path>"
@@ -57,7 +57,7 @@ function callHelper(args, isInclude) {
 		});
 		return result;
 	}
-			
+	
 	name = Base.toString(name).value;
 	
 	// We don't process plugins or urls at compile time
@@ -70,12 +70,12 @@ function callHelper(args, isInclude) {
 		
 		// Resolve the path
 		isModule = name[0] !== "/" && !name.match(fileRegExp);
-		name = path.resolve(path.join(path.dirname(name[0] !== "." ? Runtime.fileStack[0] : Runtime.getCurrentFile()), name));
+		name = path.resolve(path.join(path.dirname(name[0] !== "." ? Runtime.getEntryPointFile() : Runtime.getCurrentFile()), name));
 		name += isModule ? ".js" : "";
 				
 		// Make sure that the file exists and then process it
 		if (fs.existsSync(name)) {
-					
+			
 			Runtime.fireEvent("requireResolved", "The require path '" + name + "' was resolved", {
 				name: name
 			});
@@ -83,7 +83,7 @@ function callHelper(args, isInclude) {
 			if (!isInclude) {
 				result = result[1];
 			}
-					
+			
 		} else {
 			eventDescription = "The require path '" + name + "' was resolved";
 			Runtime.fireEvent("requireMissing", eventDescription, {
@@ -120,7 +120,6 @@ util.inherits(RequireFunction, Base.FunctionType);
  * @see ECMA-262 Spec Chapter 13.2.1
  */
 RequireFunction.prototype.call = function call(thisVal, args) {
-	console.log('require', args[0].value, Runtime.fileStack);
 	return callHelper(args, false);
 };
 
@@ -132,9 +131,9 @@ RequireFunction.prototype.call = function call(thisVal, args) {
  */
 module.exports.prototype.init = function init() {
 	
-	var globalEnvironmentRecord = Runtime.globalContext.lexicalEnvironment.envRec,
+	var globalEnvironmentRecord = Runtime.getGlobalContext().lexicalEnvironment.envRec,
 		tiobj;
-		
+	
 	// Create the require method
 	globalEnvironmentRecord.createMutableBinding("require", false, true);
 	globalEnvironmentRecord.setMutableBinding("require", new RequireFunction(), false, true);
