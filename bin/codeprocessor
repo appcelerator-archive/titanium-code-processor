@@ -42,9 +42,9 @@ var util = require("util"),
 		.option("log-level", {
 			abbr: "l",
 			metavar: "LOG_LEVEL",
-			default: "notice",
+			default: "info",
 			help: "The logging level",
-			choices: ["emergency", "alert", "critical", "error", "warn", "notice", "info", "debug"]
+			choices: ["error", "warn", "notice", "info", "debug", "trace"]
 		})
 		.option("osname", {
 			abbr: "o",
@@ -63,14 +63,30 @@ var util = require("util"),
 	plugins,
 	entryPoint,
 	startTime,
-	result;
+	result,
+	logger;
+
+// Create the logger
+logger = new (winston.Logger)({
+	transports: [
+		new (winston.transports.Console)({ level: parsedOptions.verbose ? 'trace' : parsedOptions["log-level"] })
+	],
+	levels: {
+		trace: 0, 
+		debug: 1,
+		info: 2,
+		notice: 3,
+		warn: 4,
+		error: 5 
+	}
+});
 
 // Parse the config options
 if (parsedOptions.config) {
 	for(i = 0, len = parsedOptions.config.length; i < len; i++) {
 		configOption = parsedOptions.config[i].split("=");
 		if (configOption.length !== 2) {
-			winston.log("error", "Invalid option '" + parsedOptions.config[i] + "'\n");
+			logger.log("error", "Invalid option '" + parsedOptions.config[i] + "'\n");
 			process.exit(1);
 		}
 		options[configOption[0]] = configOption[1];
@@ -96,16 +112,16 @@ entryPoint = path.join(projectRoot, "Resources", "app.js");
 if (!fs.existsSync(entryPoint)) {
 	throw new Error("Error: Project entry point '" + entryPoint + "' does not exist.");
 }
-winston.log("debug", "Processing app entry point '" + entryPoint + "'");
+logger.log("debug", "Processing app entry point '" + entryPoint + "'");
 
 // Process the code
 startTime = (new Date()).getTime();
 
 options.sdkPath = "/Library/Application Support/Titanium/mobilesdk/osx/3.0.0";
 options.platform = parsedOptions.osname;
-result = CodeProcessor.process([entryPoint], plugins, options, winston);
+result = CodeProcessor.process([entryPoint], plugins, options, logger);
 			
-winston.log("info", "Code processing finished successfully in " + ((new Date()).getTime() - startTime) + " ms.");
-winston.log("info", util.inspect(CodeProcessor.getResults(), false, 4));
+logger.log("info", "Code processing finished successfully in " + ((new Date()).getTime() - startTime) + " ms.");
+logger.log("info", util.inspect(CodeProcessor.getResults(), false, 4));
 			
 process.exit(result[0] === "normal" ? 0 : 1);
