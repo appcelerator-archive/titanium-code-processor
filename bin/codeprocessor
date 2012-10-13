@@ -16,6 +16,8 @@ var util = require("util"),
 	wrench = require("wrench"),
 	
 	CodeProcessor = require(path.resolve(path.join(__dirname, ".."))),
+	
+	sdkPath = "/Library/Application Support/Titanium/mobilesdk/osx/3.1.0",
 
 // ******** CLI Options Parsing ********
 
@@ -117,7 +119,7 @@ logger.log("info", "Processing app entry point '" + entryPoint + "'");
 // Process the code
 startTime = (new Date()).getTime();
 
-options.sdkPath = "/Library/Application Support/Titanium/mobilesdk/osx/3.0.0";
+options.sdkPath = sdkPath;
 options.platform = parsedOptions.osname;
 result = CodeProcessor.process([entryPoint], plugins, options, logger);
 			
