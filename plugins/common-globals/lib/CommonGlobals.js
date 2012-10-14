@@ -34,7 +34,8 @@ module.exports = function () {};
  */
 module.exports.prototype.init = function init() {
 	
-	var globalEnvironmentRecord = Runtime.getGlobalContext().lexicalEnvironment.envRec;
+	var globalEnvironmentRecord = Runtime.getGlobalContext().lexicalEnvironment.envRec,
+		stringObject = Runtime.getGlobalObject().get('String');
 	
 	function addObject(name, value) {
 		globalEnvironmentRecord.createMutableBinding(name, false, true);
@@ -47,8 +48,13 @@ module.exports.prototype.init = function init() {
 	addObject("clearTimeout", new ClearTimeoutFunc());
 	addObject("setInterval", new SetIntervalFunc());
 	addObject("setTimeout", new SetTimeoutFunc());
-	
 	addObject("console", new ConsoleObject());
+	
+	stringObject.put('format', new StringFunc());
+	stringObject.put('formatCurrency', new StringFunc());
+	stringObject.put('formatDate', new StringFunc());
+	stringObject.put('formatDecimal', new StringFunc());
+	stringObject.put('formatTime', new StringFunc());
 };
 
 /**
@@ -254,4 +260,18 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 	Runtime.recursionCount--;
 	
 	return result;
+};
+
+/**
+ * Non-standard string extension function
+ * 
+ * @private
+ */
+function StringFunc(className) {
+	Base.ObjectType.call(this, className || "Function");
+	this.put("length", new Base.NumberType(1), false, true);
+}
+util.inherits(StringFunc, Base.FunctionTypeBase);
+StringFunc.prototype.call = function call(thisVal, args) {
+	return new Base.UndefinedType();
 };
