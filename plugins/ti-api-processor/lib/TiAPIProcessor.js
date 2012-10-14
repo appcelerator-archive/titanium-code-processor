@@ -112,11 +112,11 @@ module.exports.prototype.getResults = function getResults() {
  * @param {String} [className] The name of the class, defaults to "Function." This parameter should only be used by a 
  *		constructor for an object extending this one.
  */
-function RequireFunction(returnTypes, className) {
+function TiFunction(returnTypes, className) {
 	Base.ObjectType.call(this, className || "Function");
 	this._returnTypes = returnTypes;
 }
-util.inherits(RequireFunction, Base.FunctionType);
+util.inherits(TiFunction, Base.FunctionType);
 
 /**
  * Calls the require function
@@ -127,7 +127,7 @@ util.inherits(RequireFunction, Base.FunctionType);
  * @returns {module:Base.BaseType} The return value from the function
  * @see ECMA-262 Spec Chapter 13.2.1
  */
-RequireFunction.prototype.call = function call(thisVal, args) {
+TiFunction.prototype.call = function call(thisVal, args) {
 	var returnType,
 		root = api,
 		parent,
@@ -135,13 +135,17 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 	if (this._returnTypes && this._returnTypes.length === 1) {
 		returnType = this._returnTypes[0].type.split('.');
 		for(i = 0, len = returnType.length; i < len; i++) {
-			root = root.children[returnType[i]];
+			root = root && root.children[returnType[i]];
 		}
-		value = createObject(root)
-		Runtime.fireEvent("tiPropertyReferenced", "Property '" + p + "' was referenced" + p, {
-			name: this._returnTypes[0].type,
-			node: root.node
-		});
+		if (root && root.node) {
+			value = createObject(root)
+			Runtime.fireEvent("tiPropertyReferenced", "Property '" + p + "' was referenced" + p, {
+				name: this._returnTypes[0].type,
+				node: root.node
+			});
+		} else {
+			
+		}
 		return value;
 	} else {
 		return new Base.UndefinedType();
@@ -186,11 +190,14 @@ util.inherits(TiObjectType, Base.ObjectType);
  * @see ECMA-262 Spec Chapter 8.12.3
  */
 exports.TiObjectType.prototype.get = function get(p) {
-	var value = Base.ObjectType.prototype.get.apply(this, arguments);
-	Runtime.fireEvent("tiPropertyReferenced", "Property '" + p + "' was referenced" + p, {
-		name: this._api.node.name + '.' + p,
-		node: value._api ? value._api.node : value._property ? value._property : value._function
-	});
+	var value = Base.ObjectType.prototype.get.apply(this, arguments),
+		node = value._api ? value._api.node : value._property ? value._property : value._function;
+	if (node) {
+		Runtime.fireEvent("tiPropertyReferenced", "Property '" + p + "' was referenced" + p, {
+			name: this._api.node.name + '.' + p,
+			node: node
+		});
+	}
 	return value;
 };
 
@@ -370,7 +377,7 @@ function createObject(apiNode) {
 		if (func.name === 'include' && apiNode.node.name === 'Titanium') {
 			value = new IncludeFunction();
 		} else {
-			value = new RequireFunction(func.returnTypes);
+			value = new TiFunction(func.returnTypes);
 		}
 		value._function = func;
 		obj.put(func.name, value, false, true);
