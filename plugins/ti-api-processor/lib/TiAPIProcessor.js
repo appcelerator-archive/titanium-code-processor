@@ -71,7 +71,7 @@ module.exports.prototype.init = function init() {
 	}
 
 	// Create the list of aliases and global objects
-	for(i = 0, aliases.length; i < len; i++) {
+	for (i = 0, aliases.length; i < len; i++) {
 		alias = aliases[i];
 		if (alias) {
 			type = alias.type;
@@ -81,7 +81,7 @@ module.exports.prototype.init = function init() {
 	}
 	
 	// Inject the global objects
-	for(p in typesToInsert) {
+	for (p in typesToInsert) {
 		obj = createObject(api.children[p]);
 		globalObject.put(p, obj, false, true);
 		for(i = 0, len = typesToInsert[p].length; i < len; i++) {
@@ -145,8 +145,8 @@ TiFunction.prototype.call = function call(thisVal, args) {
 			});
 		} else {
 			Runtime.fireEvent('nonTiPropertyReference', 'Property "' + p + '" was referenced but is not part of the API', {
-				name: this._api.node.name + '.' + p
-			}));
+				name: p
+			});
 		}
 		return value;
 	} else {
@@ -201,8 +201,8 @@ exports.TiObjectType.prototype.get = function get(p) {
 		});
 	} else {
 		Runtime.fireEvent('nonTiPropertyReference', 'Property "' + p + '" was referenced but is not part of the API', {
-			name: this._api.node.name + '.' + p
-		}));
+			name: p
+		});
 	}
 	return value;
 };
@@ -238,8 +238,8 @@ exports.TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent
 			});
 		} else {
 			Runtime.fireEvent('nonTiPropertySet', 'Property "' + p + '" was set but is not part of the API', {
-				name: this._api.node.name + '.' + p
-			}));
+				name: p
+			});
 		}
 	}
 };
