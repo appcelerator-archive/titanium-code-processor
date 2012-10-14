@@ -17,8 +17,6 @@ var fs = require("fs"),
 	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, "Exceptions")),
 	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, "CodeProcessor")),
 	
-	RequireProvider = require('../../require-provider'),
-	
 	jsca,
 	platform,
 	
@@ -275,7 +273,58 @@ util.inherits(IncludeFunction, Base.FunctionType);
  * @see ECMA-262 Spec Chapter 13.2.1
  */
 IncludeFunction.prototype.call = function call(thisVal, args) {
-	return RequireProvider.callHelper(args, true);
+	var file = args && Base.getValue(args[0]),
+		evalFunc,
+		root,
+		module,
+		result = new Base.UnknownType();
+	
+	// Validate the file
+	if (!file) {
+		file = new Base.UndefinedType();
+	}
+	if (Base.type(file) === "Unknown") {
+		
+		eventDescription = "A value that could not be evaluated was passed to Ti.include";
+		Runtime.fireEvent("requireUnresolved", eventDescription, {
+			name: "<Could not evaluate Ti.include path>"
+		});
+		Runtime.reportWarning("requireUnresolved", eventDescription, {
+			name: "<Could not evaluate Ti.include path>"
+		});
+		return result;
+	}
+	file = Base.toString(file).value;
+	file = path.resolve(path.join(path.dirname(file[0] !== "." ? Runtime.getEntryPointFile() : Runtime.getCurrentFile()), file));
+	
+	// Make sure the file exists
+	console.log(path.resolve(file));
+	if (fs.existsSync(file)) {
+		
+		// Fire the parsing begin event
+		Runtime.fireEvent("fileProcessingBegin", "Processing is beginning for file '" + file + "'", {
+			file: file
+		});
+		
+		// Set the current file
+		Runtime.setCurrentFile(file);
+		
+		// Eval the code
+		evalFunc = Runtime.getGlobalObject().get('eval');
+		evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(file).toString())]);
+		
+		// Restore the previous file
+		Runtime.popCurrentFile();
+		
+		// Fire the parsing end event
+		Runtime.fireEvent("fileProcessingEnd", "Processing finished for file '" + file + "'", {
+			file: file
+		});
+		
+	} else {
+		throw new Error("Could not load file '" + file + "'");
+	}
+	return result;
 };
 
 // ******** Helper Methods ********

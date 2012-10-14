@@ -27,14 +27,28 @@ var util = require("util"),
 module.exports = function () {};
 
 /**
- * Performs the function call that requires/includes a file
+ * @classdesc Customized require() function that doesn't actually execute code in the interpreter, but rather does it here.
+ * 
+ * @constructor
+ * @private
+ * @param {String} [className] The name of the class, defaults to "Function." This parameter should only be used by a 
+ *		constructor for an object extending this one.
+ */
+function RequireFunction(className) {
+	Base.ObjectType.call(this, className || "Function");
+}
+util.inherits(RequireFunction, Base.FunctionType);
+
+/**
+ * Calls the require function
  * 
  * @method
+ * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
  * @param {Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
- * @param {Boolean} useCurrentContext Indicates whether this operation should use the current contect or create a new one
+ * @returns {module:Base.BaseType} The return value from the function
+ * @see ECMA-262 Spec Chapter 13.2.1
  */
-module.exports.callHelper = callHelper;
-function callHelper(args, isInclude) {
+RequireFunction.prototype.call = function call(thisVal, args) {
 	
 	// Validate and parse the args
 	var name = args && Base.getValue(args[0]),
@@ -79,10 +93,7 @@ function callHelper(args, isInclude) {
 			Runtime.fireEvent("requireResolved", "The require path '" + name + "' was resolved", {
 				name: name
 			});
-			result = CodeProcessor.processFile(name, isModule, isInclude);
-			if (!isInclude) {
-				result = result[1];
-			}
+			result = CodeProcessor.processFile(name, isModule)[1];
 			
 		} else {
 			eventDescription = "The require path '" + name + "' was resolved";
@@ -95,32 +106,6 @@ function callHelper(args, isInclude) {
 		}
 	}
 	return result;
-}
-
-/**
- * @classdesc Customized require() function that doesn't actually execute code in the interpreter, but rather does it here.
- * 
- * @constructor
- * @private
- * @param {String} [className] The name of the class, defaults to "Function." This parameter should only be used by a 
- *		constructor for an object extending this one.
- */
-function RequireFunction(className) {
-	Base.ObjectType.call(this, className || "Function");
-}
-util.inherits(RequireFunction, Base.FunctionType);
-
-/**
- * Calls the require function
- * 
- * @method
- * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
- * @param {Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
- * @returns {module:Base.BaseType} The return value from the function
- * @see ECMA-262 Spec Chapter 13.2.1
- */
-RequireFunction.prototype.call = function call(thisVal, args) {
-	return callHelper(args, false);
 };
 
 /**
