@@ -131,7 +131,39 @@ TiFunction.prototype.call = function call(thisVal, args) {
 	var returnType,
 		root = api,
 		parent,
-		i, len;
+		i, j, len,
+		value = new Base.UnknownType(),
+		callArgs;
+	for(i = 0, len = args.length; i < len; i++) {
+		if (Base.isCallable(args[i]) && Base.type(args[i]) !== "Unknown") {
+			if (++Runtime.recursionCount === Runtime.options.maxRecursionLimit) {
+		
+				// Fire an event and report a warning
+				eventDescription = "Maximum application recursion limit of " + Runtime.options.maxRecursionLimit + 
+					" reached, could not fully process code";
+				eventData = {
+					ruleName: "call"
+				};
+				Runtime.fireEvent("maxRecusionLimitReached", eventDescription, eventData);
+				Runtime.reportWarning("maxRecusionLimitReached", eventDescription, eventData);
+			
+				// Set the result to unknown
+				result = new Base.UnknownType();
+		
+			} else {
+				
+				// Call the function, discarding the result
+				callArgs = [];
+				for(j = 0; j < args[i].get('length').value; j++) {
+					callArgs[j] = new Base.UnknownType();
+				}
+				Runtime.ambiguousCode++;
+				args[i].call(new Base.UndefinedType(), callArgs);
+				Runtime.ambiguousCode--;
+			}
+			Runtime.recursionCount--;
+		}
+	}
 	if (this._returnTypes && this._returnTypes.length === 1) {
 		returnType = this._returnTypes[0].type.split('.');
 		for(i = 0, len = returnType.length; i < len; i++) {
