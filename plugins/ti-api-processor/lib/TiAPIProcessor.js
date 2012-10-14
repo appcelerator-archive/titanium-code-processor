@@ -139,12 +139,14 @@ TiFunction.prototype.call = function call(thisVal, args) {
 		}
 		if (root && root.node) {
 			value = createObject(root)
-			Runtime.fireEvent("tiPropertyReferenced", "Property '" + p + "' was referenced" + p, {
+			Runtime.fireEvent("tiPropertyReferenced", "Property '" + p + "' was referenced", {
 				name: this._returnTypes[0].type,
 				node: root.node
 			});
 		} else {
-			
+			Runtime.fireEvent('nonTiPropertyReference', 'Property "' + p + '" was referenced but is not part of the API', {
+				name: this._api.node.name + '.' + p
+			}));
 		}
 		return value;
 	} else {
@@ -193,10 +195,14 @@ exports.TiObjectType.prototype.get = function get(p) {
 	var value = Base.ObjectType.prototype.get.apply(this, arguments),
 		node = value._api ? value._api.node : value._property ? value._property : value._function;
 	if (node) {
-		Runtime.fireEvent("tiPropertyReferenced", "Property '" + p + "' was referenced" + p, {
+		Runtime.fireEvent("tiPropertyReferenced", "Property '" + p + "' was referenced", {
 			name: this._api.node.name + '.' + p,
 			node: node
 		});
+	} else {
+		Runtime.fireEvent('nonTiPropertyReference', 'Property "' + p + '" was referenced but is not part of the API', {
+			name: this._api.node.name + '.' + p
+		}));
 	}
 	return value;
 };
@@ -222,12 +228,19 @@ exports.TiObjectType.prototype.get = function get(p) {
  * @see ECMA-262 Spec Chapter 8.12.5
  */
 exports.TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent) {
+	var node = v._api ? v._api.node : v._property ? v._property : v._function;
 	Base.ObjectType.prototype.put.apply(this, arguments);
 	if (!suppressEvent) {
-		Runtime.fireEvent("tiPropertySet", "Property '" + p + "' was set", {
-			name: this._api.node.name + '.' + p,
-			node: v._api ? v._api.node : v._property ? v._property : v._function
-		});
+		if (node) {
+			Runtime.fireEvent("tiPropertySet", "Property '" + p + "' was set", {
+				name: this._api.node.name + '.' + p,
+				node: node
+			});
+		} else {
+			Runtime.fireEvent('nonTiPropertySet', 'Property "' + p + '" was set but is not part of the API', {
+				name: this._api.node.name + '.' + p
+			}));
+		}
 	}
 };
 
