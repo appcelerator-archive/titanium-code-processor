@@ -67,8 +67,8 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 		name = new Base.UndefinedType();
 	}
 	
-	if (Base.type(name) === "Unknown") {
-		
+	name = Base.toString(name);
+	if (Base.type(name) !== "String") {
 		eventDescription = "A value that could not be evaluated was passed to require";
 		Runtime.fireEvent("requireUnresolved", eventDescription, {
 			name: "<Could not evaluate require path>"
@@ -78,10 +78,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 		});
 		return result;
 	}
-	
-	name = Base.toString(name).value;
-	
-	// We don't process plugins or urls at compile time
+	name = name.value;
 	if (pluginRegExp.test(name) || name.indexOf(":") !== -1) {
 		Runtime.fireEvent("requireUnresolved", 
 			"Plugins and URLS can not be evaluated at compile-time and will be deferred to runtime.", {

@@ -11,6 +11,7 @@ var path = require("path"),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
 	results = {
 		resolved: [],
+		unresolved: [],
 		missing: []
 	};
 
@@ -27,6 +28,9 @@ var path = require("path"),
 module.exports = function () {
 	Runtime.on("tiIncludeResolved", function(e) {
 		results.resolved.push(e);
+	});
+	Runtime.on("tiIncludeUnresolved", function(e) {
+		results.unresolved.push(e);
 	});
 	Runtime.on("tiIncludeMissing", function(e) {
 		results.missing.push(e);

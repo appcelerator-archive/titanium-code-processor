@@ -346,18 +346,19 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 	if (!file) {
 		file = new Base.UndefinedType();
 	}
-	if (Base.type(file) === "Unknown") {
-		
+	
+	file = Base.toString(file);
+	if (Base.type(file) !== "String") {
 		eventDescription = "A value that could not be evaluated was passed to Ti.include";
-		Runtime.fireEvent("requireUnresolved", eventDescription, {
+		Runtime.fireEvent("tiIncludeUnresolved", eventDescription, {
 			name: "<Could not evaluate Ti.include path>"
 		});
-		Runtime.reportWarning("requireUnresolved", eventDescription, {
+		Runtime.reportWarning("tiIncludeUnresolved", eventDescription, {
 			name: "<Could not evaluate Ti.include path>"
 		});
 		return result;
 	}
-	file = Base.toString(file).value;
+	file = file.value;
 	
 	if (file[0] === '.') {
 		filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentFile()), file));
