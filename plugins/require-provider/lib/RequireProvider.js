@@ -115,13 +115,12 @@ RequireFunction.prototype.call = function call(thisVal, args) {
  * @name module:plugins/RequireProvider#init
  */
 module.exports.prototype.init = function init() {
-	
-	var globalEnvironmentRecord = Runtime.getGlobalContext().lexicalEnvironment.envRec,
-		tiobj;
-	
-	// Create the require method
-	globalEnvironmentRecord.createMutableBinding("require", false, true);
-	globalEnvironmentRecord.setMutableBinding("require", new RequireFunction(), false, true);
+	Runtime.getGlobalObject().defineOwnProperty('require', {
+		value: new RequireFunction(),
+		writable: false,
+		enumerable: true,
+		configurable: true
+	}, false, true);
 };
 
 /**
