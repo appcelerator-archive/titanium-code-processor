@@ -102,7 +102,7 @@ if (parsedOptions[0]) {
 projectRoot = path.resolve(projectRoot);
 
 // Get the list of plugins
-plugins = parsedOptions.plugin || [];
+plugins = parsedOptions.plugin;
 
 // Make sure that the project exists
 if (!fs.existsSync(projectRoot)) {

@@ -96,7 +96,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 			result = CodeProcessor.processFile(name, isModule)[1];
 			
 		} else {
-			eventDescription = "The require path '" + name + "' was resolved";
+			eventDescription = "The require path '" + name + "' could not be found";
 			Runtime.fireEvent("requireMissing", eventDescription, {
 				name: name
 			});

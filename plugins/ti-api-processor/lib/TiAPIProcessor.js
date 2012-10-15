@@ -83,9 +83,19 @@ module.exports.prototype.init = function init() {
 	// Inject the global objects
 	for (p in typesToInsert) {
 		obj = createObject(api.children[p]);
-		globalObject.put(p, obj, false, true);
+		globalObject.defineOwnProperty(p, {
+			value: obj,
+			writable: false,
+			enumerable: true,
+			configurable: true
+		}, false, true);
 		for(i = 0, len = typesToInsert[p].length; i < len; i++) {
-			globalObject.put(typesToInsert[p][i], obj, false, true);
+			globalObject.defineOwnProperty(typesToInsert[p][i], {
+				value: obj,
+				writable: false,
+				enumerable: true,
+				configurable: true
+			}, false, true);
 		}
 	}
 };
@@ -350,8 +360,11 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 	file = path.resolve(path.join(path.dirname(file[0] !== "." ? Runtime.getEntryPointFile() : Runtime.getCurrentFile()), file));
 	
 	// Make sure the file exists
-	console.log(path.resolve(file));
 	if (fs.existsSync(file)) {
+		
+		Runtime.fireEvent("tiIncludeResolved", "The Ti.include path '" + file + "' was resolved", {
+			file: file
+		});
 		
 		// Fire the parsing begin event
 		Runtime.fireEvent("fileProcessingBegin", "Processing is beginning for file '" + file + "'", {
@@ -374,7 +387,13 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 		});
 		
 	} else {
-		throw new Error("Could not load file '" + file + "'");
+		eventDescription = "The Ti.include path '" + name + "' could not be found";
+		Runtime.fireEvent("tiIncludeMissing", eventDescription, {
+			name: name
+		});
+		Runtime.reportError("tiIncludeMissing", eventDescription, {
+			name: name
+		});
 	}
 	return result;
 };

@@ -34,27 +34,31 @@ module.exports = function () {};
  */
 module.exports.prototype.init = function init() {
 	
-	var globalEnvironmentRecord = Runtime.getGlobalContext().lexicalEnvironment.envRec,
-		stringObject = Runtime.getGlobalObject().get('String');
+	var globalObject = Runtime.getGlobalObject(),
+		stringObject = globalObject.get('String');
 	
-	function addObject(name, value) {
-		globalEnvironmentRecord.createMutableBinding(name, false, true);
-		globalEnvironmentRecord.setMutableBinding(name, value, false, true);
+	function addObject(name, value, obj) {
+		obj.defineOwnProperty(name, {
+			value: value,
+			writable: false,
+			enumerable: true,
+			configurable: true
+		}, false, true);
 	}
 
-	addObject("L", new LFunc());
-	addObject("alert", new AlertFunc());
-	addObject("clearInterval", new ClearIntervalFunc());
-	addObject("clearTimeout", new ClearTimeoutFunc());
-	addObject("setInterval", new SetIntervalFunc());
-	addObject("setTimeout", new SetTimeoutFunc());
-	addObject("console", new ConsoleObject());
+	addObject("L", new LFunc(), globalObject);
+	addObject("alert", new AlertFunc(), globalObject);
+	addObject("clearInterval", new ClearIntervalFunc(), globalObject);
+	addObject("clearTimeout", new ClearTimeoutFunc(), globalObject);
+	addObject("setInterval", new SetIntervalFunc(), globalObject);
+	addObject("setTimeout", new SetTimeoutFunc(), globalObject);
+	addObject("console", new ConsoleObject(), globalObject);
 	
-	stringObject.put('format', new StringFunc());
-	stringObject.put('formatCurrency', new StringFunc());
-	stringObject.put('formatDate', new StringFunc());
-	stringObject.put('formatDecimal', new StringFunc());
-	stringObject.put('formatTime', new StringFunc());
+	addObject('format', new StringFunc(), stringObject);
+	addObject('formatCurrency', new StringFunc(), stringObject);
+	addObject('formatDate', new StringFunc(), stringObject);
+	addObject('formatDecimal', new StringFunc(), stringObject);
+	addObject('formatTime', new StringFunc(), stringObject);
 };
 
 /**
