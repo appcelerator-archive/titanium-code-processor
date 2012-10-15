@@ -9,11 +9,15 @@
 var util = require("util"),
 	path = require("path"),
 	fs = require("fs"),
+	
 	Base = require(path.join(global.nodeCodeProcessorLibDir, "Base")),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
 	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, "CodeProcessor")),
+	
 	pluginRegExp = /^(.+?)\!(.*)$/,
-	fileRegExp = /\.js$/;
+	fileRegExp = /\.js$/,
+	
+	platform;
 
 
 /**
@@ -24,7 +28,9 @@ var util = require("util"),
  * @constructor
  * @name module:plugins/RequireProvider
  */
-module.exports = function () {};
+module.exports = function (options) {
+	platform = options.platform;
+};
 
 /**
  * @classdesc Customized require() function that doesn't actually execute code in the interpreter, but rather does it here.
@@ -52,6 +58,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 	
 	// Validate and parse the args
 	var name = args && Base.getValue(args[0]),
+		filePath,
 		result = new Base.UnknownType(),
 		isModule,
 		eventDescription;
@@ -81,27 +88,35 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 				name: name
 			});
 	} else {
-		
 		// Resolve the path
 		isModule = name[0] !== "/" && !name.match(fileRegExp);
-		name = path.resolve(path.join(path.dirname(name[0] !== "." ? Runtime.getEntryPointFile() : Runtime.getCurrentFile()), name));
-		name += isModule ? ".js" : "";
+		if (name[0] === '.') {
+			filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentFile()), name));
+			filePath += isModule ? ".js" : "";
+		} else {
+			filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, name));
+			filePath += isModule ? ".js" : "";
+			if (!fs.existsSync(filePath)) {
+				filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), name));
+				filePath += isModule ? ".js" : "";
+			}
+		}
 				
 		// Make sure that the file exists and then process it
-		if (fs.existsSync(name)) {
+		if (fs.existsSync(filePath)) {
 			
-			Runtime.fireEvent("requireResolved", "The require path '" + name + "' was resolved", {
-				name: name
+			Runtime.fireEvent("requireResolved", "The require path '" + filePath + "' was resolved", {
+				name: filePath
 			});
-			result = CodeProcessor.processFile(name, isModule)[1];
+			result = CodeProcessor.processFile(filePath, isModule)[1];
 			
 		} else {
-			eventDescription = "The require path '" + name + "' could not be found";
+			eventDescription = "The require path '" + filePath + "' could not be found";
 			Runtime.fireEvent("requireMissing", eventDescription, {
-				name: name
+				name: filePath
 			});
 			Runtime.reportError("requireMissing", eventDescription, {
-				name: name
+				name: filePath
 			});
 		}
 	}

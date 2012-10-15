@@ -336,6 +336,7 @@ util.inherits(IncludeFunction, Base.FunctionType);
  */
 IncludeFunction.prototype.call = function call(thisVal, args) {
 	var file = args && Base.getValue(args[0]),
+		filePath,
 		evalFunc,
 		root,
 		module,
@@ -357,42 +358,50 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 		return result;
 	}
 	file = Base.toString(file).value;
-	file = path.resolve(path.join(path.dirname(file[0] !== "." ? Runtime.getEntryPointFile() : Runtime.getCurrentFile()), file));
+	
+	if (file[0] === '.') {
+		filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentFile()), file));
+	} else {
+		filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, file));
+		if (!fs.existsSync(filePath)) {
+			filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), file));
+		}
+	}
 	
 	// Make sure the file exists
-	if (fs.existsSync(file)) {
+	if (fs.existsSync(filePath)) {
 		
-		Runtime.fireEvent("tiIncludeResolved", "The Ti.include path '" + file + "' was resolved", {
-			file: file
+		Runtime.fireEvent("tiIncludeResolved", "The Ti.include path '" + filePath + "' was resolved", {
+			file: filePath
 		});
 		
 		// Fire the parsing begin event
-		Runtime.fireEvent("fileProcessingBegin", "Processing is beginning for file '" + file + "'", {
-			file: file
+		Runtime.fireEvent("fileProcessingBegin", "Processing is beginning for file '" + filePath + "'", {
+			file: filePath
 		});
 		
 		// Set the current file
-		Runtime.setCurrentFile(file);
+		Runtime.setCurrentFile(filePath);
 		
 		// Eval the code
 		evalFunc = Runtime.getGlobalObject().get('eval');
-		evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(file).toString())]);
+		evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())]);
 		
 		// Restore the previous file
 		Runtime.popCurrentFile();
 		
 		// Fire the parsing end event
-		Runtime.fireEvent("fileProcessingEnd", "Processing finished for file '" + file + "'", {
-			file: file
+		Runtime.fireEvent("fileProcessingEnd", "Processing finished for file '" + filePath + "'", {
+			file: filePath
 		});
 		
 	} else {
-		eventDescription = "The Ti.include path '" + name + "' could not be found";
+		eventDescription = "The Ti.include path '" + filePath + "' could not be found";
 		Runtime.fireEvent("tiIncludeMissing", eventDescription, {
-			name: name
+			name: filePath
 		});
 		Runtime.reportError("tiIncludeMissing", eventDescription, {
-			name: name
+			name: filePath
 		});
 	}
 	return result;
