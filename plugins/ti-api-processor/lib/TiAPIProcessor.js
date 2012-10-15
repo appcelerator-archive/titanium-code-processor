@@ -459,6 +459,14 @@ function createObject(apiNode) {
 		} else {
 			value = new TiFunction(func.returnTypes);
 		}
+		if (func.parameters) {
+			value.defineOwnProperty('length', {
+				value: new Base.NumberType(func.parameters.length),
+				writable: false,
+				enumerable: true,
+				configurable: true
+			}, false, true);
+		}
 		value._function = func;
 		obj.defineOwnProperty(func.name, {
 			value: value,
