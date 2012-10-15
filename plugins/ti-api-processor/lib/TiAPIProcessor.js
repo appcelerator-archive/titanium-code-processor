@@ -413,7 +413,13 @@ function createObject(apiNode) {
 			value = new Base.UnknownType();
 		}
 		value._property = property;
-		obj.put(name, value, false, true);
+		obj.defineOwnProperty(name, {
+			value: value,
+			// TODO: Need to read the "permission" property from the JSCA, only it doesn't exist yet
+			writable: !(name === 'osname' && apiNode.node.name === 'Titanium.Platform') && !property.isClassProperty,
+			enumerable: true,
+			configurable: true
+		}, false, true);
 	}
 	
 	// Add the methods
@@ -425,12 +431,22 @@ function createObject(apiNode) {
 			value = new TiFunction(func.returnTypes);
 		}
 		value._function = func;
-		obj.put(func.name, value, false, true);
+		obj.defineOwnProperty(func.name, {
+			value: value,
+			writable: false,
+			enumerable: true,
+			configurable: true
+		}, false, true);
 	}
 	
 	// Add the children
 	for(p in children) {
-		obj.put(p, createObject(children[p]))
+		obj.defineOwnProperty(p, {
+			value: createObject(children[p]),
+			writable: false,
+			enumerable: true,
+			configurable: true
+		}, false, true);
 	}
 	
 	// Return the newly created object
