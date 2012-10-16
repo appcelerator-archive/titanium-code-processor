@@ -5,17 +5,17 @@
  * Processes Titanium APIs for the code processor
  *
  * @module plugins/TiAPIProcessor
- * @author Bryan Hughes &lt;<a href="mailto:bhughes@appcelerator.com">bhughes@appcelerator.com</a>&gt;
+ * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
-var fs = require("fs"),
-	path = require("path"),
-	util = require("util"),
+var fs = require('fs'),
+	path = require('path'),
+	util = require('util'),
 	
-	Base = require(path.join(global.nodeCodeProcessorLibDir, "Base")),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
-	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, "Exceptions")),
-	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, "CodeProcessor")),
+	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
+	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, 'Exceptions')),
+	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'CodeProcessor')),
 	
 	jsca,
 	platform,
@@ -33,7 +33,7 @@ var fs = require("fs"),
  * @name module:plugins/TiAPIProcessor
  */
 module.exports = function(options) {
-	jsca = JSON.parse(fs.readFileSync(path.join(options.sdkPath, "api.jsca")));
+	jsca = JSON.parse(fs.readFileSync(path.join(options.sdkPath, 'api.jsca')));
 	platform = options.platform;
 };
 
@@ -47,7 +47,7 @@ module.exports.prototype.init = function init() {
 	
 	// Iterate through the json object and inject all the APIs
 	var typesToInsert = {},
-		globalObject = Runtime.globalObject,
+		globalObject = Runtime.getGlobalObject(),
 		types = jsca.types,
 		type,
 		aliases = jsca.aliases,
@@ -71,7 +71,7 @@ module.exports.prototype.init = function init() {
 	}
 
 	// Create the list of aliases and global objects
-	for(i = 0, aliases.length; i < len; i++) {
+	for (i = 0, aliases.length; i < len; i++) {
 		alias = aliases[i];
 		if (alias) {
 			type = alias.type;
@@ -81,11 +81,21 @@ module.exports.prototype.init = function init() {
 	}
 	
 	// Inject the global objects
-	for(p in typesToInsert) {
+	for (p in typesToInsert) {
 		obj = createObject(api.children[p]);
-		globalObject.put(p, obj, false, true);
+		globalObject.defineOwnProperty(p, {
+			value: obj,
+			writable: false,
+			enumerable: true,
+			configurable: true
+		}, false, true);
 		for(i = 0, len = typesToInsert[p].length; i < len; i++) {
-			globalObject.put(typesToInsert[p][i], obj, false, true);
+			globalObject.defineOwnProperty(typesToInsert[p][i], {
+				value: obj,
+				writable: false,
+				enumerable: true,
+				configurable: true
+			}, false, true);
 		}
 	}
 };
@@ -109,14 +119,14 @@ module.exports.prototype.getResults = function getResults() {
  * @constructor
  * @private
  * @param {Array[String]|undefined} returnTypes An array of return types, or undefined
- * @param {String} [className] The name of the class, defaults to "Function." This parameter should only be used by a 
+ * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a 
  *		constructor for an object extending this one.
  */
-function RequireFunction(returnTypes, className) {
-	Base.ObjectType.call(this, className || "Function");
+function TiFunction(returnTypes, className) {
+	Base.ObjectType.call(this, className || 'Function');
 	this._returnTypes = returnTypes;
 }
-util.inherits(RequireFunction, Base.FunctionType);
+util.inherits(TiFunction, Base.FunctionType);
 
 /**
  * Calls the require function
@@ -127,21 +137,59 @@ util.inherits(RequireFunction, Base.FunctionType);
  * @returns {module:Base.BaseType} The return value from the function
  * @see ECMA-262 Spec Chapter 13.2.1
  */
-RequireFunction.prototype.call = function call(thisVal, args) {
+TiFunction.prototype.call = function call(thisVal, args) {
 	var returnType,
 		root = api,
 		parent,
-		i, len;
+		i, j, len,
+		value = new Base.UnknownType(),
+		callArgs;
+	for(i = 0, len = args.length; i < len; i++) {
+		if (Base.isCallable(args[i]) && Base.type(args[i]) !== 'Unknown') {
+			if (++Runtime.recursionCount === Runtime.options.maxRecursionLimit) {
+		
+				// Fire an event and report a warning
+				eventDescription = 'Maximum application recursion limit of ' + Runtime.options.maxRecursionLimit + 
+					' reached, could not fully process code';
+				eventData = {
+					ruleName: 'call'
+				};
+				Runtime.fireEvent('maxRecusionLimitReached', eventDescription, eventData);
+				Runtime.reportWarning('maxRecusionLimitReached', eventDescription, eventData);
+			
+				// Set the result to unknown
+				result = new Base.UnknownType();
+		
+			} else {
+				
+				// Call the function, discarding the result
+				callArgs = [];
+				for(j = 0; j < args[i].get('length').value; j++) {
+					callArgs[j] = new Base.UnknownType();
+				}
+				Runtime.ambiguousCode++;
+				args[i].call(new Base.UndefinedType(), callArgs);
+				Runtime.ambiguousCode--;
+			}
+			Runtime.recursionCount--;
+		}
+	}
 	if (this._returnTypes && this._returnTypes.length === 1) {
 		returnType = this._returnTypes[0].type.split('.');
 		for(i = 0, len = returnType.length; i < len; i++) {
-			root = root.children[returnType[i]];
+			root = root && root.children[returnType[i]];
 		}
-		value = createObject(root)
-		Runtime.fireEvent("tiPropertyReferenced", "Property '" + p + "' was referenced" + p, {
-			name: this._returnTypes[0].type,
-			node: root.node
-		});
+		if (root && root.node) {
+			value = createObject(root)
+			Runtime.fireEvent('tiPropertyReferenced', 'Property "' + p + '" was referenced', {
+				name: this._returnTypes[0].type,
+				node: root.node
+			});
+		} else {
+			Runtime.fireEvent('nonTiPropertyReference', 'Property "' + p + '" was referenced but is not part of the API', {
+				name: p
+			});
+		}
 		return value;
 	} else {
 		return new Base.UndefinedType();
@@ -163,7 +211,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 exports.TiObjectType = TiObjectType;
 function TiObjectType(api, className) {
 	this._api = api;
-	Base.ObjectType.call(this, className || "Object");
+	Base.ObjectType.call(this, className || 'Object');
 }
 util.inherits(TiObjectType, Base.ObjectType);
 
@@ -186,11 +234,18 @@ util.inherits(TiObjectType, Base.ObjectType);
  * @see ECMA-262 Spec Chapter 8.12.3
  */
 exports.TiObjectType.prototype.get = function get(p) {
-	var value = Base.ObjectType.prototype.get.apply(this, arguments);
-	Runtime.fireEvent("tiPropertyReferenced", "Property '" + p + "' was referenced" + p, {
-		name: this._api.node.name + '.' + p,
-		node: value._api ? value._api.node : value._property ? value._property : value._function
-	});
+	var value = Base.ObjectType.prototype.get.apply(this, arguments),
+		node = value._api ? value._api.node : value._property ? value._property : value._function;
+	if (node) {
+		Runtime.fireEvent('tiPropertyReferenced', 'Property "' + p + '" was referenced', {
+			name: this._api.node.name + '.' + p,
+			node: node
+		});
+	} else {
+		Runtime.fireEvent('nonTiPropertyReference', 'Property "' + p + '" was referenced but is not part of the API', {
+			name: p
+		});
+	}
 	return value;
 };
 
@@ -210,17 +265,24 @@ exports.TiObjectType.prototype.get = function get(p) {
  * @param {String} p The name of the parameter to set the value as
  * @param {module:Base.BaseType} v The value to set
  * @param {Boolean} throwFlag Whether or not to throw an exception on error (related to strict mode)
- * @param {Boolean} suppressEvent Suppresses the "propertySet" event (used when setting prototypes)
+ * @param {Boolean} suppressEvent Suppresses the 'propertySet' event (used when setting prototypes)
  * @throws {{@link module:Exceptions.TypeError}} Thrown when the property cannot be put and throwFlag is true
  * @see ECMA-262 Spec Chapter 8.12.5
  */
 exports.TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent) {
+	var node = v._api ? v._api.node : v._property ? v._property : v._function;
 	Base.ObjectType.prototype.put.apply(this, arguments);
 	if (!suppressEvent) {
-		Runtime.fireEvent("tiPropertySet", "Property '" + p + "' was set", {
-			name: this._api.node.name + '.' + p,
-			node: v._api ? v._api.node : v._property ? v._property : v._function
-		});
+		if (node) {
+			Runtime.fireEvent('tiPropertySet', 'Property "' + p + '" was set', {
+				name: this._api.node.name + '.' + p,
+				node: node
+			});
+		} else {
+			Runtime.fireEvent('nonTiPropertySet', 'Property "' + p + '" was set but is not part of the API', {
+				name: p
+			});
+		}
 	}
 };
 
@@ -242,12 +304,108 @@ exports.TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent
  * @see ECMA-262 Spec Chapter 8.12.7
  */
 exports.TiObjectType.prototype.delete = function objDelete(p, throwFlag) {
-	var success = Base.ObjectType.prototype["delete"].apply(this, arguments);
-	Runtime.fireEvent("tiPropertyDeleted", "Property '" + p + "' was deleted", {
+	var success = Base.ObjectType.prototype['delete'].apply(this, arguments);
+	Runtime.fireEvent('tiPropertyDeleted', 'Property "' + p + '" was deleted', {
 		name: this._api.node.name + '.' + p,
 		success: success
 	});
 	return success;
+};
+
+/**
+ * @classdesc Customized require() function that doesn't actually execute code in the interpreter, but rather does it here.
+ * 
+ * @constructor
+ * @private
+ * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a 
+ *		constructor for an object extending this one.
+ */
+function IncludeFunction(className) {
+	Base.ObjectType.call(this, className || 'Function');
+}
+util.inherits(IncludeFunction, Base.FunctionType);
+
+/**
+ * Calls the require function
+ * 
+ * @method
+ * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
+ * @param (Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
+ * @returns {module:Base.BaseType} The return value from the function
+ * @see ECMA-262 Spec Chapter 13.2.1
+ */
+IncludeFunction.prototype.call = function call(thisVal, args) {
+	var file = args && Base.getValue(args[0]),
+		filePath,
+		evalFunc,
+		root,
+		module,
+		result = new Base.UnknownType();
+	
+	// Validate the file
+	if (!file) {
+		file = new Base.UndefinedType();
+	}
+	
+	file = Base.toString(file);
+	if (Base.type(file) !== 'String') {
+		eventDescription = 'A value that could not be evaluated was passed to Ti.include';
+		Runtime.fireEvent('tiIncludeUnresolved', eventDescription, {
+			name: '<Could not evaluate Ti.include path>'
+		});
+		Runtime.reportWarning('tiIncludeUnresolved', eventDescription, {
+			name: '<Could not evaluate Ti.include path>'
+		});
+		return result;
+	}
+	file = file.value;
+	
+	if (file[0] === '.') {
+		filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentFile()), file));
+	} else {
+		filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, file));
+		if (!fs.existsSync(filePath)) {
+			filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), file));
+		}
+	}
+	
+	// Make sure the file exists
+	if (fs.existsSync(filePath)) {
+		
+		Runtime.fireEvent('tiIncludeResolved', 'The Ti.include path "' + filePath + '" was resolved', {
+			file: filePath
+		});
+		
+		// Fire the parsing begin event
+		Runtime.fireEvent('fileProcessingBegin', 'Processing is beginning for file "' + filePath + '"', {
+			file: filePath
+		});
+		
+		// Set the current file
+		Runtime.setCurrentFile(filePath);
+		
+		// Eval the code
+		evalFunc = Runtime.getGlobalObject().get('eval');
+		evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())]);
+		
+		// Restore the previous file
+		Runtime.popCurrentFile();
+		
+		// Fire the parsing end event
+		Runtime.fireEvent('fileProcessingEnd', 'Processing finished for file "' + filePath + '"', {
+			file: filePath
+		});
+		
+	} else {
+		eventDescription = 'The Ti.include path "' + filePath + '" could not be found';
+		Runtime.fireEvent('tiIncludeMissing', eventDescription, {
+			name: filePath
+		});
+		Runtime.reportError('tiIncludeMissing', eventDescription, {
+			name: filePath
+		});
+	}
+	return result;
 };
 
 // ******** Helper Methods ********
@@ -276,26 +434,56 @@ function createObject(apiNode) {
 		property = properties[i];
 		name = property.name;
 		type = property.type;
-		if (type in api.children) {
+		if (name === 'osname' && apiNode.node.name === 'Titanium.Platform') {
+			value = new Base.StringType(platform);
+		} else if (type in api.children) {
 			value = createObject(api.children[type]);
 		} else {
 			value = new Base.UnknownType();
 		}
 		value._property = property;
-		obj.put(name, value, false, true);
+		obj.defineOwnProperty(name, {
+			value: value,
+			// TODO: Need to read the 'permission' property from the JSCA, only it doesn't exist yet
+			writable: !(name === 'osname' && apiNode.node.name === 'Titanium.Platform') && !property.isClassProperty,
+			enumerable: true,
+			configurable: true
+		}, false, true);
 	}
 	
 	// Add the methods
 	for(i = 0, len = functions.length; i < len; i++) {
 		func = functions[i];
-		value = new RequireFunction(func.returnTypes);
+		if (func.name === 'include' && apiNode.node.name === 'Titanium') {
+			value = new IncludeFunction();
+		} else {
+			value = new TiFunction(func.returnTypes);
+		}
+		if (func.parameters) {
+			value.defineOwnProperty('length', {
+				value: new Base.NumberType(func.parameters.length),
+				writable: false,
+				enumerable: true,
+				configurable: true
+			}, false, true);
+		}
 		value._function = func;
-		obj.put(func.name, value, false, true);
+		obj.defineOwnProperty(func.name, {
+			value: value,
+			writable: false,
+			enumerable: true,
+			configurable: true
+		}, false, true);
 	}
 	
 	// Add the children
 	for(p in children) {
-		obj.put(p, createObject(children[p]))
+		obj.defineOwnProperty(p, {
+			value: createObject(children[p]),
+			writable: false,
+			enumerable: true,
+			configurable: true
+		}, false, true);
 	}
 	
 	// Return the newly created object

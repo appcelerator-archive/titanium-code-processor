@@ -3,130 +3,22 @@
  * Please see the LICENSE file for information about licensing.</p>
  * 
  * @module plugins/RequireProvider
- * @author Bryan Hughes &lt;<a href="mailto:bhughes@appcelerator.com">bhughes@appcelerator.com</a>&gt;
+ * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
-var util = require("util"),
-	path = require("path"),
-	fs = require("fs"),
-	Base = require(path.join(global.nodeCodeProcessorLibDir, "Base")),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
-	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, "CodeProcessor")),
+var util = require('util'),
+	path = require('path'),
+	fs = require('fs'),
+	
+	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
+	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'CodeProcessor')),
+	
 	pluginRegExp = /^(.+?)\!(.*)$/,
-	fileRegExp = /\.js$/;
-
-function callHelper(args, useCurrentContext) {
+	fileRegExp = /\.js$/,
 	
-	// Validate and parse the args
-	var name = args && Base.getValue(args[0]),
-		result = new Base.UnknownType(),
-		isModule,
-		eventDescription;
-			
-	if (!name) {
-		name = new Base.UndefinedType();
-	}
-			
-	if (Base.type(name) === "Unknown") {
-				
-		eventDescription = "A value that could not be evaluated was passed to require";
-		Runtime.fireEvent("requireUnresolved", eventDescription, {
-			name: "<Could not evaluate require path>"
-		});
-		Runtime.reportWarning("requireUnresolved", eventDescription, {
-			name: "<Could not evaluate require path>"
-		});
-		return result;
-	}
-			
-	name = Base.toString(name).value;
-	
-	// We don't process plugins or urls at compile time
-	if (pluginRegExp.test(name) || name.indexOf(":") !== -1) {
-		Runtime.fireEvent("requireUnresolved", 
-			"Plugins and URLS can not be evaluated at compile-time and will be deferred to runtime.", {
-				name: name
-			});
-	} else {
-		
-		// Resolve the path
-		isModule = name[0] !== "/" && !name.match(fileRegExp);
-		name = path.resolve(path.join(path.dirname(name[0] !== "." ? Runtime.fileStack[0] : Runtime.getCurrentFile()), name));
-		name += isModule ? ".js" : "";
-				
-		// Make sure that the file exists and then process it
-		if (fs.existsSync(name)) {
-					
-			Runtime.fireEvent("requireResolved", "The require path '" + name + "' was resolved", {
-				name: name
-			});
-			result = CodeProcessor.processFile(name, isModule, useCurrentContext)[1];
-					
-		} else {
-			eventDescription = "The require path '" + name + "' was resolved";
-			Runtime.fireEvent("requireMissing", eventDescription, {
-				name: name
-			});
-			Runtime.reportError("requireMissing", eventDescription, {
-				name: name
-			});
-		}
-	}
-			
-	return result;
-}
+	platform;
 
-/**
- * @classdesc Customized require() function that doesn't actually execute code in the interpreter, but rather does it here.
- * 
- * @constructor
- * @private
- * @param {String} [className] The name of the class, defaults to "Function." This parameter should only be used by a 
- *		constructor for an object extending this one.
- */
-function RequireFunction(className) {
-	Base.ObjectType.call(this, className || "Function");
-}
-util.inherits(RequireFunction, Base.FunctionType);
-
-/**
- * Calls the require function
- * 
- * @method
- * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
- * @param (Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
- * @returns {module:Base.BaseType} The return value from the function
- * @see ECMA-262 Spec Chapter 13.2.1
- */
-RequireFunction.prototype.call = function call(thisVal, args) {
-	return callHelper(args, false);
-};
-	
-/**
- * @classdesc Customized require() function that doesn't actually execute code in the interpreter, but rather does it here.
- * 
- * @constructor
- * @private
- * @param {String} [className] The name of the class, defaults to "Function." This parameter should only be used by a 
- *		constructor for an object extending this one.
- */
-function IncludeFunction(className) {
-	Base.ObjectType.call(this, className || "Function");
-}
-util.inherits(IncludeFunction, Base.FunctionType);
-
-/**
- * Calls the require function
- * 
- * @method
- * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
- * @param (Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
- * @returns {module:Base.BaseType} The return value from the function
- * @see ECMA-262 Spec Chapter 13.2.1
- */
-IncludeFunction.prototype.call = function call(thisVal, args) {
-	return callHelper(args, true);
-};
 
 /**
  * Creates an instance of the require provider plugin
@@ -136,7 +28,97 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
  * @constructor
  * @name module:plugins/RequireProvider
  */
-module.exports = function () {};
+module.exports = function (options) {
+	platform = options.platform;
+};
+
+/**
+ * @classdesc Customized require() function that doesn't actually execute code in the interpreter, but rather does it here.
+ * 
+ * @constructor
+ * @private
+ * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a 
+ *		constructor for an object extending this one.
+ */
+function RequireFunction(className) {
+	Base.ObjectType.call(this, className || 'Function');
+}
+util.inherits(RequireFunction, Base.FunctionType);
+
+/**
+ * Calls the require function
+ * 
+ * @method
+ * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
+ * @param {Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
+ * @returns {module:Base.BaseType} The return value from the function
+ * @see ECMA-262 Spec Chapter 13.2.1
+ */
+RequireFunction.prototype.call = function call(thisVal, args) {
+	
+	// Validate and parse the args
+	var name = args && Base.getValue(args[0]),
+		filePath,
+		result = new Base.UnknownType(),
+		isModule,
+		eventDescription;
+		
+	if (!name) {
+		name = new Base.UndefinedType();
+	}
+	
+	name = Base.toString(name);
+	if (Base.type(name) !== 'String') {
+		eventDescription = 'A value that could not be evaluated was passed to require';
+		Runtime.fireEvent('requireUnresolved', eventDescription, {
+			name: '<Could not evaluate require path>'
+		});
+		Runtime.reportWarning('requireUnresolved', eventDescription, {
+			name: '<Could not evaluate require path>'
+		});
+		return result;
+	}
+	name = name.value;
+	if (pluginRegExp.test(name) || name.indexOf(':') !== -1) {
+		Runtime.fireEvent('requireUnresolved', 
+			'Plugins and URLS can not be evaluated at compile-time and will be deferred to runtime.', {
+				name: name
+			});
+	} else {
+		// Resolve the path
+		isModule = name[0] !== '/' && !name.match(fileRegExp);
+		if (name[0] === '.') {
+			filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentFile()), name));
+			filePath += isModule ? '.js' : '';
+		} else {
+			filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, name));
+			filePath += isModule ? '.js' : '';
+			if (!fs.existsSync(filePath)) {
+				filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), name));
+				filePath += isModule ? '.js' : '';
+			}
+		}
+				
+		// Make sure that the file exists and then process it
+		if (fs.existsSync(filePath)) {
+			
+			Runtime.fireEvent('requireResolved', 'The require path "' + filePath + '" was resolved', {
+				name: filePath
+			});
+			result = CodeProcessor.processFile(filePath, isModule)[1];
+			
+		} else {
+			eventDescription = 'The require path "' + filePath + '" could not be found';
+			Runtime.fireEvent('requireMissing', eventDescription, {
+				name: filePath
+			});
+			Runtime.reportError('requireMissing', eventDescription, {
+				name: filePath
+			});
+		}
+	}
+	return result;
+};
 
 /**
  * Initializes the plugin
@@ -145,25 +127,12 @@ module.exports = function () {};
  * @name module:plugins/RequireProvider#init
  */
 module.exports.prototype.init = function init() {
-	
-	var globalEnvironmentRecord = Runtime.globalContext.lexicalEnvironment.envRec,
-		tiobj;
-		
-	// Create the require method
-	globalEnvironmentRecord.createMutableBinding("require", false, true);
-	globalEnvironmentRecord.setMutableBinding("require", new RequireFunction(), false, true);
-		
-	// Create the Ti.Include method
-	if (globalEnvironmentRecord.hasBinding("Ti")) {
-		tiobj = globalEnvironmentRecord.getBindingValue("Ti");
-	} else {
-		tiobj = new Base.ObjectType();
-		globalEnvironmentRecord.createMutableBinding("Ti", false, true);
-		globalEnvironmentRecord.setMutableBinding("Ti", tiobj, false, true);
-		globalEnvironmentRecord.createMutableBinding("Titanium", false, true);
-		globalEnvironmentRecord.setMutableBinding("Titanium", tiobj, false, true);			
-	}
-	tiobj.put("include", new IncludeFunction(), false, true);
+	Runtime.getGlobalObject().defineOwnProperty('require', {
+		value: new RequireFunction(),
+		writable: false,
+		enumerable: true,
+		configurable: true
+	}, false, true);
 };
 
 /**

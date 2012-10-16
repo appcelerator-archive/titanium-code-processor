@@ -5,11 +5,11 @@
  * This plugin finds the deprecated Titanium APIs that are used.
  * 
  * @module plugins/TiAPIDeprecationFinder
- * @author Allen Yeung &lt;<a href="mailto:ayeung@appcelerator.com">ayeung@appcelerator.com</a>&gt;
+ * @author Allen Yeung &lt;<a href='mailto:ayeung@appcelerator.com'>ayeung@appcelerator.com</a>&gt;
  */
  
-var path = require("path"),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
+var path = require('path'),
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
 	
 	results = {};
 
@@ -24,12 +24,12 @@ var path = require("path"),
  * @name module:plugins/TiAPIDeprecationFinder
  */
 module.exports = function () {
-	Runtime.on("tiPropertyReferenced", function(e) {
+	Runtime.on('tiPropertyReferenced', function(e) {
 		var name = e.data.name;
 
 		if (e.data.node.deprecated) {
 			// TODO: Change deprecated message when we have the 'deprecated since' info from jsca
-			Runtime.reportWarning("deprecatedTiPropertyReferenced", "'" + name + "' has been deprecated");
+			Runtime.reportWarning('deprecatedTiPropertyReferenced', '"' + name + '" has been deprecated');
 
 			if (results[name]) {
 				results[name] += 1;
