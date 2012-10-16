@@ -5,17 +5,17 @@
  * Processes Titanium APIs for the code processor
  *
  * @module plugins/TiAPIProcessor
- * @author Bryan Hughes &lt;<a href="mailto:bhughes@appcelerator.com">bhughes@appcelerator.com</a>&gt;
+ * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
-var fs = require("fs"),
-	path = require("path"),
-	util = require("util"),
+var fs = require('fs'),
+	path = require('path'),
+	util = require('util'),
 	
-	Base = require(path.join(global.nodeCodeProcessorLibDir, "Base")),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
-	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, "Exceptions")),
-	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, "CodeProcessor")),
+	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
+	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, 'Exceptions')),
+	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'CodeProcessor')),
 	
 	jsca,
 	platform,
@@ -33,7 +33,7 @@ var fs = require("fs"),
  * @name module:plugins/TiAPIProcessor
  */
 module.exports = function(options) {
-	jsca = JSON.parse(fs.readFileSync(path.join(options.sdkPath, "api.jsca")));
+	jsca = JSON.parse(fs.readFileSync(path.join(options.sdkPath, 'api.jsca')));
 	platform = options.platform;
 };
 
@@ -119,11 +119,11 @@ module.exports.prototype.getResults = function getResults() {
  * @constructor
  * @private
  * @param {Array[String]|undefined} returnTypes An array of return types, or undefined
- * @param {String} [className] The name of the class, defaults to "Function." This parameter should only be used by a 
+ * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a 
  *		constructor for an object extending this one.
  */
 function TiFunction(returnTypes, className) {
-	Base.ObjectType.call(this, className || "Function");
+	Base.ObjectType.call(this, className || 'Function');
 	this._returnTypes = returnTypes;
 }
 util.inherits(TiFunction, Base.FunctionType);
@@ -145,17 +145,17 @@ TiFunction.prototype.call = function call(thisVal, args) {
 		value = new Base.UnknownType(),
 		callArgs;
 	for(i = 0, len = args.length; i < len; i++) {
-		if (Base.isCallable(args[i]) && Base.type(args[i]) !== "Unknown") {
+		if (Base.isCallable(args[i]) && Base.type(args[i]) !== 'Unknown') {
 			if (++Runtime.recursionCount === Runtime.options.maxRecursionLimit) {
 		
 				// Fire an event and report a warning
-				eventDescription = "Maximum application recursion limit of " + Runtime.options.maxRecursionLimit + 
-					" reached, could not fully process code";
+				eventDescription = 'Maximum application recursion limit of ' + Runtime.options.maxRecursionLimit + 
+					' reached, could not fully process code';
 				eventData = {
-					ruleName: "call"
+					ruleName: 'call'
 				};
-				Runtime.fireEvent("maxRecusionLimitReached", eventDescription, eventData);
-				Runtime.reportWarning("maxRecusionLimitReached", eventDescription, eventData);
+				Runtime.fireEvent('maxRecusionLimitReached', eventDescription, eventData);
+				Runtime.reportWarning('maxRecusionLimitReached', eventDescription, eventData);
 			
 				// Set the result to unknown
 				result = new Base.UnknownType();
@@ -181,7 +181,7 @@ TiFunction.prototype.call = function call(thisVal, args) {
 		}
 		if (root && root.node) {
 			value = createObject(root)
-			Runtime.fireEvent("tiPropertyReferenced", "Property '" + p + "' was referenced", {
+			Runtime.fireEvent('tiPropertyReferenced', 'Property "' + p + '" was referenced', {
 				name: this._returnTypes[0].type,
 				node: root.node
 			});
@@ -211,7 +211,7 @@ TiFunction.prototype.call = function call(thisVal, args) {
 exports.TiObjectType = TiObjectType;
 function TiObjectType(api, className) {
 	this._api = api;
-	Base.ObjectType.call(this, className || "Object");
+	Base.ObjectType.call(this, className || 'Object');
 }
 util.inherits(TiObjectType, Base.ObjectType);
 
@@ -237,7 +237,7 @@ exports.TiObjectType.prototype.get = function get(p) {
 	var value = Base.ObjectType.prototype.get.apply(this, arguments),
 		node = value._api ? value._api.node : value._property ? value._property : value._function;
 	if (node) {
-		Runtime.fireEvent("tiPropertyReferenced", "Property '" + p + "' was referenced", {
+		Runtime.fireEvent('tiPropertyReferenced', 'Property "' + p + '" was referenced', {
 			name: this._api.node.name + '.' + p,
 			node: node
 		});
@@ -265,7 +265,7 @@ exports.TiObjectType.prototype.get = function get(p) {
  * @param {String} p The name of the parameter to set the value as
  * @param {module:Base.BaseType} v The value to set
  * @param {Boolean} throwFlag Whether or not to throw an exception on error (related to strict mode)
- * @param {Boolean} suppressEvent Suppresses the "propertySet" event (used when setting prototypes)
+ * @param {Boolean} suppressEvent Suppresses the 'propertySet' event (used when setting prototypes)
  * @throws {{@link module:Exceptions.TypeError}} Thrown when the property cannot be put and throwFlag is true
  * @see ECMA-262 Spec Chapter 8.12.5
  */
@@ -274,7 +274,7 @@ exports.TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent
 	Base.ObjectType.prototype.put.apply(this, arguments);
 	if (!suppressEvent) {
 		if (node) {
-			Runtime.fireEvent("tiPropertySet", "Property '" + p + "' was set", {
+			Runtime.fireEvent('tiPropertySet', 'Property "' + p + '" was set', {
 				name: this._api.node.name + '.' + p,
 				node: node
 			});
@@ -304,8 +304,8 @@ exports.TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent
  * @see ECMA-262 Spec Chapter 8.12.7
  */
 exports.TiObjectType.prototype.delete = function objDelete(p, throwFlag) {
-	var success = Base.ObjectType.prototype["delete"].apply(this, arguments);
-	Runtime.fireEvent("tiPropertyDeleted", "Property '" + p + "' was deleted", {
+	var success = Base.ObjectType.prototype['delete'].apply(this, arguments);
+	Runtime.fireEvent('tiPropertyDeleted', 'Property "' + p + '" was deleted', {
 		name: this._api.node.name + '.' + p,
 		success: success
 	});
@@ -317,11 +317,11 @@ exports.TiObjectType.prototype.delete = function objDelete(p, throwFlag) {
  * 
  * @constructor
  * @private
- * @param {String} [className] The name of the class, defaults to "Function." This parameter should only be used by a 
+ * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a 
  *		constructor for an object extending this one.
  */
 function IncludeFunction(className) {
-	Base.ObjectType.call(this, className || "Function");
+	Base.ObjectType.call(this, className || 'Function');
 }
 util.inherits(IncludeFunction, Base.FunctionType);
 
@@ -348,13 +348,13 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 	}
 	
 	file = Base.toString(file);
-	if (Base.type(file) !== "String") {
-		eventDescription = "A value that could not be evaluated was passed to Ti.include";
-		Runtime.fireEvent("tiIncludeUnresolved", eventDescription, {
-			name: "<Could not evaluate Ti.include path>"
+	if (Base.type(file) !== 'String') {
+		eventDescription = 'A value that could not be evaluated was passed to Ti.include';
+		Runtime.fireEvent('tiIncludeUnresolved', eventDescription, {
+			name: '<Could not evaluate Ti.include path>'
 		});
-		Runtime.reportWarning("tiIncludeUnresolved", eventDescription, {
-			name: "<Could not evaluate Ti.include path>"
+		Runtime.reportWarning('tiIncludeUnresolved', eventDescription, {
+			name: '<Could not evaluate Ti.include path>'
 		});
 		return result;
 	}
@@ -372,12 +372,12 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 	// Make sure the file exists
 	if (fs.existsSync(filePath)) {
 		
-		Runtime.fireEvent("tiIncludeResolved", "The Ti.include path '" + filePath + "' was resolved", {
+		Runtime.fireEvent('tiIncludeResolved', 'The Ti.include path "' + filePath + '" was resolved', {
 			file: filePath
 		});
 		
 		// Fire the parsing begin event
-		Runtime.fireEvent("fileProcessingBegin", "Processing is beginning for file '" + filePath + "'", {
+		Runtime.fireEvent('fileProcessingBegin', 'Processing is beginning for file "' + filePath + '"', {
 			file: filePath
 		});
 		
@@ -392,16 +392,16 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 		Runtime.popCurrentFile();
 		
 		// Fire the parsing end event
-		Runtime.fireEvent("fileProcessingEnd", "Processing finished for file '" + filePath + "'", {
+		Runtime.fireEvent('fileProcessingEnd', 'Processing finished for file "' + filePath + '"', {
 			file: filePath
 		});
 		
 	} else {
-		eventDescription = "The Ti.include path '" + filePath + "' could not be found";
-		Runtime.fireEvent("tiIncludeMissing", eventDescription, {
+		eventDescription = 'The Ti.include path "' + filePath + '" could not be found';
+		Runtime.fireEvent('tiIncludeMissing', eventDescription, {
 			name: filePath
 		});
-		Runtime.reportError("tiIncludeMissing", eventDescription, {
+		Runtime.reportError('tiIncludeMissing', eventDescription, {
 			name: filePath
 		});
 	}
@@ -444,7 +444,7 @@ function createObject(apiNode) {
 		value._property = property;
 		obj.defineOwnProperty(name, {
 			value: value,
-			// TODO: Need to read the "permission" property from the JSCA, only it doesn't exist yet
+			// TODO: Need to read the 'permission' property from the JSCA, only it doesn't exist yet
 			writable: !(name === 'osname' && apiNode.node.name === 'Titanium.Platform') && !property.isClassProperty,
 			enumerable: true,
 			configurable: true

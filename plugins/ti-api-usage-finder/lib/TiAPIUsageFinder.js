@@ -5,11 +5,11 @@
  * This plugin finds the Titanium APIs that are used.
  * 
  * @module plugins/TiAPIUsageFinder
- * @author Allen Yeung &lt;<a href="mailto:ayeung@appcelerator.com">ayeung@appcelerator.com</a>&gt;
+ * @author Allen Yeung &lt;<a href='mailto:ayeung@appcelerator.com'>ayeung@appcelerator.com</a>&gt;
  */
 
-var path = require("path"),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
+var path = require('path'),
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
 	
 	results = {};
 
@@ -24,7 +24,7 @@ var path = require("path"),
  * @name module:plugins/TiAPIUsageFinder
  */
 module.exports = function (cli) {
-	Runtime.on("tiPropertyReferenced", function(e) {
+	Runtime.on('tiPropertyReferenced', function(e) {
 		var name = e.data.name;
 		if (results[name]) {
 			results[name] += 1;

@@ -3,16 +3,16 @@
  * Please see the LICENSE file for information about licensing.</p>
  * 
  * @module plugins/RequireProvider
- * @author Bryan Hughes &lt;<a href="mailto:bhughes@appcelerator.com">bhughes@appcelerator.com</a>&gt;
+ * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
-var util = require("util"),
-	path = require("path"),
-	fs = require("fs"),
+var util = require('util'),
+	path = require('path'),
+	fs = require('fs'),
 	
-	Base = require(path.join(global.nodeCodeProcessorLibDir, "Base")),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
-	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, "CodeProcessor")),
+	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
+	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'CodeProcessor')),
 	
 	pluginRegExp = /^(.+?)\!(.*)$/,
 	fileRegExp = /\.js$/,
@@ -37,11 +37,11 @@ module.exports = function (options) {
  * 
  * @constructor
  * @private
- * @param {String} [className] The name of the class, defaults to "Function." This parameter should only be used by a 
+ * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a 
  *		constructor for an object extending this one.
  */
 function RequireFunction(className) {
-	Base.ObjectType.call(this, className || "Function");
+	Base.ObjectType.call(this, className || 'Function');
 }
 util.inherits(RequireFunction, Base.FunctionType);
 
@@ -68,51 +68,51 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 	}
 	
 	name = Base.toString(name);
-	if (Base.type(name) !== "String") {
-		eventDescription = "A value that could not be evaluated was passed to require";
-		Runtime.fireEvent("requireUnresolved", eventDescription, {
-			name: "<Could not evaluate require path>"
+	if (Base.type(name) !== 'String') {
+		eventDescription = 'A value that could not be evaluated was passed to require';
+		Runtime.fireEvent('requireUnresolved', eventDescription, {
+			name: '<Could not evaluate require path>'
 		});
-		Runtime.reportWarning("requireUnresolved", eventDescription, {
-			name: "<Could not evaluate require path>"
+		Runtime.reportWarning('requireUnresolved', eventDescription, {
+			name: '<Could not evaluate require path>'
 		});
 		return result;
 	}
 	name = name.value;
-	if (pluginRegExp.test(name) || name.indexOf(":") !== -1) {
-		Runtime.fireEvent("requireUnresolved", 
-			"Plugins and URLS can not be evaluated at compile-time and will be deferred to runtime.", {
+	if (pluginRegExp.test(name) || name.indexOf(':') !== -1) {
+		Runtime.fireEvent('requireUnresolved', 
+			'Plugins and URLS can not be evaluated at compile-time and will be deferred to runtime.', {
 				name: name
 			});
 	} else {
 		// Resolve the path
-		isModule = name[0] !== "/" && !name.match(fileRegExp);
+		isModule = name[0] !== '/' && !name.match(fileRegExp);
 		if (name[0] === '.') {
 			filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentFile()), name));
-			filePath += isModule ? ".js" : "";
+			filePath += isModule ? '.js' : '';
 		} else {
 			filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, name));
-			filePath += isModule ? ".js" : "";
+			filePath += isModule ? '.js' : '';
 			if (!fs.existsSync(filePath)) {
 				filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), name));
-				filePath += isModule ? ".js" : "";
+				filePath += isModule ? '.js' : '';
 			}
 		}
 				
 		// Make sure that the file exists and then process it
 		if (fs.existsSync(filePath)) {
 			
-			Runtime.fireEvent("requireResolved", "The require path '" + filePath + "' was resolved", {
+			Runtime.fireEvent('requireResolved', 'The require path "' + filePath + '" was resolved', {
 				name: filePath
 			});
 			result = CodeProcessor.processFile(filePath, isModule)[1];
 			
 		} else {
-			eventDescription = "The require path '" + filePath + "' could not be found";
-			Runtime.fireEvent("requireMissing", eventDescription, {
+			eventDescription = 'The require path "' + filePath + '" could not be found';
+			Runtime.fireEvent('requireMissing', eventDescription, {
 				name: filePath
 			});
-			Runtime.reportError("requireMissing", eventDescription, {
+			Runtime.reportError('requireMissing', eventDescription, {
 				name: filePath
 			});
 		}

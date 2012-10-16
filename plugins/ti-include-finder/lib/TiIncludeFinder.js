@@ -3,12 +3,12 @@
  * Please see the LICENSE file for information about licensing.</p>
  * 
  * @module plugins/TiIncludeFinder
- * @author Bryan Hughes &lt;<a href="mailto:bhughes@appcelerator.com">bhughes@appcelerator.com</a>&gt;
+ * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
  
-var path = require("path"),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
+var path = require('path'),
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
 	results = {
 		resolved: [],
 		unresolved: [],
@@ -26,13 +26,13 @@ var path = require("path"),
  * @name module:plugins/TiIncludeFinder
  */
 module.exports = function () {
-	Runtime.on("tiIncludeResolved", function(e) {
+	Runtime.on('tiIncludeResolved', function(e) {
 		results.resolved.push(e);
 	});
-	Runtime.on("tiIncludeUnresolved", function(e) {
+	Runtime.on('tiIncludeUnresolved', function(e) {
 		results.unresolved.push(e);
 	});
-	Runtime.on("tiIncludeMissing", function(e) {
+	Runtime.on('tiIncludeMissing', function(e) {
 		results.missing.push(e);
 	});
 };
