@@ -3,16 +3,16 @@
  * Please see the LICENSE file for information about licensing.</p>
  * 
  * @module plugins/CommonGlobals
- * @author Bryan Hughes &lt;<a href="mailto:bhughes@appcelerator.com">bhughes@appcelerator.com</a>&gt;
+ * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
-var path = require("path"),
-	util = require("util"),
+var path = require('path'),
+	util = require('util'),
 	
-	Base = require(path.join(global.nodeCodeProcessorLibDir, "Base")),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
-	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, "Exceptions")),
-	RuleProcessor = require(path.join(global.nodeCodeProcessorLibDir, "RuleProcessor"));
+	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
+	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, 'Exceptions')),
+	RuleProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'RuleProcessor'));
 
 // ******** Plugin API Methods ********
 
@@ -34,21 +34,31 @@ module.exports = function () {};
  */
 module.exports.prototype.init = function init() {
 	
-	var globalEnvironmentRecord = Runtime.globalContext.lexicalEnvironment.envRec;
+	var globalObject = Runtime.getGlobalObject(),
+		stringObject = globalObject.get('String');
 	
-	function addObject(name, value) {
-		globalEnvironmentRecord.createMutableBinding(name, false, true);
-		globalEnvironmentRecord.setMutableBinding(name, value, false, true);
+	function addObject(name, value, obj) {
+		obj.defineOwnProperty(name, {
+			value: value,
+			writable: false,
+			enumerable: true,
+			configurable: true
+		}, false, true);
 	}
 
-	addObject("L", new LFunc());
-	addObject("alert", new AlertFunc());
-	addObject("clearInterval", new ClearIntervalFunc());
-	addObject("clearTimeout", new ClearTimeoutFunc());
-	addObject("setInterval", new SetIntervalFunc());
-	addObject("setTimeout", new SetTimeoutFunc());
+	addObject('L', new LFunc(), globalObject);
+	addObject('alert', new AlertFunc(), globalObject);
+	addObject('clearInterval', new ClearIntervalFunc(), globalObject);
+	addObject('clearTimeout', new ClearTimeoutFunc(), globalObject);
+	addObject('setInterval', new SetIntervalFunc(), globalObject);
+	addObject('setTimeout', new SetTimeoutFunc(), globalObject);
+	addObject('console', new ConsoleObject(), globalObject);
 	
-	addObject("console", new ConsoleObject());
+	addObject('format', new StringFunc(), stringObject);
+	addObject('formatCurrency', new StringFunc(), stringObject);
+	addObject('formatDate', new StringFunc(), stringObject);
+	addObject('formatDecimal', new StringFunc(), stringObject);
+	addObject('formatTime', new StringFunc(), stringObject);
 };
 
 /**
@@ -70,8 +80,8 @@ module.exports.prototype.getResults = function getResults() {
  * @private
  */
 function ConsoleFunc(className) {
-	Base.ObjectType.call(this, className || "Function");
-	this.put("length", new Base.NumberType(1), false, true);
+	Base.ObjectType.call(this, className || 'Function');
+	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(ConsoleFunc, Base.FunctionTypeBase);
 ConsoleFunc.prototype.call = function call(thisVal, args) {
@@ -86,11 +96,11 @@ ConsoleFunc.prototype.call = function call(thisVal, args) {
 function ConsoleObject(className) {
 	Base.ObjectType.call(this, className);
 	
-	this.put("debug", new ConsoleFunc(), false, true);
-	this.put("error", new ConsoleFunc(), false, true);
-	this.put("info", new ConsoleFunc(), false, true);
-	this.put("log", new ConsoleFunc(), false, true);
-	this.put("warn", new ConsoleFunc(), false, true);
+	this.put('debug', new ConsoleFunc(), false, true);
+	this.put('error', new ConsoleFunc(), false, true);
+	this.put('info', new ConsoleFunc(), false, true);
+	this.put('log', new ConsoleFunc(), false, true);
+	this.put('warn', new ConsoleFunc(), false, true);
 }
 util.inherits(ConsoleObject, Base.ObjectType);
 
@@ -100,8 +110,8 @@ util.inherits(ConsoleObject, Base.ObjectType);
  * @private
  */
 function LFunc(className) {
-	Base.ObjectType.call(this, className || "Function");
-	this.put("length", new Base.NumberType(1), false, true);
+	Base.ObjectType.call(this, className || 'Function');
+	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(LFunc, Base.FunctionTypeBase);
 LFunc.prototype.call = function call(thisVal, args) {
@@ -114,8 +124,8 @@ LFunc.prototype.call = function call(thisVal, args) {
  * @private
  */
 function AlertFunc(className) {
-	Base.ObjectType.call(this, className || "Function");
-	this.put("length", new Base.NumberType(1), false, true);
+	Base.ObjectType.call(this, className || 'Function');
+	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(AlertFunc, Base.FunctionTypeBase);
 AlertFunc.prototype.call = function call(thisVal, args) {
@@ -128,8 +138,8 @@ AlertFunc.prototype.call = function call(thisVal, args) {
  * @private
  */
 function ClearIntervalFunc(className) {
-	Base.ObjectType.call(this, className || "Function");
-	this.put("length", new Base.NumberType(1), false, true);
+	Base.ObjectType.call(this, className || 'Function');
+	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(ClearIntervalFunc, Base.FunctionTypeBase);
 ClearIntervalFunc.prototype.call = function call(thisVal, args) {
@@ -142,8 +152,8 @@ ClearIntervalFunc.prototype.call = function call(thisVal, args) {
  * @private
  */
 function ClearTimeoutFunc(className) {
-	Base.ObjectType.call(this, className || "Function");
-	this.put("length", new Base.NumberType(1), false, true);
+	Base.ObjectType.call(this, className || 'Function');
+	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(ClearTimeoutFunc, Base.FunctionTypeBase);
 ClearTimeoutFunc.prototype.call = function call(thisVal, args) {
@@ -156,8 +166,8 @@ ClearTimeoutFunc.prototype.call = function call(thisVal, args) {
  * @private
  */
 function SetIntervalFunc(className) {
-	Base.ObjectType.call(this, className || "Function");
-	this.put("length", new Base.NumberType(1), false, true);
+	Base.ObjectType.call(this, className || 'Function');
+	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(SetIntervalFunc, Base.FunctionTypeBase);
 SetIntervalFunc.prototype.call = function call(thisVal, args) {
@@ -170,13 +180,13 @@ SetIntervalFunc.prototype.call = function call(thisVal, args) {
 	if (++Runtime.recursionCount === Runtime.options.maxRecursionLimit) {
 		
 		// Fire an event and report a warning
-		eventDescription = "Maximum application recursion limit of " + Runtime.options.maxRecursionLimit + 
-			" reached, could not fully process code";
+		eventDescription = 'Maximum application recursion limit of ' + Runtime.options.maxRecursionLimit + 
+			' reached, could not fully process code';
 		eventData = {
-			ruleName: "call"
+			ruleName: 'call'
 		};
-		Runtime.fireEvent("maxRecusionLimitReached", eventDescription, eventData);
-		Runtime.reportWarning("maxRecusionLimitReached", eventDescription, eventData);
+		Runtime.fireEvent('maxRecusionLimitReached', eventDescription, eventData);
+		Runtime.reportWarning('maxRecusionLimitReached', eventDescription, eventData);
 			
 		// Set the result to unknown
 		result = new Base.UnknownType();
@@ -184,8 +194,8 @@ SetIntervalFunc.prototype.call = function call(thisVal, args) {
 	} else {
 		
 		// Make sure func is actually a function
-		if (Base.type(func) !== "Unknown") {
-			if (func.className !== "Function" || !Base.isCallable(func)) {
+		if (Base.type(func) !== 'Unknown') {
+			if (func.className !== 'Function' || !Base.isCallable(func)) {
 				throw new Exceptions.TypeError();
 			}
 				
@@ -209,8 +219,8 @@ SetIntervalFunc.prototype.call = function call(thisVal, args) {
  * @private
  */
 function SetTimeoutFunc(className) {
-	Base.ObjectType.call(this, className || "Function");
-	this.put("length", new Base.NumberType(1), false, true);
+	Base.ObjectType.call(this, className || 'Function');
+	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(SetTimeoutFunc, Base.FunctionTypeBase);
 SetTimeoutFunc.prototype.call = function call(thisVal, args) {
@@ -223,13 +233,13 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 	if (++Runtime.recursionCount === Runtime.options.maxRecursionLimit) {
 		
 		// Fire an event and report a warning
-		eventDescription = "Maximum application recursion limit of " + Runtime.options.maxRecursionLimit + 
-			" reached, could not fully process code";
+		eventDescription = 'Maximum application recursion limit of ' + Runtime.options.maxRecursionLimit + 
+			' reached, could not fully process code';
 		eventData = {
-			ruleName: "call"
+			ruleName: 'call'
 		};
-		Runtime.fireEvent("maxRecusionLimitReached", eventDescription, eventData);
-		Runtime.reportWarning("maxRecusionLimitReached", eventDescription, eventData);
+		Runtime.fireEvent('maxRecusionLimitReached', eventDescription, eventData);
+		Runtime.reportWarning('maxRecusionLimitReached', eventDescription, eventData);
 			
 		// Set the result to unknown
 		result = new Base.UnknownType();
@@ -237,8 +247,8 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 	} else {
 		
 		// Make sure func is actually a function
-		if (Base.type(func) !== "Unknown") {
-			if (func.className !== "Function" || !Base.isCallable(func)) {
+		if (Base.type(func) !== 'Unknown') {
+			if (func.className !== 'Function' || !Base.isCallable(func)) {
 				throw new Exceptions.TypeError();
 			}
 				
@@ -254,4 +264,18 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 	Runtime.recursionCount--;
 	
 	return result;
+};
+
+/**
+ * Non-standard string extension function
+ * 
+ * @private
+ */
+function StringFunc(className) {
+	Base.ObjectType.call(this, className || 'Function');
+	this.put('length', new Base.NumberType(1), false, true);
+}
+util.inherits(StringFunc, Base.FunctionTypeBase);
+StringFunc.prototype.call = function call(thisVal, args) {
+	return new Base.UndefinedType();
 };

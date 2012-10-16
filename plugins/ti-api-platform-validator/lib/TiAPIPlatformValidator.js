@@ -5,11 +5,11 @@
  * This plugin finds the Titanium APIs that are used.
  * 
  * @module plugins/TiAPIPlatformValidator
- * @author Bryan Hughes &lt;<a href="mailto:bhughes@appcelerator.com">bhughes@appcelerator.com</a>&gt;
+ * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
-var path = require("path"),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, "Runtime")),
+var path = require('path'),
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
 	
 	results = {};
 
@@ -27,7 +27,7 @@ module.exports = function (options) {
 	
 	var platform = options.platform;
 	if (platform) {
-		Runtime.on("tiPropertyReferenced", function(e) {
+		Runtime.on('tiPropertyReferenced', function(e) {
 			var platformList = e.data.node.userAgents,
 				i = 0,
 				len = platformList.length,
@@ -40,8 +40,8 @@ module.exports = function (options) {
 				}
 			}
 			if (!isSupported) {
-				Runtime.reportWarning("invalidPlatformReferenced", "Property '" + name + 
-					"' is not supported on " + platform);
+				Runtime.reportWarning('invalidPlatformReferenced', 'Property "' + name + 
+					'" is not supported on ' + platform);
 
 				if (results[name]) {
 					results[name] += 1;
