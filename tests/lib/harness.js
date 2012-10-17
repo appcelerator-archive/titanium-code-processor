@@ -111,12 +111,13 @@ module.exports.run = function (test262Dir, multiThreaded, chapter) {
 				child.send({ file: testFilePath, properties: testProperties});
 				child.on('message', function(message) {
 					total++;
-					console.log((message.success ? 'PASS' : 'FAIL') + ' (' + total + ' of ' + numTests +', ' + 
-						getPrettyTime((numTests - total) * (Date.now() - startTime) / total) + ' remaining): ' + 
-						testFilePath + (!message.success ? '\n   ' + message.errorMessage : ''));
 					if (message.success) { 
 						successes++;
 					}
+					console.log((message.success ? 'PASS' : 'FAIL') + ' (' + total + ' of ' + numTests +', ' + 
+						getPrettyTime((numTests - total) * (Date.now() - startTime) / total) + ' remaining, ' + 
+						Math.floor(100 * successes / total) + '% pass rate so far): ' + 
+						testFilePath + (!message.success ? '\n   ' + message.errorMessage : ''));
 					setTimeout(processFile, 0);
 				});
 			} else {
