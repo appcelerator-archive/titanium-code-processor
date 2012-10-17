@@ -9,7 +9,7 @@
 		"url": "https://github.com/appcelerator/titanium-code-processor.git"
 	},
 	"scripts": {
-		"test": "node tests/bin/codeProcessorTest"
+		"test": "node tests/bin/tests"
 	},
 	"main": "lib/CodeProcessor.js",
 	"dependencies": {

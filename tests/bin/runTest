@@ -1,34 +1,81 @@
 #!/usr/bin/env node
-
 /**
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  * 
- * Provides a CLI for the code processor tests
- * @author Allen Yeung <ayeung@appcelerator.com> and Bryan Hughes <bhughes@appcelerator.com>
+ * Provides a CLI for the code processor unit tests
+ * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
-
-var fs = require("fs"),
+ 
+var path = require('path'),
+	fs = require('fs'),
+	
 	winston = require("winston"),
-	path = require("path"),
+	
+	CodeProcessor = require('../../lib/CodeProcessor'),
+	Runtime = require('../../lib/Runtime'),
+	Base = require('../../lib/Base'),
+	
+	file = process.argv[2],
+	logger,
 	result,
-	CodeProcessor = require("node-code-processor"),
-	filename = process.argv[2],
-	logger = new (winston.Logger)({
-		transports: [
-			new (winston.transports.File)({
-				filename: path.resolve(path.join("logs", path.basename(filename.replace(".js$", ".log"))))
-			})
-		]
-	});
+	silent = false;
 
-logger.log("info", "Testing file: " + filename);
-
-result = CodeProcessor.process([filename], [], logger, {}, {
-	invokeMethods: true,
-	evaluateLoops: true,
-	executionTimeLimit: 2000
-});
-if (result && result[0] === "throw") {
+// Validate the file argument
+if (!file) {
+	silent || console.error('**** File not specified');
 	process.exit(1);
+}
+if (!fs.existsSync(file)) {
+	silent || console.error('**** Invalid file ' + file);
+	process.exit(1);
+}
+silent || console.log('Processing file "' + file + '"');
+
+// Create the logger
+logger = new (winston.Logger)({
+	transports: [
+		new (winston.transports.Console)({ level: silent ? 'critical' : 'error'})
+	],
+	levels: {
+		trace: 0, 
+		debug: 1,
+		info: 2,
+		notice: 3,
+		warn: 4,
+		error: 5,
+		critical: 6
+	}
+});
+
+// Run the test
+try {
+
+	result = CodeProcessor.process([file], [], {
+		executionTimeLimit: 10000,
+		exactMode: true
+	}, logger);
+	if (result && result[0] === 'throw') {
+		if (result[1]) {
+			var value;
+			switch(Base.type(result[1])) {
+				case 'String': value = result[1].value; break;
+				case 'Object': value = result[1]._properties['message'].value.value; break;
+			}
+		} else {
+			console.error('**** Internal error: missing throw value at line ' + Runtime.getCurrentLocation().line);
+		}
+		silent || console.log('Exception thrown: ' + value);
+		process.exit(1);
+	}
+	result = CodeProcessor.getResults();
+	if (result.errors.length) {
+		silent || console.log('Error generated: ' + result.errors[0].description);
+		process.exit(1);
+	}
+	silent || console.log('Code exited properly');
+	process.exit(0);
+} catch(e) {
+	console.error('**** Internal error: ' + e.message);
+	throw e;
 }
