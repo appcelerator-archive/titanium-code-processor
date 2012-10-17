@@ -17,6 +17,8 @@ module.exports.run = function (test262Dir, multiThreaded, chapter) {
 	var includeDir = path.join(test262Dir, 'test', 'harness'),
 		testLib = '',
 		fileList = wrench.readdirSyncRecursive(path.join(test262Dir, 'test', 'suite')),
+		prunedFileList = [],
+		numTests,
 		testFileNameRegex,
 		testFileRegex = new RegExp(
 			'^((?:(?:\\s*\\/\\/.*)?\\s*\\n)*)' + // Header
@@ -32,30 +34,8 @@ module.exports.run = function (test262Dir, multiThreaded, chapter) {
 		i, len = multiThreaded ? require('os').cpus().length : 1,
 		printFinishedCountdown = len; // Most laptops don't like running at 100%
 	
-	// Create the test lib
-	['cth.js', 'sta.js', 'ed.js', 'testBuiltInObject.js', 'testIntl.js'].forEach(function(file) {
-		testLib += '\n\n/****************************************\n' + 
-			' * ' + file + '\n' + 
-			' ****************************************/\n\n' + 
-			fs.readFileSync(path.join(includeDir, file));
-	});
-	
-	// Parse the chapter
-	if (chapter) {
-		chapter = parseInt(chapter);
-		chapter = (chapter < 10 ? '0' : '') + chapter;
-		if (!fs.existsSync(path.join(test262Dir, 'test', 'suite', 'ch' + chapter))) {
-			console.error('Invalid chapter number "' + chapter + '"');
-			process.exit();
-		}
-		testFileNameRegex = RegExp('^ch' + chapter + '[\\/\\\\].*\\.js$');
-	} else {
-		testFileNameRegex = /^ch[0-9][0-68-9][\/\\].*\.js$/
-	}
-	console.log('\nRunning ' + (chapter ? 'Chapter ' + chapter : 'all') + ' unit tests using ' + 
-		(len > 1 ? len + ' threads' : '1 thread') + '\n');
 	function processFile() {
-		var file = fileList.shift(),
+		var file = prunedFileList.shift(),
 			testFileContent,
 			testFilePath,
 			testFile,
@@ -82,7 +62,7 @@ module.exports.run = function (test262Dir, multiThreaded, chapter) {
 				minutes = minutes === 0 ? !!hours ? '0 minutes ' : '' : minutes === 1 ? '1 minute ' : minutes + ' minute ';
 				seconds = seconds === 1 ? '1 second' : seconds + ' seconds';
 				console.log('\nAll tests finished in ' + hours + minutes + seconds + '. ' + 
-					successes + ' out of ' + total + ' tests passed\n');
+					successes + ' out of ' + total + ' tests (' + Math.floor(100 * successes / total) + '%) passed.\n');
 				wrench.rmdirSyncRecursive(tempDir);
 			}
 		} else if (testFileNameRegex.test(file)) {
@@ -125,10 +105,11 @@ module.exports.run = function (test262Dir, multiThreaded, chapter) {
 				
 				child = fork(path.resolve(path.join(__dirname, 'runner')));
 				child.send({ file: testFilePath, properties: testProperties});
-				total++;
 				child.on('message', function(message) {
-					console.log((message.success ? 'PASS: ' : 'FAIL: ') + testFilePath + (!message.success ? '\n   ' + message.errorMessage : ''));
-					if (message.success) {
+					total++;
+					console.log((message.success ? 'PASS' : 'FAIL') + ' (' + total + ' of ' + numTests +'): ' + testFilePath + 
+						(!message.success ? '\n   ' + message.errorMessage : ''));
+					if (message.success) { 
 						successes++;
 					}
 					setTimeout(processFile, 0);
@@ -140,6 +121,39 @@ module.exports.run = function (test262Dir, multiThreaded, chapter) {
 			setTimeout(processFile, 0);
 		}
 	}
+	
+	// Create the test lib
+	['cth.js', 'sta.js', 'ed.js', 'testBuiltInObject.js', 'testIntl.js'].forEach(function(file) {
+		testLib += '\n\n/****************************************\n' + 
+			' * ' + file + '\n' + 
+			' ****************************************/\n\n' + 
+			fs.readFileSync(path.join(includeDir, file));
+	});
+	
+	// Parse the chapter
+	if (chapter) {
+		chapter = parseInt(chapter);
+		chapter = (chapter < 10 ? '0' : '') + chapter;
+		if (!fs.existsSync(path.join(test262Dir, 'test', 'suite', 'ch' + chapter))) {
+			console.error('Invalid chapter number "' + chapter + '"');
+			process.exit();
+		}
+		testFileNameRegex = RegExp('^ch' + chapter + '[\\/\\\\].*\\.js$');
+	} else {
+		testFileNameRegex = /^ch[0-9][0-68-9][\/\\].*\.js$/
+	}
+	
+	// Prune the list of tests
+	for(i = 0; i < fileList.length; i++) {
+		if (testFileNameRegex.test(fileList[i])) {
+			prunedFileList.push(fileList[i]);
+		}
+	}
+	numTests = prunedFileList.length;
+	
+	// Run the tests
+	console.log('\nRunning ' + numTests + ' tests from ' + (chapter ? 'Chapter ' + chapter : 'all chapters') + ' using ' + 
+		(len > 1 ? len + ' threads' : '1 thread') + '\n');
 	for(i = 0; i < len; i++) {
 		processFile();
 	}
