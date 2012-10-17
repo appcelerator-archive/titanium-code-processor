@@ -30,9 +30,20 @@ module.exports.run = function (test262Dir, multiThreaded, chapter) {
 		successes = 0,
 		total = 0,
 		startTime = Date.now(),
-		tempDir = path.resolve(path.join(__dirname, '..', 'tmp')),
+		tempDir = path.resolve(path.join('/', 'tmp', 'titanium-code-processor')),
 		i, len = multiThreaded ? require('os').cpus().length : 1,
 		printFinishedCountdown = len; // Most laptops don't like running at 100%
+	
+	function getPrettyTime(diff) {
+		var elapsedTime = new Date(diff);
+		seconds = elapsedTime.getUTCSeconds();
+		minutes = elapsedTime.getUTCMinutes();
+		hours = elapsedTime.getUTCHours();
+		hours = hours === 0 ? '' : hours === 1 ? '1 hour ' : hours + ' hours ';
+		minutes = minutes === 0 ? hours ? '0 minutes ' : '' : minutes === 1 ? '1 minute ' : minutes + ' minutes ';
+		seconds = seconds === 1 ? '1 second' : seconds + ' seconds';
+		return hours + minutes + seconds;
+	}
 	
 	function processFile() {
 		var file = prunedFileList.shift(),
@@ -54,14 +65,7 @@ module.exports.run = function (test262Dir, multiThreaded, chapter) {
 		if (!file) {
 			printFinishedCountdown--;
 			if (!printFinishedCountdown) {
-				elapsedTime = new Date((Date.now() - startTime));
-				seconds = elapsedTime.getUTCSeconds();
-				minutes = elapsedTime.getUTCMinutes();
-				hours = elapsedTime.getUTCHours();
-				hours = hours === 0 ? '' : hours === 1 ? '1 hour ' : hours + ' hours ';
-				minutes = minutes === 0 ? !!hours ? '0 minutes ' : '' : minutes === 1 ? '1 minute ' : minutes + ' minute ';
-				seconds = seconds === 1 ? '1 second' : seconds + ' seconds';
-				console.log('\nAll tests finished in ' + hours + minutes + seconds + '. ' + 
+				console.log('\nAll tests finished in ' + getPrettyTime(Date.now() - startTime) + '. ' + 
 					successes + ' out of ' + total + ' tests (' + Math.floor(100 * successes / total) + '%) passed.\n');
 				wrench.rmdirSyncRecursive(tempDir);
 			}
@@ -107,8 +111,9 @@ module.exports.run = function (test262Dir, multiThreaded, chapter) {
 				child.send({ file: testFilePath, properties: testProperties});
 				child.on('message', function(message) {
 					total++;
-					console.log((message.success ? 'PASS' : 'FAIL') + ' (' + total + ' of ' + numTests +'): ' + testFilePath + 
-						(!message.success ? '\n   ' + message.errorMessage : ''));
+					console.log((message.success ? 'PASS' : 'FAIL') + ' (' + total + ' of ' + numTests +', ' + 
+						getPrettyTime((numTests - total) * (Date.now() - startTime) / total) + ' remaining): ' + 
+						testFilePath + (!message.success ? '\n   ' + message.errorMessage : ''));
 					if (message.success) { 
 						successes++;
 					}
