@@ -13,7 +13,7 @@ var fs = require('fs'),
 	
 	fork = require('child_process').fork;
 
-module.exports.run = function (test262Dir, multiThreaded, chapter) {
+module.exports.run = function (test262Dir, multiThreaded, chapter, section) {
 	var includeDir = path.join(test262Dir, 'test', 'harness'),
 		testLib = '',
 		fileList = wrench.readdirSyncRecursive(path.join(test262Dir, 'test', 'suite')),
@@ -145,6 +145,17 @@ module.exports.run = function (test262Dir, multiThreaded, chapter) {
 			process.exit();
 		}
 		testFileNameRegex = RegExp('^ch' + chapter + '[\\/\\\\].*\\.js$');
+	} else if (section) {
+		chapter = parseInt(section);
+		if (!fs.existsSync(path.join(test262Dir, 'test', 'suite', 'ch' + chapter))) {
+			console.error('Invalid chapter number "' + chapter + '"\n');
+			process.exit();
+		}
+		if (!fs.existsSync(path.join(test262Dir, 'test', 'suite', 'ch' + chapter, section))) {
+			console.error('Invalid section "' + section + '"\n');
+			process.exit();
+		}
+		testFileNameRegex = RegExp('^ch' + chapter + '[\\/\\\\]' + section + '.*\\.js$');
 	} else {
 		testFileNameRegex = /^ch[0-9][0-68-9][\/\\].*\.js$/
 	}
@@ -158,8 +169,9 @@ module.exports.run = function (test262Dir, multiThreaded, chapter) {
 	numTests = prunedFileList.length;
 	
 	// Run the tests
-	console.log('\nRunning ' + numTests + ' tests from ' + (chapter ? 'Chapter ' + chapter : 'all chapters') + ' using ' + 
-		(len > 1 ? len + ' threads' : '1 thread') + '\n');
+	console.log('\nRunning ' + numTests + ' tests from ' + 
+		(section ? 'Section ' + section : chapter ? 'Chapter ' + chapter : 'all chapters') + 
+		' using ' + (len > 1 ? len + ' threads' : '1 thread') + '\n');
 	for(i = 0; i < len; i++) {
 		processFile();
 	}
