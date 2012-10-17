@@ -49,11 +49,11 @@ module.exports.run = function (test262Dir, multiThreaded, chapter) {
 			process.exit();
 		}
 		testFileNameRegex = RegExp('^ch' + chapter + '[\\/\\\\].*\\.js$');
-		console.log('\nRunning Chapter ' + parseInt(chapter) + ' unit tests using ' + (len > 1 ? len + ' threads' : '1 thread') + '\n');
 	} else {
 		testFileNameRegex = /^ch[0-9][0-68-9][\/\\].*\.js$/
-		console.log('\nRunning all unit tests using ' + (len > 1 ? len + ' threads' : '1 thread') + '\n');
 	}
+	console.log('\nRunning ' + (chapter ? 'Chapter ' + chapter : 'all') + ' unit tests using ' + 
+		(len > 1 ? len + ' threads' : '1 thread') + '\n');
 	function processFile() {
 		var file = fileList.shift(),
 			testFileContent,
@@ -66,13 +66,24 @@ module.exports.run = function (test262Dir, multiThreaded, chapter) {
 			testProperties,
 			body,
 			propMatch,
-			i, len;
+			i, len,
+			elapsedTime,
+			seconds,
+			minutes,
+			hours;
 		if (!file) {
 			printFinishedCountdown--;
 			if (!printFinishedCountdown) {
-				console.log('\nAll tests finished in ' + ((Date.now() - startTime) / 60000).toFixed(1) + ' minutes. ' + 
-					successes + ' out of ' + total + ' tests passed');
-					wrench.rmdirSyncRecursive(tempDir);
+				elapsedTime = new Date((Date.now() - startTime));
+				seconds = elapsedTime.getUTCSeconds();
+				minutes = elapsedTime.getUTCMinutes();
+				hours = elapsedTime.getUTCHours();
+				hours = hours === 0 ? '' : hours === 1 ? '1 hour ' : hours + ' hours ';
+				minutes = minutes === 0 ? !!hours ? '0 minutes ' : '' : minutes === 1 ? '1 minute ' : minutes + ' minute ';
+				seconds = seconds === 1 ? '1 second' : seconds + ' seconds';
+				console.log('\nAll tests finished in ' + hours + minutes + seconds + '. ' + 
+					successes + ' out of ' + total + ' tests passed\n');
+				wrench.rmdirSyncRecursive(tempDir);
 			}
 		} else if (testFileNameRegex.test(file)) {
 			
