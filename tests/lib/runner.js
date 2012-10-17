@@ -12,7 +12,7 @@ var CodeProcessor = require('../../lib/CodeProcessor'),
 process.on('message', function(message) {
 	var testFilePath = message.file,
 		properties = message.properties,
-		success = true,
+		success = false,
 		errorMessage = '';
 	try {
 
@@ -33,19 +33,21 @@ process.on('message', function(message) {
 				}
 			} else {
 				errorMessage = '**** Internal error: missing throw value at line ' + Runtime.getCurrentLocation().line;
-				success = false;
 			}
 		} else { // Parse non-exception errors
 			result = CodeProcessor.getResults();
-			if (result.errors.length) {
-				errorMessage = []
+			if (result.errors.length === 1) {
+				errorMessage = 'Error: ' + result.errors[0].name + ': ' + (result.errors[0].data.message ? 
+					result.errors[0].data.message :
+					result.errors[0].data.exception._properties.message.value.value);
+			} else if (result.errors.length > 1) {				
+				errorMessage = ['Multiple errors: '];
 				result.errors.forEach(function(err) {
 					try {
-						errorMessage.push('Error: ' + err.name + ': ' + err.data.exception._properties.message.value.value);
+						errorMessage.push(err.name + ': ' + err.data.exception._properties.message.value.value);
 					} catch(e) {}
 				});
 				errorMessage = errorMessage.join('\n');
-				success = false;
 			} else {
 				success = !properties.hasOwnProperty('negative');
 				if (!success) {
