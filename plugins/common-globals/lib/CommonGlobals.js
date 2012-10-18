@@ -88,11 +88,11 @@ util.inherits(ConsoleFunc, Base.FunctionTypeBase);
 ConsoleFunc.prototype.call = function call(thisVal, args) {
 	if (passThroughConsole) {
 		console.log('program output: ' + (function parseArgs() {
-			var str = '';
+			var str = [];
 			args.forEach(function (arg) {
-				str += Base.toString(arg).value;
+				str.push(Base.toString(arg).value);
 			});
-			return str;
+			return str.join(' ');
 		})());
 	}
 	return new Base.UndefinedType();
