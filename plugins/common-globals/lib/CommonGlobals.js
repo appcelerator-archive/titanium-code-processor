@@ -12,7 +12,9 @@ var path = require('path'),
 	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
 	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, 'Exceptions')),
-	RuleProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'RuleProcessor'));
+	RuleProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'RuleProcessor')),
+	
+	passThroughConsole = false;
 
 // ******** Plugin API Methods ********
 
@@ -85,6 +87,15 @@ function ConsoleFunc(className) {
 }
 util.inherits(ConsoleFunc, Base.FunctionTypeBase);
 ConsoleFunc.prototype.call = function call(thisVal, args) {
+	if (passThroughConsole) {
+		console.log('program output: ' + (function parseArgs() {
+			var str = '';
+			args.forEach(function (arg) {
+				str += Base.toString(arg).value;
+			});
+			return str;
+		})());
+	}
 	return new Base.UndefinedType();
 };
 

@@ -39,6 +39,11 @@ var path = require('path'),
 			metavar: 'SECTION',
 			help: 'The chapter and section number to test, e.g "10.4". Tests all chapters if unspecified.'
 		})
+		.option('test-node', {
+			abbr: 'n',
+			flag: true,
+			help: 'Test node instead of the code processor'
+		})
 		.script('tests')
 		.help('Runs the test-262 unit tests')
 		.nom();
@@ -58,6 +63,5 @@ if (parsedOptions['use-old-harness']) {
 		cwd: parsedOptions['test-262-dir']
 	});
 } else {
-	require('../lib/harness').run(parsedOptions['test-262-dir'], !!parsedOptions['multi-threaded'], 
-		parsedOptions.chapter, parsedOptions.section);
+	require('../lib/harness').run(parsedOptions);
 }
