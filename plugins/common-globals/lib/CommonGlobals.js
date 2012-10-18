@@ -11,10 +11,9 @@ var path = require('path'),
 	
 	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
-	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, 'Exceptions')),
 	RuleProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'RuleProcessor')),
 	
-	passThroughConsole = false;
+	passThroughConsole = true;
 
 // ******** Plugin API Methods ********
 
@@ -207,7 +206,7 @@ SetIntervalFunc.prototype.call = function call(thisVal, args) {
 		// Make sure func is actually a function
 		if (Base.type(func) !== 'Unknown') {
 			if (func.className !== 'Function' || !Base.isCallable(func)) {
-				throw new Exceptions.TypeError();
+				Base.throwNativeException('TypeError');
 			}
 				
 			// Call the function, discarding the result
@@ -260,7 +259,7 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 		// Make sure func is actually a function
 		if (Base.type(func) !== 'Unknown') {
 			if (func.className !== 'Function' || !Base.isCallable(func)) {
-				throw new Exceptions.TypeError();
+				Base.throwNativeException('TypeError');
 			}
 				
 			// Call the function, discarding the result
