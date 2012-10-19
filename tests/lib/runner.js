@@ -40,6 +40,7 @@ process.on('message', function(message) {
 				errorMessage = 'Error: ' + result.errors[0].name + ': ' + (result.errors[0].data.message ? 
 					result.errors[0].data.message :
 					result.errors[0].data.exception._lookupProperty('message').message.value.value);
+				success = properties.hasOwnProperty('negative');
 			} else if (result.errors.length > 1) {				
 				errorMessage = ['Multiple errors: '];
 				result.errors.forEach(function(err) {
@@ -48,6 +49,7 @@ process.on('message', function(message) {
 					} catch(e) {}
 				});
 				errorMessage = errorMessage.join('\n');
+				success = properties.hasOwnProperty('negative');
 			} else {
 				success = !properties.hasOwnProperty('negative');
 				if (!success) {
