@@ -87,6 +87,7 @@ function ConsoleFunc(className) {
 util.inherits(ConsoleFunc, Base.FunctionTypeBase);
 ConsoleFunc.prototype.call = function call(thisVal, args) {
 	if (passThroughConsole) {
+		debugger;
 		console.log('program output: ' + (function parseArgs() {
 			var str = [];
 			args.forEach(function (arg) {
