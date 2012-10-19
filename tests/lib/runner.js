@@ -25,7 +25,7 @@ process.on('message', function(message) {
 			if (result[1]) {
 				switch(Base.type(result[1])) {
 					case 'String': value = result[1].value; break;
-					case 'Object': value = result[1]._properties['message'].value.value; break;
+					case 'Object': value = result[1]._lookupProperty('message').value.value; break;
 				}
 				success = properties.hasOwnProperty('negative');
 				if (!success) {
@@ -39,12 +39,12 @@ process.on('message', function(message) {
 			if (result.errors.length === 1) {
 				errorMessage = 'Error: ' + result.errors[0].name + ': ' + (result.errors[0].data.message ? 
 					result.errors[0].data.message :
-					result.errors[0].data.exception._properties.message.value.value);
+					result.errors[0].data.exception._lookupProperty('message').message.value.value);
 			} else if (result.errors.length > 1) {				
 				errorMessage = ['Multiple errors: '];
 				result.errors.forEach(function(err) {
 					try {
-						errorMessage.push(err.name + ': ' + err.data.exception._properties.message.value.value);
+						errorMessage.push(err.name + ': ' + err.data.exception._lookupProperty('message').value.value);
 					} catch(e) {}
 				});
 				errorMessage = errorMessage.join('\n');
