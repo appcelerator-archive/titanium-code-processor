@@ -186,7 +186,7 @@ module.exports.run = function (options) {
 			console.error('Invalid section "' + section + '"\n');
 			process.exit();
 		}
-		testFileNameRegex = RegExp('^ch' + chapter + '[\\/\\\\]' + section + '.*\\.js$');
+		testFileNameRegex = RegExp('^ch' + chapter + '[\\/\\\\]' + section + '[\\/\\\\].*\\.js$');
 	} else {
 		testFileNameRegex = /^ch[0-9][0-68-9][\/\\].*\.js$/
 	}
