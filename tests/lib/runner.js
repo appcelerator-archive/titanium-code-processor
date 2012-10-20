@@ -17,7 +17,7 @@ process.on('message', function(message) {
 	try {
 
 		result = CodeProcessor.process([testFilePath], [], {
-			executionTimeLimit: 10000,
+			executionTimeLimit: 60000,
 			exactMode: true
 		});
 		
