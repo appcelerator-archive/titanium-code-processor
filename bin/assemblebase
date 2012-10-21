@@ -1,0 +1,67 @@
+#!/usr/bin/env node
+/**
+ * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.</p>
+ * 
+ * Assembles the base components into a single file
+ * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
+ */
+ 
+var fs = require('fs'),
+	path = require('path'),
+	files = [
+		'base.js',
+		
+		'types/unknown.js',
+		'types/undefined.js',
+		'types/null.js',
+		'types/number.js',
+		'types/boolean.js',
+		'types/string.js',
+		'types/object.js',
+		'types/array.js',
+		'types/regexp.js',
+		'types/function.js',
+		'types/reference.js',
+		
+		'prototypes/number.js',
+		'prototypes/boolean.js',
+		'prototypes/string.js',
+		'prototypes/object.js',
+		'prototypes/array.js',
+		'prototypes/regexp.js',
+		'prototypes/function.js',
+		'prototypes/error.js',
+		'prototypes/date.js',
+		
+		'constructors/number.js',
+		'constructors/boolean.js',
+		'constructors/string.js',
+		'constructors/object.js',
+		'constructors/array.js',
+		'constructors/regexp.js',
+		'constructors/function.js',
+		'constructors/error.js',
+		'constructors/date.js',
+		
+		'conversion.js',
+		'context.js',
+		'globals.js',
+	],
+	baseDirPath = path.resolve(path.join(__dirname, '..', 'lib', 'base')),
+	baseFilePath = path.resolve(path.join(__dirname, '..', 'lib', 'Base.js')),
+	baseFileContents;
+
+// Remove the old Base file
+if (fs.existsSync(baseFilePath)) {
+	fs.unlinkSync(baseFilePath);
+}
+
+// Create the new file contents
+console.log('Assembling base files');
+baseFileContents = files.reduce(function (previousValue, currentValue) {
+	return previousValue + '\n\n' + fs.readFileSync(path.join(baseDirPath, currentValue));
+}, '');
+
+// Write the Base.js file
+fs.writeFileSync(baseFilePath, baseFileContents);
