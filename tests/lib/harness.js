@@ -107,7 +107,9 @@ module.exports.run = function (options) {
 					'\n\n/****************************************\n' + 
 					' * ' + file + '\n' + 
 					' ****************************************/\n\n' + 
-					body;
+					'\n(function(){\n' + 
+					body +
+					'\n})();'
 				testFilePath = path.join(tempDir, file);
 				wrench.mkdirSyncRecursive(path.dirname(testFilePath));
 				fs.writeFileSync(testFilePath, testFileContent);
