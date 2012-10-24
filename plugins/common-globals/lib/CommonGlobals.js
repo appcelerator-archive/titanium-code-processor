@@ -207,7 +207,7 @@ SetIntervalFunc.prototype.call = function call(thisVal, args) {
 		// Make sure func is actually a function
 		if (Base.type(func) !== 'Unknown') {
 			if (func.className !== 'Function' || !Base.isCallable(func)) {
-				Base.throwException('TypeError');
+				Base.throwNativeException('TypeError');
 			}
 				
 			// Call the function, discarding the result
@@ -260,7 +260,7 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 		// Make sure func is actually a function
 		if (Base.type(func) !== 'Unknown') {
 			if (func.className !== 'Function' || !Base.isCallable(func)) {
-				Base.throwException('TypeError');
+				Base.throwNativeException('TypeError');
 			}
 				
 			// Call the function, discarding the result
