@@ -1,6 +1,8 @@
 Titanium Code Processor
 ========
 
+Proper in-depth documentation coming soon!
+
 ## Overview
 Code analysis node.js modules for Titanium mobile
 
