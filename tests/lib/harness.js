@@ -13,8 +13,13 @@ var fs = require('fs'),
 	
 	fork = require('child_process').fork;
 
-module.exports.run = function (test262Dir, multiThreaded, chapter, section) {
-	var includeDir = path.join(test262Dir, 'test', 'harness'),
+module.exports.run = function (options) {
+	var test262Dir = options['test-262-dir'],
+		multiThreaded = options['multi-threaded'],
+		chapter = options['chapter'],
+		section = options['section'],
+		testNode = options['test-node'],
+		includeDir = path.join(test262Dir, 'test', 'harness'),
 		testLib = '',
 		fileList = wrench.readdirSyncRecursive(path.join(test262Dir, 'test', 'suite')),
 		prunedFileList = [],
@@ -102,16 +107,29 @@ module.exports.run = function (test262Dir, multiThreaded, chapter, section) {
 					'\n\n/****************************************\n' + 
 					' * ' + file + '\n' + 
 					' ****************************************/\n\n' + 
-					body;
+					'\n(function(){\n' + 
+					body +
+					'\n})();'
 				testFilePath = path.join(tempDir, file);
 				wrench.mkdirSyncRecursive(path.dirname(testFilePath));
 				fs.writeFileSync(testFilePath, testFileContent);
 				
-				child = fork(path.resolve(path.join(__dirname, 'runner')));
-				child.send({ file: testFilePath, properties: testProperties});
-				child.on('message', function(message) {
+				if (testNode) {
+					try {
+						message = {};
+						require(testFilePath);
+						message.success = !testProperties.negative;
+						if (!message.success) {
+							message.errorMessage = 'The test was expected to fail but didn\'t';
+						}
+					} catch(e) {
+						message.success = testProperties.negative;
+						if (!message.success) {
+							message.errorMessage = 'Exception: ' + e.message;
+						}
+					}
 					total++;
-					if (message.success) { 
+					if (message.success) {
 						successes++;
 					}
 					console.log((message.success ? 'PASS' : 'FAIL') + ' (' + total + ' of ' + numTests +', ' + 
@@ -119,7 +137,21 @@ module.exports.run = function (test262Dir, multiThreaded, chapter, section) {
 						Math.floor(100 * successes / total) + '% pass rate so far): ' + 
 						testFilePath + (!message.success ? '\n   ' + message.errorMessage : ''));
 					setTimeout(processFile, 0);
-				});
+				} else {
+					child = fork(path.resolve(path.join(__dirname, 'runner')));
+					child.send({ file: testFilePath, properties: testProperties});
+					child.on('message', function(message) {
+						total++;
+						if (message.success) {
+							successes++;
+						}
+						console.log((message.success ? 'PASS' : 'FAIL') + ' (' + total + ' of ' + numTests +', ' +
+							getPrettyTime((numTests - total) * (Date.now() - startTime) / total) + ' remaining, ' +
+							Math.floor(100 * successes / total) + '% pass rate so far): ' +
+							testFilePath + (!message.success ? '\n   ' + message.errorMessage : ''));
+						setTimeout(processFile, 0);
+					});
+				}
 			} else {
 				throw new Error('Could not parse test case ' + file);
 			}			
@@ -147,6 +179,7 @@ module.exports.run = function (test262Dir, multiThreaded, chapter, section) {
 		testFileNameRegex = RegExp('^ch' + chapter + '[\\/\\\\].*\\.js$');
 	} else if (section) {
 		chapter = parseInt(section);
+		chapter = (chapter < 10 ? '0' : '') + chapter;
 		if (!fs.existsSync(path.join(test262Dir, 'test', 'suite', 'ch' + chapter))) {
 			console.error('Invalid chapter number "' + chapter + '"\n');
 			process.exit();
@@ -155,7 +188,7 @@ module.exports.run = function (test262Dir, multiThreaded, chapter, section) {
 			console.error('Invalid section "' + section + '"\n');
 			process.exit();
 		}
-		testFileNameRegex = RegExp('^ch' + chapter + '[\\/\\\\]' + section + '.*\\.js$');
+		testFileNameRegex = RegExp('^ch' + chapter + '[\\/\\\\]' + section + '[\\/\\\\].*\\.js$');
 	} else {
 		testFileNameRegex = /^ch[0-9][0-68-9][\/\\].*\.js$/
 	}

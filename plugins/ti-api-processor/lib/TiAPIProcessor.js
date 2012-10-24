@@ -14,7 +14,6 @@ var fs = require('fs'),
 	
 	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
-	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, 'Exceptions')),
 	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'CodeProcessor')),
 	
 	jsca,
@@ -266,7 +265,6 @@ exports.TiObjectType.prototype.get = function get(p) {
  * @param {module:Base.BaseType} v The value to set
  * @param {Boolean} throwFlag Whether or not to throw an exception on error (related to strict mode)
  * @param {Boolean} suppressEvent Suppresses the 'propertySet' event (used when setting prototypes)
- * @throws {{@link module:Exceptions.TypeError}} Thrown when the property cannot be put and throwFlag is true
  * @see ECMA-262 Spec Chapter 8.12.5
  */
 exports.TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent) {
@@ -300,7 +298,6 @@ exports.TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent
  * @param {String} p The name of the parameter to delete
  * @param {Boolean} throwFlag Whether or not to throw an exception on error (related to strict mode)
  * @returns {Boolean} Whether or not the object was deleted succesfully
- * @throws {{@link module:Exceptions.TypeError}} Thrown when the property cannot be deleted and throwFlag is true
  * @see ECMA-262 Spec Chapter 8.12.7
  */
 exports.TiObjectType.prototype.delete = function objDelete(p, throwFlag) {

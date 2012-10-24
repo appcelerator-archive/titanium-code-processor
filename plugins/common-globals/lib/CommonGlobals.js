@@ -11,8 +11,9 @@ var path = require('path'),
 	
 	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
-	Exceptions = require(path.join(global.nodeCodeProcessorLibDir, 'Exceptions')),
-	RuleProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'RuleProcessor'));
+	RuleProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'RuleProcessor')),
+	
+	passThroughConsole = true;
 
 // ******** Plugin API Methods ********
 
@@ -85,6 +86,16 @@ function ConsoleFunc(className) {
 }
 util.inherits(ConsoleFunc, Base.FunctionTypeBase);
 ConsoleFunc.prototype.call = function call(thisVal, args) {
+	if (passThroughConsole) {
+		debugger;
+		console.log('program output: ' + (function parseArgs() {
+			var str = [];
+			args.forEach(function (arg) {
+				str.push(Base.toString(arg).value);
+			});
+			return str.join(' ');
+		})());
+	}
 	return new Base.UndefinedType();
 };
 
@@ -196,7 +207,7 @@ SetIntervalFunc.prototype.call = function call(thisVal, args) {
 		// Make sure func is actually a function
 		if (Base.type(func) !== 'Unknown') {
 			if (func.className !== 'Function' || !Base.isCallable(func)) {
-				throw new Exceptions.TypeError();
+				Base.throwNativeException('TypeError');
 			}
 				
 			// Call the function, discarding the result
@@ -249,7 +260,7 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 		// Make sure func is actually a function
 		if (Base.type(func) !== 'Unknown') {
 			if (func.className !== 'Function' || !Base.isCallable(func)) {
-				throw new Exceptions.TypeError();
+				Base.throwNativeException('TypeError');
 			}
 				
 			// Call the function, discarding the result
