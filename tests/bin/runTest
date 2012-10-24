@@ -60,7 +60,7 @@ try {
 			var value;
 			switch(Base.type(result[1])) {
 				case 'String': value = result[1].value; break;
-				case 'Object': value = result[1]._properties['message'].value.value; break;
+				case 'Object': value = result[1]._lookupProperty['message'].value.value; break;
 			}
 		} else {
 			console.error('**** Internal error: missing throw value at line ' + Runtime.getCurrentLocation().line);

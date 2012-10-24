@@ -101,20 +101,24 @@ if (parsedOptions[0]) {
 }
 projectRoot = path.resolve(projectRoot);
 
-// Get the list of plugins
-plugins = parsedOptions.plugin;
-
 // Make sure that the project exists
 if (!fs.existsSync(projectRoot)) {
 	throw new Error("Error: project root '" + projectRoot + "' does not exist.");
 }
 	
 // Calculate the various directories of interest
-entryPoint = path.join(projectRoot, "Resources", "app.js");
-if (!fs.existsSync(entryPoint)) {
-	throw new Error("Error: Project entry point '" + entryPoint + "' does not exist.");
+if (/\.js$/.test(projectRoot)) {
+	entryPoint = projectRoot;
+} else {
+	entryPoint = path.join(projectRoot, "Resources", "app.js");
+	if (!fs.existsSync(entryPoint)) {
+		throw new Error("Error: Project entry point '" + entryPoint + "' does not exist.");
+	}
+	logger.log("info", "Processing app entry point '" + entryPoint + "'");
 }
-logger.log("info", "Processing app entry point '" + entryPoint + "'");
+
+// Get the list of plugins
+plugins = parsedOptions.plugin;
 
 // Process the code
 startTime = (new Date()).getTime();
