@@ -11,7 +11,10 @@ var fs = require('fs'),
 	
 	wrench = require('wrench'),
 	
-	fork = require('child_process').fork;
+	fork = require('child_process').fork,
+
+	AST = require('../../lib/AST'),
+	RuleProcessor = require('../../lib/RuleProcessor');
 
 module.exports.run = function (options) {
 	var test262Dir = options['test-262-dir'],
@@ -66,7 +69,8 @@ module.exports.run = function (options) {
 			elapsedTime,
 			seconds,
 			minutes,
-			hours;
+			hours,
+			ast;
 		if (!file) {
 			printFinishedCountdown--;
 			if (!printFinishedCountdown) {
@@ -101,15 +105,18 @@ module.exports.run = function (options) {
 						testProperties[propMatch[1]] = properties[i].replace(propMatch[1], '').replace(starsRegex, '\n').trim();
 					}
 				}
-				
+
+				// Check if this is a strict mode test
+
+				ast = AST.parseString(body);
+				testProperties.strictMode = !!(ast && ast[1] && RuleProcessor.isBlockStrict(ast[1]));
+
 				// Write the test file plus headers to a temp file
-				testFileContent = testLib + 
+				testFileContent = (testProperties.strictMode ? '"use strict";\n' : '') + testLib + 
 					'\n\n/****************************************\n' + 
 					' * ' + file + '\n' + 
 					' ****************************************/\n\n' + 
-					'\n(function(){\n' + 
-					body +
-					'\n})();'
+					body;
 				testFilePath = path.join(tempDir, file);
 				wrench.mkdirSyncRecursive(path.dirname(testFilePath));
 				fs.writeFileSync(testFilePath, testFileContent);
