@@ -130,4 +130,4 @@ result = CodeProcessor.process([entryPoint], plugins, options, logger);
 logger.log("info", "Code processing finished successfully in " + ((new Date()).getTime() - startTime) + " ms.");
 logger.log("info", util.inspect(CodeProcessor.getResults(), false, 4));
 			
-process.exit(result[0] === "normal" ? 0 : 1);
+process.exit(result && result[0] === "normal" ? 0 : 1);
