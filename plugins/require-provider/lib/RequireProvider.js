@@ -17,7 +17,8 @@ var util = require('util'),
 	pluginRegExp = /^(.+?)\!(.*)$/,
 	fileRegExp = /\.js$/,
 	
-	platform;
+	platform,
+	modules;
 
 
 /**
@@ -30,6 +31,7 @@ var util = require('util'),
  */
 module.exports = function (options) {
 	platform = options.platform;
+	modules = options.modules;
 };
 
 /**
@@ -81,40 +83,65 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 	name = name.value;
 	if (pluginRegExp.test(name) || name.indexOf(':') !== -1) {
 		Runtime.fireEvent('requireUnresolved', 
-			'Plugins and URLS can not be evaluated at compile-time and will be deferred to runtime.', {
+			'Plugins and URLS can not be evaluated at compile-time and will be deferred until runtime.', {
 				name: name
-			});
+		});
 	} else {
-		// Resolve the path
-		isModule = name[0] !== '/' && !name.match(fileRegExp);
-		if (name[0] === '.') {
-			filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentFile()), name));
-			filePath += isModule ? '.js' : '';
-		} else {
-			filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, name));
-			filePath += isModule ? '.js' : '';
-			if (!fs.existsSync(filePath)) {
-				filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), name));
-				filePath += isModule ? '.js' : '';
-			}
+
+		// Determine if this is a Titanium module
+		if (modules['commonjs'] && modules['commonjs'] && modules['commonjs'].hasOwnProperty(name)) {
+			isModule = true;
+			filePath = modules['commonjs'][name];
+		} else if (modules[platform] && modules[platform] && modules[platform].hasOwnProperty(name)) {
+			isModule = true;
 		}
-				
-		// Make sure that the file exists and then process it
-		if (fs.existsSync(filePath)) {
-			
-			Runtime.fireEvent('requireResolved', 'The require path "' + filePath + '" was resolved', {
-				name: filePath
-			});
-			result = CodeProcessor.processFile(filePath, isModule)[1];
-			
+
+		if (isModule) {
+			if (filePath) {
+				Runtime.fireEvent('requireResolved', 'The require path "' + filePath + '" was resolved', {
+					name: filePath
+				});
+				result = CodeProcessor.processFile(filePath, true)[1];
+			} else {
+				Runtime.fireEvent('requireUnresolved', 
+					'Native modules cannot be evaluated at compile-time and will be deferred until runtime', {
+						name: name
+				});
+				result = new Base.UnknownType();
+			}
 		} else {
-			eventDescription = 'The require path "' + filePath + '" could not be found';
-			Runtime.fireEvent('requireMissing', eventDescription, {
-				name: filePath
-			});
-			Runtime.reportError('requireMissing', eventDescription, {
-				name: filePath
-			});
+
+			// Resolve the path
+			isModule = name[0] !== '/' && !name.match(fileRegExp);
+			if (name[0] === '.') {
+				filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentFile()), name));
+				filePath += isModule ? '.js' : '';
+			} else {
+				filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, name));
+				filePath += isModule ? '.js' : '';
+				if (!fs.existsSync(filePath)) {
+					filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), name));
+					filePath += isModule ? '.js' : '';
+				}
+			}
+					
+			// Make sure that the file exists and then process it
+			if (fs.existsSync(filePath)) {
+				
+				Runtime.fireEvent('requireResolved', 'The require path "' + filePath + '" was resolved', {
+					name: filePath
+				});
+				result = CodeProcessor.processFile(filePath, isModule)[1];
+				
+			} else {
+				eventDescription = 'The require path "' + filePath + '" could not be found';
+				Runtime.fireEvent('requireMissing', eventDescription, {
+					name: filePath
+				});
+				Runtime.reportError('requireMissing', eventDescription, {
+					name: filePath
+				});
+			}
 		}
 	}
 	return result;
