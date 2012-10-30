@@ -124,104 +124,127 @@ if (/\.js$/.test(projectRoot)) {
 	if (!fs.existsSync(entryPoint)) {
 		throw new Error('Error: Project entry point "' + entryPoint + '" does not exist.');
 	} else {
+		console.log('Analyzing project')
+		exec('titanium', function (err) {
+			var tasks = {
+				tiappxml: function (next) {
+					(new xml2js.Parser()).parseString(fs.readFileSync(path.join(projectRoot, 'tiapp.xml')), function (err, data) {
+						if (err) {
+							next(err);
+						} else {
+							next(null, data);
+						}
+					});
+				}
+			};
 
-		async.series([
-			function (next) {
-				// Fetch information from the titanium command
-				exec('titanium', function (err) {
-					if (err) {
-						next('Unable to run "titanium": ' + err);
-					} else {
-						next();
-					}
-				});
-			},
-			function(next) {
-				async.parallel({
-					modules: function (tinext) {
-						exec('titanium module -o json --project-dir ' + projectRoot, function (err, stdout, stderr) {
-							if (err) {
-								tinext(err);
-							} else {
-								tinext(null, JSON.parse(stdout));
-							}
-						});
-					},
-					project: function (tinext) {
-						exec('titanium project -o json --project-dir ' + projectRoot, function (err, stdout, stderr) {
-							if (err) {
-								tinext(err);
-							} else {
-								tinext(null, JSON.parse(stdout));
-							}
-						});
-					},
-					info: function (tinext) {
-						exec('titanium info -t titanium -o json', function (err, stdout, stderr) {
-							if (err) {
-								tinext(err);
-							} else {
-								tinext(null, JSON.parse(stdout));
-							}
-						});
-					}
-				}, function (err, result) {
-					if (err) {
-						next(err);
-					} else {
-						next(null, result);
-					}
-				});
-			}
-		], function (err, result) {
 			if (err) {
-				console.error(err);
-				process.exit(1);
+				console.warn('Could not run the "titanium" command, results will be limited')
 			} else {
-				//console.dir(result[1]);
-				var parser = new xml2js.Parser();
-				(new xml2js.Parser()).parseString(fs.readFileSync(path.join(projectRoot, 'tiapp.xml')), function (err, data) {
-					var sdkInfo = result[1].info.titanium[data['ti:app']['sdk-version'][0]],
-						projectModules = result[1].modules.project,
-						globalModules = result[1].modules.global,
-						moduleList = data['ti:app'].modules && data['ti:app'].modules[0].module,
-						modules = {},
-						i, len;
+				tasks['modules'] = function (next) {
+					exec('titanium module -o json --project-dir ' + projectRoot, function (err, stdout, stderr) {
+						if (err) {
+							next(err);
+						} else {
+							next(null, JSON.parse(stdout));
+						}
+					});
+				};
+				tasks['project'] = function (next) {
+					exec('titanium project -o json --project-dir ' + projectRoot, function (err, stdout, stderr) {
+						if (err) {
+							next(err);
+						} else {
+							next(null, JSON.parse(stdout));
+						}
+					});
+				},
+				tasks['info'] = function (next) {
+					exec('titanium info -t titanium -o json', function (err, stdout, stderr) {
+						if (err) {
+							next(err);
+						} else {
+							next(null, JSON.parse(stdout));
+						}
+					});
+				}
+			}
 
-					if (moduleList) {
-						moduleList.forEach(function (module) {
-							var platform = module.$.platform,
-								name = module._,
-								version = module.$.version,
-								moduleEntry;
-							if (!modules[platform]) {
-								modules[platform] = {};
-							}
-							if (platform === 'commonjs') {
-								if (projectModules && projectModules['commonjs'] && projectModules['commonjs'][name]) {
-									moduleEntry = projectModules['commonjs'][name];
-								} else if (globalModules && globalModules['commonjs'] && globalModules['commonjs'][name]) {
-									moduleEntry = globalModules['commonjs'][name];
-								}
-								if (moduleEntry) {
-									if (version) {
-										moduleEntry = moduleEntry[version];
-									} else {
-										moduleEntry = moduleEntry[Object.keys(moduleEntry).sort().pop()];
-									}
-									modules[platform][name] = path.join(moduleEntry.modulePath, JSON.parse(
-										fs.readFileSync(path.join(moduleEntry.modulePath, 'package.json'))).main + '.js');
-								}
+			async.parallel(tasks, function (err, result) {
+				var sdkVersion,
+					sdkInfo,
+					projectModules,
+					globalModules,
+					moduleList,
+					modules = {},
+					i, len;
+				if (err) {
+					console.error(err);
+				} else {
+					if (result.info && result.modules && result.project) {
+						
+						// Get the SDK path
+						sdkVersion = result.tiappxml['ti:app']['sdk-version'];
+						if (sdkVersion) {
+							sdkVersion = sdkVersion[0].match(/^([0-9]\.[0-9]\.[0-9]).*$/)[1];
+						} else {
+							sdkVersion = Object.keys(result.info.titanium).sort().pop();
+						}
+						sdkInfo = result.info.titanium[sdkVersion];
+						if (!sdkInfo) {
+							if (result.info.titanium[sdkVersion + '.GA']) {
+								sdkVersion = sdkVersion + '.GA';
+								sdkInfo = result.info.titanium[sdkVersion];
 							} else {
-								modules[platform][name] = '';
+								console.error('SDK version ' + sdkVersion + ' is not available\n');
+								process.exit(1);
 							}
-						});
+						}
+						options.sdkPath = sdkInfo.path;
+						
+						// Get the list of modules from the tiapp.xml
+						projectModules = result.modules.project;
+						globalModules = result.modules.global;
+						moduleList = result.tiappxml['ti:app'].modules && result.tiappxml['ti:app'].modules[0].module;
+						if (moduleList) {
+							moduleList.forEach(function (module) {
+								var platform = module.$.platform,
+									name = module._,
+									version = module.$.version,
+									moduleEntry;
+								if (platform) {
+									if (!modules[platform]) {
+										modules[platform] = {};
+									}
+									if (platform === 'commonjs') {
+										if (projectModules && projectModules['commonjs'] && projectModules['commonjs'][name]) {
+											moduleEntry = projectModules['commonjs'][name];
+										} else if (globalModules && globalModules['commonjs'] && globalModules['commonjs'][name]) {
+											moduleEntry = globalModules['commonjs'][name];
+										}
+										if (moduleEntry) {
+											if (version) {
+												moduleEntry = moduleEntry[version];
+											} else {
+												moduleEntry = moduleEntry[Object.keys(moduleEntry).sort().pop()];
+											}
+											modules[platform][name] = path.join(moduleEntry.modulePath, JSON.parse(
+												fs.readFileSync(path.join(moduleEntry.modulePath, 'package.json'))).main + '.js');
+										}
+									} else {
+										modules[platform][name] = '';
+									}
+								} else {
+									if (!modules[parsedOptions.osname]) {
+										modules[parsedOptions.osname] = {};
+									}
+									modules[parsedOptions.osname][name] = ''; // Kinda hacky, but good enough for this script
+								}
+							});
+						}
+						options.modules = modules;
 					}
-
-					// Assemble the options
-					options.sdkPath = sdkInfo && sdkInfo.path;
 					options.platform = parsedOptions.osname;
-					options.modules = modules;
 					
 					// Process the code
 					startTime = (new Date()).getTime();
@@ -229,8 +252,8 @@ if (/\.js$/.test(projectRoot)) {
 					logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
 					logger.log('info', util.inspect(CodeProcessor.getResults(), false, 4));
 					process.exit(result && result[0] === 'normal' ? 0 : 1);
-				});
-			}
+				}
+			});
 		});
 	}
 }
