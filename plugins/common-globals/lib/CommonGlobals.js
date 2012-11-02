@@ -91,7 +91,11 @@ ConsoleFunc.prototype.call = function call(thisVal, args) {
 		console.log('program output: ' + (function parseArgs() {
 			var str = [];
 			args.forEach(function (arg) {
-				str.push(Base.toString(arg).value);
+				if (Base.type(arg) === 'Unknown') {
+					str.push('<Unknown value>')
+				} else {
+					str.push(Base.toString(arg).value);
+				}
 			});
 			return str.join(' ');
 		})());
@@ -211,9 +215,7 @@ SetIntervalFunc.prototype.call = function call(thisVal, args) {
 			}
 				
 			// Call the function, discarding the result
-			Runtime.ambiguousCode++;
-			func.call(new Base.UndefinedType(), args);
-			Runtime.ambiguousCode--;
+			func.call(new Base.UndefinedType(), args, true);
 			result = new Base.UndefinedType();
 		} else {
 			result = new Base.UnknownType();
@@ -264,9 +266,7 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 			}
 				
 			// Call the function, discarding the result
-			Runtime.ambiguousCode++;
-			func.call(new Base.UndefinedType(), args);
-			Runtime.ambiguousCode--;
+			func.call(new Base.UndefinedType(), args, true);
 			result = new Base.UndefinedType();
 		} else {
 			result = new Base.UnknownType();

@@ -166,9 +166,7 @@ TiFunction.prototype.call = function call(thisVal, args) {
 				for(j = 0; j < args[i].get('length').value; j++) {
 					callArgs[j] = new Base.UnknownType();
 				}
-				Runtime.ambiguousCode++;
-				args[i].call(new Base.UndefinedType(), callArgs);
-				Runtime.ambiguousCode--;
+				args[i].call(new Base.UndefinedType(), callArgs, true);
 			}
 			Runtime.recursionCount--;
 		}
