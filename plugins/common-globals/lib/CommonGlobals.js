@@ -187,43 +187,19 @@ function SetIntervalFunc(className) {
 util.inherits(SetIntervalFunc, Base.FunctionTypeBase);
 SetIntervalFunc.prototype.call = function call(thisVal, args) {
 	
-	var func = args[0],
-		eventDescription,
-		eventData,
-		result;
-	
-	if (++Runtime.recursionCount === Runtime.options.maxRecursionLimit) {
-		
-		// Fire an event and report a warning
-		eventDescription = 'Maximum application recursion limit of ' + Runtime.options.maxRecursionLimit + 
-			' reached, could not fully process code';
-		eventData = {
-			ruleName: 'call'
-		};
-		Runtime.fireEvent('maxRecusionLimitReached', eventDescription, eventData);
-		Runtime.reportWarning('maxRecusionLimitReached', eventDescription, eventData);
-			
-		// Set the result to unknown
-		result = new Base.UnknownType();
-		
-	} else {
-		
-		// Make sure func is actually a function
-		if (Base.type(func) !== 'Unknown') {
-			if (func.className !== 'Function' || !Base.isCallable(func)) {
-				Base.throwNativeException('TypeError');
-			}
-				
-			// Call the function, discarding the result
-			func.call(new Base.UndefinedType(), args, true);
-			result = new Base.UndefinedType();
-		} else {
-			result = new Base.UnknownType();
+	var func = args[0];
+
+	// Make sure func is actually a function
+	if (Base.type(func) !== 'Unknown') {
+		if (func.className !== 'Function' || !Base.isCallable(func)) {
+			Base.throwNativeException('TypeError');
 		}
+			
+		// Call the function, discarding the result
+		Runtime.queueFunction(func, new Base.UndefinedType(), [], true);
 	}
-	Runtime.recursionCount--;
 	
-	return result;
+	return new Base.UndefinedType();
 };
 
 /**
@@ -237,44 +213,19 @@ function SetTimeoutFunc(className) {
 }
 util.inherits(SetTimeoutFunc, Base.FunctionTypeBase);
 SetTimeoutFunc.prototype.call = function call(thisVal, args) {
-	
-	var func = args[0],
-		eventDescription,
-		eventData,
-		result;
-	
-	if (++Runtime.recursionCount === Runtime.options.maxRecursionLimit) {
-		
-		// Fire an event and report a warning
-		eventDescription = 'Maximum application recursion limit of ' + Runtime.options.maxRecursionLimit + 
-			' reached, could not fully process code';
-		eventData = {
-			ruleName: 'call'
-		};
-		Runtime.fireEvent('maxRecusionLimitReached', eventDescription, eventData);
-		Runtime.reportWarning('maxRecusionLimitReached', eventDescription, eventData);
-			
-		// Set the result to unknown
-		result = new Base.UnknownType();
-		
-	} else {
-		
-		// Make sure func is actually a function
-		if (Base.type(func) !== 'Unknown') {
-			if (func.className !== 'Function' || !Base.isCallable(func)) {
-				Base.throwNativeException('TypeError');
-			}
-				
-			// Call the function, discarding the result
-			func.call(new Base.UndefinedType(), args, true);
-			result = new Base.UndefinedType();
-		} else {
-			result = new Base.UnknownType();
+	var func = args[0];
+
+	// Make sure func is actually a function
+	if (Base.type(func) !== 'Unknown') {
+		if (func.className !== 'Function' || !Base.isCallable(func)) {
+			Base.throwNativeException('TypeError');
 		}
+			
+		// Call the function, discarding the result
+		Runtime.queueFunction(func, new Base.UndefinedType(), [], true);
 	}
-	Runtime.recursionCount--;
 	
-	return result;
+	return new Base.UndefinedType();
 };
 
 /**
