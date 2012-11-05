@@ -124,7 +124,7 @@ if (/\.js$/.test(projectRoot)) {
 	if (!fs.existsSync(entryPoint)) {
 		throw new Error('Error: Project entry point "' + entryPoint + '" does not exist.');
 	} else {
-		console.log('Analyzing project')
+		logger.info('Analyzing project');
 		exec('titanium', function (err) {
 			var tasks = {
 				tiappxml: function (next) {
