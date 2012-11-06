@@ -18,7 +18,8 @@ var util = require('util'),
 	fileRegExp = /\.js$/,
 	
 	platform,
-	modules;
+	modules,
+	cache = {};
 
 
 /**
@@ -98,10 +99,15 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 
 		if (isModule) {
 			if (filePath) {
-				Runtime.fireEvent('requireResolved', 'The require path "' + filePath + '" was resolved', {
-					name: filePath
-				});
-				result = CodeProcessor.processFile(filePath, true)[1];
+				if (cache[filePath]) {
+					Runtime.fireEvent('requireResolved', 'The require path "' + filePath + '" was resolved', {
+						name: filePath
+					});
+					result = cache[filePath];
+				} else {
+					result = CodeProcessor.processFile(filePath, true)[1];
+					cache[filePath] = result;
+				}
 			} else {
 				Runtime.fireEvent('requireUnresolved', 
 					'Native modules cannot be evaluated at compile-time and will be deferred until runtime', {
@@ -127,11 +133,15 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 					
 			// Make sure that the file exists and then process it
 			if (fs.existsSync(filePath)) {
-				
-				Runtime.fireEvent('requireResolved', 'The require path "' + filePath + '" was resolved', {
-					name: filePath
-				});
-				result = CodeProcessor.processFile(filePath, isModule)[1];
+				if (cache[filePath]) {
+					result = cache[filePath];
+				} else {
+					Runtime.fireEvent('requireResolved', 'The require path "' + filePath + '" was resolved', {
+						name: filePath
+					});
+					result = CodeProcessor.processFile(filePath, isModule)[1];
+					cache[filePath] = result;
+				}
 				
 			} else {
 				eventDescription = 'The require path "' + filePath + '" could not be found';
