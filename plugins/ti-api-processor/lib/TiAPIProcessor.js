@@ -313,79 +313,82 @@ util.inherits(IncludeFunction, Base.FunctionType);
  * @see ECMA-262 Spec Chapter 13.2.1
  */
 IncludeFunction.prototype.call = function call(thisVal, args) {
-	var file = args && Base.getValue(args[0]),
+	var files = [],
 		filePath,
 		evalFunc,
 		root,
 		module,
-		result = new Base.UnknownType();
+		result = new Base.UnknownType(),
+		i, len;
 	
-	// Validate the file
-	if (!file) {
-		file = new Base.UndefinedType();
+	args = args || [];
+	for (i = 0, len = args.length; i < len; i++) {
+		files.push(Base.getValue(args[i]));
 	}
 	
-	file = Base.toString(file);
-	if (Base.type(file) !== 'String') {
-		eventDescription = 'A value that could not be evaluated was passed to Ti.include';
-		Runtime.fireEvent('tiIncludeUnresolved', eventDescription, {
-			name: '<Could not evaluate Ti.include path>'
-		});
-		Runtime.reportWarning('tiIncludeUnresolved', eventDescription, {
-			name: '<Could not evaluate Ti.include path>'
-		});
-		return result;
-	}
-	file = file.value;
-	
-	if (file[0] === '.') {
-		filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentFile()), file));
-	} else {
-		filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, file));
-		if (!fs.existsSync(filePath)) {
-			filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), file));
+	files.forEach(function (file) {
+		file = Base.toString(file);
+		if (Base.type(file) !== 'String') {
+			eventDescription = 'A value that could not be evaluated was passed to Ti.include';
+			Runtime.fireEvent('tiIncludeUnresolved', eventDescription, {
+				name: '<Could not evaluate Ti.include path>'
+			});
+			Runtime.reportWarning('tiIncludeUnresolved', eventDescription, {
+				name: '<Could not evaluate Ti.include path>'
+			});
+			return result;
 		}
-	}
-	
-	// Make sure the file exists
-	if (fs.existsSync(filePath)) {
+		file = file.value;
 		
-		Runtime.fireEvent('tiIncludeResolved', 'The Ti.include path "' + filePath + '" was resolved', {
-			file: filePath
-		});
+		if (file[0] === '.') {
+			filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentFile()), file));
+		} else {
+			filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, file));
+			if (!fs.existsSync(filePath)) {
+				filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), file));
+			}
+		}
 		
-		// Fire the parsing begin event
-		Runtime.fireEvent('fileProcessingBegin', 'Processing is beginning for file "' + filePath + '"', {
-			file: filePath
-		});
-		
-		// Set the current file
-		Runtime.setCurrentFile(filePath);
-		
-		// Eval the code
-		evalFunc = Runtime.getGlobalObject().get('eval');
-		evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())]);
-		
-		// Restore the previous file
-		Runtime.popCurrentFile();
-		
-		// Fire the parsing end event
-		Runtime.fireEvent('fileProcessingEnd', 'Processing finished for file "' + filePath + '"', {
-			file: filePath,
-			nodesVisited: evalFunc._numNodesVisited,
-			numTotalNodes: evalFunc._numTotalNodes
-		});
-		
-	} else {
-		eventDescription = 'The Ti.include path "' + filePath + '" could not be found';
-		Runtime.fireEvent('tiIncludeMissing', eventDescription, {
-			name: filePath
-		});
-		Runtime.reportError('tiIncludeMissing', eventDescription, {
-			name: filePath
-		});
-	}
-	return result;
+		// Make sure the file exists
+		if (fs.existsSync(filePath)) {
+			
+			Runtime.fireEvent('tiIncludeResolved', 'The Ti.include path "' + filePath + '" was resolved', {
+				file: filePath
+			});
+			
+			// Fire the parsing begin event
+			Runtime.fireEvent('fileProcessingBegin', 'Processing is beginning for file "' + filePath + '"', {
+				file: filePath
+			});
+			
+			// Set the current file
+			Runtime.setCurrentFile(filePath);
+			
+			// Eval the code
+			evalFunc = Runtime.getGlobalObject().get('eval');
+			evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())]);
+			
+			// Restore the previous file
+			Runtime.popCurrentFile();
+			
+			// Fire the parsing end event
+			Runtime.fireEvent('fileProcessingEnd', 'Processing finished for file "' + filePath + '"', {
+				file: filePath,
+				nodesVisited: evalFunc._numNodesVisited,
+				numTotalNodes: evalFunc._numTotalNodes
+			});
+			
+		} else {
+			eventDescription = 'The Ti.include path "' + filePath + '" could not be found';
+			Runtime.fireEvent('tiIncludeMissing', eventDescription, {
+				name: filePath
+			});
+			Runtime.reportError('tiIncludeMissing', eventDescription, {
+				name: filePath
+			});
+		}
+	});
+	return new Base.UndefinedType();
 };
 
 // ******** Helper Methods ********
