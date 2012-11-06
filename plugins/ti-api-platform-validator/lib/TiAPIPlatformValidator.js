@@ -41,7 +41,10 @@ module.exports = function (options) {
 			}
 			if (!isSupported) {
 				Runtime.reportWarning('invalidPlatformReferenced', 'Property "' + name + 
-					'" is not supported on ' + platform);
+					'" is not supported on ' + platform, {
+						property: name,
+						platform: platform
+					});
 
 				if (results[name]) {
 					results[name] += 1;

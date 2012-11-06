@@ -29,7 +29,9 @@ module.exports = function () {
 
 		if (e.data.node.deprecated) {
 			// TODO: Change deprecated message when we have the 'deprecated since' info from jsca
-			Runtime.reportWarning('deprecatedTiPropertyReferenced', '"' + name + '" has been deprecated');
+			Runtime.reportWarning('deprecatedTiPropertyReferenced', '"' + name + '" has been deprecated', {
+				property: name
+			});
 
 			if (results[name]) {
 				results[name] += 1;
