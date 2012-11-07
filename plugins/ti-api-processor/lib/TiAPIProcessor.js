@@ -170,7 +170,7 @@ TiFunction.prototype.call = function call(thisVal, args) {
 		}
 		return value;
 	} else {
-		return new Base.UndefinedType();
+		return new Base.UnknownType();
 	}
 };
 
@@ -339,7 +339,7 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 		file = file.value;
 		
 		if (file[0] === '.') {
-			filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentFile()), file));
+			filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentLocation().file), file));
 		} else {
 			filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, file));
 			if (!fs.existsSync(filePath)) {
@@ -359,15 +359,9 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 				file: filePath
 			});
 			
-			// Set the current file
-			Runtime.setCurrentFile(filePath);
-			
 			// Eval the code
 			evalFunc = Runtime.getGlobalObject().get('eval');
-			evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())]);
-			
-			// Restore the previous file
-			Runtime.popCurrentFile();
+			evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())], false, filePath);
 			
 			// Fire the parsing end event
 			Runtime.fireEvent('fileProcessingEnd', 'Processing finished for file "' + filePath + '"', {

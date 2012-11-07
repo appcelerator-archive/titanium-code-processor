@@ -120,7 +120,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 			// Resolve the path
 			isModule = name[0] !== '/' && !name.match(fileRegExp);
 			if (name[0] === '.') {
-				filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentFile()), name));
+				filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentLocation().file), name));
 				filePath += isModule ? '.js' : '';
 			} else {
 				filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, name));
