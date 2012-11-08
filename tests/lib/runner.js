@@ -25,7 +25,7 @@ process.on('message', function(message) {
 			if (result[1]) {
 				switch(Base.type(result[1])) {
 					case 'String': value = result[1].value; break;
-					case 'Object': value = result[1]._lookupProperty('message').value.value + ' (line ' + (result[1].line + 1) + ')'; break;
+					case 'Object': value = result[1]._lookupProperty('message').value.value + ' (line ' + (result[1].line) + ')'; break;
 				}
 				success = properties.hasOwnProperty('negative');
 				if (!success) {
