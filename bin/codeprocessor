@@ -124,7 +124,7 @@ if (/\.js$/.test(projectRoot)) {
 	if (!fs.existsSync(entryPoint)) {
 		throw new Error('Error: Project entry point "' + entryPoint + '" does not exist.');
 	} else {
-		console.log('Analyzing project')
+		logger.info('Analyzing project');
 		exec('titanium', function (err) {
 			var tasks = {
 				tiappxml: function (next) {
@@ -250,7 +250,7 @@ if (/\.js$/.test(projectRoot)) {
 					startTime = (new Date()).getTime();
 					result = CodeProcessor.process([entryPoint], plugins, options, logger);
 					logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
-					logger.log('info', util.inspect(CodeProcessor.getResults(), false, 4));
+					console.log(JSON.stringify(CodeProcessor.getResults(), false, '\t'));
 					process.exit(result && result[0] === 'normal' ? 0 : 1);
 				}
 			});
