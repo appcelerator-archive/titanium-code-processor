@@ -1,0 +1,10 @@
+{
+	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
+	"name": "analysis-coverage",
+	"description": "A plugin for ti-code-processor that reports the amount of code analyzed",
+	"version": "0.1.0",
+	"main": "lib/AnalysisCoverage.js",
+	"engines": {
+		"node": ">=0.8"
+	}
+}
