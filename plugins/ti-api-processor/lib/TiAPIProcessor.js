@@ -365,9 +365,7 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 			
 			// Fire the parsing end event
 			Runtime.fireEvent('fileProcessingEnd', 'Processing finished for file "' + filePath + '"', {
-				file: filePath,
-				nodesVisited: evalFunc._numNodesVisited,
-				numTotalNodes: evalFunc._numTotalNodes
+				file: filePath
 			});
 			
 		} else {
