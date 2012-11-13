@@ -92,7 +92,32 @@ if (parsedOptions.config) {
 			logger.log('error', 'Invalid option "' + parsedOptions.config[i] + '"\n');
 			process.exit(1);
 		}
-		options[configOption[0]] = configOption[1];
+		switch(configOption[0]) {
+			case 'invokeMethods': 
+				options.invokeMethods = configOption[1] === 'true';
+				break;
+			case 'evaluateLoops':
+				options.evaluateLoops = configOption[1] === 'true';
+				break;
+			case 'maxLoopIterations':
+				options.maxLoopIterations = parseInt(configOption[1]);
+				break;
+			case 'executionTimeLimit':
+				options.executionTimeLimit = parseInt(configOption[1]);
+				break;
+			case 'maxRecursionLimit':
+				options.maxRecursionLimit = parseInt(configOption[1]);
+				break;
+			case 'exactMode':
+				options.exactMode = configOption[1] === 'true';
+				break;
+			case 'nativeExceptionRecovery':
+				options.nativeExceptionRecovery = configOption[1] === 'true';
+				break;
+			default:
+				logger.log('error', 'Invalid option "' + parsedOptions.config[i] + '"\n');
+				process.exit(1);
+		}
 	}
 }
 

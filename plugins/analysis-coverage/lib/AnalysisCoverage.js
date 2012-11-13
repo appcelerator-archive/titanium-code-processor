@@ -9,8 +9,10 @@
  
 var path = require('path'),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
+	AST = require(path.join(global.nodeCodeProcessorLibDir, 'AST')),
 	results = {
-		nodesVisited: 0,
+		details: {},
+		numNodesVisited: 0, 
 		numTotalNodes: 0
 	};
 
@@ -25,9 +27,28 @@ var path = require('path'),
  * @name module:plugins/AnalysisCoverage
  */
 module.exports = function () {
-	Runtime.on('fileProcessingEnd', function(e) {
-		results.nodesVisited += e.data.nodesVisited;
-		results.numTotalNodes += e.data.numTotalNodes;
+	Runtime.on('processingComplete', function() {
+		var astSet = Runtime.getASTSet(),
+			id,
+			unnamedRegex = /^@unnamed_ast_/,
+			result;
+		for (id in astSet) {
+			result = results.details[id] = {
+				numNodesVisited: 0,
+				numTotalNodes: 0
+			}
+			AST.walk(astSet[id], { 
+				'*': function(node, next) {
+					if (node._visited) {
+						result.numNodesVisited++;
+						results.numNodesVisited++;
+					}
+					result.numNodesVisited++;
+					results.numTotalNodes++;
+					next();
+				}
+			});
+		}
 	});
 };
 
