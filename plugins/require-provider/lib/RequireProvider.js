@@ -113,12 +113,11 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 					'Native modules cannot be evaluated at compile-time and will be deferred until runtime', {
 						name: name
 				});
-				result = new Base.UnknownType();
 			}
 		} else {
 
 			// Resolve the path
-			isModule = name[0] !== '/' && !name.match(fileRegExp);
+			isModule = !name.match(fileRegExp); // I kinda hate this, but there are too many incorrect usages of require in the wild to implement the spec correctly
 			if (name[0] === '.') {
 				filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentLocation().file), name));
 				filePath += isModule ? '.js' : '';
