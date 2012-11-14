@@ -12,6 +12,7 @@
 		"test": "node tests/bin/tests"
 	},
 	"main": "lib/CodeProcessor.js",
+	"bin": "bin/codeprocessor",
 	"dependencies": {
 		"uglify-js": "1.2.x",
 		"wrench": "1.3.x",

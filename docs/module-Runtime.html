@@ -1,0 +1,3828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Module: Runtime</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-jsdoc.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Module: Runtime</h1>
+    
+    
+
+
+
+<section>
+    
+<header>
+    <h2>
+    Runtime
+    </h2>
+    
+</header>  
+
+<article>
+    <div class="container-overview">
+    
+    
+    
+        
+            <div class="description"><p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+Please see the LICENSE file for information about licensing.</p>
+
+This module provides various communication-like services, such as logging and events.</div>
+        
+        
+        
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	<dt class="tag-author">Author:</dt>
+	<dd class="tag-author">
+        <ul>
+            <li>Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;</li>
+        </ul>
+	</dd>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 1</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+        
+        
+    
+    </div>
+    
+    
+    
+    
+    
+    
+    
+    
+        <h3 class="subsection-title">Classes</h3>
+        
+        <dl>
+            <dt><a href="module-Runtime.Evented.html">Evented</a></dt>
+            <dd></dd>
+        </dl>
+    
+    
+    
+    
+    
+        <h3 class="subsection-title">Members</h3>
+        
+        <dl>
+            
+<dt>
+    <h4 class="name" id="exception"><span class="type-signature">&lt;static> </span>exception<span class="type-signature"> :<a href="module-Base.ObjectType.html">module:Base.ObjectType</a></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        A VM object representation of an error thrown from <a href="module-Base.html#throwNativeException">module:Base.throwNativeException</a> or <a href="module-Base.html#throwException">module:Base.throwException</a>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 85</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="executionTimeLimit"><span class="type-signature">&lt;static> </span>executionTimeLimit<span class="type-signature"> :Number</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        The time when execution will time out
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 78</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="options"><span class="type-signature">&lt;static> </span>options<span class="type-signature"> :Object</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        The global options to be used in processing
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+        <h5 class="subsection-title">Properties:</h5>
+        
+        <dl>
+
+<table class="props">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>invokeMethods</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Indicates whether or not methods should be invoked</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>evaluateLoops</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Indicates whether or not loops should be evaluated</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>maxLoopIterations</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Indicates the maximum number of loop iterations to evaluate before erroring 
+		(infinite loop guard)</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>maxRecursionLimit</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Indicates the maximum recursion depth to evaluate before erroring 
+		(infinite recursion guard)</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>executionTimeLimit</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Indicates the maximum time the app is allowed to run before erroring.
+		Undefined means no limit.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>exactMode</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Indicates whether or not the app should be evaluated in exact mode. Exact mode does not 
+		use ambiguous mode and throws an exception if an Unknown type is encountered.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>nativeExceptionRecovery</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Indicates whether or not to try and recover from native exceptions.
+		Default is false because enabling it has the potential of introducing errors in the analysis.</td>
+        </tr>
+	
+	
+	</tbody>
+</table></dl>
+        
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 56</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="recursionCount"><span class="type-signature">&lt;static> </span>recursionCount<span class="type-signature"> :Number</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        The current recursion depth
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 71</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+</dd>
+
+        </dl>
+    
+    
+    
+        <h3 class="subsection-title">Methods</h3>
+        
+        <dl>
+            
+<dt>
+    <h4 class="name" id="enterAmbiguousBlock"><span class="type-signature">&lt;static> </span>enterAmbiguousBlock</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Enters an ambiguous block in the current context
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 92</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="enterContext"><span class="type-signature">&lt;static> </span>enterContext</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Enters the given file, from a runtime perspective, i.e. if file a requires file b and calls foo in b from a, then the
+current file becomes b, even though a is the current file being processed
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>file</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The name of the file to enter</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 180</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="enterTryCatch"><span class="type-signature">&lt;static> </span>enterTryCatch</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Enters the current try catch block
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 119</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="exitAmbiguousBlock"><span class="type-signature">&lt;static> </span>exitAmbiguousBlock</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Exits an ambiguous block in the current context
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 101</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="exitContext"><span class="type-signature">&lt;static> </span>exitContext</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Exits the current file, from a runtime perspective
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 191</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="exitTryCatch"><span class="type-signature">&lt;static> </span>exitTryCatch</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Exits the current try catch block
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 128</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="fireEvent"><span class="type-signature">&lt;static> </span>fireEvent</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Fires a process state event to the current listener set.
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The name of the event, e.g. 'processingcomplete.'</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>description</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">A description of the event.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 547</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getASTSet"><span class="type-signature">&lt;static> </span>getASTSet</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Gets the list of ASTs that have been processed
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 319</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    A dictionary of the ASTs processed, with the filename/identifier as the key and the AST as the value
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">Object</span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getCurrentContext"><span class="type-signature">&lt;static> </span>getCurrentContext</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Gets the current execution context
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 168</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The current execution context
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">Base.ExecutionContext</span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getCurrentLocation"><span class="type-signature">&lt;static> </span>getCurrentLocation</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Gets the current location being processed
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 268</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The current location, containing three entries: 'file', 'line', 'column'
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">Object</span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getEntryPointFile"><span class="type-signature">&lt;static> </span>getEntryPointFile</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Gets the entry point file
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 246</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The current file
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">String</span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getGlobalContext"><span class="type-signature">&lt;static> </span>getGlobalContext</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Gets the global execution context
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 214</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The global execution context
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">Base.ExecutionContext</span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getGlobalObject"><span class="type-signature">&lt;static> </span>getGlobalObject</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Gets the global object
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 158</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The global object
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type"><a href="module-Base.ObjectType.html">module:Base.ObjectType</a></span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getModuleContext"><span class="type-signature">&lt;static> </span>getModuleContext</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Gets the module object of the current module context (i.e. the 'global' object associated with this module)
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 225</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The module object
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type"><a href="module-Base.ObjectType.html">module:Base.ObjectType</a></span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getModuleObject"><span class="type-signature">&lt;static> </span>getModuleObject</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Gets
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 235</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getNextQueuedFunction"><span class="type-signature">&lt;static> </span>getNextQueuedFunction</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Gets the next delayed execution function to be executed
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 371</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The next function to be executed
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type"><a href="module-Base.FunctionType.html">module:Base.FunctionType</a></span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getReportedErrors"><span class="type-signature">&lt;static> </span>getReportedErrors</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Gets the list of all reported errors
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 596</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The list of errors, as supplied to <a href="module-Runtime.html#reportError">module:Runtime.reportError</a>.
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">Array[Object]</span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getReportedWarnings"><span class="type-signature">&lt;static> </span>getReportedWarnings</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Gets the list of all reported warnings
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 607</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The list of warnings, as supplied to <a href="module-Runtime.html#reportWarning">module:Runtime.reportWarning</a>.
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">Array[Object]</span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getStackTrace"><span class="type-signature">&lt;static> </span>getStackTrace</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Gets the stack list
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 383</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getTags"><span class="type-signature">&lt;static> </span>getTags</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Gets a list of registerd tags.
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 558</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The list of tags, including '@default'
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">Array[String]</span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="inFunctionContext"><span class="type-signature">&lt;static> </span>inFunctionContext</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Returns whether or not we are in a function context (i.e. not in global scope)
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 203</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    Whether or not we are in a function context
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">Boolean</span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="inTryCatch"><span class="type-signature">&lt;static> </span>inTryCatch</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Checks if we are currently in a try-catch block
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 137</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="isAmbiguousBlock"><span class="type-signature">&lt;static> </span>isAmbiguousBlock</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Checks if the current block in the current context is ambiguous
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 110</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="loadListenerSet"><span class="type-signature">&lt;static> </span>loadListenerSet</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Loads the set of event listeners associated with the tag. If the set does not exist, then the previous listener set
+remains loaded. This affects the tag for ALL classes inheriting from <a href="module-Runtime.Evented.html">module:Runtime.Evented</a>.
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>tag</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The tag to load</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 512</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="log"><span class="type-signature">&lt;static> </span>log</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Logs a message
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>level</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The log level of the message</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The message to log</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 632</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="on"><span class="type-signature">&lt;static> </span>on</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Adds an event listener for the given event name.
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Argument</th>
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">The name of the event to listen to, e.g. 'syntaxError'.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">The function to call when the event is fired.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>tag</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">Indicates the event listener set to be attached to. Each tag corresponds to a separate parse
+		of the tree, run in the order that the tag was added. If an event listener is going to modify the tree, a tag
+		<b>must</b> be provided so that it doesn't stomp on the other event listeners.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 535</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="popCurrentLocation"><span class="type-signature">&lt;static> </span>popCurrentLocation</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Exits the current location, from a runtime perspective
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 294</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="queueFunction"><span class="type-signature">&lt;static> </span>queueFunction</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Queues a function for later evaluation
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>func</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-Base.FunctionType.html">module:Base.FunctionType</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The function to execute later</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 330</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="reportError"><span class="type-signature">&lt;static> </span>reportError</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Reports an error
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The name of the error, e.g. 'syntaxError.' Note: the name will be made lowercase.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>description</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">A description of the error.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 572</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="reportWarning"><span class="type-signature">&lt;static> </span>reportWarning</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Reports a warning
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The name of the warning, e.g. 'requireMissing.'  Note: the name will be made lowercase.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>description</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">A description of the error, e.g. 'Processing completed successfully'</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Exra data associated with the event</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 585</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="setAST"><span class="type-signature">&lt;static> </span>setAST</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Adds a
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Argument</th>
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>file</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">The name of the file that generated this AST. If not supplied, an identifier is automatically generated</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 305</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="setCurrentLocation"><span class="type-signature">&lt;static> </span>setCurrentLocation</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Sets the current location
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>line</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The current line</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>column</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The current column</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 280</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="setEntryPointFile"><span class="type-signature">&lt;static> </span>setEntryPointFile</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Gets the entry point file
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 257</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The current file
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">String</span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="setGlobalObject"><span class="type-signature">&lt;static> </span>setGlobalObject</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Sets the global object and creates a new context stack
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>newGlobalObject</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-Base.ObjectType.html">module:Base.ObjectType</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The new global object to set</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 147</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="setLogger"><span class="type-signature">&lt;static> </span>setLogger</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Sets the logger that everything will use
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>newLogger</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Winston logger</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The logger to set</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 620</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        </dl>
+    
+    
+    
+    
+    
+</article>
+
+</section>  
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-AST.html">AST</a></li><li><a href="module-Base.html">Base</a></li><li><a href="module-CodeProcessor.html">CodeProcessor</a></li><li><a href="b06f9e1e28.html">plugins/AnalysisCoverage</a></li><li><a href="ed042e0622.html">plugins/CommonGlobals</a></li><li><a href="7ae15be3f7.html">plugins/RequireFinder</a></li><li><a href="c183b20b93.html">plugins/RequireProvider</a></li><li><a href="7d301f63db.html">plugins/TiAPIDeprecationFinder</a></li><li><a href="f3d440d443.html">plugins/TiAPIPlatformValidator</a></li><li><a href="c2b54ec826.html">plugins/TiAPIProcessor</a></li><li><a href="b7d12b3905.html">plugins/TiAPIUsageFinder</a></li><li><a href="da7a7dffe4.html">plugins/TiIncludeFinder</a></li><li><a href="module-RuleProcessor.html">RuleProcessor</a></li><li><a href="949a64761a.html">rules/array</a></li><li><a href="9f761dec56.html">rules/assign</a></li><li><a href="affad29546.html">rules/atom</a></li><li><a href="00d4f41838.html">rules/binary</a></li><li><a href="43e2deef0e.html">rules/block</a></li><li><a href="7e86c2c081.html">rules/break</a></li><li><a href="ef78e0ed62.html">rules/call</a></li><li><a href="e266e55884.html">rules/conditional</a></li><li><a href="ff1a007591.html">rules/const</a></li><li><a href="25de1d4c45.html">rules/continue</a></li><li><a href="841b062261.html">rules/debugger</a></li><li><a href="d58ec411c0.html">rules/defun</a></li><li><a href="3f06a7ade0.html">rules/directive</a></li><li><a href="5bd355969c.html">rules/do</a></li><li><a href="42058fa353.html">rules/dot</a></li><li><a href="a8b795b682.html">rules/for</a></li><li><a href="bb1c125ed3.html">rules/for-in</a></li><li><a href="28977b9eaf.html">rules/function</a></li><li><a href="e7f4dd8c13.html">rules/if</a></li><li><a href="c4ede15ad1.html">rules/label</a></li><li><a href="c696a7f599.html">rules/name</a></li><li><a href="0b9048aca3.html">rules/new</a></li><li><a href="77c8384aaa.html">rules/num</a></li><li><a href="45a08f0495.html">rules/object</a></li><li><a href="a5fa41135d.html">rules/regexp</a></li><li><a href="ef5f3b6160.html">rules/return</a></li><li><a href="ba60804b1e.html">rules/seq</a></li><li><a href="af02c5c3eb.html">rules/stat</a></li><li><a href="da9a4b89fd.html">rules/string</a></li><li><a href="032a276218.html">rules/sub</a></li><li><a href="2607a7d7ca.html">rules/switch</a></li><li><a href="6a609d3f5a.html">rules/throw</a></li><li><a href="6aa325f754.html">rules/toplevel</a></li><li><a href="a1dc89dab6.html">rules/try</a></li><li><a href="f016d789d5.html">rules/unary-postfix</a></li><li><a href="93bceb3b62.html">rules/unary-prefix</a></li><li><a href="990d945d33.html">rules/var</a></li><li><a href="e5fd18b4dd.html">rules/while</a></li><li><a href="7a1fea9455.html">rules/with</a></li><li><a href="module-Runtime.html">Runtime</a></li></ul><h3>Classes</h3><ul><li><a href="AccessorPropertyDescriptor.html">AccessorPropertyDescriptor</a></li><li><a href="ArrayPrototypeType.html">ArrayPrototypeType</a></li><li><a href="ArrayType.html">ArrayType</a></li><li><a href="BooleanPrototypeType.html">BooleanPrototypeType</a></li><li><a href="BooleanType.html">BooleanType</a></li><li><a href="DataPropertyDescriptor.html">DataPropertyDescriptor</a></li><li><a href="DatePrototypeType.html">DatePrototypeType</a></li><li><a href="DeclarativeEnvironmentRecord.html">DeclarativeEnvironmentRecord</a></li><li><a href="ErrorConstructor.html">ErrorConstructor</a></li><li><a href="ErrorPrototypeType.html">ErrorPrototypeType</a></li><li><a href="ExecutionContext.html">ExecutionContext</a></li><li><a href="FunctionPrototypeType.html">FunctionPrototypeType</a></li><li><a href="FunctionType.html">FunctionType</a></li><li><a href="FunctionTypeBase.html">FunctionTypeBase</a></li><li><a href="LexicalEnvironment.html">LexicalEnvironment</a></li><li><a href="module-Base.AccessorPropertyDescriptor.html">AccessorPropertyDescriptor</a></li><li><a href="module-Base.ArrayPrototypeType.html">ArrayPrototypeType</a></li><li><a href="module-Base.ArrayType.html">ArrayType</a></li><li><a href="module-Base.BaseType.html">BaseType</a></li><li><a href="module-Base.BooleanPrototypeType.html">BooleanPrototypeType</a></li><li><a href="module-Base.BooleanType.html">BooleanType</a></li><li><a href="module-Base.DataPropertyDescriptor.html">DataPropertyDescriptor</a></li><li><a href="module-Base.DatePrototypeType.html">DatePrototypeType</a></li><li><a href="module-Base.DeclarativeEnvironmentRecord.html">DeclarativeEnvironmentRecord</a></li><li><a href="module-Base.ErrorConstructor.html">ErrorConstructor</a></li><li><a href="module-Base.ErrorPrototypeType.html">ErrorPrototypeType</a></li><li><a href="module-Base.ExecutionContext.html">ExecutionContext</a></li><li><a href="module-Base.FunctionPrototypeType.html">FunctionPrototypeType</a></li><li><a href="module-Base.FunctionType.html">FunctionType</a></li><li><a href="module-Base.FunctionTypeBase.html">FunctionTypeBase</a></li><li><a href="module-Base.LexicalEnvironment.html">LexicalEnvironment</a></li><li><a href="module-Base.NullType.html">NullType</a></li><li><a href="module-Base.NumberPrototypeType.html">NumberPrototypeType</a></li><li><a href="module-Base.NumberType.html">NumberType</a></li><li><a href="module-Base.ObjectEnvironmentRecord.html">ObjectEnvironmentRecord</a></li><li><a href="module-Base.ObjectPrototypeType.html">ObjectPrototypeType</a></li><li><a href="module-Base.ObjectType.html">ObjectType</a></li><li><a href="module-Base.ReferenceType.html">ReferenceType</a></li><li><a href="module-Base.RegExpPrototypeType.html">RegExpPrototypeType</a></li><li><a href="module-Base.RegExpType.html">RegExpType</a></li><li><a href="module-Base.StringPrototypeType.html">StringPrototypeType</a></li><li><a href="module-Base.StringType.html">StringType</a></li><li><a href="module-Base.UndefinedType.html">UndefinedType</a></li><li><a href="module-Base.UnknownType.html">UnknownType</a></li><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><li><a href="module-Runtime.Evented.html">Evented</a></li><li><a href="NullType.html">NullType</a></li><li><a href="NumberPrototypeType.html">NumberPrototypeType</a></li><li><a href="NumberType.html">NumberType</a></li><li><a href="ObjectEnvironmentRecord.html">ObjectEnvironmentRecord</a></li><li><a href="ObjectPrototypeType.html">ObjectPrototypeType</a></li><li><a href="ObjectType.html">ObjectType</a></li><li><a href="ReferenceType.html">ReferenceType</a></li><li><a href="RegExpPrototypeType.html">RegExpPrototypeType</a></li><li><a href="RegExpType.html">RegExpType</a></li><li><a href="StringPrototypeType.html">StringPrototypeType</a></li><li><a href="StringType.html">StringType</a></li><li><a href="UndefinedType.html">UndefinedType</a></li><li><a href="UnknownType.html">UnknownType</a></li></ul><h3>Global</h3><ul><li><a href="global.html#checkObjectCoercible">checkObjectCoercible</a></li><li><a href="global.html#createArgumentsObject">createArgumentsObject</a></li><li><a href="global.html#createEvalContext">createEvalContext</a></li><li><a href="global.html#createFunctionContext">createFunctionContext</a></li><li><a href="global.html#createGlobalContext">createGlobalContext</a></li><li><a href="global.html#fromPropertyDescriptor">fromPropertyDescriptor</a></li><li><a href="global.html#getBase">getBase</a></li><li><a href="global.html#getIdentifierReference">getIdentifierReference</a></li><li><a href="global.html#getReferencedName">getReferencedName</a></li><li><a href="global.html#getValue">getValue</a></li><li><a href="global.html#hasPrimitiveBase">hasPrimitiveBase</a></li><li><a href="global.html#isAccessorDescriptor">isAccessorDescriptor</a></li><li><a href="global.html#isCallable">isCallable</a></li><li><a href="global.html#isDataDescriptor">isDataDescriptor</a></li><li><a href="global.html#isGenericDescriptor">isGenericDescriptor</a></li><li><a href="global.html#isPropertyReference">isPropertyReference</a></li><li><a href="global.html#isStrictReference">isStrictReference</a></li><li><a href="global.html#isUnresolvableReference">isUnresolvableReference</a></li><li><a href="global.html#newDeclarativeEnvironment">newDeclarativeEnvironment</a></li><li><a href="global.html#newObjectEnvironment">newObjectEnvironment</a></li><li><a href="global.html#putValue">putValue</a></li><li><a href="global.html#sameValue">sameValue</a></li><li><a href="global.html#toBoolean">toBoolean</a></li><li><a href="global.html#toInt32">toInt32</a></li><li><a href="global.html#toInteger">toInteger</a></li><li><a href="global.html#toNumber">toNumber</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#toPrimitive">toPrimitive</a></li><li><a href="global.html#toPropertyDescriptor">toPropertyDescriptor</a></li><li><a href="global.html#toString">toString</a></li><li><a href="global.html#toUint16">toUint16</a></li><li><a href="global.html#toUint32">toUint32</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3</a> on Tue Nov 13 2012 17:27:50 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+</body>
+</html>
