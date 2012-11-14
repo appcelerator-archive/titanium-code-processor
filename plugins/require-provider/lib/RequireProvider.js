@@ -13,6 +13,8 @@ var util = require('util'),
 	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
 	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'CodeProcessor')),
+	AST = require(path.join(global.nodeCodeProcessorLibDir, 'AST')),
+	RuleProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'RuleProcessor')),
 	
 	pluginRegExp = /^(.+?)\!(.*)$/,
 	fileRegExp = /\.js$/,
@@ -105,7 +107,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 					});
 					result = cache[filePath];
 				} else {
-					result = CodeProcessor.processFile(filePath, true)[1];
+					result = processFile(filePath, true)[1];
 					cache[filePath] = result;
 				}
 			} else {
@@ -138,7 +140,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 					Runtime.fireEvent('requireResolved', 'The require path "' + filePath + '" was resolved', {
 						name: filePath
 					});
-					result = CodeProcessor.processFile(filePath, isModule)[1];
+					result = processFile(filePath, isModule)[1];
 					cache[filePath] = result;
 				}
 				
@@ -181,3 +183,66 @@ module.exports.prototype.init = function init() {
 module.exports.prototype.getResults = function getResults() {
 	return {};
 };
+
+// ******** Helper Methods ********
+
+/**
+ * @private
+ */
+function processFile(file, createExports) {
+	
+	var root,
+		results,
+		_module,
+		_exports,
+		context,
+		envRec;
+	
+	// Make sure the file exists
+	if (fs.existsSync(file)) {
+		
+		// Fire the parsing begin event
+		Runtime.fireEvent('fileProcessingBegin', 'Processing is beginning for file "' + file + '"', {
+			file: file
+		});
+		Runtime.log('debug', 'Processing file ' + file);
+		
+		// Read in the file and generate the AST
+		root = AST.parse(file);
+		if (root) {
+	
+			// Create the context, checking for strict mode
+			context = Base.createGlobalContext(root, RuleProcessor.isBlockStrict(root[1]));
+			if (createExports) {
+				envRec = context.lexicalEnvironment.envRec;
+				_module = new Base.ObjectType(),
+				_exports = new Base.ObjectType(),
+			
+				_module.put('exports', _exports, false);
+			
+				envRec.createMutableBinding('module', true);
+				envRec.setMutableBinding('module', _module);
+				envRec.createMutableBinding('exports', true);
+				envRec.setMutableBinding('exports', _exports);
+			}
+		
+			// Process the code
+			results = RuleProcessor.processRule(root);
+			Runtime.exitContext();
+		}
+		
+		// Exit the context and get the results
+		if (createExports) {
+			results[1] = Base.type(context.thisBinding) === 'Unknown' ? new Base.UnknownType() : _module.get('exports');
+		}
+		
+		// Fire the parsing end event
+		Runtime.fireEvent('fileProcessingEnd', 'Processing finished for file "' + file + '"', {
+			file: file
+		});
+		
+	} else {
+		throw new Error('Internal Error: could not find file "' + file + '"');
+	}
+	return results;
+}
