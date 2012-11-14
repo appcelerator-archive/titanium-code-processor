@@ -11,9 +11,7 @@ var path = require('path'),
 	
 	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
-	RuleProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'RuleProcessor')),
-	
-	passThroughConsole = true;
+	RuleProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'RuleProcessor'));
 
 // ******** Plugin API Methods ********
 
@@ -80,15 +78,15 @@ module.exports.prototype.getResults = function getResults() {
  * 
  * @private
  */
-function ConsoleFunc(className) {
+function ConsoleFunc(type, className) {
 	Base.ObjectType.call(this, className || 'Function');
 	this.put('length', new Base.NumberType(1), false, true);
+	this._type = type;
 }
 util.inherits(ConsoleFunc, Base.FunctionTypeBase);
 ConsoleFunc.prototype.call = function call(thisVal, args) {
-	if (passThroughConsole) {
-		debugger;
-		console.log('program output: ' + (function parseArgs() {
+	if (Runtime.options.logConsoleCalls) {
+		console.log('program output [' + this._type + ']: ' + (function parseArgs() {
 			var str = [];
 			args.forEach(function (arg) {
 				if (Base.type(arg) === 'Unknown') {
@@ -111,11 +109,11 @@ ConsoleFunc.prototype.call = function call(thisVal, args) {
 function ConsoleObject(className) {
 	Base.ObjectType.call(this, className);
 	
-	this.put('debug', new ConsoleFunc(), false, true);
-	this.put('error', new ConsoleFunc(), false, true);
-	this.put('info', new ConsoleFunc(), false, true);
-	this.put('log', new ConsoleFunc(), false, true);
-	this.put('warn', new ConsoleFunc(), false, true);
+	this.put('debug', new ConsoleFunc('debug'), false, true);
+	this.put('error', new ConsoleFunc('error'), false, true);
+	this.put('info', new ConsoleFunc('info'), false, true);
+	this.put('log', new ConsoleFunc('log'), false, true);
+	this.put('warn', new ConsoleFunc('warn'), false, true);
 }
 util.inherits(ConsoleObject, Base.ObjectType);
 

@@ -102,11 +102,14 @@ if (parsedOptions.config) {
 			case 'maxLoopIterations':
 				options.maxLoopIterations = parseInt(configOption[1]);
 				break;
-			case 'executionTimeLimit':
-				options.executionTimeLimit = parseInt(configOption[1]);
-				break;
 			case 'maxRecursionLimit':
 				options.maxRecursionLimit = parseInt(configOption[1]);
+				break;
+			case 'logConsoleCalls':
+				options.logConsoleCalls = configOption[1] === 'true';
+				break;
+			case 'executionTimeLimit':
+				options.executionTimeLimit = parseInt(configOption[1]);
 				break;
 			case 'exactMode':
 				options.exactMode = configOption[1] === 'true';
