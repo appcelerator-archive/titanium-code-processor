@@ -1,7 +1,7 @@
 /**
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
- * 
+ *
  * @module plugins/RequireProvider
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
@@ -12,7 +12,6 @@ var util = require('util'),
 	
 	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
-	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'CodeProcessor')),
 	AST = require(path.join(global.nodeCodeProcessorLibDir, 'AST')),
 	RuleProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'RuleProcessor')),
 	
@@ -26,9 +25,9 @@ var util = require('util'),
 
 /**
  * Creates an instance of the require provider plugin
- * 
+ *
  * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
- * 
+ *
  * @constructor
  * @name module:plugins/RequireProvider
  */
@@ -39,10 +38,10 @@ module.exports = function (options) {
 
 /**
  * @classdesc Customized require() function that doesn't actually execute code in the interpreter, but rather does it here.
- * 
+ *
  * @constructor
  * @private
- * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a 
+ * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a
  *		constructor for an object extending this one.
  */
 function RequireFunction(className) {
@@ -52,7 +51,7 @@ util.inherits(RequireFunction, Base.FunctionType);
 
 /**
  * Calls the require function
- * 
+ *
  * @method
  * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
  * @param {Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
@@ -85,16 +84,16 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 	}
 	name = name.value;
 	if (pluginRegExp.test(name) || name.indexOf(':') !== -1) {
-		Runtime.fireEvent('requireUnresolved', 
+		Runtime.fireEvent('requireUnresolved',
 			'Plugins and URLS can not be evaluated at compile-time and will be deferred until runtime.', {
 				name: name
 		});
 	} else {
 
 		// Determine if this is a Titanium module
-		if (modules['commonjs'] && modules['commonjs'] && modules['commonjs'].hasOwnProperty(name)) {
+		if (modules.commonjs && modules.commonjs && modules.commonjs.hasOwnProperty(name)) {
 			isModule = true;
-			filePath = modules['commonjs'][name];
+			filePath = modules.commonjs[name];
 		} else if (modules[platform] && modules[platform] && modules[platform].hasOwnProperty(name)) {
 			isModule = true;
 		}
@@ -111,7 +110,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 					cache[filePath] = result;
 				}
 			} else {
-				Runtime.fireEvent('requireUnresolved', 
+				Runtime.fireEvent('requireUnresolved',
 					'Native modules cannot be evaluated at compile-time and will be deferred until runtime', {
 						name: name
 				});
@@ -160,7 +159,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 
 /**
  * Initializes the plugin
- * 
+ *
  * @method
  * @name module:plugins/RequireProvider#init
  */
@@ -175,7 +174,7 @@ module.exports.prototype.init = function init() {
 
 /**
 * Gets the results of the plugin
-* 
+*
 * @method
  * @name module:plugins/RequireProvider#getResults
 * @returns {Object} An empty object.

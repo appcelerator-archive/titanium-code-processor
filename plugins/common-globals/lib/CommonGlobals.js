@@ -1,7 +1,7 @@
 /**
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
- * 
+ *
  * @module plugins/CommonGlobals
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
@@ -10,16 +10,15 @@ var path = require('path'),
 	util = require('util'),
 	
 	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
-	RuleProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'RuleProcessor'));
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime'));
 
 // ******** Plugin API Methods ********
 
 /**
  * Creates an instance of the require provider plugin
- * 
+ *
  * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
- * 
+ *
  * @constructor
  * @name module:plugins/CommonGlobals
  */
@@ -27,7 +26,7 @@ module.exports = function () {};
 
 /**
  * Initializes the plugin
- * 
+ *
  * @method
  * @name module:plugins/CommonGlobals#init
  */
@@ -62,7 +61,7 @@ module.exports.prototype.init = function init() {
 
 /**
 * Gets the results of the plugin
-* 
+*
 * @method
  * @name module:plugins/CommonGlobals#getResults
 * @returns {Object} An empty object
@@ -75,7 +74,7 @@ module.exports.prototype.getResults = function getResults() {
 
 /**
  * console.*() prototype method
- * 
+ *
  * @private
  */
 function ConsoleFunc(type, className) {
@@ -90,7 +89,7 @@ ConsoleFunc.prototype.call = function call(thisVal, args) {
 			var str = [];
 			args.forEach(function (arg) {
 				if (Base.type(arg) === 'Unknown') {
-					str.push('<Unknown value>')
+					str.push('<Unknown value>');
 				} else {
 					str.push(Base.toString(arg).value);
 				}
@@ -103,7 +102,7 @@ ConsoleFunc.prototype.call = function call(thisVal, args) {
 
 /**
  * Console Object
- * 
+ *
  * @private
  */
 function ConsoleObject(className) {
@@ -119,7 +118,7 @@ util.inherits(ConsoleObject, Base.ObjectType);
 
 /**
  * L method
- * 
+ *
  * @private
  */
 function LFunc(className) {
@@ -127,13 +126,13 @@ function LFunc(className) {
 	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(LFunc, Base.FunctionTypeBase);
-LFunc.prototype.call = function call(thisVal, args) {
+LFunc.prototype.call = function call() {
 	return new Base.UnknownType();
 };
 
 /**
  * alert method
- * 
+ *
  * @private
  */
 function AlertFunc(className) {
@@ -141,13 +140,13 @@ function AlertFunc(className) {
 	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(AlertFunc, Base.FunctionTypeBase);
-AlertFunc.prototype.call = function call(thisVal, args) {
+AlertFunc.prototype.call = function call() {
 	return new Base.UndefinedType();
 };
 
 /**
  * clearInterval method
- * 
+ *
  * @private
  */
 function ClearIntervalFunc(className) {
@@ -155,13 +154,13 @@ function ClearIntervalFunc(className) {
 	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(ClearIntervalFunc, Base.FunctionTypeBase);
-ClearIntervalFunc.prototype.call = function call(thisVal, args) {
+ClearIntervalFunc.prototype.call = function call() {
 	return new Base.UndefinedType();
 };
 
 /**
  * clearTimeout method
- * 
+ *
  * @private
  */
 function ClearTimeoutFunc(className) {
@@ -169,13 +168,13 @@ function ClearTimeoutFunc(className) {
 	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(ClearTimeoutFunc, Base.FunctionTypeBase);
-ClearTimeoutFunc.prototype.call = function call(thisVal, args) {
+ClearTimeoutFunc.prototype.call = function call() {
 	return new Base.UndefinedType();
 };
 
 /**
  * setInterval method
- * 
+ *
  * @private
  */
 function SetIntervalFunc(className) {
@@ -203,7 +202,7 @@ SetIntervalFunc.prototype.call = function call(thisVal, args) {
 
 /**
  * setTimeout method
- * 
+ *
  * @private
  */
 function SetTimeoutFunc(className) {
@@ -230,7 +229,7 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 
 /**
  * Non-standard string extension function
- * 
+ *
  * @private
  */
 function StringFunc(className) {
@@ -238,6 +237,6 @@ function StringFunc(className) {
 	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(StringFunc, Base.FunctionTypeBase);
-StringFunc.prototype.call = function call(thisVal, args) {
+StringFunc.prototype.call = function call() {
 	return new Base.UndefinedType();
 };

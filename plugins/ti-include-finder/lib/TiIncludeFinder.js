@@ -1,7 +1,7 @@
 /**
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
- * 
+ *
  * @module plugins/TiIncludeFinder
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
@@ -19,9 +19,9 @@ var path = require('path'),
 
 /**
  * Creates an instance of the require provider plugin
- * 
+ *
  * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
- * 
+ *
  * @constructor
  * @name module:plugins/TiIncludeFinder
  */
@@ -39,7 +39,7 @@ module.exports = function () {
 
 /**
  * Initializes the plugin
- * 
+ *
  * @method
  * @name module:plugins/TiIncludeFinder#init
  */
@@ -47,7 +47,7 @@ module.exports.prototype.init = function init() {};
 
 /**
 * Gets the results of the plugin
-* 
+*
 * @method
  * @name module:plugins/TiIncludeFinder#getResults
 * @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
