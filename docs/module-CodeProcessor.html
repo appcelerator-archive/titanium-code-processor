@@ -41,8 +41,9 @@
             <div class="description"><p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
 Please see the LICENSE file for information about licensing.</p>
 
-WARNING: The Code Processor IS NOT fully reentrant! A second invokation of the code processor prior to the first 
-one finishing will kill the first instance and the second invokation may be unstable.</div>
+WARNING: The Code Processor IS NOT reentrant! A second invokation of the code processor prior to the first 
+one finishing will kill the first instance and the second invokation may be unstable. A second invokation of the code
+processor after the first has finished is untested and not likely to work.</div>
         
         
         
@@ -148,7 +149,7 @@ thus allowing the results to be JSON.stringify()'d.
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 304</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 305</li></ul></dd>
 	
     
     
@@ -194,7 +195,7 @@ thus allowing the results to be JSON.stringify()'d.
         
             
 <dt>
-    <h4 class="name" id="process"><span class="type-signature">&lt;static> </span>process<span class="signature">(files, pluginList, <span class="optional">options</span>, logger)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="process"><span class="type-signature">&lt;static> </span>process<span class="signature">(files, <span class="optional">pluginList</span>, <span class="optional">options</span>, <span class="optional">logger</span>)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -202,7 +203,7 @@ thus allowing the results to be JSON.stringify()'d.
     
     
     <div class="description">
-        Begins to process a project.
+        Processes a list of files using the given plugins and options.
     </div>
     
 
@@ -260,7 +261,7 @@ thus allowing the results to be JSON.stringify()'d.
             
             
             
-            <td class="description last">A list of files to process.</td>
+            <td class="description last">The list of files to process.</td>
         </tr>
 	
 	
@@ -281,6 +282,8 @@ thus allowing the results to be JSON.stringify()'d.
             
             
                 <td class="attributes">
+                
+                    &lt;optional><br>
                 
                     
                 
@@ -721,6 +724,8 @@ thus allowing the results to be JSON.stringify()'d.
             
                 <td class="attributes">
                 
+                    &lt;optional><br>
+                
                     
                 
                 </td>
@@ -758,7 +763,7 @@ thus allowing the results to be JSON.stringify()'d.
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 118</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 119</li></ul></dd>
 	
     
     
@@ -880,7 +885,7 @@ thus allowing the results to be JSON.stringify()'d.
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 44</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 45</li></ul></dd>
 	
     
     
@@ -889,7 +894,7 @@ thus allowing the results to be JSON.stringify()'d.
 	<dt class="tag-see">See:</dt>
 	<dd class="tag-see">
         <ul>
-            <li>CodeProcessor#on</li>
+            <li><a href="module-Runtime___________________________.html#on">module:Runtime.on</a></li>
         </ul>
 	</dd>
 	
@@ -1001,7 +1006,7 @@ thus allowing the results to be JSON.stringify()'d.
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 46</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 47</li></ul></dd>
 	
     
     
@@ -1010,7 +1015,7 @@ thus allowing the results to be JSON.stringify()'d.
 	<dt class="tag-see">See:</dt>
 	<dd class="tag-see">
         <ul>
-            <li>CodeProcessor#on</li>
+            <li><a href="module-Runtime___________________________.html#on">module:Runtime.on</a></li>
         </ul>
 	</dd>
 	
@@ -1071,7 +1076,7 @@ thus allowing the results to be JSON.stringify()'d.
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 52</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 53</li></ul></dd>
 	
     
     
@@ -1080,7 +1085,7 @@ thus allowing the results to be JSON.stringify()'d.
 	<dt class="tag-see">See:</dt>
 	<dd class="tag-see">
         <ul>
-            <li>CodeProcessor#on</li>
+            <li>module:Runtime#on</li>
         </ul>
 	</dd>
 	
@@ -1142,7 +1147,7 @@ and thus multiple instances of this event.
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 48</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 49</li></ul></dd>
 	
     
     
@@ -1151,7 +1156,7 @@ and thus multiple instances of this event.
 	<dt class="tag-see">See:</dt>
 	<dd class="tag-see">
         <ul>
-            <li>CodeProcessor#on</li>
+            <li><a href="module-Runtime___________________________.html#on">module:Runtime.on</a></li>
         </ul>
 	</dd>
 	
@@ -1213,7 +1218,7 @@ and thus multiple instances of this event.
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 50</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 51</li></ul></dd>
 	
     
     
@@ -1222,7 +1227,7 @@ and thus multiple instances of this event.
 	<dt class="tag-see">See:</dt>
 	<dd class="tag-see">
         <ul>
-            <li>CodeProcessor#on</li>
+            <li><a href="module-Runtime___________________________.html#on">module:Runtime.on</a></li>
         </ul>
 	</dd>
 	

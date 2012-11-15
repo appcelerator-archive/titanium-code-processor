@@ -215,7 +215,7 @@ Provides various methods for creating and working with ASTs</div>
             <td class="type">
             
                 
-<span class="param-type">module:AST.parseNode</span>
+<span class="param-type"><a href="module-AST__.html#node">module:AST.node</a></span>
 
 
             
@@ -707,7 +707,7 @@ Provides various methods for creating and working with ASTs</div>
     
     
     <div class="description">
-        Walk an AST
+        Walk an AST, recieving callbacks for desired nodes.
     </div>
     
 
@@ -770,7 +770,7 @@ Provides various methods for creating and working with ASTs</div>
             <td class="type">
             
                 
-<span class="param-type">Dictionary[function]</span>
+<span class="param-type">Object[Function(<a href="module-AST__.html#node">module:AST.node</a>, Function)]</span>
 
 
             
@@ -780,7 +780,10 @@ Provides various methods for creating and working with ASTs</div>
             
             
             
-            <td class="description last">The rule names to listen for, or '*' for all</td>
+            <td class="description last">An object containing the rules to listen 
+		for ('*' for all). Each key is the name of the rule to listen for and the value is the function to call. Each 
+		callback function takes two parameters: the AST node and a 'next' function. Calling this function will cause the
+		children of the node to be processed. Not calling the 'next' function will cause the children to be skipped.</td>
         </tr>
 	
 	
@@ -810,7 +813,7 @@ Provides various methods for creating and working with ASTs</div>
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>AST.js, line 99</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>AST.js, line 102</li></ul></dd>
 	
     
     
