@@ -41,7 +41,8 @@
             <div class="description"><p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
 Please see the LICENSE file for information about licensing.</p>
 
-This module provides various communication-like services, such as logging and events.</div>
+This module provides information on the current state of the VM, the ability to change the state of the VM, and 
+communication-like services, such as logging and events.</div>
         
         
         
@@ -111,56 +112,6 @@ This module provides various communication-like services, such as logging and ev
         <dl>
             
 <dt>
-    <h4 class="name" id="exception"><span class="type-signature">&lt;static> </span>exception<span class="type-signature"> :<a href="module-Base.ObjectType.html">module:Base.ObjectType</a></span></h4>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        A VM object representation of an error thrown from <a href="module-Base.html#throwNativeException">module:Base.throwNativeException</a> or <a href="module-Base.html#throwException">module:Base.throwException</a>
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-	
-	
-	
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 85</li></ul></dd>
-	
-    
-    
-	
-	
-	
-	
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
     <h4 class="name" id="executionTimeLimit"><span class="type-signature">&lt;static> </span>executionTimeLimit<span class="type-signature"> :Number</span></h4>
     
     
@@ -194,7 +145,7 @@ This module provides various communication-like services, such as logging and ev
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 78</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 81</li></ul></dd>
 	
     
     
@@ -346,6 +297,29 @@ This module provides various communication-like services, such as logging and ev
 	
         <tr>
             
+                <td class="name"><code>logConsoleCalls</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">If enabled, all console.* calls in a user's code are logged to the terminal</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
                 <td class="name"><code>executionTimeLimit</code></td>
             
             
@@ -366,7 +340,7 @@ This module provides various communication-like services, such as logging and ev
             
             
             <td class="description last">Indicates the maximum time the app is allowed to run before erroring.
-		Undefined means no limit.</td>
+		Undefined means no limit</td>
         </tr>
 	
 	
@@ -390,7 +364,7 @@ This module provides various communication-like services, such as logging and ev
             
             
             <td class="description last">Indicates whether or not the app should be evaluated in exact mode. Exact mode does not 
-		use ambiguous mode and throws an exception if an Unknown type is encountered.</td>
+		use ambiguous mode and throws an exception if an Unknown type is encountered</td>
         </tr>
 	
 	
@@ -414,7 +388,7 @@ This module provides various communication-like services, such as logging and ev
             
             
             <td class="description last">Indicates whether or not to try and recover from native exceptions.
-		Default is false because enabling it has the potential of introducing errors in the analysis.</td>
+		Default is false because enabling it has the potential of introducing errors in the analysis</td>
         </tr>
 	
 	
@@ -441,7 +415,7 @@ This module provides various communication-like services, such as logging and ev
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 56</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 58</li></ul></dd>
 	
     
     
@@ -491,7 +465,7 @@ This module provides various communication-like services, such as logging and ev
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 71</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 74</li></ul></dd>
 	
     
     
@@ -514,7 +488,7 @@ This module provides various communication-like services, such as logging and ev
         <dl>
             
 <dt>
-    <h4 class="name" id="enterAmbiguousBlock"><span class="type-signature">&lt;static> </span>enterAmbiguousBlock</h4>
+    <h4 class="name" id="enterAmbiguousBlock"><span class="type-signature">&lt;static> </span>enterAmbiguousBlock<span class="signature">()</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -554,7 +528,7 @@ This module provides various communication-like services, such as logging and ev
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 92</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 96</li></ul></dd>
 	
     
     
@@ -577,7 +551,7 @@ This module provides various communication-like services, such as logging and ev
         
             
 <dt>
-    <h4 class="name" id="enterContext"><span class="type-signature">&lt;static> </span>enterContext</h4>
+    <h4 class="name" id="enterContext"><span class="type-signature">&lt;static> </span>enterContext<span class="signature">(file)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -666,7 +640,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 180</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 184</li></ul></dd>
 	
     
     
@@ -689,7 +663,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="enterTryCatch"><span class="type-signature">&lt;static> </span>enterTryCatch</h4>
+    <h4 class="name" id="enterTryCatch"><span class="type-signature">&lt;static> </span>enterTryCatch<span class="signature">()</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -729,7 +703,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 119</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 123</li></ul></dd>
 	
     
     
@@ -752,7 +726,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="exitAmbiguousBlock"><span class="type-signature">&lt;static> </span>exitAmbiguousBlock</h4>
+    <h4 class="name" id="exitAmbiguousBlock"><span class="type-signature">&lt;static> </span>exitAmbiguousBlock<span class="signature">()</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -792,7 +766,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 101</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 105</li></ul></dd>
 	
     
     
@@ -815,7 +789,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="exitContext"><span class="type-signature">&lt;static> </span>exitContext</h4>
+    <h4 class="name" id="exitContext"><span class="type-signature">&lt;static> </span>exitContext<span class="signature">()</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -855,7 +829,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 191</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 195</li></ul></dd>
 	
     
     
@@ -878,7 +852,70 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="exitTryCatch"><span class="type-signature">&lt;static> </span>exitTryCatch</h4>
+    <h4 class="name" id="exitCurrentLocation"><span class="type-signature">&lt;static> </span>exitCurrentLocation<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Exits the current location, from a runtime perspective
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 288</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="exitTryCatch"><span class="type-signature">&lt;static> </span>exitTryCatch<span class="signature">()</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -918,7 +955,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 128</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 132</li></ul></dd>
 	
     
     
@@ -941,7 +978,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="fireEvent"><span class="type-signature">&lt;static> </span>fireEvent</h4>
+    <h4 class="name" id="fireEvent"><span class="type-signature">&lt;static> </span>fireEvent<span class="signature">(name, description)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -1052,7 +1089,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 547</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 541</li></ul></dd>
 	
     
     
@@ -1075,7 +1112,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="getASTSet"><span class="type-signature">&lt;static> </span>getASTSet</h4>
+    <h4 class="name" id="getASTSet"><span class="type-signature">&lt;static> </span>getASTSet<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
     
 </dt>
@@ -1115,7 +1152,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 319</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 313</li></ul></dd>
 	
     
     
@@ -1160,7 +1197,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="getCurrentContext"><span class="type-signature">&lt;static> </span>getCurrentContext</h4>
+    <h4 class="name" id="getCurrentContext"><span class="type-signature">&lt;static> </span>getCurrentContext<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="module-Base.ExecutionContext.html">module:Base.ExecutionContext</a>}</span></h4>
     
     
 </dt>
@@ -1200,7 +1237,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 168</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 172</li></ul></dd>
 	
     
     
@@ -1231,7 +1268,7 @@ current file becomes b, even though a is the current file being processed
 	</dt>
 	<dd>
 		
-<span class="param-type">Base.ExecutionContext</span>
+<span class="param-type"><a href="module-Base.ExecutionContext.html">module:Base.ExecutionContext</a></span>
 
 
 	</dd>
@@ -1245,7 +1282,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="getCurrentLocation"><span class="type-signature">&lt;static> </span>getCurrentLocation</h4>
+    <h4 class="name" id="getCurrentLocation"><span class="type-signature">&lt;static> </span>getCurrentLocation<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
     
 </dt>
@@ -1285,7 +1322,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 268</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 262</li></ul></dd>
 	
     
     
@@ -1330,7 +1367,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="getEntryPointFile"><span class="type-signature">&lt;static> </span>getEntryPointFile</h4>
+    <h4 class="name" id="getEntryPointFile"><span class="type-signature">&lt;static> </span>getEntryPointFile<span class="signature">()</span><span class="type-signature"> &rarr; {String}</span></h4>
     
     
 </dt>
@@ -1370,7 +1407,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 246</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 240</li></ul></dd>
 	
     
     
@@ -1415,7 +1452,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="getGlobalContext"><span class="type-signature">&lt;static> </span>getGlobalContext</h4>
+    <h4 class="name" id="getGlobalContext"><span class="type-signature">&lt;static> </span>getGlobalContext<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="module-Base.ExecutionContext.html">module:Base.ExecutionContext</a>}</span></h4>
     
     
 </dt>
@@ -1455,7 +1492,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 214</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 218</li></ul></dd>
 	
     
     
@@ -1486,7 +1523,7 @@ current file becomes b, even though a is the current file being processed
 	</dt>
 	<dd>
 		
-<span class="param-type">Base.ExecutionContext</span>
+<span class="param-type"><a href="module-Base.ExecutionContext.html">module:Base.ExecutionContext</a></span>
 
 
 	</dd>
@@ -1500,7 +1537,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="getGlobalObject"><span class="type-signature">&lt;static> </span>getGlobalObject</h4>
+    <h4 class="name" id="getGlobalObject"><span class="type-signature">&lt;static> </span>getGlobalObject<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="module-Base.ObjectType.html">module:Base.ObjectType</a>}</span></h4>
     
     
 </dt>
@@ -1540,7 +1577,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 158</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 162</li></ul></dd>
 	
     
     
@@ -1585,7 +1622,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="getModuleContext"><span class="type-signature">&lt;static> </span>getModuleContext</h4>
+    <h4 class="name" id="getModuleContext"><span class="type-signature">&lt;static> </span>getModuleContext<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="module-Base.ObjectType.html">module:Base.ObjectType</a>}</span></h4>
     
     
 </dt>
@@ -1625,7 +1662,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 225</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 229</li></ul></dd>
 	
     
     
@@ -1670,70 +1707,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="getModuleObject"><span class="type-signature">&lt;static> </span>getModuleObject</h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Gets
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-	
-	
-	
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 235</li></ul></dd>
-	
-    
-    
-	
-	
-	
-	
-</dl>
-
-    
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="getNextQueuedFunction"><span class="type-signature">&lt;static> </span>getNextQueuedFunction</h4>
+    <h4 class="name" id="getNextQueuedFunction"><span class="type-signature">&lt;static> </span>getNextQueuedFunction<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="module-Base.FunctionType.html">module:Base.FunctionType</a>}</span></h4>
     
     
 </dt>
@@ -1773,7 +1747,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 371</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 365</li></ul></dd>
 	
     
     
@@ -1818,7 +1792,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="getReportedErrors"><span class="type-signature">&lt;static> </span>getReportedErrors</h4>
+    <h4 class="name" id="getReportedErrors"><span class="type-signature">&lt;static> </span>getReportedErrors<span class="signature">()</span><span class="type-signature"> &rarr; {Array[Object]}</span></h4>
     
     
 </dt>
@@ -1858,7 +1832,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 596</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 590</li></ul></dd>
 	
     
     
@@ -1878,7 +1852,7 @@ current file becomes b, even though a is the current file being processed
     
             
 <div class="param-desc">
-    The list of errors, as supplied to <a href="module-Runtime.html#reportError">module:Runtime.reportError</a>.
+    The list of errors, as supplied to <a href="module-Runtime_______________________________.html#reportError">module:Runtime.reportError</a>.
 </div>
 
 
@@ -1903,7 +1877,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="getReportedWarnings"><span class="type-signature">&lt;static> </span>getReportedWarnings</h4>
+    <h4 class="name" id="getReportedWarnings"><span class="type-signature">&lt;static> </span>getReportedWarnings<span class="signature">()</span><span class="type-signature"> &rarr; {Array[Object]}</span></h4>
     
     
 </dt>
@@ -1943,7 +1917,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 607</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 601</li></ul></dd>
 	
     
     
@@ -1963,7 +1937,7 @@ current file becomes b, even though a is the current file being processed
     
             
 <div class="param-desc">
-    The list of warnings, as supplied to <a href="module-Runtime.html#reportWarning">module:Runtime.reportWarning</a>.
+    The list of warnings, as supplied to <a href="module-Runtime________________________________.html#reportWarning">module:Runtime.reportWarning</a>.
 </div>
 
 
@@ -1988,7 +1962,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="getStackTrace"><span class="type-signature">&lt;static> </span>getStackTrace</h4>
+    <h4 class="name" id="getStackTrace"><span class="type-signature">&lt;static> </span>getStackTrace<span class="signature">()</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -2028,7 +2002,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 383</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 377</li></ul></dd>
 	
     
     
@@ -2051,7 +2025,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="getTags"><span class="type-signature">&lt;static> </span>getTags</h4>
+    <h4 class="name" id="getTags"><span class="type-signature">&lt;static> </span>getTags<span class="signature">()</span><span class="type-signature"> &rarr; {Array[String]}</span></h4>
     
     
 </dt>
@@ -2091,7 +2065,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 558</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 552</li></ul></dd>
 	
     
     
@@ -2136,7 +2110,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="inFunctionContext"><span class="type-signature">&lt;static> </span>inFunctionContext</h4>
+    <h4 class="name" id="inFunctionContext"><span class="type-signature">&lt;static> </span>inFunctionContext<span class="signature">()</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
     
     
 </dt>
@@ -2176,7 +2150,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 203</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 207</li></ul></dd>
 	
     
     
@@ -2221,7 +2195,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="inTryCatch"><span class="type-signature">&lt;static> </span>inTryCatch</h4>
+    <h4 class="name" id="inTryCatch"><span class="type-signature">&lt;static> </span>inTryCatch<span class="signature">()</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -2261,7 +2235,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 137</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 141</li></ul></dd>
 	
     
     
@@ -2284,7 +2258,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="isAmbiguousBlock"><span class="type-signature">&lt;static> </span>isAmbiguousBlock</h4>
+    <h4 class="name" id="isAmbiguousBlock"><span class="type-signature">&lt;static> </span>isAmbiguousBlock<span class="signature">()</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -2324,7 +2298,7 @@ current file becomes b, even though a is the current file being processed
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 110</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 114</li></ul></dd>
 	
     
     
@@ -2347,7 +2321,7 @@ current file becomes b, even though a is the current file being processed
         
             
 <dt>
-    <h4 class="name" id="loadListenerSet"><span class="type-signature">&lt;static> </span>loadListenerSet</h4>
+    <h4 class="name" id="loadListenerSet"><span class="type-signature">&lt;static> </span>loadListenerSet<span class="signature">(tag)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -2436,7 +2410,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 512</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 506</li></ul></dd>
 	
     
     
@@ -2459,7 +2433,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
         
             
 <dt>
-    <h4 class="name" id="log"><span class="type-signature">&lt;static> </span>log</h4>
+    <h4 class="name" id="log"><span class="type-signature">&lt;static> </span>log<span class="signature">(level, message)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -2570,7 +2544,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 632</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 626</li></ul></dd>
 	
     
     
@@ -2593,7 +2567,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
         
             
 <dt>
-    <h4 class="name" id="on"><span class="type-signature">&lt;static> </span>on</h4>
+    <h4 class="name" id="on"><span class="type-signature">&lt;static> </span>on<span class="signature">(name, callback, <span class="optional">tag</span>)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -2751,7 +2725,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 535</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 529</li></ul></dd>
 	
     
     
@@ -2774,70 +2748,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
         
             
 <dt>
-    <h4 class="name" id="popCurrentLocation"><span class="type-signature">&lt;static> </span>popCurrentLocation</h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Exits the current location, from a runtime perspective
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-	
-	
-	
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 294</li></ul></dd>
-	
-    
-    
-	
-	
-	
-	
-</dl>
-
-    
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="queueFunction"><span class="type-signature">&lt;static> </span>queueFunction</h4>
+    <h4 class="name" id="queueFunction"><span class="type-signature">&lt;static> </span>queueFunction<span class="signature">(func)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -2925,7 +2836,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 330</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 324</li></ul></dd>
 	
     
     
@@ -2948,7 +2859,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
         
             
 <dt>
-    <h4 class="name" id="reportError"><span class="type-signature">&lt;static> </span>reportError</h4>
+    <h4 class="name" id="reportError"><span class="type-signature">&lt;static> </span>reportError<span class="signature">(name, description)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -3059,7 +2970,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 572</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 566</li></ul></dd>
 	
     
     
@@ -3082,7 +2993,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
         
             
 <dt>
-    <h4 class="name" id="reportWarning"><span class="type-signature">&lt;static> </span>reportWarning</h4>
+    <h4 class="name" id="reportWarning"><span class="type-signature">&lt;static> </span>reportWarning<span class="signature">(name, description, data)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -3216,7 +3127,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 585</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 579</li></ul></dd>
 	
     
     
@@ -3239,7 +3150,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
         
             
 <dt>
-    <h4 class="name" id="setAST"><span class="type-signature">&lt;static> </span>setAST</h4>
+    <h4 class="name" id="setAST"><span class="type-signature">&lt;static> </span>setAST<span class="signature">(<span class="optional">file</span>)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -3337,7 +3248,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 305</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 299</li></ul></dd>
 	
     
     
@@ -3360,7 +3271,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
         
             
 <dt>
-    <h4 class="name" id="setCurrentLocation"><span class="type-signature">&lt;static> </span>setCurrentLocation</h4>
+    <h4 class="name" id="setCurrentLocation"><span class="type-signature">&lt;static> </span>setCurrentLocation<span class="signature">(line, column)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -3471,7 +3382,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 280</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 274</li></ul></dd>
 	
     
     
@@ -3494,7 +3405,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
         
             
 <dt>
-    <h4 class="name" id="setEntryPointFile"><span class="type-signature">&lt;static> </span>setEntryPointFile</h4>
+    <h4 class="name" id="setEntryPointFile"><span class="type-signature">&lt;static> </span>setEntryPointFile<span class="signature">()</span><span class="type-signature"> &rarr; {String}</span></h4>
     
     
 </dt>
@@ -3534,7 +3445,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 257</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 251</li></ul></dd>
 	
     
     
@@ -3579,7 +3490,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
         
             
 <dt>
-    <h4 class="name" id="setGlobalObject"><span class="type-signature">&lt;static> </span>setGlobalObject</h4>
+    <h4 class="name" id="setGlobalObject"><span class="type-signature">&lt;static> </span>setGlobalObject<span class="signature">(newGlobalObject)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -3667,7 +3578,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 147</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 151</li></ul></dd>
 	
     
     
@@ -3690,7 +3601,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
         
             
 <dt>
-    <h4 class="name" id="setLogger"><span class="type-signature">&lt;static> </span>setLogger</h4>
+    <h4 class="name" id="setLogger"><span class="type-signature">&lt;static> </span>setLogger<span class="signature">(newLogger)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -3778,7 +3689,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 620</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Runtime.js, line 614</li></ul></dd>
 	
     
     
@@ -3814,7 +3725,7 @@ remains loaded. This affects the tag for ALL classes inheriting from <a href="mo
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-AST.html">AST</a></li><li><a href="module-Base.html">Base</a></li><li><a href="module-CodeProcessor.html">CodeProcessor</a></li><li><a href="b06f9e1e28.html">plugins/AnalysisCoverage</a></li><li><a href="ed042e0622.html">plugins/CommonGlobals</a></li><li><a href="7ae15be3f7.html">plugins/RequireFinder</a></li><li><a href="c183b20b93.html">plugins/RequireProvider</a></li><li><a href="7d301f63db.html">plugins/TiAPIDeprecationFinder</a></li><li><a href="f3d440d443.html">plugins/TiAPIPlatformValidator</a></li><li><a href="c2b54ec826.html">plugins/TiAPIProcessor</a></li><li><a href="b7d12b3905.html">plugins/TiAPIUsageFinder</a></li><li><a href="da7a7dffe4.html">plugins/TiIncludeFinder</a></li><li><a href="module-RuleProcessor.html">RuleProcessor</a></li><li><a href="949a64761a.html">rules/array</a></li><li><a href="9f761dec56.html">rules/assign</a></li><li><a href="affad29546.html">rules/atom</a></li><li><a href="00d4f41838.html">rules/binary</a></li><li><a href="43e2deef0e.html">rules/block</a></li><li><a href="7e86c2c081.html">rules/break</a></li><li><a href="ef78e0ed62.html">rules/call</a></li><li><a href="e266e55884.html">rules/conditional</a></li><li><a href="ff1a007591.html">rules/const</a></li><li><a href="25de1d4c45.html">rules/continue</a></li><li><a href="841b062261.html">rules/debugger</a></li><li><a href="d58ec411c0.html">rules/defun</a></li><li><a href="3f06a7ade0.html">rules/directive</a></li><li><a href="5bd355969c.html">rules/do</a></li><li><a href="42058fa353.html">rules/dot</a></li><li><a href="a8b795b682.html">rules/for</a></li><li><a href="bb1c125ed3.html">rules/for-in</a></li><li><a href="28977b9eaf.html">rules/function</a></li><li><a href="e7f4dd8c13.html">rules/if</a></li><li><a href="c4ede15ad1.html">rules/label</a></li><li><a href="c696a7f599.html">rules/name</a></li><li><a href="0b9048aca3.html">rules/new</a></li><li><a href="77c8384aaa.html">rules/num</a></li><li><a href="45a08f0495.html">rules/object</a></li><li><a href="a5fa41135d.html">rules/regexp</a></li><li><a href="ef5f3b6160.html">rules/return</a></li><li><a href="ba60804b1e.html">rules/seq</a></li><li><a href="af02c5c3eb.html">rules/stat</a></li><li><a href="da9a4b89fd.html">rules/string</a></li><li><a href="032a276218.html">rules/sub</a></li><li><a href="2607a7d7ca.html">rules/switch</a></li><li><a href="6a609d3f5a.html">rules/throw</a></li><li><a href="6aa325f754.html">rules/toplevel</a></li><li><a href="a1dc89dab6.html">rules/try</a></li><li><a href="f016d789d5.html">rules/unary-postfix</a></li><li><a href="93bceb3b62.html">rules/unary-prefix</a></li><li><a href="990d945d33.html">rules/var</a></li><li><a href="e5fd18b4dd.html">rules/while</a></li><li><a href="7a1fea9455.html">rules/with</a></li><li><a href="module-Runtime.html">Runtime</a></li></ul><h3>Classes</h3><ul><li><a href="AccessorPropertyDescriptor.html">AccessorPropertyDescriptor</a></li><li><a href="ArrayPrototypeType.html">ArrayPrototypeType</a></li><li><a href="ArrayType.html">ArrayType</a></li><li><a href="BooleanPrototypeType.html">BooleanPrototypeType</a></li><li><a href="BooleanType.html">BooleanType</a></li><li><a href="DataPropertyDescriptor.html">DataPropertyDescriptor</a></li><li><a href="DatePrototypeType.html">DatePrototypeType</a></li><li><a href="DeclarativeEnvironmentRecord.html">DeclarativeEnvironmentRecord</a></li><li><a href="ErrorConstructor.html">ErrorConstructor</a></li><li><a href="ErrorPrototypeType.html">ErrorPrototypeType</a></li><li><a href="ExecutionContext.html">ExecutionContext</a></li><li><a href="FunctionPrototypeType.html">FunctionPrototypeType</a></li><li><a href="FunctionType.html">FunctionType</a></li><li><a href="FunctionTypeBase.html">FunctionTypeBase</a></li><li><a href="LexicalEnvironment.html">LexicalEnvironment</a></li><li><a href="module-Base.AccessorPropertyDescriptor.html">AccessorPropertyDescriptor</a></li><li><a href="module-Base.ArrayPrototypeType.html">ArrayPrototypeType</a></li><li><a href="module-Base.ArrayType.html">ArrayType</a></li><li><a href="module-Base.BaseType.html">BaseType</a></li><li><a href="module-Base.BooleanPrototypeType.html">BooleanPrototypeType</a></li><li><a href="module-Base.BooleanType.html">BooleanType</a></li><li><a href="module-Base.DataPropertyDescriptor.html">DataPropertyDescriptor</a></li><li><a href="module-Base.DatePrototypeType.html">DatePrototypeType</a></li><li><a href="module-Base.DeclarativeEnvironmentRecord.html">DeclarativeEnvironmentRecord</a></li><li><a href="module-Base.ErrorConstructor.html">ErrorConstructor</a></li><li><a href="module-Base.ErrorPrototypeType.html">ErrorPrototypeType</a></li><li><a href="module-Base.ExecutionContext.html">ExecutionContext</a></li><li><a href="module-Base.FunctionPrototypeType.html">FunctionPrototypeType</a></li><li><a href="module-Base.FunctionType.html">FunctionType</a></li><li><a href="module-Base.FunctionTypeBase.html">FunctionTypeBase</a></li><li><a href="module-Base.LexicalEnvironment.html">LexicalEnvironment</a></li><li><a href="module-Base.NullType.html">NullType</a></li><li><a href="module-Base.NumberPrototypeType.html">NumberPrototypeType</a></li><li><a href="module-Base.NumberType.html">NumberType</a></li><li><a href="module-Base.ObjectEnvironmentRecord.html">ObjectEnvironmentRecord</a></li><li><a href="module-Base.ObjectPrototypeType.html">ObjectPrototypeType</a></li><li><a href="module-Base.ObjectType.html">ObjectType</a></li><li><a href="module-Base.ReferenceType.html">ReferenceType</a></li><li><a href="module-Base.RegExpPrototypeType.html">RegExpPrototypeType</a></li><li><a href="module-Base.RegExpType.html">RegExpType</a></li><li><a href="module-Base.StringPrototypeType.html">StringPrototypeType</a></li><li><a href="module-Base.StringType.html">StringType</a></li><li><a href="module-Base.UndefinedType.html">UndefinedType</a></li><li><a href="module-Base.UnknownType.html">UnknownType</a></li><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><li><a href="module-Runtime.Evented.html">Evented</a></li><li><a href="NullType.html">NullType</a></li><li><a href="NumberPrototypeType.html">NumberPrototypeType</a></li><li><a href="NumberType.html">NumberType</a></li><li><a href="ObjectEnvironmentRecord.html">ObjectEnvironmentRecord</a></li><li><a href="ObjectPrototypeType.html">ObjectPrototypeType</a></li><li><a href="ObjectType.html">ObjectType</a></li><li><a href="ReferenceType.html">ReferenceType</a></li><li><a href="RegExpPrototypeType.html">RegExpPrototypeType</a></li><li><a href="RegExpType.html">RegExpType</a></li><li><a href="StringPrototypeType.html">StringPrototypeType</a></li><li><a href="StringType.html">StringType</a></li><li><a href="UndefinedType.html">UndefinedType</a></li><li><a href="UnknownType.html">UnknownType</a></li></ul><h3>Global</h3><ul><li><a href="global.html#checkObjectCoercible">checkObjectCoercible</a></li><li><a href="global.html#createArgumentsObject">createArgumentsObject</a></li><li><a href="global.html#createEvalContext">createEvalContext</a></li><li><a href="global.html#createFunctionContext">createFunctionContext</a></li><li><a href="global.html#createGlobalContext">createGlobalContext</a></li><li><a href="global.html#fromPropertyDescriptor">fromPropertyDescriptor</a></li><li><a href="global.html#getBase">getBase</a></li><li><a href="global.html#getIdentifierReference">getIdentifierReference</a></li><li><a href="global.html#getReferencedName">getReferencedName</a></li><li><a href="global.html#getValue">getValue</a></li><li><a href="global.html#hasPrimitiveBase">hasPrimitiveBase</a></li><li><a href="global.html#isAccessorDescriptor">isAccessorDescriptor</a></li><li><a href="global.html#isCallable">isCallable</a></li><li><a href="global.html#isDataDescriptor">isDataDescriptor</a></li><li><a href="global.html#isGenericDescriptor">isGenericDescriptor</a></li><li><a href="global.html#isPropertyReference">isPropertyReference</a></li><li><a href="global.html#isStrictReference">isStrictReference</a></li><li><a href="global.html#isUnresolvableReference">isUnresolvableReference</a></li><li><a href="global.html#newDeclarativeEnvironment">newDeclarativeEnvironment</a></li><li><a href="global.html#newObjectEnvironment">newObjectEnvironment</a></li><li><a href="global.html#putValue">putValue</a></li><li><a href="global.html#sameValue">sameValue</a></li><li><a href="global.html#toBoolean">toBoolean</a></li><li><a href="global.html#toInt32">toInt32</a></li><li><a href="global.html#toInteger">toInteger</a></li><li><a href="global.html#toNumber">toNumber</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#toPrimitive">toPrimitive</a></li><li><a href="global.html#toPropertyDescriptor">toPropertyDescriptor</a></li><li><a href="global.html#toString">toString</a></li><li><a href="global.html#toUint16">toUint16</a></li><li><a href="global.html#toUint32">toUint32</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-AST.html">AST</a></li><li><a href="module-Base.html">Base</a></li><li><a href="module-CodeProcessor.html">CodeProcessor</a></li><li><a href="3f5b55347f.html">plugins/AnalysisCoverage</a></li><li><a href="b342c09426.html">plugins/CommonGlobals</a></li><li><a href="aeb699e5e4.html">plugins/RequireFinder</a></li><li><a href="792bbc5a65.html">plugins/RequireProvider</a></li><li><a href="1e070bdbd8.html">plugins/TiAPIDeprecationFinder</a></li><li><a href="0467331f69.html">plugins/TiAPIPlatformValidator</a></li><li><a href="3ad354c465.html">plugins/TiAPIProcessor</a></li><li><a href="b982deb57b.html">plugins/TiAPIUsageFinder</a></li><li><a href="8c37f88fbd.html">plugins/TiIncludeFinder</a></li><li><a href="module-RuleProcessor.html">RuleProcessor</a></li><li><a href="21c49ea794.html">rules/array</a></li><li><a href="27a819cd31.html">rules/assign</a></li><li><a href="370002cb87.html">rules/atom</a></li><li><a href="24dbd44639.html">rules/binary</a></li><li><a href="e4b9309e09.html">rules/block</a></li><li><a href="0be34f7731.html">rules/break</a></li><li><a href="c622940d8e.html">rules/call</a></li><li><a href="d42864cf15.html">rules/conditional</a></li><li><a href="c2915a8dea.html">rules/const</a></li><li><a href="b39e5f6c74.html">rules/continue</a></li><li><a href="36467ea21f.html">rules/debugger</a></li><li><a href="26b62cd9d1.html">rules/defun</a></li><li><a href="e6037086f6.html">rules/directive</a></li><li><a href="00f829a8c7.html">rules/do</a></li><li><a href="039f846797.html">rules/dot</a></li><li><a href="d348758f64.html">rules/for</a></li><li><a href="5d3bffbc73.html">rules/for-in</a></li><li><a href="03f900cacc.html">rules/function</a></li><li><a href="64e4cca62c.html">rules/if</a></li><li><a href="bcc7e54125.html">rules/label</a></li><li><a href="b2ee057ee9.html">rules/name</a></li><li><a href="58969eeccf.html">rules/new</a></li><li><a href="9241fa2c5f.html">rules/num</a></li><li><a href="0f443d2ceb.html">rules/object</a></li><li><a href="e5deeac4b9.html">rules/regexp</a></li><li><a href="8867665965.html">rules/return</a></li><li><a href="52c438808a.html">rules/seq</a></li><li><a href="d8d3c04958.html">rules/stat</a></li><li><a href="3f3e1c6109.html">rules/string</a></li><li><a href="8c086c2f58.html">rules/sub</a></li><li><a href="d7de0e46aa.html">rules/switch</a></li><li><a href="0d28ab4a63.html">rules/throw</a></li><li><a href="65f90630a3.html">rules/toplevel</a></li><li><a href="31f655a7dd.html">rules/try</a></li><li><a href="123c867ce3.html">rules/unary-postfix</a></li><li><a href="29084b4e91.html">rules/unary-prefix</a></li><li><a href="c9e5897244.html">rules/var</a></li><li><a href="ab3fb5be14.html">rules/while</a></li><li><a href="3b8474d073.html">rules/with</a></li><li><a href="module-Runtime.html">Runtime</a></li></ul><h3>Classes</h3><ul><li><a href="module-Base.AccessorPropertyDescriptor.html">AccessorPropertyDescriptor</a></li><li><a href="module-Base.ArrayPrototypeType.html">ArrayPrototypeType</a></li><li><a href="module-Base.ArrayType.html">ArrayType</a></li><li><a href="module-Base.BaseType.html">BaseType</a></li><li><a href="module-Base.BooleanPrototypeType.html">BooleanPrototypeType</a></li><li><a href="module-Base.BooleanType.html">BooleanType</a></li><li><a href="module-Base.DataPropertyDescriptor.html">DataPropertyDescriptor</a></li><li><a href="module-Base.DatePrototypeType.html">DatePrototypeType</a></li><li><a href="module-Base.DeclarativeEnvironmentRecord.html">DeclarativeEnvironmentRecord</a></li><li><a href="module-Base.ErrorConstructor.html">ErrorConstructor</a></li><li><a href="module-Base.ErrorPrototypeType.html">ErrorPrototypeType</a></li><li><a href="module-Base.ExecutionContext.html">ExecutionContext</a></li><li><a href="module-Base.FunctionPrototypeType.html">FunctionPrototypeType</a></li><li><a href="module-Base.FunctionType.html">FunctionType</a></li><li><a href="module-Base.FunctionTypeBase.html">FunctionTypeBase</a></li><li><a href="module-Base.LexicalEnvironment.html">LexicalEnvironment</a></li><li><a href="module-Base.NullType.html">NullType</a></li><li><a href="module-Base.NumberPrototypeType.html">NumberPrototypeType</a></li><li><a href="module-Base.NumberType.html">NumberType</a></li><li><a href="module-Base.ObjectEnvironmentRecord.html">ObjectEnvironmentRecord</a></li><li><a href="module-Base.ObjectPrototypeType.html">ObjectPrototypeType</a></li><li><a href="module-Base.ObjectType.html">ObjectType</a></li><li><a href="module-Base.ReferenceType.html">ReferenceType</a></li><li><a href="module-Base.RegExpPrototypeType.html">RegExpPrototypeType</a></li><li><a href="module-Base.RegExpType.html">RegExpType</a></li><li><a href="module-Base.StringPrototypeType.html">StringPrototypeType</a></li><li><a href="module-Base.StringType.html">StringType</a></li><li><a href="module-Base.UndefinedType.html">UndefinedType</a></li><li><a href="module-Base.UnknownType.html">UnknownType</a></li><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><li><a href="module-Runtime.Evented.html">Evented</a></li></ul>
 </nav>
 
 <br clear="both">
