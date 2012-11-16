@@ -47,7 +47,8 @@ var fs = require('fs'),
 		'conversion.js',
 		'context.js',
 		'globals.js',
-		'init.js'
+		'init.js',
+		'exceptions.js'
 	],
 	baseDirPath = path.resolve(path.join(__dirname, '..', 'lib', 'base')),
 	baseFilePath = path.resolve(path.join(__dirname, '..', 'lib', 'Base.js')),
