@@ -1,7 +1,7 @@
 /**
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
- * 
+ *
  * @module plugins/AnalysisCoverage
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
@@ -12,7 +12,7 @@ var path = require('path'),
 	AST = require(path.join(global.nodeCodeProcessorLibDir, 'AST')),
 	results = {
 		details: {},
-		numNodesVisited: 0, 
+		numNodesVisited: 0,
 		numTotalNodes: 0
 	};
 
@@ -20,9 +20,9 @@ var path = require('path'),
 
 /**
  * Creates an instance of the require provider plugin
- * 
+ *
  * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
- * 
+ *
  * @constructor
  * @name module:plugins/AnalysisCoverage
  */
@@ -30,14 +30,13 @@ module.exports = function () {
 	Runtime.on('processingComplete', function() {
 		var astSet = Runtime.getASTSet(),
 			id,
-			unnamedRegex = /^@unnamed_ast_/,
 			result;
 		for (id in astSet) {
 			result = results.details[id] = {
 				numNodesVisited: 0,
 				numTotalNodes: 0
-			}
-			AST.walk(astSet[id], { 
+			};
+			AST.walk(astSet[id], {
 				'*': function(node, next) {
 					if (node._visited) {
 						result.numNodesVisited++;
@@ -54,7 +53,7 @@ module.exports = function () {
 
 /**
  * Initializes the plugin
- * 
+ *
  * @method
  * @name module:plugins/AnalysisCoverage#init
  */
@@ -62,7 +61,7 @@ module.exports.prototype.init = function init() {};
 
 /**
 * Gets the results of the plugin
-* 
+*
 * @method
  * @name module:plugins/AnalysisCoverage#getResults
 * @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The

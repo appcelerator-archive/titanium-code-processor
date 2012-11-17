@@ -14,7 +14,6 @@ var fs = require('fs'),
 	
 	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
-	CodeProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'CodeProcessor')),
 	
 	jsca,
 	platform,
@@ -25,9 +24,9 @@ var fs = require('fs'),
 
 /**
  * Creates an instance of the ti api processor plugin
- * 
+ *
  * @classdesc Injects a stub of the Titanium Mobile API into the global namespace
- * 
+ *
  * @constructor
  * @name module:plugins/TiAPIProcessor
  */
@@ -38,7 +37,7 @@ module.exports = function(options) {
 
 /**
  * Initializes the plugin
- * 
+ *
  * @method
  * @name module:plugins/TiAPIProcessor#init
  */
@@ -55,7 +54,8 @@ module.exports.prototype.init = function init() {
 		len,
 		name,
 		root,
-		obj;
+		obj,
+		p;
 	
 	// Create the API tree
 	for (i = 0, len = types.length; i < len; i++) {
@@ -63,7 +63,9 @@ module.exports.prototype.init = function init() {
 		root = api;
 		name = type.name.split('.');
 		for(j = 0; j < name.length; j++) {
-			root.children[name[j]] || (root.children[name[j]] = { children: {} });
+			if (!root.children[name[j]]) {
+				(root.children[name[j]] = { children: {} });
+			}
 			root = root.children[name[j]];
 		}
 		root.node = type;
@@ -74,8 +76,10 @@ module.exports.prototype.init = function init() {
 		alias = aliases[i];
 		if (alias) {
 			type = alias.type;
-			typesToInsert[type] || (typesToInsert[type] = []);
-			typesToInsert[type].push(alias.name)
+			if (!typesToInsert[type]) {
+				(typesToInsert[type] = []);
+			}
+			typesToInsert[type].push(alias.name);
 		}
 	}
 	
@@ -114,11 +118,12 @@ module.exports.prototype.getResults = function getResults() {
 
 /**
  * @classdesc Specialized function that returns information based on the JSCA
- * 
+ *
  * @constructor
+ * @name module:plugins/TiAPIProcessor~TiFunction
  * @private
  * @param {Array[String]|undefined} returnTypes An array of return types, or undefined
- * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a 
+ * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a
  *		constructor for an object extending this one.
  */
 function TiFunction(returnTypes, className) {
@@ -129,8 +134,9 @@ util.inherits(TiFunction, Base.FunctionType);
 
 /**
  * Calls the require function
- * 
+ *
  * @method
+ * @name module:plugins/TiAPIProcessor~TiFunction#call
  * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
  * @param (Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
  * @returns {module:Base.BaseType} The return value from the function
@@ -139,7 +145,6 @@ util.inherits(TiFunction, Base.FunctionType);
 TiFunction.prototype.call = function call(thisVal, args) {
 	var returnType,
 		root = api,
-		parent,
 		i, j, len,
 		value = new Base.UnknownType(),
 		callArgs;
@@ -158,14 +163,14 @@ TiFunction.prototype.call = function call(thisVal, args) {
 			root = root && root.children[returnType[i]];
 		}
 		if (root && root.node) {
-			value = createObject(root)
-			Runtime.fireEvent('tiPropertyReferenced', 'Property "' + p + '" was referenced', {
+			value = createObject(root);
+			Runtime.fireEvent('tiPropertyReferenced', 'Property "' + this._returnTypes[0].type + '" was referenced', {
 				name: this._returnTypes[0].type,
 				node: root.node
 			});
 		} else {
-			Runtime.fireEvent('nonTiPropertyReference', 'Property "' + p + '" was referenced but is not part of the API', {
-				name: p
+			Runtime.fireEvent('nonTiPropertyReference', 'Property "' + this._returnTypes[0].type + '" was referenced but is not part of the API', {
+				name: this._returnTypes[0].type
 			});
 		}
 		return value;
@@ -178,15 +183,15 @@ TiFunction.prototype.call = function call(thisVal, args) {
 
 /**
  * @classdesc A custom object implementation that hooks into get, put, and delete so it can fire the appropriate Ti events
- * 
+ *
  * @constructor
+ * @name module:plugins/TiAPIProcessor~TiObjectType
  * @private
  * @extends module:Base.ObjectType
  * @param {Object} api The api describing the object
  * @param {Object} api.node The JSCA node for the object
  * @param {Object} api.children Any children of this object (i.e. separate JSCA types that are properties)
  */
-exports.TiObjectType = TiObjectType;
 function TiObjectType(api, className) {
 	this._api = api;
 	Base.ObjectType.call(this, className || 'Object');
@@ -196,7 +201,7 @@ util.inherits(TiObjectType, Base.ObjectType);
 /**
  * Indicates that a titanium property was referenced (i.e. read).
  *
- * @name module:plugins/TiAPIProcessor.TiObjectType#tiPropertyReferenced
+ * @name module:plugins/TiAPIProcessor#tiPropertyReferenced
  * @event
  * @param {String} name The name of the property that was referenced
  * @param {{@link module:Base.DataPropertyDescriptor}|{@link module:Base.AccessorPropertyDescriptor}|undefined} The
@@ -204,14 +209,14 @@ util.inherits(TiObjectType, Base.ObjectType);
  */
 /**
  * ECMA-262 Spec: <em>Returns the value of the named property.</em>
- * 
+ *
  * @method
  * @param {String} p The name of the property to fetch
- * @returns {{@link module:Base.BaseType}} The value of the property, or a new instance of 
+ * @returns {{@link module:Base.BaseType}} The value of the property, or a new instance of
  *		{@link module:Base.UndefinedType} if the property does not exist
  * @see ECMA-262 Spec Chapter 8.12.3
  */
-exports.TiObjectType.prototype.get = function get(p) {
+TiObjectType.prototype.get = function get(p) {
 	var value = Base.ObjectType.prototype.get.apply(this, arguments),
 		node = value._api ? value._api.node : value._property ? value._property : value._function;
 	if (node) {
@@ -230,15 +235,15 @@ exports.TiObjectType.prototype.get = function get(p) {
 /**
  * Indicates that a titanium property was set (i.e. written).
  *
- * @name module:plugins/TiAPIProcessor.TiObjectType#tiPropertySet
+ * @name module:plugins/TiAPIProcessor#tiPropertySet
  * @event
  * @param {String} name The name of the property that was set
  * @param {module:Base.BaseType} value The value that was set
  */
 /**
- * ECMA-262 Spec: <em>Sets the specified named property to the value of the second parameter. The flag controls failure 
+ * ECMA-262 Spec: <em>Sets the specified named property to the value of the second parameter. The flag controls failure
  * handling.</em>
- * 
+ *
  * @method
  * @param {String} p The name of the parameter to set the value as
  * @param {module:Base.BaseType} v The value to set
@@ -246,7 +251,7 @@ exports.TiObjectType.prototype.get = function get(p) {
  * @param {Boolean} suppressEvent Suppresses the 'propertySet' event (used when setting prototypes)
  * @see ECMA-262 Spec Chapter 8.12.5
  */
-exports.TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent) {
+TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent) {
 	var node = v._api ? v._api.node : v._property ? v._property : v._function;
 	Base.ObjectType.prototype.put.apply(this, arguments);
 	if (!suppressEvent) {
@@ -266,20 +271,20 @@ exports.TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent
 /**
  * Indicates that a titanium property was deleted
  *
- * @name module:plugins/TiAPIProcessor.TiObjectType#tiPropertyDeleted
+ * @name module:plugins/TiAPIProcessor#tiPropertyDeleted
  * @event
  * @param {String} name The name of the property referenced
  */
 /**
  * ECMA-262 Spec: <em>Removes the specified named own property from the object. The flag controls failure handling.</em>
- * 
+ *
  * @method
  * @param {String} p The name of the parameter to delete
  * @param {Boolean} throwFlag Whether or not to throw an exception on error (related to strict mode)
  * @returns {Boolean} Whether or not the object was deleted succesfully
  * @see ECMA-262 Spec Chapter 8.12.7
  */
-exports.TiObjectType.prototype.delete = function objDelete(p, throwFlag) {
+TiObjectType.prototype.delete = function objDelete(p) {
 	var success = Base.ObjectType.prototype['delete'].apply(this, arguments);
 	Runtime.fireEvent('tiPropertyDeleted', 'Property "' + p + '" was deleted', {
 		name: this._api.node.name + '.' + p,
@@ -290,10 +295,10 @@ exports.TiObjectType.prototype.delete = function objDelete(p, throwFlag) {
 
 /**
  * @classdesc Customized require() function that doesn't actually execute code in the interpreter, but rather does it here.
- * 
+ *
  * @constructor
  * @private
- * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a 
+ * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a
  *		constructor for an object extending this one.
  */
 function IncludeFunction(className) {
@@ -303,7 +308,7 @@ util.inherits(IncludeFunction, Base.FunctionType);
 
 /**
  * Calls the require function
- * 
+ *
  * @method
  * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
  * @param (Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
@@ -314,10 +319,9 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 	var files = [],
 		filePath,
 		evalFunc,
-		root,
-		module,
 		result = new Base.UnknownType(),
-		i, len;
+		i, len,
+		eventDescription;
 	
 	args = args || [];
 	for (i = 0, len = args.length; i < len; i++) {
@@ -385,7 +389,7 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 
 /**
  * Creates a titanium object from an API node
- * 
+ *
  * @private
  * @method
  */
@@ -396,7 +400,6 @@ function createObject(apiNode) {
 		functions = apiNode.node.functions,
 		func,
 		children = apiNode.children,
-		child,
 		value,
 		name,
 		type,
