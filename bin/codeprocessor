@@ -55,7 +55,7 @@ var util = require('util'),
 			help: 'The name of the OS being built-for. Reflected in code via Ti.Platform.osname',
 			choices: ['ios', 'iphone', 'ipad', 'android', 'mobileweb']
 		})
-		.script('codeprocessor [project-dir]')
+		.script('titanium-code-processor [project-dir]')
 		.help('Processes the supplied project using the given plugins.')
 		.nom(),
 	i,
@@ -102,11 +102,14 @@ if (parsedOptions.config) {
 			case 'maxLoopIterations':
 				options.maxLoopIterations = parseInt(configOption[1]);
 				break;
-			case 'executionTimeLimit':
-				options.executionTimeLimit = parseInt(configOption[1]);
-				break;
 			case 'maxRecursionLimit':
 				options.maxRecursionLimit = parseInt(configOption[1]);
+				break;
+			case 'logConsoleCalls':
+				options.logConsoleCalls = configOption[1] === 'true';
+				break;
+			case 'executionTimeLimit':
+				options.executionTimeLimit = parseInt(configOption[1]);
 				break;
 			case 'exactMode':
 				options.exactMode = configOption[1] === 'true';
@@ -129,7 +132,8 @@ projectRoot = path.resolve(projectRoot);
 
 // Make sure that the project exists
 if (!fs.existsSync(projectRoot)) {
-	throw new Error('Error: project root "' + projectRoot + '" does not exist.');
+	logger.error('project root "' + projectRoot + '" does not exist.\n');
+	process.exit(1);
 }
 
 // Get the list of plugins
@@ -147,7 +151,8 @@ if (/\.js$/.test(projectRoot)) {
 } else {
 	entryPoint = path.join(projectRoot, 'Resources', 'app.js');
 	if (!fs.existsSync(entryPoint)) {
-		throw new Error('Error: Project entry point "' + entryPoint + '" does not exist.');
+		logger.error(projectRoot + ' does not appear to be a valid Titanium Mobile project.\n');
+		process.exit(1);
 	} else {
 		logger.info('Analyzing project');
 		exec('titanium', function (err) {
@@ -164,7 +169,8 @@ if (/\.js$/.test(projectRoot)) {
 			};
 
 			if (err) {
-				console.warn('Could not run the "titanium" command, results will be limited')
+				logger.error('Could not run the "titanium" command: ' + err);
+				process.exit(1);
 			} else {
 				tasks['modules'] = function (next) {
 					exec('titanium module -o json --project-dir ' + projectRoot, function (err, stdout, stderr) {

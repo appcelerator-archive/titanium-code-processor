@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Module: rules/defun</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-jsdoc.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Module: rules/defun</h1>
+    
+    
+
+
+
+<section>
+    
+<header>
+    <h2>
+    rules/defun
+    </h2>
+    
+</header>  
+
+<article>
+    <div class="container-overview">
+    
+    
+    
+        
+            <div class="description"><p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+Please see the LICENSE file for information about licensing.</p>
+
+Function definition.</div>
+        
+        
+        
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	<dt class="tag-author">Author:</dt>
+	<dd class="tag-author">
+        <ul>
+            <li>Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;</li>
+        </ul>
+	</dd>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>defun.js, line 1</li></ul></dd>
+	
+    
+    
+	
+	
+	<dt class="tag-see">See:</dt>
+	<dd class="tag-see">
+        <ul>
+            <li>ECMA-262 Spec Chapter 13</li>
+        </ul>
+	</dd>
+	
+	
+	
+</dl>
+
+        
+        
+    
+    </div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+        <h3 class="subsection-title">Events</h3>
+        
+        <dl>
+            
+<dt>
+    <h4 class="name" id="event:rule">ruleundefined</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+        <h5 class="subsection-title">Properties:</h5>
+        
+        <dl>
+
+<table class="props">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>ruleName</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The string 'defun'</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>ast</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-AST__.html#node">module:AST.node</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The AST node that is an instance of this rule</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>file</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The file that the rule begins on.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>line</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Integer</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The line of the file where the rule begins on.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>column</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Integer</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The column of the file where the rule begins on.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>processingComplete</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Indicates whether the rule has been processed yet or not. This can be used to
+		determine if this is the pre-evalutation event or the post-evaluation event.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>identifier</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The function identifier. Only available post-evaluation.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>formalParameterList</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array[String]</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The list of parameters. Only available post-evaluation.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>strict</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Indicates if the function is a strict mode function. Only available post-evaluation.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>functionObject</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-Base.FunctionType.html">module:Base.FunctionType</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The function object. Only available post-evaluation.</td>
+        </tr>
+	
+	
+	</tbody>
+</table></dl>
+        
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>defun.js, line 3</li></ul></dd>
+	
+    
+    
+	
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        </dl>
+    
+</article>
+
+</section>  
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-AST.html">AST</a></li><li><a href="module-Base.html">Base</a></li><li><a href="module-CodeProcessor.html">CodeProcessor</a></li><li><a href="3f5b55347f.html">plugins/AnalysisCoverage</a></li><li><a href="b342c09426.html">plugins/CommonGlobals</a></li><li><a href="aeb699e5e4.html">plugins/RequireFinder</a></li><li><a href="792bbc5a65.html">plugins/RequireProvider</a></li><li><a href="1e070bdbd8.html">plugins/TiAPIDeprecationFinder</a></li><li><a href="0467331f69.html">plugins/TiAPIPlatformValidator</a></li><li><a href="3ad354c465.html">plugins/TiAPIProcessor</a></li><li><a href="b982deb57b.html">plugins/TiAPIUsageFinder</a></li><li><a href="8c37f88fbd.html">plugins/TiIncludeFinder</a></li><li><a href="module-RuleProcessor.html">RuleProcessor</a></li><li><a href="21c49ea794.html">rules/array</a></li><li><a href="27a819cd31.html">rules/assign</a></li><li><a href="370002cb87.html">rules/atom</a></li><li><a href="24dbd44639.html">rules/binary</a></li><li><a href="e4b9309e09.html">rules/block</a></li><li><a href="0be34f7731.html">rules/break</a></li><li><a href="c622940d8e.html">rules/call</a></li><li><a href="d42864cf15.html">rules/conditional</a></li><li><a href="c2915a8dea.html">rules/const</a></li><li><a href="b39e5f6c74.html">rules/continue</a></li><li><a href="36467ea21f.html">rules/debugger</a></li><li><a href="26b62cd9d1.html">rules/defun</a></li><li><a href="e6037086f6.html">rules/directive</a></li><li><a href="00f829a8c7.html">rules/do</a></li><li><a href="039f846797.html">rules/dot</a></li><li><a href="d348758f64.html">rules/for</a></li><li><a href="5d3bffbc73.html">rules/for-in</a></li><li><a href="03f900cacc.html">rules/function</a></li><li><a href="64e4cca62c.html">rules/if</a></li><li><a href="bcc7e54125.html">rules/label</a></li><li><a href="b2ee057ee9.html">rules/name</a></li><li><a href="58969eeccf.html">rules/new</a></li><li><a href="9241fa2c5f.html">rules/num</a></li><li><a href="0f443d2ceb.html">rules/object</a></li><li><a href="e5deeac4b9.html">rules/regexp</a></li><li><a href="8867665965.html">rules/return</a></li><li><a href="52c438808a.html">rules/seq</a></li><li><a href="d8d3c04958.html">rules/stat</a></li><li><a href="3f3e1c6109.html">rules/string</a></li><li><a href="8c086c2f58.html">rules/sub</a></li><li><a href="d7de0e46aa.html">rules/switch</a></li><li><a href="0d28ab4a63.html">rules/throw</a></li><li><a href="65f90630a3.html">rules/toplevel</a></li><li><a href="31f655a7dd.html">rules/try</a></li><li><a href="123c867ce3.html">rules/unary-postfix</a></li><li><a href="29084b4e91.html">rules/unary-prefix</a></li><li><a href="c9e5897244.html">rules/var</a></li><li><a href="ab3fb5be14.html">rules/while</a></li><li><a href="3b8474d073.html">rules/with</a></li><li><a href="module-Runtime.html">Runtime</a></li></ul><h3>Classes</h3><ul><li><a href="module-Base.AccessorPropertyDescriptor.html">AccessorPropertyDescriptor</a></li><li><a href="module-Base.ArrayPrototypeType.html">ArrayPrototypeType</a></li><li><a href="module-Base.ArrayType.html">ArrayType</a></li><li><a href="module-Base.BaseType.html">BaseType</a></li><li><a href="module-Base.BooleanPrototypeType.html">BooleanPrototypeType</a></li><li><a href="module-Base.BooleanType.html">BooleanType</a></li><li><a href="module-Base.DataPropertyDescriptor.html">DataPropertyDescriptor</a></li><li><a href="module-Base.DatePrototypeType.html">DatePrototypeType</a></li><li><a href="module-Base.DeclarativeEnvironmentRecord.html">DeclarativeEnvironmentRecord</a></li><li><a href="module-Base.ErrorConstructor.html">ErrorConstructor</a></li><li><a href="module-Base.ErrorPrototypeType.html">ErrorPrototypeType</a></li><li><a href="module-Base.ExecutionContext.html">ExecutionContext</a></li><li><a href="module-Base.FunctionPrototypeType.html">FunctionPrototypeType</a></li><li><a href="module-Base.FunctionType.html">FunctionType</a></li><li><a href="module-Base.FunctionTypeBase.html">FunctionTypeBase</a></li><li><a href="module-Base.LexicalEnvironment.html">LexicalEnvironment</a></li><li><a href="module-Base.NullType.html">NullType</a></li><li><a href="module-Base.NumberPrototypeType.html">NumberPrototypeType</a></li><li><a href="module-Base.NumberType.html">NumberType</a></li><li><a href="module-Base.ObjectEnvironmentRecord.html">ObjectEnvironmentRecord</a></li><li><a href="module-Base.ObjectPrototypeType.html">ObjectPrototypeType</a></li><li><a href="module-Base.ObjectType.html">ObjectType</a></li><li><a href="module-Base.ReferenceType.html">ReferenceType</a></li><li><a href="module-Base.RegExpPrototypeType.html">RegExpPrototypeType</a></li><li><a href="module-Base.RegExpType.html">RegExpType</a></li><li><a href="module-Base.StringPrototypeType.html">StringPrototypeType</a></li><li><a href="module-Base.StringType.html">StringType</a></li><li><a href="module-Base.UndefinedType.html">UndefinedType</a></li><li><a href="module-Base.UnknownType.html">UnknownType</a></li><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><h3>Classes</h3><ul><li><a href="module-Runtime.Evented.html">Evented</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3</a>
+</footer>
+
+<script> prettyPrint(); </script>
+</body>
+</html>
