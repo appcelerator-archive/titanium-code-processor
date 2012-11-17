@@ -32,15 +32,15 @@
     ObjectEnvironmentRecord
     </h2>
     
-        <div class="class-description">ECMA-262 Spec: <em>Object environment records are used to define the effect of ECMAScript elements such as 
-Program and WithStatement that associate identifier bindings with the properties of some object. Each object 
-environment record is associated with an object called its binding object. An object environment record binds 
-the set of identifier names that directly correspond to the property names of its binding object. Property names 
-that are not an IdentifierName are not included in the set of bound identifiers. Both own and inherited properties 
-are included in the set regardless of the setting of their [[enumerable]] attribute. Because properties can be 
-dynamically added and deleted from objects, the set of identifiers bound by an object environment record may 
-potentially change as a side-effect of any operation that adds or deletes properties. Any bindings that are created 
-as a result of such a side-effect are considered to be a mutable binding even if the writable attribute of the 
+        <div class="class-description">ECMA-262 Spec: <em>Object environment records are used to define the effect of ECMAScript elements such as
+Program and WithStatement that associate identifier bindings with the properties of some object. Each object
+environment record is associated with an object called its binding object. An object environment record binds
+the set of identifier names that directly correspond to the property names of its binding object. Property names
+that are not an IdentifierName are not included in the set of bound identifiers. Both own and inherited properties
+are included in the set regardless of the setting of their [[enumerable]] attribute. Because properties can be
+dynamically added and deleted from objects, the set of identifiers bound by an object environment record may
+potentially change as a side-effect of any operation that adds or deletes properties. Any bindings that are created
+as a result of such a side-effect are considered to be a mutable binding even if the writable attribute of the
 corresponding property has the value false. Immutable bindings do not exist for object environment records.</em></div>
     
 </header>  
@@ -88,7 +88,7 @@ corresponding property has the value false. Immutable bindings do not exist for 
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>Base.js, line 7995</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>Base.js, line 8308</li></ul></dd>
 	
     
     
@@ -130,6 +130,943 @@ corresponding property has the value false. Immutable bindings do not exist for 
     
     
     
+    
+        <h3 class="subsection-title">Methods</h3>
+        
+        <dl>
+            
+<dt>
+    <h4 class="name" id="createMutableBinding"><span class="type-signature"></span>createMutableBinding<span class="signature">(n, <span class="optional">d</span>, suppressEvent)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        ECMA-262 Spec: <em>The concrete Environment Record method CreateMutableBinding for object environment records creates
+in an environment record‘s associated binding object a property whose name is the String value and initialises it to
+the value undefined. A property named n must not already exist in the binding object. If Boolean argument d is
+provided and has the value true the new property‘s [[configurable]] attribute is set to true, otherwise it is set to
+false.</em>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Argument</th>
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>n</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">The name of the binding</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>d</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">Whether or not the binding can be deleted</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>suppressEvent</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">Suppresses the 'propertySet' event (used when setting prototypes)</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Base.js, line 8348</li></ul></dd>
+	
+    
+    
+	
+	
+	<dt class="tag-see">See:</dt>
+	<dd class="tag-see">
+        <ul>
+            <li>ECMA-262 Spec Chapter 10.2.1.2.2</li>
+        </ul>
+	</dd>
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    <h5>Throws:</h5>
+    
+            
+<div class="param-desc">
+    Thrown if the binding already exists
+</div>
+
+
+
+        
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="deleteBinding"><span class="type-signature"></span>deleteBinding<span class="signature">(n)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        ECMA-262 Spec: <em>The concrete Environment Record method DeleteBinding for object environment records can only
+delete bindings that correspond to properties of the environment object whose [[configurable]] attribute have the
+value true.</em>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>n</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The name of the binding</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Base.js, line 8422</li></ul></dd>
+	
+    
+    
+	
+	
+	<dt class="tag-see">See:</dt>
+	<dd class="tag-see">
+        <ul>
+            <li>ECMA-262 Spec Chapter 10.2.1.2.5</li>
+        </ul>
+	</dd>
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    Whether or not the binding has been deleted
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">Boolean</span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getBindingValue"><span class="type-signature"></span>getBindingValue<span class="signature">(n, s)</span><span class="type-signature"> &rarr; {<a href="module-Base.BaseType.html">module:Base.BaseType</a>}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        ECMA-262 Spec: <em>The concrete Environment Record method SetMutableBinding for object environment records attempts
+to set the value of the environment record‘s associated binding object‘s property whose name is the value of the
+argument n to the value of argument v. A property named N should already exist but if it does not or is not currently
+writable, error handling is determined by the value of the Boolean argument s.</em>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>n</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The name of the binding</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>s</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Indicates strict mode, i.e. whether or not an error should be thrown if the binding has not been
+		initialized</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Base.js, line 8395</li></ul></dd>
+	
+    
+    
+	
+	
+	<dt class="tag-see">See:</dt>
+	<dd class="tag-see">
+        <ul>
+            <li>ECMA-262 Spec Chapter 10.2.1.2.4</li>
+        </ul>
+	</dd>
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The value of the binding
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type"><a href="module-Base.BaseType.html">module:Base.BaseType</a></span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="hasBinding"><span class="type-signature"></span>hasBinding<span class="signature">(n)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        ECMA-262 Spec: <em>The concrete Environment Record method HasBinding for object environment records determines if its
+associated binding object has a property whose name is the value of the argument n</em>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>n</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The name of the binding</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Base.js, line 8334</li></ul></dd>
+	
+    
+    
+	
+	
+	<dt class="tag-see">See:</dt>
+	<dd class="tag-see">
+        <ul>
+            <li>ECMA-262 Spec Chapter 10.2.1.2.1</li>
+        </ul>
+	</dd>
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    Whether or not this environment record has the binding
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">Boolean</span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="implicitThisValue"><span class="type-signature"></span>implicitThisValue<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="module-Base.BaseType.html">module:Base.BaseType</a>}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        ECMA-262 Spec: <em>Object Environment Records return undefined as their ImplicitThisValue unless their provideThis
+flag is true.</em>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Base.js, line 8437</li></ul></dd>
+	
+    
+    
+	
+	
+	<dt class="tag-see">See:</dt>
+	<dd class="tag-see">
+        <ul>
+            <li>ECMA-262 Spec Chapter 10.2.1.2.6</li>
+        </ul>
+	</dd>
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The value of this, if it exists
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type"><a href="module-Base.BaseType.html">module:Base.BaseType</a></span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="setMutableBinding"><span class="type-signature"></span>setMutableBinding<span class="signature">(n, v, s, suppressEvent)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        ECMA-262 Spec: <em>The concrete Environment Record method SetMutableBinding for object environment records attempts
+to set the value of the environment record‘s associated binding object‘s property whose name is the value of the
+argument n to the value of argument V. A property named N should already exist but if it does not or is not currently
+writable, error handling is determined by the value of the Boolean argument s.</em>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>n</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The name of the binding</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>v</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-Base.BaseType.html">module:Base.BaseType</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The value to set on the binding</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>s</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Indicates strict mode, i.e. whether or not an error should be thrown if the binding is not mutable</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>suppressEvent</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Suppresses the 'propertySet' event (used when setting prototypes)</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<dt class="tag-source">Source:</dt>
+	<dd class="tag-source"><ul class="dummy"><li>Base.js, line 8377</li></ul></dd>
+	
+    
+    
+	
+	
+	<dt class="tag-see">See:</dt>
+	<dd class="tag-see">
+        <ul>
+            <li>ECMA-262 Spec Chapter 10.2.1.2.3</li>
+        </ul>
+	</dd>
+	
+	
+	
+</dl>
+
+    
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        </dl>
     
     
     

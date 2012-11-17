@@ -41,7 +41,7 @@
             <div class="description"><p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
 Please see the LICENSE file for information about licensing.</p>
 
-WARNING: The Code Processor IS NOT reentrant! A second invokation of the code processor prior to the first 
+WARNING: The Code Processor IS NOT reentrant! A second invokation of the code processor prior to the first
 one finishing will kill the first instance and the second invokation may be unstable. A second invokation of the code
 processor after the first has finished is untested and not likely to work.</div>
         
@@ -116,7 +116,7 @@ processor after the first has finished is untested and not likely to work.</div>
     
     
     <div class="description">
-        Gets the results of the code processor. Note: the results are sanitized to remove hidden properties and functions, 
+        Gets the results of the code processor. Note: the results are sanitized to remove hidden properties and functions,
 thus allowing the results to be JSON.stringify()'d.
     </div>
     
@@ -149,7 +149,7 @@ thus allowing the results to be JSON.stringify()'d.
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 305</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 302</li></ul></dd>
 	
     
     
@@ -439,7 +439,7 @@ thus allowing the results to be JSON.stringify()'d.
             
             
             <td class="description last">The maximum number of iterations a loop can iterate before falling
-		back to an unknown evaluation (as if evaluateLoops were false). This prevents projects with extremely intensive 
+		back to an unknown evaluation (as if evaluateLoops were false). This prevents projects with extremely intensive
 		code or code with infinite loops from taking down the code processor. Default is 1000000000000.</td>
         </tr>
 	
@@ -471,7 +471,7 @@ thus allowing the results to be JSON.stringify()'d.
             
             
             
-            <td class="description last">Indicates the maximum recursion depth to evaluate before erroring 
+            <td class="description last">Indicates the maximum recursion depth to evaluate before erroring
 		(infinite recursion guard). Default is 1000.</td>
         </tr>
 	
@@ -569,7 +569,7 @@ thus allowing the results to be JSON.stringify()'d.
             
             
             
-            <td class="description last">Indicates whether or not the app should be evaluated in exact mode. Exact mode does not 
+            <td class="description last">Indicates whether or not the app should be evaluated in exact mode. Exact mode does not
 		use ambiguous mode and throws an exception if an Unknown type is encountered.</td>
         </tr>
 	
@@ -763,7 +763,7 @@ thus allowing the results to be JSON.stringify()'d.
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 119</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 118</li></ul></dd>
 	
     
     
@@ -885,7 +885,7 @@ thus allowing the results to be JSON.stringify()'d.
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 45</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 44</li></ul></dd>
 	
     
     
@@ -1006,7 +1006,7 @@ thus allowing the results to be JSON.stringify()'d.
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 47</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 46</li></ul></dd>
 	
     
     
@@ -1076,7 +1076,7 @@ thus allowing the results to be JSON.stringify()'d.
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 53</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 52</li></ul></dd>
 	
     
     
@@ -1114,7 +1114,7 @@ thus allowing the results to be JSON.stringify()'d.
     
     
     <div class="description">
-        Indicates that the current run of the project is about to be processed. Note tht event tags can cause multiple runs, 
+        Indicates that the current run of the project is about to be processed. Note tht event tags can cause multiple runs,
 and thus multiple instances of this event.
     </div>
     
@@ -1147,7 +1147,7 @@ and thus multiple instances of this event.
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 49</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 48</li></ul></dd>
 	
     
     
@@ -1185,7 +1185,7 @@ and thus multiple instances of this event.
     
     
     <div class="description">
-        Indicates that the current run of the project has finished being processed. Note tht event tags can cause multiple runs, 
+        Indicates that the current run of the project has finished being processed. Note tht event tags can cause multiple runs,
 and thus multiple instances of this event.
     </div>
     
@@ -1218,7 +1218,7 @@ and thus multiple instances of this event.
 	
 	
 	<dt class="tag-source">Source:</dt>
-	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 51</li></ul></dd>
+	<dd class="tag-source"><ul class="dummy"><li>CodeProcessor.js, line 50</li></ul></dd>
 	
     
     

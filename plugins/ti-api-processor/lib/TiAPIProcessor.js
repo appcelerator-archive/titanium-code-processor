@@ -120,6 +120,7 @@ module.exports.prototype.getResults = function getResults() {
  * @classdesc Specialized function that returns information based on the JSCA
  *
  * @constructor
+ * @name module:plugins/TiAPIProcessor~TiFunction
  * @private
  * @param {Array[String]|undefined} returnTypes An array of return types, or undefined
  * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a
@@ -135,6 +136,7 @@ util.inherits(TiFunction, Base.FunctionType);
  * Calls the require function
  *
  * @method
+ * @name module:plugins/TiAPIProcessor~TiFunction#call
  * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
  * @param (Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
  * @returns {module:Base.BaseType} The return value from the function
@@ -183,13 +185,13 @@ TiFunction.prototype.call = function call(thisVal, args) {
  * @classdesc A custom object implementation that hooks into get, put, and delete so it can fire the appropriate Ti events
  *
  * @constructor
+ * @name module:plugins/TiAPIProcessor~TiObjectType
  * @private
  * @extends module:Base.ObjectType
  * @param {Object} api The api describing the object
  * @param {Object} api.node The JSCA node for the object
  * @param {Object} api.children Any children of this object (i.e. separate JSCA types that are properties)
  */
-exports.TiObjectType = TiObjectType;
 function TiObjectType(api, className) {
 	this._api = api;
 	Base.ObjectType.call(this, className || 'Object');
@@ -199,7 +201,7 @@ util.inherits(TiObjectType, Base.ObjectType);
 /**
  * Indicates that a titanium property was referenced (i.e. read).
  *
- * @name module:plugins/TiAPIProcessor.TiObjectType#tiPropertyReferenced
+ * @name module:plugins/TiAPIProcessor#tiPropertyReferenced
  * @event
  * @param {String} name The name of the property that was referenced
  * @param {{@link module:Base.DataPropertyDescriptor}|{@link module:Base.AccessorPropertyDescriptor}|undefined} The
@@ -214,7 +216,7 @@ util.inherits(TiObjectType, Base.ObjectType);
  *		{@link module:Base.UndefinedType} if the property does not exist
  * @see ECMA-262 Spec Chapter 8.12.3
  */
-exports.TiObjectType.prototype.get = function get(p) {
+TiObjectType.prototype.get = function get(p) {
 	var value = Base.ObjectType.prototype.get.apply(this, arguments),
 		node = value._api ? value._api.node : value._property ? value._property : value._function;
 	if (node) {
@@ -233,7 +235,7 @@ exports.TiObjectType.prototype.get = function get(p) {
 /**
  * Indicates that a titanium property was set (i.e. written).
  *
- * @name module:plugins/TiAPIProcessor.TiObjectType#tiPropertySet
+ * @name module:plugins/TiAPIProcessor#tiPropertySet
  * @event
  * @param {String} name The name of the property that was set
  * @param {module:Base.BaseType} value The value that was set
@@ -249,7 +251,7 @@ exports.TiObjectType.prototype.get = function get(p) {
  * @param {Boolean} suppressEvent Suppresses the 'propertySet' event (used when setting prototypes)
  * @see ECMA-262 Spec Chapter 8.12.5
  */
-exports.TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent) {
+TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent) {
 	var node = v._api ? v._api.node : v._property ? v._property : v._function;
 	Base.ObjectType.prototype.put.apply(this, arguments);
 	if (!suppressEvent) {
@@ -269,7 +271,7 @@ exports.TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent
 /**
  * Indicates that a titanium property was deleted
  *
- * @name module:plugins/TiAPIProcessor.TiObjectType#tiPropertyDeleted
+ * @name module:plugins/TiAPIProcessor#tiPropertyDeleted
  * @event
  * @param {String} name The name of the property referenced
  */
@@ -282,7 +284,7 @@ exports.TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent
  * @returns {Boolean} Whether or not the object was deleted succesfully
  * @see ECMA-262 Spec Chapter 8.12.7
  */
-exports.TiObjectType.prototype.delete = function objDelete(p) {
+TiObjectType.prototype.delete = function objDelete(p) {
 	var success = Base.ObjectType.prototype['delete'].apply(this, arguments);
 	Runtime.fireEvent('tiPropertyDeleted', 'Property "' + p + '" was deleted', {
 		name: this._api.node.name + '.' + p,
