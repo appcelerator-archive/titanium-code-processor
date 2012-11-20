@@ -11,12 +11,12 @@ var util = require('util'),
 	path = require('path'),
 	fs = require('fs'),
 	exec = require('child_process').exec,
-	
+
 	nomnom = require('nomnom'),
 	winston = require('winston'),
-	wrench = require('wrench'),
 	async = require('async'),
 	xml2js = require('xml2js'),
+	request = require('request'),
 	
 	CodeProcessor = require(path.resolve(path.join(__dirname, '..'))),
 
@@ -55,6 +55,15 @@ var util = require('util'),
 			help: 'The name of the OS being built-for. Reflected in code via Ti.Platform.osname',
 			choices: ['ios', 'iphone', 'ipad', 'android', 'mobileweb']
 		})
+		.option('report', {
+			abbr: 'r',
+			help: 'Generates a report after the code processor has run to send to Appcelerator for debugging',
+			flag: true
+		})
+		.option('report-with-message', {
+			abbr: 'm',
+			help: 'Generates a report after the code processor has run to send to Appcelerator for debugging',
+		})
 		.script('titanium-code-processor [project-dir]')
 		.help('Processes the supplied project using the given plugins.')
 		.nom(),
@@ -75,12 +84,12 @@ logger = new (winston.Logger)({
 		new (winston.transports.Console)({ level: parsedOptions.verbose ? 'trace' : parsedOptions['log-level'] })
 	],
 	levels: {
-		trace: 0, 
+		trace: 0,
 		debug: 1,
 		info: 2,
 		notice: 3,
 		warn: 4,
-		error: 5 
+		error: 5
 	}
 });
 
@@ -93,23 +102,23 @@ if (parsedOptions.config) {
 			process.exit(1);
 		}
 		switch(configOption[0]) {
-			case 'invokeMethods': 
+			case 'invokeMethods':
 				options.invokeMethods = configOption[1] === 'true';
 				break;
 			case 'evaluateLoops':
 				options.evaluateLoops = configOption[1] === 'true';
 				break;
 			case 'maxLoopIterations':
-				options.maxLoopIterations = parseInt(configOption[1]);
+				options.maxLoopIterations = parseInt(configOption[1], 10);
 				break;
 			case 'maxRecursionLimit':
-				options.maxRecursionLimit = parseInt(configOption[1]);
+				options.maxRecursionLimit = parseInt(configOption[1], 10);
 				break;
 			case 'logConsoleCalls':
 				options.logConsoleCalls = configOption[1] === 'true';
 				break;
 			case 'executionTimeLimit':
-				options.executionTimeLimit = parseInt(configOption[1]);
+				options.executionTimeLimit = parseInt(configOption[1], 10);
 				break;
 			case 'exactMode':
 				options.exactMode = configOption[1] === 'true';
@@ -172,8 +181,8 @@ if (/\.js$/.test(projectRoot)) {
 				logger.error('Could not run the "titanium" command: ' + err);
 				process.exit(1);
 			} else {
-				tasks['modules'] = function (next) {
-					exec('titanium module -o json --project-dir ' + projectRoot, function (err, stdout, stderr) {
+				tasks.modules = function (next) {
+					exec('titanium module -o json --project-dir ' + projectRoot, function (err, stdout) {
 						if (err) {
 							next(err);
 						} else {
@@ -181,8 +190,8 @@ if (/\.js$/.test(projectRoot)) {
 						}
 					});
 				};
-				tasks['project'] = function (next) {
-					exec('titanium project -o json --project-dir ' + projectRoot, function (err, stdout, stderr) {
+				tasks.project = function (next) {
+					exec('titanium project -o json --project-dir ' + projectRoot, function (err, stdout) {
 						if (err) {
 							next(err);
 						} else {
@@ -190,15 +199,15 @@ if (/\.js$/.test(projectRoot)) {
 						}
 					});
 				},
-				tasks['info'] = function (next) {
-					exec('titanium info -t titanium -o json', function (err, stdout, stderr) {
+				tasks.info = function (next) {
+					exec('titanium info -t titanium -o json', function (err, stdout) {
 						if (err) {
 							next(err);
 						} else {
 							next(null, JSON.parse(stdout));
 						}
 					});
-				}
+				};
 			}
 
 			async.parallel(tasks, function (err, result) {
@@ -207,8 +216,7 @@ if (/\.js$/.test(projectRoot)) {
 					projectModules,
 					globalModules,
 					moduleList,
-					modules = {},
-					i, len;
+					modules = {};
 				if (err) {
 					console.error(err);
 				} else {
@@ -248,10 +256,10 @@ if (/\.js$/.test(projectRoot)) {
 										modules[platform] = {};
 									}
 									if (platform === 'commonjs') {
-										if (projectModules && projectModules['commonjs'] && projectModules['commonjs'][name]) {
-											moduleEntry = projectModules['commonjs'][name];
-										} else if (globalModules && globalModules['commonjs'] && globalModules['commonjs'][name]) {
-											moduleEntry = globalModules['commonjs'][name];
+										if (projectModules && projectModules.commonjs && projectModules.commonjs[name]) {
+											moduleEntry = projectModules.commonjs[name];
+										} else if (globalModules && globalModules.commonjs && globalModules.commonjs[name]) {
+											moduleEntry = globalModules.commonjs[name];
 										}
 										if (moduleEntry) {
 											if (version) {
@@ -281,8 +289,32 @@ if (/\.js$/.test(projectRoot)) {
 					startTime = (new Date()).getTime();
 					result = CodeProcessor.process([entryPoint], plugins, options, logger);
 					logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
-					console.log(JSON.stringify(CodeProcessor.getResults(), false, '\t'));
-					process.exit(result && result[0] === 'normal' ? 0 : 1);
+					logger.log('info', 'Results: ' + JSON.stringify(CodeProcessor.getResults(), false, '\t'));
+					
+					// Send the results to Appcelerator, if requested
+					if (parsedOptions.report || parsedOptions['report-with-message']) {
+						logger.log('info', 'Sending report to Appcelerator');
+						request({
+							url: 'http://50a6d9218978de8f33002638.cloudapp-preview.appcelerator.com',
+							method: 'POST',
+							json: {
+								id: 'bhughes@appcelerator.com',
+								results: CodeProcessor.getResults(),
+								message: parsedOptions['report-with-message']
+							}
+						}, function (error, response, body) {
+							if (body && body.error) {
+								logger.log('error', 'Could not send report: ' + body.error);
+							} else if (body && body.success) {
+								logger.log('info', 'Report sent successfully');
+							} else {
+								logger.log('error', 'Could not send report: invalid server response');
+							}
+							process.exit(result && result[0] === 'normal' ? 0 : 1);
+						});
+					} else {
+						process.exit(result && result[0] === 'normal' ? 0 : 1);
+					}
 				}
 			});
 		});
