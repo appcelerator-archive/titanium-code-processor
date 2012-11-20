@@ -42,7 +42,7 @@ module.exports = function () {
 						result.numNodesVisited++;
 						results.numNodesVisited++;
 					}
-					result.numNodesVisited++;
+					result.numTotalNodes++;
 					results.numTotalNodes++;
 					next();
 				}
