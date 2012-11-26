@@ -11,6 +11,7 @@ var util = require('util'),
 	path = require('path'),
 	fs = require('fs'),
 	exec = require('child_process').exec,
+	existsSync = fs.existsSync || path.existsSync,
 
 	nomnom = require('nomnom'),
 	winston = require('winston'),
@@ -141,7 +142,7 @@ if (parsedOptions[0]) {
 projectRoot = path.resolve(projectRoot);
 
 // Make sure that the project exists
-if (!fs.existsSync(projectRoot)) {
+if (!existsSync(projectRoot)) {
 	logger.error('project root "' + projectRoot + '" does not exist.\n');
 	process.exit(1);
 }
@@ -160,7 +161,7 @@ if (/\.js$/.test(projectRoot)) {
 	process.exit(result && result[0] === 'normal' ? 0 : 1);
 } else {
 	entryPoint = path.join(projectRoot, 'Resources', 'app.js');
-	if (!fs.existsSync(entryPoint)) {
+	if (!existsSync(entryPoint)) {
 		logger.error(projectRoot + ' does not appear to be a valid Titanium Mobile project.\n');
 		process.exit(1);
 	} else {

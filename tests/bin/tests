@@ -2,7 +2,7 @@
 /**
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
- * 
+ *
  * Provides a CLI for the code processor unit tests
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
@@ -48,14 +48,14 @@ var path = require('path'),
 		.help('Runs the test-262 unit tests')
 		.nom();
 
-if (!fs.existsSync(path.resolve(parsedOptions['test-262-dir']))) {
+if (!(fs.existsSync || path.existsSync)(path.resolve(parsedOptions['test-262-dir']))) {
 	console.error('Test-262 directory "' + parsedOptions['test-262-dir'] + '" does not exist\n');
 	process.exit(1);
 }
 
 if (parsedOptions['use-old-harness']) {
 	spawn('python', [
-		path.resolve(path.join(parsedOptions['test-262-dir'], 'tools', 'packaging', 'test262.py')), 
+		path.resolve(path.join(parsedOptions['test-262-dir'], 'tools', 'packaging', 'test262.py')),
 		'--command',
 		path.resolve(path.join(__dirname, '..', 'bin', 'runTest'))
 	], {

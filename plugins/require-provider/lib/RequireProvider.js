@@ -9,6 +9,7 @@
 var util = require('util'),
 	path = require('path'),
 	fs = require('fs'),
+	existsSync = fs.existsSync || path.existsSync,
 	
 	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
@@ -125,14 +126,14 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 			} else {
 				filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, name));
 				filePath += isModule ? '.js' : '';
-				if (!fs.existsSync(filePath)) {
+				if (!existsSync(filePath)) {
 					filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), name));
 					filePath += isModule ? '.js' : '';
 				}
 			}
 					
 			// Make sure that the file exists and then process it
-			if (fs.existsSync(filePath)) {
+			if (existsSync(filePath)) {
 				if (cache[filePath]) {
 					result = cache[filePath];
 				} else {
@@ -198,7 +199,7 @@ function processFile(file, createExports) {
 		envRec;
 	
 	// Make sure the file exists
-	if (fs.existsSync(file)) {
+	if (existsSync(file)) {
 		
 		// Fire the parsing begin event
 		Runtime.fireEvent('fileProcessingBegin', 'Processing is beginning for file "' + file + '"', {
