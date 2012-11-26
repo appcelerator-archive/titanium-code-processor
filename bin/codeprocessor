@@ -53,7 +53,8 @@ var util = require('util'),
 			abbr: 'o',
 			metavar: 'PLATFORM',
 			help: 'The name of the OS being built-for. Reflected in code via Ti.Platform.osname',
-			choices: ['ios', 'iphone', 'ipad', 'android', 'mobileweb']
+			choices: ['ios', 'iphone', 'ipad', 'android', 'mobileweb'],
+			required: true
 		})
 		.option('report', {
 			abbr: 'r',
@@ -64,7 +65,7 @@ var util = require('util'),
 			abbr: 'm',
 			help: 'Generates a report after the code processor has run to send to Appcelerator for debugging',
 		})
-		.script('titanium-code-processor [project-dir]')
+		.script('titanium-code-processor -o <platform> [project-dir]')
 		.help('Processes the supplied project using the given plugins.')
 		.nom(),
 	i,

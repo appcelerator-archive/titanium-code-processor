@@ -22,7 +22,7 @@ so if you haven't installed it already, do so before running the code processor.
 
 ### Run the code processor
 ```
-titanium-code-processor -o <platform> <path/to/project>
+titanium-code-processor -o <platform> [<path/to/project>]
 ```
 
 ## Overview
