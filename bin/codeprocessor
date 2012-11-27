@@ -18,6 +18,7 @@ var util = require('util'),
 	async = require('async'),
 	xml2js = require('xml2js'),
 	request = require('request'),
+	Table = require('cli-table'),
 	
 	CodeProcessor = require(path.resolve(path.join(__dirname, '..'))),
 
@@ -50,6 +51,16 @@ var util = require('util'),
 			help: 'The logging level',
 			choices: ['error', 'warn', 'notice', 'info', 'debug', 'trace']
 		})
+		.option('silent', {
+			abbr: 's',
+			flag: true,
+			help: 'Suppresses all output, including errors, and only prints the results. Useful when combined with -j'
+		})
+		.option('json', {
+			abbr: 'j',
+			flag: true,
+			help: 'Outputs the results in JSON format'
+		})
 		.option('osname', {
 			abbr: 'o',
 			metavar: 'PLATFORM',
@@ -64,7 +75,7 @@ var util = require('util'),
 		})
 		.option('report-with-message', {
 			abbr: 'm',
-			help: 'Generates a report after the code processor has run to send to Appcelerator for debugging',
+			help: 'Generates a report after the code processor has run to send to Appcelerator for debugging along with a custom message',
 		})
 		.script('titanium-code-processor -o <platform> [project-dir]')
 		.help('Processes the supplied project using the given plugins.')
@@ -80,27 +91,29 @@ var util = require('util'),
 	result,
 	logger;
 
-// Create the logger
-logger = new (winston.Logger)({
-	transports: [
-		new (winston.transports.Console)({ level: parsedOptions.verbose ? 'trace' : parsedOptions['log-level'] })
-	],
-	levels: {
-		trace: 0,
-		debug: 1,
-		info: 2,
-		notice: 3,
-		warn: 4,
-		error: 5
-	}
-});
+if (!parsedOptions.silent) {
+	// Create the logger
+	logger = new (winston.Logger)({
+		transports: [
+			new (winston.transports.Console)({ level: parsedOptions.verbose ? 'trace' : parsedOptions['log-level'] })
+		],
+		levels: {
+			trace: 0,
+			debug: 1,
+			info: 2,
+			notice: 3,
+			warn: 4,
+			error: 5
+		}
+	});
+}
 
 // Parse the config options
 if (parsedOptions.config) {
 	for(i = 0, len = parsedOptions.config.length; i < len; i++) {
 		configOption = parsedOptions.config[i].split('=');
 		if (configOption.length !== 2) {
-			logger.log('error', 'Invalid option "' + parsedOptions.config[i] + '"\n');
+			console.error('Invalid option "' + parsedOptions.config[i] + '"\n');
 			process.exit(1);
 		}
 		switch(configOption[0]) {
@@ -129,7 +142,7 @@ if (parsedOptions.config) {
 				options.nativeExceptionRecovery = configOption[1] === 'true';
 				break;
 			default:
-				logger.log('error', 'Invalid option "' + parsedOptions.config[i] + '"\n');
+				console.error('Invalid option "' + parsedOptions.config[i] + '"\n');
 				process.exit(1);
 		}
 	}
@@ -143,7 +156,7 @@ projectRoot = path.resolve(projectRoot);
 
 // Make sure that the project exists
 if (!existsSync(projectRoot)) {
-	logger.error('project root "' + projectRoot + '" does not exist.\n');
+	console.error('project root "' + projectRoot + '" does not exist.\n');
 	process.exit(1);
 }
 
@@ -155,23 +168,27 @@ if (/\.js$/.test(projectRoot)) {
 	startTime = (new Date()).getTime();
 	options.platform = parsedOptions.osname;
 	result = CodeProcessor.process([projectRoot], plugins, options, logger);
-	logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
-	logger.log('info', util.inspect(CodeProcessor.getResults(), false, 4));
+	if (logger) {
+		logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
+		logger.log('info', util.inspect(CodeProcessor.getResults(), false, 4));
+	}
 				
 	process.exit(result && result[0] === 'normal' ? 0 : 1);
 } else {
 	entryPoint = path.join(projectRoot, 'Resources', 'app.js');
 	if (!existsSync(entryPoint)) {
-		logger.error(projectRoot + ' does not appear to be a valid Titanium Mobile project.\n');
+		console.error(projectRoot + ' does not appear to be a valid Titanium Mobile project.\n');
 		process.exit(1);
 	} else {
-		logger.info('Analyzing project');
+		if (logger) {
+			logger.info('Analyzing project');
+		}
 		async.series([
 			function (next) {
 				exec('titanium', next);
 			},
 			function (next) {
-				exec('titanium project --project-dir ' + 'projectRoot', next);
+				exec('titanium project --project-dir ' + projectRoot, next);
 			}
 		], function (err) {
 			var tasks = {
@@ -187,8 +204,10 @@ if (/\.js$/.test(projectRoot)) {
 			};
 
 			if (err) {
-				logger.error('Could not run the "titanium" command: ' + err +
-					'Make sure that the Titanium CLI is installed and a 3.0 or newer SDK is installed.\n');
+				if (logger) {
+					logger.error('Could not run the "titanium" command: ' + err +
+						'Make sure that the Titanium CLI is installed and a 3.0 or newer SDK is installed.\n');
+				}
 			} else {
 				tasks.modules = function (next) {
 					exec('titanium module -o json --project-dir ' + projectRoot, function (err, stdout) {
@@ -223,7 +242,12 @@ if (/\.js$/.test(projectRoot)) {
 						projectModules,
 						globalModules,
 						moduleList,
-						modules = {};
+						results,
+						entry,
+						entries,
+						table,
+						modules = {},
+						i, len;
 					if (err) {
 						console.error(err);
 					} else {
@@ -295,12 +319,171 @@ if (/\.js$/.test(projectRoot)) {
 						// Process the code
 						startTime = (new Date()).getTime();
 						result = CodeProcessor.process([entryPoint], plugins, options, logger);
-						logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
-						logger.log('info', 'Results: ' + JSON.stringify(CodeProcessor.getResults(), false, '\t'));
+						results = CodeProcessor.getResults();
+						if (logger) {
+							logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
+						}
+						if (parsedOptions.json) {
+							console.log(JSON.stringify(results, false, '\t'));
+						} else {
+							console.log();
+							if (results.errors.length) {
+								console.log('Errors');
+								table = new Table({
+									head: ['Description', 'File', 'Line']
+								});
+								for (i = 0, len = results.errors.length; i < len; i++) {
+									entry = results.errors[i];
+									table.push([entry.description, path.relative(projectRoot, entry.file), entry.line]);
+								}
+								console.log(table.toString() + '\n');
+							}
+							if (results.warnings.length) {
+								console.log('Warnings');
+								table = new Table({
+									head: ['Description', 'File', 'Line']
+								});
+								for (i = 0, len = results.warnings.length; i < len; i++) {
+									entry = results.warnings[i];
+									table.push([entry.description, path.relative(projectRoot, entry.file), entry.line]);
+								}
+								console.log(table.toString() + '\n');
+							}
+							if (results.plugins['analysis-coverage']) {
+								console.log('Analysis Coverage');
+								table = new Table({
+									head: ['File', 'Nodes Visited', 'Total Nodes']
+								});
+								entries = Object.keys(results.plugins['analysis-coverage'].details);
+								for (i = 0, len = entries.length; i < len; i++) {
+									entry = results.plugins['analysis-coverage'].details[entries[i]];
+									table.push([path.relative(projectRoot, entries[i]), entry.numNodesVisited, entry.numTotalNodes]);
+								}
+								console.log(table.toString() + '\n Summary: ' + results.plugins['analysis-coverage'].numNodesVisited +
+									' out of ' + results.plugins['analysis-coverage'].numTotalNodes + ' nodes visited\n');
+							}
+							if (results.plugins['ti-api-usage-finder']) {
+								entries = Object.keys(results.plugins['ti-api-usage-finder']);
+								if (entries.length) {
+									console.log('Titanium API Usage');
+									table = new Table({
+										head: ['API', 'Num References']
+									});
+									for (i = 0, len = entries.length; i < len; i++) {
+										table.push([entries[i], results.plugins['ti-api-usage-finder'][entries[i]]]);
+									}
+									console.log(table.toString() + '\n');
+								}
+							}
+							if (results.plugins['require-finder']) {
+								entries = Object.keys(results.plugins['require-finder'].resolved);
+								if (entries.length) {
+									console.log('Required Modules Resolved');
+									table = new Table({
+										head: ['File Name', 'File', 'Line']
+									});
+									for (i = 0, len = entries.length; i < len; i++) {
+										entry = results.plugins['require-finder'].resolved[entries[i]];
+										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.file), entry.line]);
+									}
+									console.log(table.toString() + '\n');
+								}
+								entries = Object.keys(results.plugins['require-finder'].unresolved);
+								if (entries.length) {
+									console.log('Required Modules Unresolved');
+									table = new Table({
+										head: ['File Name', 'File', 'Line']
+									});
+									for (i = 0, len = entries.length; i < len; i++) {
+										entry = results.plugins['require-finder'].unresolved[entries[i]];
+										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.file), entry.line]);
+									}
+									console.log(table.toString() + '\n');
+								}
+								entries = Object.keys(results.plugins['require-finder'].missing);
+								if (entries.length) {
+									console.log('Required Modules Missing');
+									table = new Table({
+										head: ['File Name', 'File', 'Line']
+									});
+									for (i = 0, len = entries.length; i < len; i++) {
+										entry = results.plugins['require-finder'].missing[entries[i]];
+										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.file), entry.line]);
+									}
+									console.log(table.toString() + '\n');
+								}
+							}
+							if (results.plugins['ti-include-finder']) {
+								entries = Object.keys(results.plugins['ti-include-finder'].resolved);
+								if (entries.length) {
+									console.log('Ti.include Files Resolved');
+									table = new Table({
+										head: ['File Name', 'File', 'Line']
+									});
+									for (i = 0, len = entries.length; i < len; i++) {
+										entry = results.plugins['ti-include-finder'].resolved[entries[i]];
+										table.push([path.relative(projectRoot, entry.data.file), path.relative(projectRoot, entry.file), entry.line]);
+									}
+									console.log(table.toString() + '\n');
+								}
+								entries = Object.keys(results.plugins['ti-include-finder'].unresolved);
+								if (entries.length) {
+									console.log('Ti.include Files Unresolved');
+									table = new Table({
+										head: ['File Name', 'File', 'Line']
+									});
+									for (i = 0, len = entries.length; i < len; i++) {
+										entry = results.plugins['ti-include-finder'].unresolved[entries[i]];
+										table.push([path.relative(projectRoot, entry.data.file), path.relative(projectRoot, entry.file), entry.line]);
+									}
+									console.log(table.toString() + '\n');
+								}
+								entries = Object.keys(results.plugins['ti-include-finder'].missing);
+								if (entries.length) {
+									console.log('Ti.include Files Missing');
+									table = new Table({
+										head: ['File Name', 'File', 'Line']
+									});
+									for (i = 0, len = entries.length; i < len; i++) {
+										entry = results.plugins['ti-include-finder'].missing[entries[i]];
+										table.push([path.relative(projectRoot, entry.data.file), path.relative(projectRoot, entry.file), entry.line]);
+									}
+									console.log(table.toString() + '\n');
+								}
+							}
+							if (results.plugins['ti-api-deprecation-finder']) {
+								entries = Object.keys(results.plugins['ti-api-deprecation-finder']);
+								if (entries.length) {
+									console.log('Deprecated Titanium API References');
+									table = new Table({
+										head: ['API', 'Num References']
+									});
+									for (i = 0, len = entries.length; i < len; i++) {
+										table.push([entries[i], results.plugins['ti-api-deprecation-finder'][entries[i]]]);
+									}
+									console.log(table.toString() + '\n');
+								}
+							}
+							if (results.plugins['ti-api-platform-validator']) {
+								entries = Object.keys(results.plugins['ti-api-platform-validator']);
+								if (entries.length) {
+									console.log('Invalid Platform-Specific Titanium API References');
+									table = new Table({
+										head: ['API', 'Num References']
+									});
+									for (i = 0, len = entries.length; i < len; i++) {
+										table.push([entries[i], results.plugins['ti-api-platform-validator'][entries[i]]]);
+									}
+									console.log(table.toString() + '\n');
+								}
+							}
+						}
 						
 						// Send the results to Appcelerator, if requested
 						if (parsedOptions.report || parsedOptions['report-with-message']) {
-							logger.log('info', 'Sending report to Appcelerator');
+							if (logger) {
+								logger.log('info', 'Sending report to Appcelerator');
+							}
 							request({
 								url: 'http://50a6d9218978de8f33002638.cloudapp-preview.appcelerator.com',
 								method: 'POST',
@@ -310,12 +493,14 @@ if (/\.js$/.test(projectRoot)) {
 									message: parsedOptions['report-with-message']
 								}
 							}, function (error, response, body) {
-								if (body && body.error) {
-									logger.log('error', 'Could not send report: ' + body.error);
-								} else if (body && body.success) {
-									logger.log('info', 'Report sent successfully');
-								} else {
-									logger.log('error', 'Could not send report: invalid server response');
+								if (logger) {
+									if (body && body.error) {
+										logger.log('error', 'Could not send report: ' + body.error);
+									} else if (body && body.success) {
+										logger.log('info', 'Report sent successfully');
+									} else {
+										logger.log('error', 'Could not send report: invalid server response');
+									}
 								}
 								process.exit(result && result[0] === 'normal' ? 0 : 1);
 							});
