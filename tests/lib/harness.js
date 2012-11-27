@@ -75,7 +75,9 @@ module.exports.run = function (options) {
 			if (!printFinishedCountdown) {
 				console.log('\nAll tests finished in ' + getPrettyTime(Date.now() - startTime) + '. ' +
 					successes + ' out of ' + total + ' tests (' + Math.floor(100 * successes / total) + '%) passed.\n');
-				console.log('Failed tests:\n' + testsFailed.join('\n') + '\n');
+				if (testsFailed.length) {
+					console.log('Failed tests:\n' + testsFailed.join('\n') + '\n');
+				}
 				wrench.rmdirSyncRecursive(tempDir);
 			}
 		} else if (testFileNameRegex.test(file)) {
