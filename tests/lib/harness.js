@@ -1,13 +1,14 @@
 /**
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
- * 
+ *
  * Provides a CLI for the code processor unit tests
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
 var fs = require('fs'),
 	path = require('path'),
+	existsSync = fs.existsSync || path.existsSync,
 	
 	wrench = require('wrench'),
 	
@@ -19,8 +20,8 @@ var fs = require('fs'),
 module.exports.run = function (options) {
 	var test262Dir = options['test-262-dir'],
 		multiThreaded = options['multi-threaded'],
-		chapter = options['chapter'],
-		section = options['section'],
+		chapter = options.chapter,
+		section = options.section,
 		testNode = options['test-node'],
 		includeDir = path.join(test262Dir, 'test', 'harness'),
 		testLib = '',
@@ -43,10 +44,10 @@ module.exports.run = function (options) {
 		printFinishedCountdown = len; // Most laptops don't like running at 100%
 	
 	function getPrettyTime(diff) {
-		var elapsedTime = new Date(diff);
-		seconds = elapsedTime.getUTCSeconds();
-		minutes = elapsedTime.getUTCMinutes();
-		hours = elapsedTime.getUTCHours();
+		var elapsedTime = new Date(diff),
+			seconds = elapsedTime.getUTCSeconds(),
+			minutes = elapsedTime.getUTCMinutes(),
+			hours = elapsedTime.getUTCHours();
 		hours = hours === 0 ? '' : hours === 1 ? '1 hour ' : hours + ' hours ';
 		minutes = minutes === 0 ? hours ? '0 minutes ' : '' : minutes === 1 ? '1 minute ' : minutes + ' minutes ';
 		seconds = seconds === 1 ? '1 second' : seconds + ' seconds';
@@ -66,15 +67,12 @@ module.exports.run = function (options) {
 			body,
 			propMatch,
 			i, len,
-			elapsedTime,
-			seconds,
-			minutes,
-			hours,
-			ast;
+			ast,
+			message;
 		if (!file) {
 			printFinishedCountdown--;
 			if (!printFinishedCountdown) {
-				console.log('\nAll tests finished in ' + getPrettyTime(Date.now() - startTime) + '. ' + 
+				console.log('\nAll tests finished in ' + getPrettyTime(Date.now() - startTime) + '. ' +
 					successes + ' out of ' + total + ' tests (' + Math.floor(100 * successes / total) + '%) passed.\n');
 				wrench.rmdirSyncRecursive(tempDir);
 			}
@@ -112,10 +110,10 @@ module.exports.run = function (options) {
 				testProperties.strictMode = !!(ast && ast[1] && RuleProcessor.isBlockStrict(ast[1]));
 
 				// Write the test file plus headers to a temp file
-				testFileContent = (testProperties.strictMode ? '"use strict";\n' : '') + testLib + 
-					'\n\n/****************************************\n' + 
-					' * ' + file + '\n' + 
-					' ****************************************/\n\n' + 
+				testFileContent = (testProperties.strictMode ? '"use strict";\n' : '') + testLib +
+					'\n\n/****************************************\n' +
+					' * ' + file + '\n' +
+					' ****************************************/\n\n' +
 					body;
 				testFilePath = path.join(tempDir, file);
 				wrench.mkdirSyncRecursive(path.dirname(testFilePath));
@@ -139,9 +137,9 @@ module.exports.run = function (options) {
 					if (message.success) {
 						successes++;
 					}
-					console.log((message.success ? 'PASS' : 'FAIL') + ' (' + total + ' of ' + numTests +', ' + 
-						getPrettyTime((numTests - total) * (Date.now() - startTime) / total) + ' remaining, ' + 
-						Math.floor(100 * successes / total) + '% pass rate so far): ' + 
+					console.log((message.success ? 'PASS' : 'FAIL') + ' (' + total + ' of ' + numTests +', ' +
+						getPrettyTime((numTests - total) * (Date.now() - startTime) / total) + ' remaining, ' +
+						Math.floor(100 * successes / total) + '% pass rate so far): ' +
 						testFilePath + (!message.success ? '\n   ' + message.errorMessage : ''));
 					setTimeout(processFile, 0);
 				} else {
@@ -161,7 +159,7 @@ module.exports.run = function (options) {
 				}
 			} else {
 				throw new Error('Could not parse test case ' + file);
-			}			
+			}
 		} else {
 			setTimeout(processFile, 0);
 		}
@@ -169,35 +167,35 @@ module.exports.run = function (options) {
 	
 	// Create the test lib
 	['cth.js', 'sta.js', 'ed.js', 'testBuiltInObject.js', 'testIntl.js'].forEach(function(file) {
-		testLib += '\n\n/****************************************\n' + 
-			' * ' + file + '\n' + 
-			' ****************************************/\n\n' + 
+		testLib += '\n\n/****************************************\n' +
+			' * ' + file + '\n' +
+			' ****************************************/\n\n' +
 			fs.readFileSync(path.join(includeDir, file));
 	});
 	
 	// Parse the chapter
 	if (chapter) {
-		chapter = parseInt(chapter);
+		chapter = parseInt(chapter, 10);
 		chapter = (chapter < 10 ? '0' : '') + chapter;
-		if (!fs.existsSync(path.join(test262Dir, 'test', 'suite', 'ch' + chapter))) {
+		if (!existsSync(path.join(test262Dir, 'test', 'suite', 'ch' + chapter))) {
 			console.error('Invalid chapter number "' + chapter + '"');
 			process.exit();
 		}
 		testFileNameRegex = RegExp('^ch' + chapter + '[\\/\\\\].*\\.js$');
 	} else if (section) {
-		chapter = parseInt(section);
+		chapter = parseInt(section, 10);
 		chapter = (chapter < 10 ? '0' : '') + chapter;
-		if (!fs.existsSync(path.join(test262Dir, 'test', 'suite', 'ch' + chapter))) {
+		if (!existsSync(path.join(test262Dir, 'test', 'suite', 'ch' + chapter))) {
 			console.error('Invalid chapter number "' + chapter + '"\n');
 			process.exit();
 		}
-		if (!fs.existsSync(path.join(test262Dir, 'test', 'suite', 'ch' + chapter, section))) {
+		if (!existsSync(path.join(test262Dir, 'test', 'suite', 'ch' + chapter, section))) {
 			console.error('Invalid section "' + section + '"\n');
 			process.exit();
 		}
 		testFileNameRegex = RegExp('^ch' + chapter + '[\\/\\\\]' + section + '[\\/\\\\].*\\.js$');
 	} else {
-		testFileNameRegex = /^ch[0-9][0-68-9][\/\\].*\.js$/
+		testFileNameRegex = /^ch[0-9][0-68-9][\/\\].*\.js$/;
 	}
 	
 	// Prune the list of tests
@@ -209,8 +207,8 @@ module.exports.run = function (options) {
 	numTests = prunedFileList.length;
 	
 	// Run the tests
-	console.log('\nRunning ' + numTests + ' tests from ' + 
-		(section ? 'Section ' + section : chapter ? 'Chapter ' + chapter : 'all chapters') + 
+	console.log('\nRunning ' + numTests + ' tests from ' +
+		(section ? 'Section ' + section : chapter ? 'Chapter ' + chapter : 'all chapters') +
 		' using ' + (len > 1 ? len + ' threads' : '1 thread') + '\n');
 	for(i = 0; i < len; i++) {
 		processFile();

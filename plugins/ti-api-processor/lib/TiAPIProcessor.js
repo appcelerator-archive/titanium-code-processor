@@ -10,6 +10,7 @@
 
 var fs = require('fs'),
 	path = require('path'),
+	existsSync = fs.existsSync || path.existsSync,
 	util = require('util'),
 	
 	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
@@ -346,13 +347,13 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 			filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentLocation().file), file));
 		} else {
 			filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, file));
-			if (!fs.existsSync(filePath)) {
+			if (!existsSync(filePath)) {
 				filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), file));
 			}
 		}
 		
 		// Make sure the file exists
-		if (fs.existsSync(filePath)) {
+		if (existsSync(filePath)) {
 			
 			Runtime.fireEvent('tiIncludeResolved', 'The Ti.include path "' + filePath + '" was resolved', {
 				file: filePath

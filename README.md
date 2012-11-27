@@ -22,7 +22,7 @@ so if you haven't installed it already, do so before running the code processor.
 
 ### Run the code processor
 ```
-titanium-code-processor -o <platform> <path/to/project>
+titanium-code-processor -o <platform> [<path/to/project>]
 ```
 
 ## Overview
@@ -99,7 +99,7 @@ option | description
 --config, -c &lt;option=value&gt; | Specifies a configuration option and it's value, e.g ```-c invokeMethods=false```
 --verbose, -v | Enables verbose logging, equivalent to ```-l debug```
 --log-level, -l | Sets the log level. Possible values are 'error', 'warn', 'notice', 'info', 'debug', or 'trace'
---osname, -o | The name of the OS being analyzed for. This is the value that will be reported via 'Ti.Platform.osname', e.g. 'android'. If you are using platform specific files (i.e. Resources/android/foo), then this flag is required
+--osname, -o | The name of the OS being analyzed for. This is the value that will be reported via 'Ti.Platform.osname', e.g. 'android'. This flag is **required**
 --help, -h | Displays the help
 Note: if no plugins are specified, all plugins are loaded
 

@@ -55,7 +55,7 @@ var fs = require('fs'),
 	baseFileContents;
 
 // Remove the old Base file
-if (fs.existsSync(baseFilePath)) {
+if ((fs.existsSync || path.existsSync)(baseFilePath)) {
 	fs.unlinkSync(baseFilePath);
 }
 

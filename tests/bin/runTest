@@ -2,7 +2,7 @@
 /**
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
- * 
+ *
  * Provides a CLI for the code processor unit tests
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
@@ -10,7 +10,7 @@
 var path = require('path'),
 	fs = require('fs'),
 	
-	winston = require("winston"),
+	winston = require('winston'),
 	
 	CodeProcessor = require('../../lib/CodeProcessor'),
 	Runtime = require('../../lib/Runtime'),
@@ -23,14 +23,20 @@ var path = require('path'),
 
 // Validate the file argument
 if (!file) {
-	silent || console.error('**** File not specified');
+	if (!silent) {
+		console.error('**** File not specified');
+	}
 	process.exit(1);
 }
-if (!fs.existsSync(file)) {
-	silent || console.error('**** Invalid file ' + file);
+if (!(fs.existsSync || path.existsSync)(file)) {
+	if (!silent) {
+		console.error('**** Invalid file ' + file);
+	}
 	process.exit(1);
 }
-silent || console.log('Processing file "' + file + '"');
+if (!silent) {
+	console.log('Processing file "' + file + '"');
+}
 
 // Create the logger
 logger = new (winston.Logger)({
@@ -38,7 +44,7 @@ logger = new (winston.Logger)({
 		new (winston.transports.Console)({ level: silent ? 'critical' : 'error'})
 	],
 	levels: {
-		trace: 0, 
+		trace: 0,
 		debug: 1,
 		info: 2,
 		notice: 3,
@@ -60,20 +66,26 @@ try {
 			var value;
 			switch(Base.type(result[1])) {
 				case 'String': value = result[1].value; break;
-				case 'Object': value = result[1]._lookupProperty['message'].value.value; break;
+				case 'Object': value = result[1]._lookupProperty.message.value.value; break;
 			}
 		} else {
 			console.error('**** Internal error: missing throw value at line ' + Runtime.getCurrentLocation().line);
 		}
-		silent || console.log('Exception thrown: ' + value);
+		if (!silent) {
+			console.log('Exception thrown: ' + value);
+		}
 		process.exit(1);
 	}
 	result = CodeProcessor.getResults();
 	if (result.errors.length) {
-		silent || console.log('Error generated: ' + result.errors[0].description);
+		if (!silent) {
+			console.log('Error generated: ' + result.errors[0].description);
+		}
 		process.exit(1);
 	}
-	silent || console.log('Code exited properly');
+	if (!silent) {
+		console.log('Code exited properly');
+	}
 	process.exit(0);
 } catch(e) {
 	console.error('**** Internal error: ' + e.message);
