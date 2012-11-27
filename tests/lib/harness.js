@@ -39,6 +39,7 @@ module.exports.run = function (options) {
 		successes = 0,
 		total = 0,
 		startTime = Date.now(),
+		testsFailed = [],
 		tempDir = path.resolve(path.join('/', 'tmp', 'titanium-code-processor')),
 		i, len = multiThreaded ? require('os').cpus().length : 1,
 		printFinishedCountdown = len; // Most laptops don't like running at 100%
@@ -74,6 +75,7 @@ module.exports.run = function (options) {
 			if (!printFinishedCountdown) {
 				console.log('\nAll tests finished in ' + getPrettyTime(Date.now() - startTime) + '. ' +
 					successes + ' out of ' + total + ' tests (' + Math.floor(100 * successes / total) + '%) passed.\n');
+				console.log('Failed tests:\n' + testsFailed.join('\n') + '\n');
 				wrench.rmdirSyncRecursive(tempDir);
 			}
 		} else if (testFileNameRegex.test(file)) {
@@ -154,6 +156,9 @@ module.exports.run = function (options) {
 							getPrettyTime((numTests - total) * (Date.now() - startTime) / total) + ' remaining, ' +
 							Math.floor(100 * successes / total) + '% pass rate so far): ' +
 							testFilePath + (!message.success ? '\n   ' + message.errorMessage : ''));
+						if (!message.success) {
+							testsFailed.push(file);
+						}
 						setTimeout(processFile, 0);
 					});
 				}
