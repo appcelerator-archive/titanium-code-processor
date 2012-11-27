@@ -12,7 +12,10 @@
 		"test": "node tests/bin/tests"
 	},
 	"main": "lib/CodeProcessor.js",
-	"bin": "bin/codeprocessor",
+	"bin": {
+    "ticp": "bin/codeprocessor",
+    "titanium-code-processor":"bin/codeprocessor"
+  },
 	"dependencies": {
 		"uglify-js": "1.2.x",
 		"wrench": "1.3.x",
