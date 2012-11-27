@@ -1,23 +1,42 @@
 /**
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
- * 
+ *
  * Provides a CLI for the code processor unit tests
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
-var CodeProcessor = require('../../lib/CodeProcessor'),
-	Base = require('../../lib/Base');
+var tripwire = require('tripwire'),
+	CodeProcessor = require('../../lib/CodeProcessor'),
+	Base = require('../../lib/Base'),
+	Runtime = require('../../lib/Runtime');
 
 process.on('message', function(message) {
 	var testFilePath = message.file,
 		properties = message.properties,
 		success = false,
-		errorMessage = '';
-	try {
+		errorMessage = '',
+		result,
+		value,
+		tripwireContext = {};
 
+	// Set the execution time limit
+	process.on('uncaughtException', function (e) {
+		if (tripwire.getContext()) {
+			process.send({
+				success: false,
+				errorMessage: 'Execution time limit exceeded'
+			});
+		} else {
+			throw e;
+		}
+		process.exit();
+	});
+	tripwire.resetTripwire(10000, tripwireContext);
+
+	// Run the test
+	try {
 		result = CodeProcessor.process([testFilePath], [], {
-			executionTimeLimit: 60000,
 			exactMode: true
 		});
 		
@@ -37,11 +56,11 @@ process.on('message', function(message) {
 		} else { // Parse non-exception errors
 			result = CodeProcessor.getResults();
 			if (result.errors.length === 1) {
-				errorMessage = 'Error: ' + result.errors[0].name + ': ' + (result.errors[0].data.message ? 
+				errorMessage = 'Error: ' + result.errors[0].name + ': ' + (result.errors[0].data.message ?
 					result.errors[0].data.message :
 					result.errors[0].data.exception._lookupProperty('message').message.value.value);
 				success = properties.hasOwnProperty('negative');
-			} else if (result.errors.length > 1) {				
+			} else if (result.errors.length > 1) {
 				errorMessage = ['Multiple errors: '];
 				result.errors.forEach(function(err) {
 					try {
@@ -61,7 +80,8 @@ process.on('message', function(message) {
 	} catch(e) {
 		errorMessage = '**** Internal error: ' + e.message + '\n' + e.stack;
 	}
-	process.send({ 
+	tripwire.clearTripwire();
+	process.send({
 		success: success,
 		errorMessage: errorMessage
 	});

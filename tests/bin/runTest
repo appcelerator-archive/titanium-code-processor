@@ -58,7 +58,6 @@ logger = new (winston.Logger)({
 try {
 
 	result = CodeProcessor.process([file], [], {
-		executionTimeLimit: 10000,
 		exactMode: true
 	}, logger);
 	if (result && result[0] === 'throw') {
