@@ -2,7 +2,7 @@
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
- * This plugin finds the Titanium APIs that are used.
+ * This plugin finds the Titanium APIs that are used that are not supported on the current platform
  *
  * @module plugins/TiAPIPlatformValidator
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
@@ -16,7 +16,7 @@ var path = require('path'),
 // ******** Plugin API Methods ********
 
 /**
- * Creates an instance of the Titanium Usage Finder plugin
+ * Creates an instance of the Titanium Platform Validator plugin
  *
  * @classdesc Captures and keeps track of Titanium APIs that are used.
  *
