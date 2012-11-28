@@ -33,18 +33,19 @@ All tests passed
 
 #### Section 2
 * ch11/11.2/11.2.1/S11.2.1_A4_T1.js
-	* Not exactly a bug, more something to consider. The Code Processor uses module scope, not global, but the test assumes global scope. Node.js fails this test too for the same reason
+	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
 * ch11/11.2/11.2.1/S11.2.1_A4_T9.js
-	* The failures in this test are from the compatibility (with ECMAScript 3) section of the spec (B3)
-
-#### Section 3
-* ch11/11.3/11.3.1/S11.3.1_A3_T5.js
-* ch11/11.3/11.3.1/S11.3.1_A4_T5.js
-* ch11/11.3/11.3.2/S11.3.2_A3_T5.js
-* ch11/11.3/11.3.2/S11.3.2_A4_T5.js
+	* The failures in this test are from the compatibility (with ECMAScript 3) section of the spec (appendix B)
 
 #### Section 4
-Not Analyzed
+* ch11/11.4/11.4.1/11.4.1-3-a-1-s.js
+	* Same issue as ch11/11.1/11.1.5/11.1.5_6-2-1-s.js
+* ch11/11.4/11.4.1/11.4.1-4.a-8-s.js
+	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js (I think)
+* ch11/11.4/11.4.1/11.4.1-5-a-15-s.js
+* ch11/11.4/11.4.1/11.4.1-5-a-28-s.js
+* ch11/11.4/11.4.1/S11.4.1_A5.js
+* ch11/11.4/11.4.3/S11.4.3_A3.6.js
 
 #### Section 5
 Not Analyzed
