@@ -60,13 +60,14 @@ module.exports.run = function (options) {
 			testFileContent,
 			testFilePath,
 			testFile,
-			child,
 			match,
 			header,
 			properties,
 			testProperties,
 			body,
 			propMatch,
+			child,
+			childTimer,
 			i, len,
 			ast,
 			message;
@@ -79,6 +80,7 @@ module.exports.run = function (options) {
 					console.log('Failed tests:\n' + testsFailed.join('\n') + '\n');
 				}
 				wrench.rmdirSyncRecursive(tempDir);
+				process.exit();
 			}
 		} else if (testFileNameRegex.test(file)) {
 			
@@ -149,7 +151,18 @@ module.exports.run = function (options) {
 				} else {
 					child = fork(path.resolve(path.join(__dirname, 'runner')));
 					child.send({ file: testFilePath, properties: testProperties});
+					childTimer = setTimeout(function () {
+						total++;
+						console.log('FAIL (' + total + ' of ' + numTests +', ' +
+							getPrettyTime((numTests - total) * (Date.now() - startTime) / total) + ' remaining, ' +
+							Math.floor(100 * successes / total) + '% pass rate so far): ' +
+							testFilePath + '\n   Execution time limit exceeded');
+						testsFailed.push(file);
+						child.removeAllListeners('message');
+						setTimeout(processFile, 0);
+					}, 10000);
 					child.on('message', function(message) {
+						clearTimeout(childTimer);
 						total++;
 						if (message.success) {
 							successes++;

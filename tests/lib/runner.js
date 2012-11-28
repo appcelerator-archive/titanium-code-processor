@@ -6,8 +6,7 @@
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
-var tripwire = require('tripwire'),
-	CodeProcessor = require('../../lib/CodeProcessor'),
+var CodeProcessor = require('../../lib/CodeProcessor'),
 	Base = require('../../lib/Base'),
 	Runtime = require('../../lib/Runtime');
 
@@ -17,22 +16,7 @@ process.on('message', function(message) {
 		success = false,
 		errorMessage = '',
 		result,
-		value,
-		tripwireContext = {};
-
-	// Set the execution time limit
-	process.on('uncaughtException', function (e) {
-		if (tripwire.getContext()) {
-			process.send({
-				success: false,
-				errorMessage: 'Execution time limit exceeded'
-			});
-		} else {
-			throw e;
-		}
-		process.exit();
-	});
-	tripwire.resetTripwire(10000, tripwireContext);
+		value;
 
 	// Run the test
 	try {
@@ -80,7 +64,6 @@ process.on('message', function(message) {
 	} catch(e) {
 		errorMessage = '**** Internal error: ' + e.message + '\n' + e.stack;
 	}
-	tripwire.clearTripwire();
 	process.send({
 		success: success,
 		errorMessage: errorMessage
