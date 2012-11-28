@@ -42,10 +42,6 @@ All tests passed
 	* Same issue as ch11/11.1/11.1.5/11.1.5_6-2-1-s.js
 * ch11/11.4/11.4.1/11.4.1-4.a-8-s.js
 	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js (I think)
-* ch11/11.4/11.4.1/11.4.1-5-a-15-s.js
-* ch11/11.4/11.4.1/11.4.1-5-a-28-s.js
-* ch11/11.4/11.4.1/S11.4.1_A5.js
-* ch11/11.4/11.4.3/S11.4.3_A3.6.js
 
 #### Section 5
 Not Analyzed
