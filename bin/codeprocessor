@@ -181,7 +181,7 @@ if (/\.js$/.test(projectRoot)) {
 		process.exit(1);
 	} else {
 		if (logger) {
-			logger.info('Analyzing project');
+			logger.info('Analyzing project at "' + projectRoot + '"');
 		}
 		async.series([
 			function (next) {
