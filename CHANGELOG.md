@@ -1,3 +1,6 @@
+## 0.1.7 (28 November 2012)
+This is a minor release with slightly tweaked output to aid in debugging, and a new document for tracking the status of unit tests
+
 ## 0.1.6 (26 November 2012)
 
 ### New Features
