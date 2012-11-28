@@ -37,6 +37,30 @@ All tests passed
 * ch11/11.2/11.2.1/S11.2.1_A4_T9.js
 	* The failures in this test are from the compatibility (with ECMAScript 3) section of the spec (B3)
 
+#### Section 3
+* ch11/11.3/11.3.1/S11.3.1_A3_T5.js
+* ch11/11.3/11.3.1/S11.3.1_A4_T5.js
+* ch11/11.3/11.3.2/S11.3.2_A3_T5.js
+* ch11/11.3/11.3.2/S11.3.2_A4_T5.js
+
+#### Section 4
+Not Analyzed
+
+#### Section 5
+Not Analyzed
+
+#### Section 6
+Not Analyzed
+
+#### Section 7
+Not Analyzed
+
+#### Section 8
+Not Analyzed
+
+#### Section 9
+Not Analyzed
+
 ### Chapter 12
 Not Analyzed
 
