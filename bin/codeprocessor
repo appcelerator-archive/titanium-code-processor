@@ -210,7 +210,7 @@ if (/\.js$/.test(projectRoot)) {
 				}
 			} else {
 				tasks.modules = function (next) {
-					exec('titanium module -o json --project-dir ' + projectRoot, function (err, stdout) {
+					exec('titanium module -o json --project-dir "' + projectRoot + '"', function (err, stdout) {
 						if (err) {
 							next(err);
 						} else {
@@ -219,7 +219,7 @@ if (/\.js$/.test(projectRoot)) {
 					});
 				};
 				tasks.project = function (next) {
-					exec('titanium project -o json --project-dir ' + projectRoot, function (err, stdout) {
+					exec('titanium project -o json --project-dir "' + projectRoot + '"', function (err, stdout) {
 						if (err) {
 							next(err);
 						} else {
