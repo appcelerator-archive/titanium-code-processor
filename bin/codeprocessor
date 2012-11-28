@@ -188,7 +188,7 @@ if (/\.js$/.test(projectRoot)) {
 				exec('titanium', next);
 			},
 			function (next) {
-				exec('titanium project --project-dir ' + projectRoot, next);
+				exec('titanium project --project-dir "' + projectRoot + '"', next);
 			}
 		], function (err) {
 			var tasks = {
