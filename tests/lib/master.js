@@ -83,7 +83,8 @@ module.exports.run = function (cluster, options) {
 				console.log('\nAll tests finished in ' + getPrettyTime(Date.now() - startTime) + '. ' +
 					successes + ' out of ' + total + ' tests (' + Math.floor(100 * successes / total) + '%) passed.\n');
 				if (testsFailed.length) {
-					console.log('Failed tests:\n' + testsFailed.join('\n') + '\n');
+					console.log(testsFailed.length + ' test' + (testsFailed.length === 1 ? '' : 's') + ' failed:\n' +
+						testsFailed.sort().join('\n') + '\n');
 				}
 				wrench.rmdirSyncRecursive(tempDir);
 				process.exit();
