@@ -43,17 +43,13 @@ All tests passed
 * ch11/11.4/11.4.1/11.4.1-4.a-8-s.js
 	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js (I think)
 
-#### Section 5
-Not Analyzed
-
 #### Section 6
-Not Analyzed
-
-#### Section 7
-Not Analyzed
+* ch11/11.6/11.6.1/S11.6.1_A2.2_T2.js
+	* This is a legitimate bug, but since it only affects exact mode, I'm ignoring it for now
 
 #### Section 8
-Not Analyzed
+* ch11/11.8/11.8.6/S11.8.6_A6_T3.js
+	* This bug is tricky cause it relates to object prototypes and the recusrive referencing issue. The seemingly obvious fix would break other tests.
 
 #### Section 9
 Not Analyzed
