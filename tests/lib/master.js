@@ -107,7 +107,7 @@ module.exports.run = function (cluster, options) {
 					worker.destroy();
 					processFile(createWorker());
 				}, 0);
-			}, 10000);
+			}, 30000);
 		} else {
 			setTimeout(function () {
 				processFile(worker);
