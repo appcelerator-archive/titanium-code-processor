@@ -16,7 +16,12 @@ module.exports.run = function (cluster, options) {
 	var test262Dir = options['test-262-dir'],
 		multiThreaded = options['multi-threaded'],
 		chapter = options.chapter,
-		section = options.section,
+		section,
+		subSection,
+		match,
+		chapterRegex = /^([0-9]*)$/,
+		sectionRegex = /^([0-9]*)\.([0-9]*)$/,
+		subSectionRegex = /^([0-9]*)\.([0-9]*)\.([0-9]*)$/,
 		fileList = wrench.readdirSyncRecursive(path.join(test262Dir, 'test', 'suite')),
 		prunedFileList = [],
 		numTests,
@@ -27,7 +32,8 @@ module.exports.run = function (cluster, options) {
 		testsFailed = [],
 		tempDir = path.resolve(path.join('/', 'tmp', 'titanium-code-processor')),
 		i, len = multiThreaded ? require('os').cpus().length : 1,
-		printFinishedCountdown = len; // Most laptops don't like running at 100%
+		printFinishedCountdown = len,
+		chapterPath;
 	
 	function getPrettyTime(diff) {
 		var elapsedTime = new Date(diff),
@@ -109,27 +115,53 @@ module.exports.run = function (cluster, options) {
 		}
 	}
 	
-	// Parse the chapter
+	// Parse the chapter, section, and subsection
 	if (chapter) {
-		chapter = parseInt(chapter, 10);
-		chapter = (chapter < 10 ? '0' : '') + chapter;
-		if (!existsSync(path.join(test262Dir, 'test', 'suite', 'ch' + chapter))) {
-			console.error('Invalid chapter number "' + chapter + '"');
+		chapter += '';
+		match = chapter.match(chapterRegex);
+		if (!match) {
+			match = chapter.match(sectionRegex);
+			if (!match) {
+				match = chapter.match(subSectionRegex);
+				if (!match) {
+					console.error('Invalid chapter ' + chapter);
+					process.exit(1);
+				}
+			}
+		}
+
+		chapter = match[1];
+		chapterPath = 'ch' + (chapter < 10 ? '0' : '') + chapter;
+		if (!existsSync(path.join(test262Dir, 'test', 'suite', chapterPath))) {
+			console.error('Invalid chapter "' + chapter + '"\n');
 			process.exit();
 		}
-		testFileNameRegex = RegExp('^ch' + chapter + '[\\/\\\\].*\\.js$');
-	} else if (section) {
-		chapter = parseInt(section, 10);
-		chapter = (chapter < 10 ? '0' : '') + chapter;
-		if (!existsSync(path.join(test262Dir, 'test', 'suite', 'ch' + chapter))) {
-			console.error('Invalid chapter number "' + chapter + '"\n');
-			process.exit();
+		
+		if (match[2]) {
+			section = match[2];
+			chapterPath = path.join(chapterPath, chapter + '.' + section);
+			if (!existsSync(path.join(test262Dir, 'test', 'suite', chapterPath))) {
+				console.error('Invalid section "' + section + '"\n');
+				process.exit();
+			}
+
 		}
-		if (!existsSync(path.join(test262Dir, 'test', 'suite', 'ch' + chapter, section))) {
-			console.error('Invalid section "' + section + '"\n');
-			process.exit();
+		if (match[3]) {
+			subSection = match[3];
+			chapterPath = path.join(chapterPath, chapter + '.' + section + '.' + subSection);
+			if (!existsSync(path.join(test262Dir, 'test', 'suite', chapterPath))) {
+				console.error('Invalid sub section "' + subSection + '"\n');
+				process.exit();
+			}
 		}
-		testFileNameRegex = RegExp('^ch' + chapter + '[\\/\\\\]' + section + '[\\/\\\\].*\\.js$');
+		testFileNameRegex = '^ch' + (chapter < 10 ? '0' : '') + chapter + '[\\/\\\\]';
+		if (section) {
+			testFileNameRegex += chapter + '\\.' + section + '[\\/\\\\]';
+		}
+		if (subSection) {
+			testFileNameRegex += chapter + '\\.' + section + '\\.' + subSection + '[\\/\\\\]';
+		}
+		testFileNameRegex = RegExp(testFileNameRegex + '.*\\.js$');
 	} else {
 		testFileNameRegex = /^ch[0-9][0-68-9][\/\\].*\.js$/;
 	}
