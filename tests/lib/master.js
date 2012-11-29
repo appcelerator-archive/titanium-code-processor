@@ -175,8 +175,7 @@ module.exports.run = function (cluster, options) {
 	numTests = prunedFileList.length;
 	
 	// Run the tests
-	console.log('\nRunning ' + numTests + ' tests from ' +
-		(section ? 'Section ' + section : chapter ? 'Chapter ' + chapter : 'all chapters') +
+	console.log('\nRunning ' + numTests + ' tests from ' + (options.chapter ? 'Chapter ' + options.chapter : 'all chapters') +
 		' using ' + (len > 1 ? len + ' threads' : '1 thread') + '\n');
 	for(i = 0; i < len; i++) {
 		processFile(createWorker());
