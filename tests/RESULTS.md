@@ -51,6 +51,18 @@ All tests passed
 * ch11/11.8/11.8.6/S11.8.6_A6_T3.js
 	* This bug is tricky cause it relates to object prototypes and the recusrive referencing issue. The seemingly obvious fix would break other tests.
 
+#### Section 13
+* ch11/11.13/11.13.1/11.13.1-4-1.js
+	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
+* ch11/11.13/11.13.1/11.13.1-4-27-s.js
+	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
+* ch11/11.13/11.13.1/11.13.1-4-28-s.js
+	* I have no idea what this test is doing. It starts by throwing an error, even though the code it wants to test is after the throw
+* ch11/11.13/11.13.1/11.13.1-4-29-s.js
+	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
+* ch11/11.13/11.13.1/11.13.1-4-3-s.js
+	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
+
 #### Section 9
 Not Analyzed
 
