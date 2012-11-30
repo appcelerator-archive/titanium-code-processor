@@ -15,7 +15,7 @@ var fs = require('fs'),
 module.exports.run = function (cluster, options) {
 	var test262Dir = options['test-262-dir'],
 		multiThreaded = options['multi-threaded'],
-		chapter = options.chapter,
+		chapter = options.chapter + '',
 		section,
 		subSection,
 		match,
@@ -176,7 +176,7 @@ module.exports.run = function (cluster, options) {
 	numTests = prunedFileList.length;
 	
 	// Run the tests
-	console.log('\nRunning ' + numTests + ' tests from ' + (options.chapter ? 'Chapter ' + options.chapter.replace(/\//g, '.') : 'all chapters') +
+	console.log('\nRunning ' + numTests + ' tests from ' + (options.chapter ? 'Chapter ' + options.chapter.toString().replace(/\//g, '.') : 'all chapters') +
 		' using ' + (len > 1 ? len + ' threads' : '1 thread') + '\n');
 	for(i = 0; i < len; i++) {
 		processFile(createWorker());

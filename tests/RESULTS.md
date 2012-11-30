@@ -111,27 +111,27 @@ All tests passed
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-14-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
-* ch12/12.2/12.2.1/12.2.1-3-s.js
-	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
-* ch12/12.2/12.2.1/12.2.1-28-s.js
-	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
-* ch12/12.2/12.2.1/12.2.1-25-s.js
+* ch12/12.2/12.2.1/12.2.1-23-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-24-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
-* ch12/12.2/12.2.1/12.2.1-27-s.js
-	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
-* ch12/12.2/12.2.1/12.2.1-23-s.js
+* ch12/12.2/12.2.1/12.2.1-25-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-26-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
+* ch12/12.2/12.2.1/12.2.1-27-s.js
+	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
+* ch12/12.2/12.2.1/12.2.1-28-s.js
+	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-29-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
-* ch12/12.2/12.2.1/12.2.1-32-s.js
+* ch12/12.2/12.2.1/12.2.1-3-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-30-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-31-s.js
+	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
+* ch12/12.2/12.2.1/12.2.1-32-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-33-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
@@ -191,44 +191,18 @@ All tests passed
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.10/12.10.1/12.10.1-9-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
-* ch12/12.10/S12.10_A1.12_T4.js
-	* This bug is really esoteric and very tricky to fix. Leaving it alone for now. Somehow we have to save the modified state of with() statements for later use in closures.
-* ch12/12.10/S12.10_A1.12_T5.js
-	* Same issue as ch12/12.10/S12.10_A1.12_T4.js
-* ch12/12.10/S12.10_A1.7_T4.js
-	* Not evaluating since with is discouraged and relatively unknown
-* ch12/12.10/S12.10_A1.7_T5.js
-	* Not evaluating since with is discouraged and relatively unknown
-* ch12/12.10/S12.10_A1.8_T4.js
-	* Not evaluating since with is discouraged and relatively unknown
-* ch12/12.10/S12.10_A1.8_T5.js
-	* Not evaluating since with is discouraged and relatively unknown
-* ch12/12.10/S12.10_A3.12_T4.js
-	* Not evaluating since with is discouraged and relatively unknown
-* ch12/12.10/S12.10_A3.12_T5.js
-	* Not evaluating since with is discouraged and relatively unknown
-* ch12/12.10/S12.10_A3.3_T4.js
-	* Not evaluating since with is discouraged and relatively unknown
-* ch12/12.10/S12.10_A3.7_T4.js
-	* Not evaluating since with is discouraged and relatively unknown
-* ch12/12.10/S12.10_A3.7_T5.js
-	* Not evaluating since with is discouraged and relatively unknown
-* ch12/12.10/S12.10_A3.8_T4.js
-	* Not evaluating since with is discouraged and relatively unknown
-* ch12/12.10/S12.10_A3.8_T5.js
-	* Not evaluating since with is discouraged and relatively unknown
 
 #### Section 11
-* ch12/12.11/S12.11_A2_T1.js
+All tests passed
 
 #### Section 12
-Not Analyzed
+All tests passed
 
 #### Section 13
-Not Analyzed
+All tests passed
 
 #### Section 14
-Not Analyzed
+All tests passed
 
 ### Chapter 13
 Not Analyzed
