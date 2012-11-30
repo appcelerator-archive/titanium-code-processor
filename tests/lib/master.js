@@ -20,8 +20,8 @@ module.exports.run = function (cluster, options) {
 		subSection,
 		match,
 		chapterRegex = /^([0-9]*)$/,
-		sectionRegex = /^([0-9]*)\.([0-9]*)$/,
-		subSectionRegex = /^([0-9]*)\.([0-9]*)\.([0-9]*)$/,
+		sectionRegex = /^([0-9]*)\/([0-9]*)$/,
+		subSectionRegex = /^([0-9]*)\/([0-9]*)\/([0-9]*)$/,
 		fileList = wrench.readdirSyncRecursive(path.join(test262Dir, 'test', 'suite')),
 		prunedFileList = [],
 		numTests,
@@ -176,7 +176,7 @@ module.exports.run = function (cluster, options) {
 	numTests = prunedFileList.length;
 	
 	// Run the tests
-	console.log('\nRunning ' + numTests + ' tests from ' + (options.chapter ? 'Chapter ' + options.chapter : 'all chapters') +
+	console.log('\nRunning ' + numTests + ' tests from ' + (options.chapter ? 'Chapter ' + options.chapter.replace(/\//g, '.') : 'all chapters') +
 		' using ' + (len > 1 ? len + ' threads' : '1 thread') + '\n');
 	for(i = 0; i < len; i++) {
 		processFile(createWorker());

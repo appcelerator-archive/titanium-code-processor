@@ -160,19 +160,66 @@ All tests passed
 	* Same issue as ch12/12.6/12.6.1/S12.6.1_A5.js
 
 #### Section 7
-Not Analyzed
+* ch12/12.7/S12.7_A6.js
+	* This is technically a bug in uglify. continue/break statements throw a syntax error if not inside a loop. Uglify normally catches these, but missed this edge case
 
 #### Section 8
-Not Analyzed
+* ch12/12.8/S12.8_A6.js
+	* Same issue as ch12/12.7/S12.7_A6.js
 
 #### Section 9
-Not Analyzed
+All tests passed
 
 #### Section 10
-Not Analyzed
+* ch12/12.10/12.10.1/12.10.1-1-s.js
+	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
+* ch12/12.10/12.10.1/12.10.1-14-s.js
+	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
+* ch12/12.10/12.10.1/12.10.1-15-s.js
+	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
+* ch12/12.10/12.10.1/12.10.1-16-s.js
+	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
+* ch12/12.10/12.10.1/12.10.1-2-s.js
+	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
+* ch12/12.10/12.10.1/12.10.1-3-s.js
+	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
+* ch12/12.10/12.10.1/12.10.1-4-s.js
+	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js, although this one is tricker since it's part of a Function call. Maybe we could insert "use strict"; where appropriate?
+* ch12/12.10/12.10.1/12.10.1-7-s.js
+	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
+* ch12/12.10/12.10.1/12.10.1-8-s.js
+	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
+* ch12/12.10/12.10.1/12.10.1-9-s.js
+	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
+* ch12/12.10/S12.10_A1.12_T4.js
+	* This bug is really esoteric and very tricky to fix. Leaving it alone for now. Somehow we have to save the modified state of with() statements for later use in closures.
+* ch12/12.10/S12.10_A1.12_T5.js
+	* Same issue as ch12/12.10/S12.10_A1.12_T4.js
+* ch12/12.10/S12.10_A1.7_T4.js
+	* Not evaluating since with is discouraged and relatively unknown
+* ch12/12.10/S12.10_A1.7_T5.js
+	* Not evaluating since with is discouraged and relatively unknown
+* ch12/12.10/S12.10_A1.8_T4.js
+	* Not evaluating since with is discouraged and relatively unknown
+* ch12/12.10/S12.10_A1.8_T5.js
+	* Not evaluating since with is discouraged and relatively unknown
+* ch12/12.10/S12.10_A3.12_T4.js
+	* Not evaluating since with is discouraged and relatively unknown
+* ch12/12.10/S12.10_A3.12_T5.js
+	* Not evaluating since with is discouraged and relatively unknown
+* ch12/12.10/S12.10_A3.3_T4.js
+	* Not evaluating since with is discouraged and relatively unknown
+* ch12/12.10/S12.10_A3.7_T4.js
+	* Not evaluating since with is discouraged and relatively unknown
+* ch12/12.10/S12.10_A3.7_T5.js
+	* Not evaluating since with is discouraged and relatively unknown
+* ch12/12.10/S12.10_A3.8_T4.js
+	* Not evaluating since with is discouraged and relatively unknown
+* ch12/12.10/S12.10_A3.8_T5.js
+	* Not evaluating since with is discouraged and relatively unknown
 
 #### Section 11
-Not Analyzed
+* ch12/12.11/S12.11_A2_T1.js
 
 #### Section 12
 Not Analyzed
