@@ -15,7 +15,7 @@ var fs = require('fs'),
 module.exports.run = function (cluster, options) {
 	var test262Dir = options['test-262-dir'],
 		multiThreaded = options['multi-threaded'],
-		chapter = options.chapter + '',
+		chapter = options.chapter,
 		section,
 		subSection,
 		match,
