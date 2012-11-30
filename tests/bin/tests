@@ -32,12 +32,7 @@ var path = require('path'),
 		.option('chapter', {
 			abbr: 'c',
 			metavar: 'CHAPTER',
-			help: 'The chapter number to test. Tests all chapters if unspecified.'
-		})
-		.option('section', {
-			abbr: 's',
-			metavar: 'SECTION',
-			help: 'The chapter and section number to test, e.g "10.4". Tests all chapters if unspecified.'
+			help: 'The chapter number to test in x, x/x, or x/x/x format. Tests all chapters if unspecified.'
 		})
 		.option('test-node', {
 			abbr: 'n',

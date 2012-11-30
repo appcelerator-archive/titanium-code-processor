@@ -209,7 +209,7 @@ function processFile(file, createExports) {
 		
 		// Read in the file and generate the AST
 		root = AST.parse(file);
-		if (root) {
+		if (!root.syntaxError) {
 	
 			// Create the context, checking for strict mode
 			context = Base.createGlobalContext(root, RuleProcessor.isBlockStrict(root[1]));
@@ -229,6 +229,12 @@ function processFile(file, createExports) {
 			// Process the code
 			results = RuleProcessor.processRule(root);
 			Runtime.exitContext();
+		} else {
+			Base.handleRecoverableNativeException('SyntaxError', root.message, {
+				file: file,
+				line: root.line,
+				column: root.col
+			});
 		}
 		
 		// Exit the context and get the results
