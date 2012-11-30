@@ -205,8 +205,8 @@ All tests passed
 All tests passed
 
 ### Chapter 13
-Preliminary (1 minute 29 seconds. 203 out of 230 tests (88%) passed)
 
+#### Section 0
 * ch13/13.0/13.0-15-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch13/13.0/13.0-16-s.js
@@ -215,29 +215,13 @@ Preliminary (1 minute 29 seconds. 203 out of 230 tests (88%) passed)
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch13/13.0/13.0-8-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
-* ch13/13.0/S13_A13_T3.js
-* ch13/13.1/13.1-10-s.js
-* ch13/13.1/13.1-23-s.js
-* ch13/13.1/13.1-24-s.js
-* ch13/13.1/13.1-25-s.js
-* ch13/13.1/13.1-26-s.js
-* ch13/13.1/13.1-27-s.js
-* ch13/13.1/13.1-28-s.js
-* ch13/13.1/13.1-29-s.js
-* ch13/13.1/13.1-3-7.js
-* ch13/13.1/13.1-30-s.js
-* ch13/13.1/13.1-31-s.js
-* ch13/13.1/13.1-32-s.js
-* ch13/13.1/13.1-33-s.js
-* ch13/13.1/13.1-34-s.js
-* ch13/13.1/13.1-40-s.js
-* ch13/13.1/13.1-5-s.js
-* ch13/13.1/13.1-6-s.js
-* ch13/13.1/13.1-7-s.js
-* ch13/13.1/13.1-8-s.js
-* ch13/13.1/13.1-9-s.js
+
+#### Section 1
+All tests passed
+
+#### Section 2
 * ch13/13.2/13.2-18-1.js
-* ch13/13.2/S13.2.1_A5_T1.js
+	* Very esoteric and non-obvious, so not fixing for now
 
 ### Chapter 14
 Preliminary (9 seconds. 20 out of 24 tests (83%) passed)
