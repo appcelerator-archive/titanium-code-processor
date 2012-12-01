@@ -1,3 +1,17 @@
+## 0.1.9 (30 November 2012)
+
+### Bug Fixes
+* Fixed a lot of bugs necessary to get the chapter 11 - 14 unit tests passing
+* Fixed module validation so that it displays an intelligible error when a specified module version is missing
+* Fixed an issue with properly setting up the context stack for queued functions
+	* This fixes queued functions with a return statement causing a spurious "return not valid outside of functions" exception
+
+### New Features
+* Unknown callback detector plugin
+	* Detects instances where an unknown value is passed when a function is expected
+	* This is useful in determining why a block of code is not being analyzed
+* More advanced unit test harness implemented using node cluster
+
 ## 0.1.8 (28 November 2012)
 
 ### Bug Fixes
