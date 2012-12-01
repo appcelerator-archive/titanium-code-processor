@@ -150,12 +150,17 @@ TiFunction.prototype.call = function call(thisVal, args) {
 		value = new Base.UnknownType(),
 		callArgs;
 	for(i = 0, len = args.length; i < len; i++) {
-		if (Base.isCallable(args[i]) && Base.type(args[i]) !== 'Unknown') {
-			callArgs = [];
-			for(j = 0; j < args[i].get('length').value; j++) {
-				callArgs[j] = new Base.UnknownType();
+		if (Base.type(args[i]) !== 'Unknown') {
+			if (Base.isCallable(args[i])) {
+				callArgs = [];
+				for(j = 0; j < args[i].get('length').value; j++) {
+					callArgs[j] = new Base.UnknownType();
+				}
+				Runtime.queueFunction(args[i], new Base.UndefinedType(), callArgs, true);
 			}
-			Runtime.queueFunction(args[i], new Base.UndefinedType(), callArgs, true);
+		} else if (this._function.parameters[i] && this._function.parameters[i].type === 'Function') {
+			Runtime.fireEvent('unknownCallback', 'An unknown value was passed to ' + this._function.name +
+				'. Some source code may not be analyzed.');
 		}
 	}
 	if (this._returnTypes && this._returnTypes.length === 1) {
