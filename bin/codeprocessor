@@ -477,6 +477,18 @@ if (/\.js$/.test(projectRoot)) {
 									console.log(table.toString() + '\n');
 								}
 							}
+							if (results.plugins['unknown-callback-detector'] && results.plugins['unknown-callback-detector'].length) {
+								console.log('Unknown Callback Detector');
+								table = new Table({
+									head: ['File', 'Line']
+								});
+								entries = results.plugins['unknown-callback-detector'];
+								for (i = 0, len = entries.length; i < len; i++) {
+									entry = entries[i];
+									table.push([path.relative(projectRoot, entry.file), entry.line]);
+								}
+								console.log(table.toString() + '\n');
+							}
 						}
 						
 						// Send the results to Appcelerator, if requested
