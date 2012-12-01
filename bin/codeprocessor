@@ -295,6 +295,10 @@ if (/\.js$/.test(projectRoot)) {
 											if (moduleEntry) {
 												if (version) {
 													moduleEntry = moduleEntry[version];
+													if (!moduleEntry) {
+														logger.error('Version ' + version + ' of ' + name + ' does not exist');
+														process.exit(1);
+													}
 												} else {
 													moduleEntry = moduleEntry[Object.keys(moduleEntry).sort().pop()];
 												}
