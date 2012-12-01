@@ -195,6 +195,8 @@ SetIntervalFunc.prototype.call = function call(thisVal, args) {
 			
 		// Call the function, discarding the result
 		Runtime.queueFunction(func, new Base.UndefinedType(), [], true);
+	} else {
+		Runtime.fireEvent('unknownCallback', 'An unknown value was passed to setInterval. Some source code may not be analyzed.');
 	}
 	
 	return new Base.UndefinedType();
@@ -222,6 +224,8 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 			
 		// Call the function, discarding the result
 		Runtime.queueFunction(func, new Base.UndefinedType(), [], true);
+	} else {
+		Runtime.fireEvent('unknownCallback', 'An unknown value was passed to setTimeout. Some source code may not be analyzed.');
 	}
 	
 	return new Base.UndefinedType();
