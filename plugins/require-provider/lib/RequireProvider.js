@@ -75,12 +75,8 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 	name = Base.toString(name);
 	if (Base.type(name) !== 'String') {
 		eventDescription = 'A value that could not be evaluated was passed to require';
-		Runtime.fireEvent('requireUnresolved', eventDescription, {
-			name: '<Could not evaluate require path>'
-		});
-		Runtime.reportWarning('requireUnresolved', eventDescription, {
-			name: '<Could not evaluate require path>'
-		});
+		Runtime.fireEvent('requireUnresolved', eventDescription);
+		Runtime.reportWarning('requireUnresolved', eventDescription);
 		return result;
 	}
 	name = name.value;

@@ -247,7 +247,8 @@ if (/\.js$/.test(projectRoot)) {
 						entries,
 						table,
 						modules = {},
-						i, len;
+						i, len,
+						pluginResults;
 					if (err) {
 						console.error(err);
 					} else {
@@ -353,140 +354,165 @@ if (/\.js$/.test(projectRoot)) {
 								}
 								console.log(table.toString() + '\n');
 							}
-							if (results.plugins['analysis-coverage']) {
+							pluginResults = results.plugins['analysis-coverage'];
+							if (pluginResults) {
 								console.log('Analysis Coverage');
+								console.log(' Files Not Analyzed');
 								table = new Table({
-									head: ['File', 'Nodes Visited', 'Total Nodes']
+									head: ['File']
 								});
-								entries = Object.keys(results.plugins['analysis-coverage'].details);
+								entries = pluginResults.filesSkipped;
 								for (i = 0, len = entries.length; i < len; i++) {
-									entry = results.plugins['analysis-coverage'].details[entries[i]];
-									table.push([path.relative(projectRoot, entries[i]), entry.numNodesVisited, entry.numTotalNodes]);
+									table.push([path.relative(projectRoot, pluginResults.filesSkipped[i])]);
 								}
-								console.log(table.toString() + '\n Summary: ' + results.plugins['analysis-coverage'].numNodesVisited +
-									' out of ' + results.plugins['analysis-coverage'].numTotalNodes + ' nodes visited\n');
+								console.log(table.toString() + '\n ' + pluginResults.numFilesSkipped +
+									' files skipped out of ' + pluginResults.numTotalFiles + ' total files\n');
+								console.log(' File Content Coverage');
+								table = new Table({
+									head: ['File', 'Nodes Visited', 'Nodes Skipped', 'Total Nodes']
+								});
+								entries = Object.keys(pluginResults.details);
+								for (i = 0, len = entries.length; i < len; i++) {
+									entry = pluginResults.details[entries[i]];
+									table.push([path.relative(projectRoot, entries[i]), entry.numNodesVisited,
+										entry.numNodesSkipped, entry.numTotalNodes]);
+								}
+								console.log(table.toString() + '\n ' +
+									pluginResults.numNodesVisited + ' nodes visited and ' +
+									pluginResults.numNodesSkipped + ' nodes skipped out of ' +
+									pluginResults.numTotalNodes + ' nodes total\n');
 							}
-							if (results.plugins['ti-api-usage-finder']) {
-								entries = Object.keys(results.plugins['ti-api-usage-finder']);
+							pluginResults = results.plugins['ti-api-usage-finder'];
+							if (pluginResults) {
+								entries = Object.keys(pluginResults);
 								if (entries.length) {
 									console.log('Titanium API Usage');
 									table = new Table({
 										head: ['API', 'Num References']
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
-										table.push([entries[i], results.plugins['ti-api-usage-finder'][entries[i]]]);
+										table.push([entries[i], pluginResults[entries[i]]]);
 									}
 									console.log(table.toString() + '\n');
 								}
 							}
-							if (results.plugins['require-finder']) {
-								entries = Object.keys(results.plugins['require-finder'].resolved);
+							pluginResults = results.plugins['require-finder'];
+							if (pluginResults) {
+								entries = Object.keys(pluginResults.resolved);
 								if (entries.length) {
 									console.log('Required Modules Resolved');
 									table = new Table({
-										head: ['File Name', 'File', 'Line']
+										head: ['Required File Name', 'Source File', 'Line']
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
-										entry = results.plugins['require-finder'].resolved[entries[i]];
+										entry = pluginResults.resolved[entries[i]];
 										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.file), entry.line]);
 									}
 									console.log(table.toString() + '\n');
 								}
-								entries = Object.keys(results.plugins['require-finder'].unresolved);
+								entries = Object.keys(pluginResults.unresolved);
 								if (entries.length) {
 									console.log('Required Modules Unresolved');
 									table = new Table({
-										head: ['File Name', 'File', 'Line']
+										head: ['Required File Name', 'Source File', 'Line']
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
-										entry = results.plugins['require-finder'].unresolved[entries[i]];
-										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.file), entry.line]);
+										entry = pluginResults.unresolved[entries[i]];
+										table.push([entry.data.name ? path.relative(projectRoot, entry.data.name) :
+											'<Could not resolve name>', path.relative(projectRoot, entry.file), entry.line]);
 									}
 									console.log(table.toString() + '\n');
 								}
-								entries = Object.keys(results.plugins['require-finder'].missing);
+								entries = Object.keys(pluginResults.missing);
 								if (entries.length) {
 									console.log('Required Modules Missing');
 									table = new Table({
-										head: ['File Name', 'File', 'Line']
+										head: ['Required File Name', 'Source File', 'Line']
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
-										entry = results.plugins['require-finder'].missing[entries[i]];
+										entry = pluginResults.missing[entries[i]];
 										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.file), entry.line]);
 									}
 									console.log(table.toString() + '\n');
 								}
 							}
-							if (results.plugins['ti-include-finder']) {
-								entries = Object.keys(results.plugins['ti-include-finder'].resolved);
+							pluginResults = results.plugins['ti-include-finder'];
+							if (pluginResults) {
+								entries = Object.keys(pluginResults.resolved);
 								if (entries.length) {
 									console.log('Ti.include Files Resolved');
 									table = new Table({
-										head: ['File Name', 'File', 'Line']
+										head: ['Included File Name', 'Source File', 'Line']
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
-										entry = results.plugins['ti-include-finder'].resolved[entries[i]];
-										table.push([path.relative(projectRoot, entry.data.file), path.relative(projectRoot, entry.file), entry.line]);
+										entry = pluginResults.resolved[entries[i]];
+										table.push([entry.data.file ? path.relative(projectRoot, entry.data.file) :
+											'<Could not resolve name>', path.relative(projectRoot, entry.file), entry.line]);
 									}
 									console.log(table.toString() + '\n');
 								}
-								entries = Object.keys(results.plugins['ti-include-finder'].unresolved);
+								entries = Object.keys(pluginResults.unresolved);
 								if (entries.length) {
 									console.log('Ti.include Files Unresolved');
 									table = new Table({
-										head: ['File Name', 'File', 'Line']
+										head: ['Included File Name', 'Source File', 'Line']
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
-										entry = results.plugins['ti-include-finder'].unresolved[entries[i]];
-										table.push([path.relative(projectRoot, entry.data.file), path.relative(projectRoot, entry.file), entry.line]);
+										entry = pluginResults.unresolved[entries[i]];
+										table.push([entry.data.file ? path.relative(projectRoot, entry.data.file) :
+											'<Could not resolve name>', path.relative(projectRoot, entry.file), entry.line]);
 									}
 									console.log(table.toString() + '\n');
 								}
-								entries = Object.keys(results.plugins['ti-include-finder'].missing);
+								entries = Object.keys(pluginResults.missing);
 								if (entries.length) {
 									console.log('Ti.include Files Missing');
 									table = new Table({
-										head: ['File Name', 'File', 'Line']
+										head: ['Included File Name', 'Source File', 'Line']
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
-										entry = results.plugins['ti-include-finder'].missing[entries[i]];
-										table.push([path.relative(projectRoot, entry.data.file), path.relative(projectRoot, entry.file), entry.line]);
+										entry = pluginResults.missing[entries[i]];
+										table.push([entry.data.file ? path.relative(projectRoot, entry.data.file) :
+											'<Could not resolve name>', path.relative(projectRoot, entry.file), entry.line]);
 									}
 									console.log(table.toString() + '\n');
 								}
 							}
-							if (results.plugins['ti-api-deprecation-finder']) {
-								entries = Object.keys(results.plugins['ti-api-deprecation-finder']);
+							pluginResults = results.plugins['ti-api-deprecation-finder'];
+							if (pluginResults) {
+								entries = Object.keys(pluginResults);
 								if (entries.length) {
 									console.log('Deprecated Titanium API References');
 									table = new Table({
 										head: ['API', 'Num References']
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
-										table.push([entries[i], results.plugins['ti-api-deprecation-finder'][entries[i]]]);
+										table.push([entries[i], pluginResults[entries[i]]]);
 									}
 									console.log(table.toString() + '\n');
 								}
 							}
-							if (results.plugins['ti-api-platform-validator']) {
-								entries = Object.keys(results.plugins['ti-api-platform-validator']);
+							pluginResults = results.plugins['ti-api-platform-validator'];
+							if (pluginResults) {
+								entries = Object.keys(pluginResults);
 								if (entries.length) {
 									console.log('Invalid Platform-Specific Titanium API References');
 									table = new Table({
 										head: ['API', 'Num References']
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
-										table.push([entries[i], results.plugins['ti-api-platform-validator'][entries[i]]]);
+										table.push([entries[i], pluginResults[entries[i]]]);
 									}
 									console.log(table.toString() + '\n');
 								}
 							}
-							if (results.plugins['unknown-callback-detector'] && results.plugins['unknown-callback-detector'].length) {
+							pluginResults = results.plugins['unknown-callback-detector'];
+							if (pluginResults && pluginResults.length) {
 								console.log('Unknown Callback Detector');
 								table = new Table({
 									head: ['File', 'Line']
 								});
-								entries = results.plugins['unknown-callback-detector'];
+								entries = pluginResults;
 								for (i = 0, len = entries.length; i < len; i++) {
 									entry = entries[i];
 									table.push([path.relative(projectRoot, entry.file), entry.line]);
