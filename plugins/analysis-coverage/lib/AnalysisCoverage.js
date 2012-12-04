@@ -8,14 +8,23 @@
 
  
 var path = require('path'),
+	
+	wrench = require('wrench'),
+
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
 	AST = require(path.join(global.nodeCodeProcessorLibDir, 'AST')),
 	results = {
 		details: {},
+		filesSkipped: [],
+		numTotalFiles: 0,
+		numFilesSkipped: 0,
 		numNodesVisited: 0,
 		numNodesSkipped: 0,
 		numTotalNodes: 0
-	};
+	},
+	processedFilesList = [],
+	jsRegex = /\.js$/,
+	platformList = ['android', 'mobileweb', 'iphone', 'ios', 'ipad'];
 
 // ******** Plugin API Methods ********
 
@@ -27,11 +36,36 @@ var path = require('path'),
  * @constructor
  * @name module:plugins/AnalysisCoverage
  */
-module.exports = function () {
+module.exports = function (options) {
+	var platform = options.platform;
+	Runtime.on('fileProcessingBegin', function(e) {
+		processedFilesList.push(e.data.file);
+	});
 	Runtime.on('processingComplete', function() {
 		var astSet = Runtime.getASTSet(),
 			id,
-			result;
+			result,
+			filesList,
+			file,
+			rootDir,
+			parentDirectory = path.dirname(Runtime.getEntryPointFile()),
+			i, len;
+
+		// Analyze the files
+		filesList = wrench.readdirSyncRecursive(parentDirectory);
+		for (i = 0, len = filesList.length; i < len; i++) {
+			file = filesList[i];
+			rootDir = file.split(path.sep)[0];
+			if (jsRegex.test(file) && (platformList.indexOf(rootDir) === -1 || rootDir === platform)) {
+				if (processedFilesList.indexOf(path.resolve(path.join(parentDirectory, file))) === -1) {
+					results.filesSkipped.push(path.resolve(path.join(parentDirectory, file)));
+				}
+				results.numTotalFiles++;
+			}
+		}
+		results.numFilesSkipped = results.filesSkipped.length;
+
+		// Analyze the ASTs
 		for (id in astSet) {
 			result = results.details[id] = {
 				numNodesVisited: 0,
