@@ -356,12 +356,12 @@ if (/\.js$/.test(projectRoot)) {
 							if (results.plugins['analysis-coverage']) {
 								console.log('Analysis Coverage');
 								table = new Table({
-									head: ['File', 'Nodes Visited', 'Total Nodes']
+									head: ['File', 'Nodes Visited', 'Nodes Skipped', 'Total Nodes']
 								});
 								entries = Object.keys(results.plugins['analysis-coverage'].details);
 								for (i = 0, len = entries.length; i < len; i++) {
 									entry = results.plugins['analysis-coverage'].details[entries[i]];
-									table.push([path.relative(projectRoot, entries[i]), entry.numNodesVisited, entry.numTotalNodes]);
+									table.push([path.relative(projectRoot, entries[i]), entry.numNodesVisited, entry.numNodesSkipped, entry.numTotalNodes]);
 								}
 								console.log(table.toString() + '\n Summary: ' + results.plugins['analysis-coverage'].numNodesVisited +
 									' out of ' + results.plugins['analysis-coverage'].numTotalNodes + ' nodes visited\n');

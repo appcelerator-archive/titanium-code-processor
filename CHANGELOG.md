@@ -1,3 +1,10 @@
+## 0.1.10 ()
+
+### Bug Fixes
+
+### New Features
+* Updated the analysis coverage plugin to report nodes knowingly skipped and files skipped
+
 ## 0.1.9 (30 November 2012)
 
 ### Bug Fixes

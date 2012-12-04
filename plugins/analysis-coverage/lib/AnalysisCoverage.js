@@ -13,6 +13,7 @@ var path = require('path'),
 	results = {
 		details: {},
 		numNodesVisited: 0,
+		numNodesSkipped: 0,
 		numTotalNodes: 0
 	};
 
@@ -34,6 +35,7 @@ module.exports = function () {
 		for (id in astSet) {
 			result = results.details[id] = {
 				numNodesVisited: 0,
+				numNodesSkipped: 0,
 				numTotalNodes: 0
 			};
 			AST.walk(astSet[id], {
@@ -41,6 +43,9 @@ module.exports = function () {
 					if (node._visited) {
 						result.numNodesVisited++;
 						results.numNodesVisited++;
+					} else if (node._skipped) {
+						result.numNodesSkipped++;
+						results.numNodesSkipped++;
 					}
 					result.numTotalNodes++;
 					results.numTotalNodes++;
