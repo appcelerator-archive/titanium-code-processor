@@ -1,8 +1,11 @@
 ## 0.1.10 ()
 
 ### Bug Fixes
+* Fixed a bug with setting ambiguous contexts properly in function calls
+* Fixed a bug in postfix expressions (think x++) where the previous value was unknown not returning the proper value
 
 ### New Features
+* Implemented a new unknown/ambiguous map generation plugin
 * Updated the analysis coverage plugin to report nodes knowingly skipped and files skipped
 
 ## 0.1.9 (30 November 2012)
