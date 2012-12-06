@@ -40,7 +40,7 @@ module.exports = function () {
 			id,
 			result,
 			originalCode,
-			annotatedCode = '',
+			annotatedCode,
 			inputDir = path.dirname(Runtime.getEntryPointFile()),
 			outputDir = path.resolve(path.join(inputDir, '..', 'analysis', 'unknown-ambiguous-visualizer')),
 			outputFilePath,
@@ -75,9 +75,6 @@ module.exports = function () {
 				endLine = node[0].end.line;
 				startColumn = node[0].start.col;
 				endColumn = node[0].end.col;
-			}
-			if (RuleProcessor.getRuleName(node) === 'defun') {
-				console.log(require('util').inspect(node, false, 6));
 			}
 			insertionLocation = getLocation(annotations) || annotations;
 			insertionLocation.children.push({
@@ -202,10 +199,12 @@ module.exports = function () {
 					'*': analyzeNode
 				});
 				fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotations, false, '\t'));
+				console.log(AST.serialize(astSet[id]));
 
 				// Visualize the annotation data
 				currentLine = 0;
 				currentColumn = 0;
+				annotatedCode = '';
 				writeBlock(annotations);
 				fs.writeFileSync(outputFilePath + '.rtf', '{\\rtf1\\ansi\n' +
 					'{\\colortbl;' +
