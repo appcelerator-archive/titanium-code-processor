@@ -70,7 +70,45 @@ module.exports = function () {
 				fs.writeFileSync(outputFilePath + '.js', serializationData.serializedCode);
 				fs.writeFileSync(outputFilePath + '.json', JSON.stringify(serializationData.styles, false, '\t'));
 				fs.writeFileSync(outputFilePath + '.html',
-					AST.generateAnnotatedHTML(serializationData.serializedCode, serializationData.styles));
+					AST.generateAnnotatedHTML(serializationData.serializedCode, serializationData.styles,
+						'/*\nLegend:\nUnknown Value Generated\nAmbiguous Context\nAmbiguous Block\nAmbiguous Block and Context\n*/\n', [{
+							start: 0,
+							bold: false,
+							italic: false,
+							fontColor: [0, 0, 0],
+							backgroundColor: [1, 1, 1]
+						}, {
+							start: 11,
+							bold: true,
+							italic: true,
+							fontColor: [0, 0.75, 0],
+							backgroundColor: [1, 1, 1]
+						}, {
+							start: 35,
+							bold: false,
+							italic: false,
+							fontColor: [0, 0, 0],
+							backgroundColor: [0.75, 0.75, 1]
+						}, {
+							start: 52,
+							bold: false,
+							italic: false,
+							fontColor: [0, 0, 0],
+							backgroundColor: [1, 0.75, 0.75]
+						}, {
+							start: 68,
+							bold: false,
+							italic: false,
+							fontColor: [0, 0, 0],
+							backgroundColor: [0.75, 0.625, 0.875]
+						}, {
+							start: 97,
+							bold: false,
+							italic: false,
+							fontColor: [0, 0, 0],
+							backgroundColor: [1, 1, 1]
+						}]
+					));
 			}
 		}
 	});

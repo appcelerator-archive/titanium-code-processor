@@ -111,14 +111,40 @@ module.exports = function (options) {
 					},{
 						property: '_skipped',
 						value: true,
-						backgroundColor: [1, 0.5, 0.5],
+						backgroundColor: [0.5, 0.5, 1],
 						local: true
 					}
 				]);
 				fs.writeFileSync(outputFilePath + '.js', serializationData.serializedCode);
 				fs.writeFileSync(outputFilePath + '.json', JSON.stringify(serializationData.styles, false, '\t'));
 				fs.writeFileSync(outputFilePath + '.html',
-					AST.generateAnnotatedHTML(serializationData.serializedCode, serializationData.styles));
+					AST.generateAnnotatedHTML(serializationData.serializedCode, serializationData.styles,
+						'/*\nLegend:\nVisited Node\nSkipped Node\n*/\n', [{
+							start: 0,
+							bold: false,
+							italic: false,
+							fontColor: [0, 0, 0],
+							backgroundColor: [1, 1, 1]
+						}, {
+							start: 11,
+							bold: false,
+							italic: false,
+							fontColor: [0, 0, 0],
+							backgroundColor: [0.75, 1, 0.75]
+						}, {
+							start: 24,
+							bold: false,
+							italic: false,
+							fontColor: [0, 0, 0],
+							backgroundColor: [0.75, 0.75, 1]
+						}, {
+							start: 37,
+							bold: false,
+							italic: false,
+							fontColor: [0, 0, 0],
+							backgroundColor: [1, 1, 1]
+						}]
+					));
 			}
 		}
 	});
