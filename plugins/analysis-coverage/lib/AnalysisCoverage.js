@@ -8,6 +8,8 @@
 
  
 var path = require('path'),
+	fs = require('fs'),
+	existsSync = fs.existsSync || path.existsSync,
 	
 	wrench = require('wrench'),
 
@@ -49,7 +51,11 @@ module.exports = function (options) {
 			file,
 			rootDir,
 			parentDirectory = path.dirname(Runtime.getEntryPointFile()),
-			i, len;
+			i, len,
+			inputDir = path.dirname(Runtime.getEntryPointFile()),
+			outputDir = path.resolve(path.join(inputDir, '..', 'analysis', 'analysis-coverage')),
+			outputFilePath,
+			serializationData;
 
 		// Analyze the files
 		filesList = wrench.readdirSyncRecursive(parentDirectory);
@@ -86,6 +92,34 @@ module.exports = function (options) {
 					next();
 				}
 			});
+		}
+
+		if (existsSync(outputDir)) {
+			wrench.rmdirSyncRecursive(outputDir);
+		}
+		for (id in astSet) {
+			if (existsSync(id)) {
+				outputFilePath = path.join(outputDir, path.relative(inputDir, id));
+				if (!existsSync(path.dirname(outputFilePath))) {
+					wrench.mkdirSyncRecursive(path.dirname(outputFilePath));
+				}
+				serializationData = AST.serialize(astSet[id], [{
+						property: '_visited',
+						value: true,
+						backgroundColor: [0.5, 1, 0.5],
+						local: true
+					},{
+						property: '_skipped',
+						value: true,
+						backgroundColor: [1, 0.5, 0.5],
+						local: true
+					}
+				]);
+				fs.writeFileSync(outputFilePath + '.js', serializationData.serializedCode);
+				fs.writeFileSync(outputFilePath + '.json', JSON.stringify(serializationData.styles, false, '\t'));
+				fs.writeFileSync(outputFilePath + '.html',
+					AST.generateAnnotatedHTML(serializationData.serializedCode, serializationData.styles));
+			}
 		}
 	});
 };
