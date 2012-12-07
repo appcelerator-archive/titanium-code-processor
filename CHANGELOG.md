@@ -5,7 +5,8 @@
 * Fixed a bug in postfix expressions (think x++) where the previous value was unknown not returning the proper value
 
 ### New Features
-* Implemented a new unknown/ambiguous map generation plugin
+* Implemented a new unknown/ambiguous map generation plugin (see [project-dir]/analysis for generated output)
+* Added map generation to the analysis coverage plugin (see [project-dir]/analysis for generated output)
 * Updated the analysis coverage plugin to report nodes knowingly skipped and files skipped
 
 ## 0.1.9 (30 November 2012)
