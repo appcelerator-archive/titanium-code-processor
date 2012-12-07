@@ -2,7 +2,7 @@
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
- * @module plugins/AnalysisCoverage
+ * @module plugins/AnalysisCoverageVisualizer
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
@@ -12,21 +12,16 @@ var path = require('path'),
 	existsSync = fs.existsSync || path.existsSync,
 	
 	wrench = require('wrench'),
-
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
+	
 	AST = require(path.join(global.nodeCodeProcessorLibDir, 'AST')),
+	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
 	results = {
 		details: {},
-		filesSkipped: [],
-		numTotalFiles: 0,
-		numFilesSkipped: 0,
-		numNodesVisited: 0,
-		numNodesSkipped: 0,
+		numAbiguousBlockNodes: 0,
+		numAbiguousContextNodes: 0,
+		numUnknownNodes: 0,
 		numTotalNodes: 0
-	},
-	processedFilesList = [],
-	jsRegex = /\.js$/,
-	platformList = ['android', 'mobileweb', 'iphone', 'ios', 'ipad'];
+	};
 
 // ******** Plugin API Methods ********
 
@@ -36,63 +31,16 @@ var path = require('path'),
  * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
  *
  * @constructor
- * @name module:plugins/AnalysisCoverage
+ * @name module:plugins/AnalysisCoverageVisualizer
  */
-module.exports = function (options) {
-	var platform = options.platform;
-	Runtime.on('fileProcessingBegin', function(e) {
-		processedFilesList.push(e.data.file);
-	});
+module.exports = function () {
 	Runtime.on('processingComplete', function() {
 		var astSet = Runtime.getASTSet(),
 			id,
-			result,
-			filesList,
-			file,
-			rootDir,
-			parentDirectory = path.dirname(Runtime.getEntryPointFile()),
-			i, len,
 			inputDir = path.dirname(Runtime.getEntryPointFile()),
-			outputDir = path.resolve(path.join(inputDir, '..', 'analysis', 'analysis-coverage')),
+			outputDir = path.resolve(path.join(inputDir, '..', 'analysis', 'unknown-ambiguous-visualizer')),
 			outputFilePath,
 			serializationData;
-
-		// Analyze the files
-		filesList = wrench.readdirSyncRecursive(parentDirectory);
-		for (i = 0, len = filesList.length; i < len; i++) {
-			file = filesList[i];
-			rootDir = file.split(path.sep)[0];
-			if (jsRegex.test(file) && (platformList.indexOf(rootDir) === -1 || rootDir === platform)) {
-				if (processedFilesList.indexOf(path.resolve(path.join(parentDirectory, file))) === -1) {
-					results.filesSkipped.push(path.resolve(path.join(parentDirectory, file)));
-				}
-				results.numTotalFiles++;
-			}
-		}
-		results.numFilesSkipped = results.filesSkipped.length;
-
-		// Analyze the ASTs
-		for (id in astSet) {
-			result = results.details[id] = {
-				numNodesVisited: 0,
-				numNodesSkipped: 0,
-				numTotalNodes: 0
-			};
-			AST.walk(astSet[id], {
-				'*': function(node, next) {
-					if (node._visited) {
-						result.numNodesVisited++;
-						results.numNodesVisited++;
-					} else if (node._skipped) {
-						result.numNodesSkipped++;
-						results.numNodesSkipped++;
-					}
-					result.numTotalNodes++;
-					results.numTotalNodes++;
-					next();
-				}
-			});
-		}
 
 		if (existsSync(outputDir)) {
 			wrench.rmdirSyncRecursive(outputDir);
@@ -104,22 +52,26 @@ module.exports = function (options) {
 					wrench.mkdirSyncRecursive(path.dirname(outputFilePath));
 				}
 				serializationData = AST.serialize(astSet[id], [{
-						property: '_visited',
+						property: '_unknown',
 						value: true,
-						backgroundColor: [0.5, 1, 0.5],
-						local: true
+						italic: true,
+						bold: true,
+						fontColor: [0, 1, 0]
 					},{
-						property: '_skipped',
+						property: '_ambiguousBlock',
 						value: true,
-						backgroundColor: [0.5, 0.5, 1],
-						local: true
+						backgroundColor: [1, 0.5, 0.5]
+					},{
+						property: '_ambiguousContext',
+						value: true,
+						backgroundColor: [0.5, 0.5, 1]
 					}
 				]);
 				fs.writeFileSync(outputFilePath + '.js', serializationData.serializedCode);
 				fs.writeFileSync(outputFilePath + '.json', JSON.stringify(serializationData.styles, false, '\t'));
 				fs.writeFileSync(outputFilePath + '.html',
 					AST.generateAnnotatedHTML(serializationData.serializedCode, serializationData.styles,
-						'/*\nLegend:\nVisited Node\nSkipped Node\n*/\n', [{
+						'/*\nLegend:\nUnknown Value Generated\nAmbiguous Context\nAmbiguous Block\nAmbiguous Block and Context\n*/\n', [{
 							start: 0,
 							bold: false,
 							italic: false,
@@ -127,18 +79,30 @@ module.exports = function (options) {
 							backgroundColor: [1, 1, 1]
 						}, {
 							start: 11,
-							bold: false,
-							italic: false,
-							fontColor: [0, 0, 0],
-							backgroundColor: [0.75, 1, 0.75]
+							bold: true,
+							italic: true,
+							fontColor: [0, 0.75, 0],
+							backgroundColor: [1, 1, 1]
 						}, {
-							start: 24,
+							start: 35,
 							bold: false,
 							italic: false,
 							fontColor: [0, 0, 0],
 							backgroundColor: [0.75, 0.75, 1]
 						}, {
-							start: 37,
+							start: 52,
+							bold: false,
+							italic: false,
+							fontColor: [0, 0, 0],
+							backgroundColor: [1, 0.75, 0.75]
+						}, {
+							start: 68,
+							bold: false,
+							italic: false,
+							fontColor: [0, 0, 0],
+							backgroundColor: [0.75, 0.625, 0.875]
+						}, {
+							start: 97,
 							bold: false,
 							italic: false,
 							fontColor: [0, 0, 0],
@@ -154,7 +118,7 @@ module.exports = function (options) {
  * Initializes the plugin
  *
  * @method
- * @name module:plugins/AnalysisCoverage#init
+ * @name module:plugins/AnalysisCoverageVisualizer#init
  */
 module.exports.prototype.init = function init() {};
 
@@ -162,7 +126,7 @@ module.exports.prototype.init = function init() {};
 * Gets the results of the plugin
 *
 * @method
- * @name module:plugins/AnalysisCoverage#getResults
+ * @name module:plugins/AnalysisCoverageVisualizer#getResults
 * @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
 *		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
 *		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
