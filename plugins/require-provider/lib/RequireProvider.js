@@ -107,7 +107,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 					cache[filePath] = result;
 				}
 			} else {
-				Runtime.fireEvent('requireUnresolved',
+				Runtime.fireEvent('requireSkipped',
 					'Native modules cannot be evaluated at compile-time and will be deferred until runtime', {
 						name: name
 				});

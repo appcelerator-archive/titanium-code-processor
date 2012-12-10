@@ -200,6 +200,33 @@ if (/\.js$/.test(projectRoot)) {
 							next(null, data);
 						}
 					});
+				},
+				modules: function (next) {
+					exec('titanium module -o json --project-dir "' + projectRoot + '"', function (err, stdout) {
+						if (err) {
+							next(err);
+						} else {
+							next(null, JSON.parse(stdout));
+						}
+					});
+				},
+				project: function (next) {
+					exec('titanium project -o json --project-dir "' + projectRoot + '"', function (err, stdout) {
+						if (err) {
+							next(err);
+						} else {
+							next(null, JSON.parse(stdout));
+						}
+					});
+				},
+				info: function (next) {
+					exec('titanium info -t titanium -o json', function (err, stdout) {
+						if (err) {
+							next(err);
+						} else {
+							next(null, JSON.parse(stdout));
+						}
+					});
 				}
 			};
 
@@ -209,33 +236,6 @@ if (/\.js$/.test(projectRoot)) {
 						'Make sure that the Titanium CLI is installed and a 3.0 or newer SDK is installed.\n');
 				}
 			} else {
-				tasks.modules = function (next) {
-					exec('titanium module -o json --project-dir "' + projectRoot + '"', function (err, stdout) {
-						if (err) {
-							next(err);
-						} else {
-							next(null, JSON.parse(stdout));
-						}
-					});
-				};
-				tasks.project = function (next) {
-					exec('titanium project -o json --project-dir "' + projectRoot + '"', function (err, stdout) {
-						if (err) {
-							next(err);
-						} else {
-							next(null, JSON.parse(stdout));
-						}
-					});
-				},
-				tasks.info = function (next) {
-					exec('titanium info -t titanium -o json', function (err, stdout) {
-						if (err) {
-							next(err);
-						} else {
-							next(null, JSON.parse(stdout));
-						}
-					});
-				};
 				async.parallel(tasks, function (err, result) {
 					var sdkVersion,
 						sdkInfo,
@@ -431,6 +431,18 @@ if (/\.js$/.test(projectRoot)) {
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
 										entry = pluginResults.missing[entries[i]];
+										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.file), entry.line]);
+									}
+									console.log(table.toString() + '\n');
+								}
+								entries = Object.keys(pluginResults.skipped);
+								if (entries.length) {
+									console.log('Required Native Modules Skipped');
+									table = new Table({
+										head: ['Required File Name', 'Source File', 'Line']
+									});
+									for (i = 0, len = entries.length; i < len; i++) {
+										entry = pluginResults.skipped[entries[i]];
 										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.file), entry.line]);
 									}
 									console.log(table.toString() + '\n');
