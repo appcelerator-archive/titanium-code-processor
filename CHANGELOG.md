@@ -1,8 +1,9 @@
-## 0.1.10 ()
+## 0.1.10 (10 December 2012)
 
 ### Bug Fixes
 * Fixed a bug with setting ambiguous contexts properly in function calls
 * Fixed a bug in postfix expressions (think x++) where the previous value was unknown not returning the proper value
+* Fixed the output with native modules to accurately reflect that they are skipped, not unresolved
 
 ### New Features
 * Implemented a new unknown/ambiguous map generation plugin (see [project-dir]/analysis for generated output)
