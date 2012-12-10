@@ -12,7 +12,8 @@ var path = require('path'),
 	results = {
 		resolved: [],
 		unresolved: [],
-		missing: []
+		missing: [],
+		skipped: []
 	};
 
 // ******** Plugin API Methods ********
@@ -34,6 +35,9 @@ module.exports = function () {
 	});
 	Runtime.on('requireMissing', function(e) {
 		results.missing.push(e);
+	});
+	Runtime.on('requireSkipped', function(e) {
+		results.skipped.push(e);
 	});
 };
 
