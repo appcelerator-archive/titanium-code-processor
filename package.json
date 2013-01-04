@@ -14,7 +14,7 @@
 	"main": "lib/CodeProcessor.js",
 	"bin": "bin/codeprocessor",
 	"dependencies": {
-		"uglify-js": "1.x.x",
+		"uglify-js": "2.x.x",
 		"wrench": "1.x.x",
 		"nomnom": "1.x.x",
 		"winston": "0.6.x",
