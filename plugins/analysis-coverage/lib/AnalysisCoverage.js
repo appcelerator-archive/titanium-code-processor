@@ -57,6 +57,18 @@ module.exports = function (options) {
 			outputFilePath,
 			serializationData;
 
+		function nodeVisitedCallback (node) {
+			if (node._visited) {
+				result.numNodesVisited++;
+				results.numNodesVisited++;
+			} else if (node._skipped) {
+				result.numNodesSkipped++;
+				results.numNodesSkipped++;
+			}
+			result.numTotalNodes++;
+			results.numTotalNodes++;
+		}
+
 		// Analyze the files
 		filesList = wrench.readdirSyncRecursive(parentDirectory);
 		for (i = 0, len = filesList.length; i < len; i++) {
@@ -78,20 +90,11 @@ module.exports = function (options) {
 				numNodesSkipped: 0,
 				numTotalNodes: 0
 			};
-			AST.walk(astSet[id], {
-				'*': function(node, next) {
-					if (node._visited) {
-						result.numNodesVisited++;
-						results.numNodesVisited++;
-					} else if (node._skipped) {
-						result.numNodesSkipped++;
-						results.numNodesSkipped++;
-					}
-					result.numTotalNodes++;
-					results.numTotalNodes++;
-					next();
+			AST.walk(astSet[id], [
+				{
+					callback: nodeVisitedCallback
 				}
-			});
+			]);
 		}
 
 		if (existsSync(outputDir)) {
