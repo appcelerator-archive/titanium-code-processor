@@ -6,11 +6,11 @@
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
- 
+
 var path = require('path'),
 	fs = require('fs'),
 	existsSync = fs.existsSync || path.existsSync,
-	
+
 	wrench = require('wrench'),
 
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
@@ -41,14 +41,14 @@ var path = require('path'),
 module.exports = function (options) {
 	var platform = options.platform;
 	Runtime.on('fileProcessingBegin', function(e) {
-		processedFilesList.push(e.data.file);
+		processedFilesList.push(e.data.filename);
 	});
 	Runtime.on('processingComplete', function() {
 		var astSet = Runtime.getASTSet(),
 			id,
 			result,
 			filesList,
-			file,
+			filename,
 			rootDir,
 			parentDirectory = path.dirname(Runtime.getEntryPointFile()),
 			i, len,
@@ -60,11 +60,11 @@ module.exports = function (options) {
 		// Analyze the files
 		filesList = wrench.readdirSyncRecursive(parentDirectory);
 		for (i = 0, len = filesList.length; i < len; i++) {
-			file = filesList[i];
-			rootDir = file.split(path.sep)[0];
-			if (jsRegex.test(file) && (platformList.indexOf(rootDir) === -1 || rootDir === platform)) {
-				if (processedFilesList.indexOf(path.resolve(path.join(parentDirectory, file))) === -1) {
-					results.filesSkipped.push(path.resolve(path.join(parentDirectory, file)));
+			filename = filesList[i];
+			rootDir = filename.split(path.sep)[0];
+			if (jsRegex.test(filename) && (platformList.indexOf(rootDir) === -1 || rootDir === platform)) {
+				if (processedFilesList.indexOf(path.resolve(path.join(parentDirectory, filename))) === -1) {
+					results.filesSkipped.push(path.resolve(path.join(parentDirectory, filename)));
 				}
 				results.numTotalFiles++;
 			}

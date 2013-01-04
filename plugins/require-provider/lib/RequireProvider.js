@@ -10,15 +10,15 @@ var util = require('util'),
 	path = require('path'),
 	fs = require('fs'),
 	existsSync = fs.existsSync || path.existsSync,
-	
+
 	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
 	AST = require(path.join(global.nodeCodeProcessorLibDir, 'AST')),
 	RuleProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'RuleProcessor')),
-	
+
 	pluginRegExp = /^(.+?)\!(.*)$/,
 	fileRegExp = /\.js$/,
-	
+
 	platform,
 	modules,
 	cache = {};
@@ -60,18 +60,18 @@ util.inherits(RequireFunction, Base.FunctionType);
  * @see ECMA-262 Spec Chapter 13.2.1
  */
 RequireFunction.prototype.call = function call(thisVal, args) {
-	
+
 	// Validate and parse the args
 	var name = args && Base.getValue(args[0]),
 		filePath,
 		result = new Base.UnknownType(),
 		isModule,
 		eventDescription;
-		
+
 	if (!name) {
 		name = new Base.UndefinedType();
 	}
-	
+
 	name = Base.toString(name);
 	if (Base.type(name) !== 'String') {
 		eventDescription = 'A value that could not be evaluated was passed to require';
@@ -117,7 +117,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 			// Resolve the path
 			isModule = !name.match(fileRegExp); // I kinda hate this, but there are too many incorrect usages of require in the wild to implement the spec correctly
 			if (name[0] === '.') {
-				filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentLocation().file), name));
+				filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentLocation().filename), name));
 				filePath += isModule ? '.js' : '';
 			} else {
 				filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, name));
@@ -127,7 +127,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 					filePath += isModule ? '.js' : '';
 				}
 			}
-					
+
 			// Make sure that the file exists and then process it
 			if (existsSync(filePath)) {
 				if (cache[filePath]) {
@@ -139,7 +139,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 					result = processFile(filePath, isModule)[1];
 					cache[filePath] = result;
 				}
-				
+
 			} else {
 				eventDescription = 'The require path "' + filePath + '" could not be found';
 				Runtime.fireEvent('requireMissing', eventDescription, {
@@ -186,63 +186,63 @@ module.exports.prototype.getResults = function getResults() {
  * @private
  */
 function processFile(file, createExports) {
-	
+
 	var root,
 		results,
 		_module,
 		_exports,
 		context,
 		envRec;
-	
+
 	// Make sure the file exists
 	if (existsSync(file)) {
-		
+
 		// Fire the parsing begin event
 		Runtime.fireEvent('fileProcessingBegin', 'Processing is beginning for file "' + file + '"', {
-			file: file
+			filename: file
 		});
 		Runtime.log('debug', 'Processing file ' + file);
-		
+
 		// Read in the file and generate the AST
 		root = AST.parse(file);
 		if (!root.syntaxError) {
-	
+
 			// Create the context, checking for strict mode
 			context = Base.createGlobalContext(root, RuleProcessor.isBlockStrict(root[1]));
 			if (createExports) {
 				envRec = context.lexicalEnvironment.envRec;
 				_module = new Base.ObjectType(),
 				_exports = new Base.ObjectType(),
-			
+
 				_module.put('exports', _exports, false);
-			
+
 				envRec.createMutableBinding('module', true);
 				envRec.setMutableBinding('module', _module);
 				envRec.createMutableBinding('exports', true);
 				envRec.setMutableBinding('exports', _exports);
 			}
-		
+
 			// Process the code
 			results = RuleProcessor.processRule(root);
 			Runtime.exitContext();
 		} else {
 			Base.handleRecoverableNativeException('SyntaxError', root.message, {
-				file: file,
+				filename: file,
 				line: root.line,
 				column: root.col
 			});
 		}
-		
+
 		// Exit the context and get the results
 		if (createExports) {
 			results[1] = Base.type(context.thisBinding) === 'Unknown' ? new Base.UnknownType() : _module.get('exports');
 		}
-		
+
 		// Fire the parsing end event
 		Runtime.fireEvent('fileProcessingEnd', 'Processing finished for file "' + file + '"', {
-			file: file
+			filename: filename
 		});
-		
+
 	} else {
 		throw new Error('Internal Error: could not find file "' + file + '"');
 	}

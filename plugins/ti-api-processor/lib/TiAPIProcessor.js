@@ -12,13 +12,13 @@ var fs = require('fs'),
 	path = require('path'),
 	existsSync = fs.existsSync || path.existsSync,
 	util = require('util'),
-	
+
 	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
-	
+
 	jsca,
 	platform,
-	
+
 	api = { children: {} };
 
 // ******** Plugin API Methods ********
@@ -43,7 +43,7 @@ module.exports = function(options) {
  * @name module:plugins/TiAPIProcessor#init
  */
 module.exports.prototype.init = function init() {
-	
+
 	// Iterate through the json object and inject all the APIs
 	var typesToInsert = {},
 		globalObject = Runtime.getGlobalObject(),
@@ -57,7 +57,7 @@ module.exports.prototype.init = function init() {
 		root,
 		obj,
 		p;
-	
+
 	// Create the API tree
 	for (i = 0, len = types.length; i < len; i++) {
 		type = types[i];
@@ -83,7 +83,7 @@ module.exports.prototype.init = function init() {
 			typesToInsert[type].push(alias.name);
 		}
 	}
-	
+
 	// Inject the global objects
 	for (p in typesToInsert) {
 		obj = createObject(api.children[p]);
@@ -328,52 +328,52 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 		result = new Base.UnknownType(),
 		i, len,
 		eventDescription;
-	
+
 	args = args || [];
 	for (i = 0, len = args.length; i < len; i++) {
 		files.push(Base.getValue(args[i]));
 	}
-	
-	files.forEach(function (file) {
-		file = Base.toString(file);
-		if (Base.type(file) !== 'String') {
+
+	files.forEach(function (filename) {
+		filename = Base.toString(filename);
+		if (Base.type(filename) !== 'String') {
 			eventDescription = 'A value that could not be evaluated was passed to Ti.include';
 			Runtime.fireEvent('tiIncludeUnresolved', eventDescription);
 			Runtime.reportWarning('tiIncludeUnresolved', eventDescription);
 			return result;
 		}
-		file = file.value;
-		
-		if (file[0] === '.') {
-			filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentLocation().file), file));
+		filename = filename.value;
+
+		if (filename[0] === '.') {
+			filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentLocation().filename), filename));
 		} else {
-			filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, file));
+			filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, filename));
 			if (!existsSync(filePath)) {
-				filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), file));
+				filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), filename));
 			}
 		}
-		
+
 		// Make sure the file exists
 		if (existsSync(filePath)) {
-			
+
 			Runtime.fireEvent('tiIncludeResolved', 'The Ti.include path "' + filePath + '" was resolved', {
-				file: filePath
+				filename: filePath
 			});
-			
+
 			// Fire the parsing begin event
 			Runtime.fireEvent('fileProcessingBegin', 'Processing is beginning for file "' + filePath + '"', {
-				file: filePath
+				filename: filePath
 			});
-			
+
 			// Eval the code
 			evalFunc = Runtime.getGlobalObject().get('eval');
 			evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())], false, filePath);
-			
+
 			// Fire the parsing end event
 			Runtime.fireEvent('fileProcessingEnd', 'Processing finished for file "' + filePath + '"', {
-				file: filePath
+				filename: filePath
 			});
-			
+
 		} else {
 			eventDescription = 'The Ti.include path "' + filePath + '" could not be found';
 			Runtime.fireEvent('tiIncludeMissing', eventDescription, {
@@ -406,7 +406,7 @@ function createObject(apiNode) {
 		name,
 		type,
 		p, i, len;
-	
+
 	// Add the properties
 	for(i = 0, len = properties.length; i < len; i++) {
 		property = properties[i];
@@ -428,7 +428,7 @@ function createObject(apiNode) {
 			configurable: true
 		}, false, true);
 	}
-	
+
 	// Add the methods
 	for(i = 0, len = functions.length; i < len; i++) {
 		func = functions[i];
@@ -453,7 +453,7 @@ function createObject(apiNode) {
 			configurable: true
 		}, false, true);
 	}
-	
+
 	// Add the children
 	for(p in children) {
 		obj.defineOwnProperty(p, {
@@ -463,7 +463,7 @@ function createObject(apiNode) {
 			configurable: true
 		}, false, true);
 	}
-	
+
 	// Return the newly created object
 	return obj;
 }
