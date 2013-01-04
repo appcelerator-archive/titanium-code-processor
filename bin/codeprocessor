@@ -19,7 +19,7 @@ var util = require('util'),
 	xml2js = require('xml2js'),
 	request = require('request'),
 	Table = require('cli-table'),
-	
+
 	CodeProcessor = require(path.resolve(path.join(__dirname, '..'))),
 
 // ******** CLI Options Parsing ********
@@ -172,7 +172,7 @@ if (/\.js$/.test(projectRoot)) {
 		logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
 		logger.log('info', util.inspect(CodeProcessor.getResults(), false, 4));
 	}
-				
+
 	process.exit(result && result[0] === 'normal' ? 0 : 1);
 } else {
 	entryPoint = path.join(projectRoot, 'Resources', 'app.js');
@@ -253,7 +253,7 @@ if (/\.js$/.test(projectRoot)) {
 						console.error(err);
 					} else {
 						if (result.info && result.modules && result.project) {
-							
+
 							// Get the SDK path
 							sdkVersion = result.tiappxml['ti:app']['sdk-version'];
 							if (sdkVersion) {
@@ -272,7 +272,7 @@ if (/\.js$/.test(projectRoot)) {
 								}
 							}
 							options.sdkPath = sdkInfo.path;
-							
+
 							// Get the list of modules from the tiapp.xml
 							projectModules = result.modules.project;
 							globalModules = result.modules.global;
@@ -320,10 +320,10 @@ if (/\.js$/.test(projectRoot)) {
 							options.modules = modules;
 						}
 						options.platform = parsedOptions.osname;
-						
+
 						// Process the code
 						startTime = (new Date()).getTime();
-						result = CodeProcessor.process([entryPoint], plugins, options, logger);
+						result = CodeProcessor.process(entryPoint, plugins, options, logger);
 						results = CodeProcessor.getResults();
 						if (logger) {
 							logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
@@ -532,7 +532,7 @@ if (/\.js$/.test(projectRoot)) {
 								console.log(table.toString() + '\n');
 							}
 						}
-						
+
 						// Send the results to Appcelerator, if requested
 						if (parsedOptions.report || parsedOptions['report-with-message']) {
 							if (logger) {
