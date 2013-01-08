@@ -46,7 +46,7 @@ module.exports.run = function () {
 		options = message.options;
 		test262Dir = options['test-262-dir'],
 		includeDir = path.join(test262Dir, 'test', 'harness');
-	
+
 		// Create the test lib
 		['cth.js', 'sta.js', 'ed.js', 'testBuiltInObject.js', 'testIntl.js'].forEach(function(file) {
 			testLib += '\n\n/****************************************\n' +
@@ -77,7 +77,7 @@ module.exports.run = function () {
 
 		// Read in the test case
 		testSuiteFile = fs.readFileSync(path.join(test262Dir, 'test', 'suite', testSuiteFilePath)).toString();
-		
+
 		// Attempt to parse the header
 		match = testFileRegex.exec(testSuiteFile);
 		if (!match) {
@@ -119,7 +119,7 @@ module.exports.run = function () {
 			testFilePath = path.join(tempDir, testSuiteFilePath);
 			wrench.mkdirSyncRecursive(path.dirname(testFilePath));
 			fs.writeFileSync(testFilePath, testFileContent);
-			
+
 			// Check if we are testing node or the code processor
 			if (options['test-node']) {
 				try {
@@ -136,10 +136,10 @@ module.exports.run = function () {
 				}
 			} else {
 				try {
-					result = CodeProcessor.process([testFilePath], [], {
+					result = CodeProcessor.process(testFilePath, [], {
 						exactMode: true
 					});
-					
+
 					if (result && result[0] === 'throw') {
 						if (result[1]) {
 							switch(Base.type(result[1])) {
@@ -187,7 +187,7 @@ module.exports.run = function () {
 				}
 			}
 		}
-		
+
 		process.send({
 			success: success,
 			errorMessage: errorMessage,

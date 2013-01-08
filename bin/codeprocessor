@@ -167,7 +167,7 @@ plugins = parsedOptions.plugin;
 if (/\.js$/.test(projectRoot)) {
 	startTime = (new Date()).getTime();
 	options.platform = parsedOptions.osname;
-	result = CodeProcessor.process([projectRoot], plugins, options, logger);
+	result = CodeProcessor.process(projectRoot, plugins, options, logger);
 	if (logger) {
 		logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
 		logger.log('info', util.inspect(CodeProcessor.getResults(), false, 4));
