@@ -149,6 +149,7 @@ TiFunction.prototype.call = function call(thisVal, args) {
 		i, j, len,
 		value = new Base.UnknownType(),
 		callArgs;
+	args = args || [];
 	for(i = 0, len = args.length; i < len; i++) {
 		if (Base.type(args[i]) !== 'Unknown') {
 			if (Base.isCallable(args[i])) {
