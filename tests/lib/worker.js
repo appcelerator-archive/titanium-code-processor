@@ -108,7 +108,7 @@ module.exports.run = function () {
 
 			// Check if this is a strict mode test
 			ast = AST.parseString(body);
-			testProperties.strictMode = !!(ast && ast[1] && RuleProcessor.isBlockStrict(ast[1]));
+			testProperties.strictMode = !!(ast && ast.directives && RuleProcessor.isBlockStrict(ast));
 
 			// Write the test file plus headers to a temp file
 			testFileContent = (testProperties.strictMode ? '"use strict";\n' : '') + testLib +

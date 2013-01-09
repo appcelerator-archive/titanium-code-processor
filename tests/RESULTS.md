@@ -224,7 +224,6 @@ All tests passed
 	* Very esoteric and non-obvious, so not fixing for now
 
 ### Chapter 14
-Preliminary (9 seconds. 20 out of 24 tests (83%) passed)
 
 * ch14/14.1/14.1-14-s.js
 	* Two issues: the test assumes global scope, and if there is a bug, it's in uglify
