@@ -53,9 +53,10 @@ module.exports = function (options) {
 			parentDirectory = path.dirname(Runtime.getEntryPointFile()),
 			i, len,
 			inputDir = path.dirname(Runtime.getEntryPointFile()),
+			inputSource,
 			outputDir = path.resolve(path.join(inputDir, '..', 'analysis', 'analysis-coverage')),
 			outputFilePath,
-			serializationData;
+			annotationData;
 
 		function nodeVisitedCallback (node) {
 			if (node._visited) {
@@ -106,7 +107,7 @@ module.exports = function (options) {
 				if (!existsSync(path.dirname(outputFilePath))) {
 					wrench.mkdirSyncRecursive(path.dirname(outputFilePath));
 				}
-				serializationData = AST.serialize(astSet[id], [{
+				annotationData = AST.generateAnnotations(astSet[id], [{
 						property: '_visited',
 						value: true,
 						backgroundColor: [0.5, 1, 0.5],
@@ -118,10 +119,10 @@ module.exports = function (options) {
 						local: true
 					}
 				]);
-				fs.writeFileSync(outputFilePath + '.js', serializationData.serializedCode);
-				fs.writeFileSync(outputFilePath + '.json', JSON.stringify(serializationData.styles, false, '\t'));
+				fs.writeFileSync(outputFilePath + '.js', inputSource = fs.readFileSync(id).toString());
+				fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
 				fs.writeFileSync(outputFilePath + '.html',
-					AST.generateAnnotatedHTML(serializationData.serializedCode, serializationData.styles,
+					AST.generateAnnotatedHTML(inputSource, annotationData,
 						'/*\nLegend:\nVisited Node\nSkipped Node\n*/\n', [{
 							start: 0,
 							bold: false,
