@@ -185,7 +185,7 @@ module.exports.prototype.getResults = function getResults() {
 /**
  * @private
  */
-function processFile(file, createExports) {
+function processFile(filename, createExports) {
 
 	var root,
 		results,
@@ -195,20 +195,20 @@ function processFile(file, createExports) {
 		envRec;
 
 	// Make sure the file exists
-	if (existsSync(file)) {
+	if (existsSync(filename)) {
 
 		// Fire the parsing begin event
-		Runtime.fireEvent('fileProcessingBegin', 'Processing is beginning for file "' + file + '"', {
-			filename: file
+		Runtime.fireEvent('fileProcessingBegin', 'Processing is beginning for file "' + filename + '"', {
+			filename: filename
 		});
-		Runtime.log('debug', 'Processing file ' + file);
+		Runtime.log('debug', 'Processing file ' + filename);
 
 		// Read in the file and generate the AST
-		root = AST.parse(file);
+		root = AST.parse(filename);
 		if (!root.syntaxError) {
 
 			// Create the context, checking for strict mode
-			context = Base.createGlobalContext(root, RuleProcessor.isBlockStrict(root[1]));
+			context = Base.createGlobalContext(root, RuleProcessor.isBlockStrict(root));
 			if (createExports) {
 				envRec = context.lexicalEnvironment.envRec;
 				_module = new Base.ObjectType(),
@@ -227,7 +227,7 @@ function processFile(file, createExports) {
 			Runtime.exitContext();
 		} else {
 			Base.handleRecoverableNativeException('SyntaxError', root.message, {
-				filename: file,
+				filename: filename,
 				line: root.line,
 				column: root.col
 			});
@@ -239,12 +239,12 @@ function processFile(file, createExports) {
 		}
 
 		// Fire the parsing end event
-		Runtime.fireEvent('fileProcessingEnd', 'Processing finished for file "' + file + '"', {
+		Runtime.fireEvent('fileProcessingEnd', 'Processing finished for file "' + filename + '"', {
 			filename: filename
 		});
 
 	} else {
-		throw new Error('Internal Error: could not find file "' + file + '"');
+		throw new Error('Internal Error: could not find file "' + filename + '"');
 	}
 	return results;
 }
