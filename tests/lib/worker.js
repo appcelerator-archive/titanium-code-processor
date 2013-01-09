@@ -162,11 +162,6 @@ module.exports.run = function () {
 							success = testProperties.hasOwnProperty('negative');
 						} else if (result.errors.length > 1) {
 							errorMessage = ['Multiple errors: '];
-							if (!testProperties.hasOwnProperty('negative')) {
-								console.log(testFilePath);
-								console.log(require('util').inspect(result.errors, false, 4));
-								console.log();
-							}
 							result.errors.forEach(function(err) {
 								try {
 									errorMessage.push(err.name + ': ' + err.data.exception._lookupProperty('message').value.value);
