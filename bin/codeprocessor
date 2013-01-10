@@ -19,7 +19,7 @@ var util = require('util'),
 	xml2js = require('xml2js'),
 	request = require('request'),
 	Table = require('cli-table'),
-	
+
 	CodeProcessor = require(path.resolve(path.join(__dirname, '..'))),
 
 // ******** CLI Options Parsing ********
@@ -167,12 +167,12 @@ plugins = parsedOptions.plugin;
 if (/\.js$/.test(projectRoot)) {
 	startTime = (new Date()).getTime();
 	options.platform = parsedOptions.osname;
-	result = CodeProcessor.process([projectRoot], plugins, options, logger);
+	result = CodeProcessor.process(projectRoot, plugins, options, logger);
 	if (logger) {
 		logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
 		logger.log('info', util.inspect(CodeProcessor.getResults(), false, 4));
 	}
-				
+
 	process.exit(result && result[0] === 'normal' ? 0 : 1);
 } else {
 	entryPoint = path.join(projectRoot, 'Resources', 'app.js');
@@ -253,7 +253,7 @@ if (/\.js$/.test(projectRoot)) {
 						console.error(err);
 					} else {
 						if (result.info && result.modules && result.project) {
-							
+
 							// Get the SDK path
 							sdkVersion = result.tiappxml['ti:app']['sdk-version'];
 							if (sdkVersion) {
@@ -272,7 +272,7 @@ if (/\.js$/.test(projectRoot)) {
 								}
 							}
 							options.sdkPath = sdkInfo.path;
-							
+
 							// Get the list of modules from the tiapp.xml
 							projectModules = result.modules.project;
 							globalModules = result.modules.global;
@@ -320,10 +320,10 @@ if (/\.js$/.test(projectRoot)) {
 							options.modules = modules;
 						}
 						options.platform = parsedOptions.osname;
-						
+
 						// Process the code
 						startTime = (new Date()).getTime();
-						result = CodeProcessor.process([entryPoint], plugins, options, logger);
+						result = CodeProcessor.process(entryPoint, plugins, options, logger);
 						results = CodeProcessor.getResults();
 						if (logger) {
 							logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
@@ -339,7 +339,7 @@ if (/\.js$/.test(projectRoot)) {
 								});
 								for (i = 0, len = results.errors.length; i < len; i++) {
 									entry = results.errors[i];
-									table.push([entry.description, path.relative(projectRoot, entry.file), entry.line]);
+									table.push([entry.description, path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
 								}
 								console.log(table.toString() + '\n');
 							}
@@ -350,7 +350,7 @@ if (/\.js$/.test(projectRoot)) {
 								});
 								for (i = 0, len = results.warnings.length; i < len; i++) {
 									entry = results.warnings[i];
-									table.push([entry.description, path.relative(projectRoot, entry.file), entry.line]);
+									table.push([entry.description, path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
 								}
 								console.log(table.toString() + '\n');
 							}
@@ -406,7 +406,7 @@ if (/\.js$/.test(projectRoot)) {
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
 										entry = pluginResults.resolved[entries[i]];
-										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.file), entry.line]);
+										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
 									}
 									console.log(table.toString() + '\n');
 								}
@@ -419,7 +419,7 @@ if (/\.js$/.test(projectRoot)) {
 									for (i = 0, len = entries.length; i < len; i++) {
 										entry = pluginResults.unresolved[entries[i]];
 										table.push([entry.data.name ? path.relative(projectRoot, entry.data.name) :
-											'<Could not resolve name>', path.relative(projectRoot, entry.file), entry.line]);
+											'<Could not resolve name>', path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
 									}
 									console.log(table.toString() + '\n');
 								}
@@ -431,7 +431,7 @@ if (/\.js$/.test(projectRoot)) {
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
 										entry = pluginResults.missing[entries[i]];
-										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.file), entry.line]);
+										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
 									}
 									console.log(table.toString() + '\n');
 								}
@@ -443,7 +443,7 @@ if (/\.js$/.test(projectRoot)) {
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
 										entry = pluginResults.skipped[entries[i]];
-										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.file), entry.line]);
+										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
 									}
 									console.log(table.toString() + '\n');
 								}
@@ -458,8 +458,8 @@ if (/\.js$/.test(projectRoot)) {
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
 										entry = pluginResults.resolved[entries[i]];
-										table.push([entry.data.file ? path.relative(projectRoot, entry.data.file) :
-											'<Could not resolve name>', path.relative(projectRoot, entry.file), entry.line]);
+										table.push([entry.data.filename ? path.relative(projectRoot, entry.data.filename) :
+											'<Could not resolve name>', path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
 									}
 									console.log(table.toString() + '\n');
 								}
@@ -471,8 +471,8 @@ if (/\.js$/.test(projectRoot)) {
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
 										entry = pluginResults.unresolved[entries[i]];
-										table.push([entry.data.file ? path.relative(projectRoot, entry.data.file) :
-											'<Could not resolve name>', path.relative(projectRoot, entry.file), entry.line]);
+										table.push([entry.data.filename ? path.relative(projectRoot, entry.data.filename) :
+											'<Could not resolve name>', path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
 									}
 									console.log(table.toString() + '\n');
 								}
@@ -484,8 +484,8 @@ if (/\.js$/.test(projectRoot)) {
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
 										entry = pluginResults.missing[entries[i]];
-										table.push([entry.data.file ? path.relative(projectRoot, entry.data.file) :
-											'<Could not resolve name>', path.relative(projectRoot, entry.file), entry.line]);
+										table.push([entry.data.filename ? path.relative(projectRoot, entry.data.filename) :
+											'<Could not resolve name>', path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
 									}
 									console.log(table.toString() + '\n');
 								}
@@ -527,12 +527,12 @@ if (/\.js$/.test(projectRoot)) {
 								entries = pluginResults;
 								for (i = 0, len = entries.length; i < len; i++) {
 									entry = entries[i];
-									table.push([path.relative(projectRoot, entry.file), entry.line]);
+									table.push([path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
 								}
 								console.log(table.toString() + '\n');
 							}
 						}
-						
+
 						// Send the results to Appcelerator, if requested
 						if (parsedOptions.report || parsedOptions['report-with-message']) {
 							if (logger) {

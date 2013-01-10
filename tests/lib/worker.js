@@ -46,7 +46,7 @@ module.exports.run = function () {
 		options = message.options;
 		test262Dir = options['test-262-dir'],
 		includeDir = path.join(test262Dir, 'test', 'harness');
-	
+
 		// Create the test lib
 		['cth.js', 'sta.js', 'ed.js', 'testBuiltInObject.js', 'testIntl.js'].forEach(function(file) {
 			testLib += '\n\n/****************************************\n' +
@@ -77,7 +77,7 @@ module.exports.run = function () {
 
 		// Read in the test case
 		testSuiteFile = fs.readFileSync(path.join(test262Dir, 'test', 'suite', testSuiteFilePath)).toString();
-		
+
 		// Attempt to parse the header
 		match = testFileRegex.exec(testSuiteFile);
 		if (!match) {
@@ -108,7 +108,7 @@ module.exports.run = function () {
 
 			// Check if this is a strict mode test
 			ast = AST.parseString(body);
-			testProperties.strictMode = !!(ast && ast[1] && RuleProcessor.isBlockStrict(ast[1]));
+			testProperties.strictMode = !!(ast && ast.directives && RuleProcessor.isBlockStrict(ast));
 
 			// Write the test file plus headers to a temp file
 			testFileContent = (testProperties.strictMode ? '"use strict";\n' : '') + testLib +
@@ -119,7 +119,7 @@ module.exports.run = function () {
 			testFilePath = path.join(tempDir, testSuiteFilePath);
 			wrench.mkdirSyncRecursive(path.dirname(testFilePath));
 			fs.writeFileSync(testFilePath, testFileContent);
-			
+
 			// Check if we are testing node or the code processor
 			if (options['test-node']) {
 				try {
@@ -136,10 +136,10 @@ module.exports.run = function () {
 				}
 			} else {
 				try {
-					result = CodeProcessor.process([testFilePath], [], {
+					result = CodeProcessor.process(testFilePath, [], {
 						exactMode: true
 					});
-					
+
 					if (result && result[0] === 'throw') {
 						if (result[1]) {
 							switch(Base.type(result[1])) {
@@ -162,11 +162,6 @@ module.exports.run = function () {
 							success = testProperties.hasOwnProperty('negative');
 						} else if (result.errors.length > 1) {
 							errorMessage = ['Multiple errors: '];
-							if (!testProperties.hasOwnProperty('negative')) {
-								console.log(testFilePath);
-								console.log(require('util').inspect(result.errors, false, 4));
-								console.log();
-							}
 							result.errors.forEach(function(err) {
 								try {
 									errorMessage.push(err.name + ': ' + err.data.exception._lookupProperty('message').value.value);
@@ -187,7 +182,7 @@ module.exports.run = function () {
 				}
 			}
 		}
-		
+
 		process.send({
 			success: success,
 			errorMessage: errorMessage,
