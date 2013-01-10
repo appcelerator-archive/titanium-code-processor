@@ -1,3 +1,9 @@
+## 0.2.0 ()
+
+### New Features
+* Upgraded from Uglify-JS v1 to v2
+** This will allow us to take advantage of source maps in the future
+
 ## 0.1.10 (10 December 2012)
 
 ### Bug Fixes

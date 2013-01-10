@@ -2,7 +2,7 @@
 	"author": "Bryan Hughes <bhughes@appcelerator.com>",
 	"name": "titanium-code-processor",
 	"description": "A code processing tool for Titanium Mobile",
-	"version": "0.1.11",
+	"version": "0.2.0",
 	"homepage": "https://github.com/appcelerator/titanium-code-processor",
 	"repository": {
 		"type": "git",
@@ -14,7 +14,7 @@
 	"main": "lib/CodeProcessor.js",
 	"bin": "bin/codeprocessor",
 	"dependencies": {
-		"uglify-js": "1.x.x",
+		"uglify-js": "2.x.x",
 		"wrench": "1.x.x",
 		"nomnom": "1.x.x",
 		"winston": "0.6.x",

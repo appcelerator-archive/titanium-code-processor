@@ -6,11 +6,11 @@
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
- 
+
 var path = require('path'),
 	fs = require('fs'),
 	existsSync = fs.existsSync || path.existsSync,
-	
+
 	wrench = require('wrench'),
 
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
@@ -41,30 +41,43 @@ var path = require('path'),
 module.exports = function (options) {
 	var platform = options.platform;
 	Runtime.on('fileProcessingBegin', function(e) {
-		processedFilesList.push(e.data.file);
+		processedFilesList.push(e.data.filename);
 	});
 	Runtime.on('processingComplete', function() {
 		var astSet = Runtime.getASTSet(),
 			id,
 			result,
 			filesList,
-			file,
+			filename,
 			rootDir,
 			parentDirectory = path.dirname(Runtime.getEntryPointFile()),
 			i, len,
 			inputDir = path.dirname(Runtime.getEntryPointFile()),
+			inputSource,
 			outputDir = path.resolve(path.join(inputDir, '..', 'analysis', 'analysis-coverage')),
 			outputFilePath,
-			serializationData;
+			annotationData;
+
+		function nodeVisitedCallback (node) {
+			if (node._visited) {
+				result.numNodesVisited++;
+				results.numNodesVisited++;
+			} else if (node._skipped) {
+				result.numNodesSkipped++;
+				results.numNodesSkipped++;
+			}
+			result.numTotalNodes++;
+			results.numTotalNodes++;
+		}
 
 		// Analyze the files
 		filesList = wrench.readdirSyncRecursive(parentDirectory);
 		for (i = 0, len = filesList.length; i < len; i++) {
-			file = filesList[i];
-			rootDir = file.split(path.sep)[0];
-			if (jsRegex.test(file) && (platformList.indexOf(rootDir) === -1 || rootDir === platform)) {
-				if (processedFilesList.indexOf(path.resolve(path.join(parentDirectory, file))) === -1) {
-					results.filesSkipped.push(path.resolve(path.join(parentDirectory, file)));
+			filename = filesList[i];
+			rootDir = filename.split(path.sep)[0];
+			if (jsRegex.test(filename) && (platformList.indexOf(rootDir) === -1 || rootDir === platform)) {
+				if (processedFilesList.indexOf(path.resolve(path.join(parentDirectory, filename))) === -1) {
+					results.filesSkipped.push(path.resolve(path.join(parentDirectory, filename)));
 				}
 				results.numTotalFiles++;
 			}
@@ -78,20 +91,11 @@ module.exports = function (options) {
 				numNodesSkipped: 0,
 				numTotalNodes: 0
 			};
-			AST.walk(astSet[id], {
-				'*': function(node, next) {
-					if (node._visited) {
-						result.numNodesVisited++;
-						results.numNodesVisited++;
-					} else if (node._skipped) {
-						result.numNodesSkipped++;
-						results.numNodesSkipped++;
-					}
-					result.numTotalNodes++;
-					results.numTotalNodes++;
-					next();
+			AST.walk(astSet[id], [
+				{
+					callback: nodeVisitedCallback
 				}
-			});
+			]);
 		}
 
 		if (existsSync(outputDir)) {
@@ -103,7 +107,7 @@ module.exports = function (options) {
 				if (!existsSync(path.dirname(outputFilePath))) {
 					wrench.mkdirSyncRecursive(path.dirname(outputFilePath));
 				}
-				serializationData = AST.serialize(astSet[id], [{
+				annotationData = AST.generateAnnotations(astSet[id], [{
 						property: '_visited',
 						value: true,
 						backgroundColor: [0.5, 1, 0.5],
@@ -115,10 +119,10 @@ module.exports = function (options) {
 						local: true
 					}
 				]);
-				fs.writeFileSync(outputFilePath + '.js', serializationData.serializedCode);
-				fs.writeFileSync(outputFilePath + '.json', JSON.stringify(serializationData.styles, false, '\t'));
+				fs.writeFileSync(outputFilePath + '.js', inputSource = fs.readFileSync(id).toString());
+				fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
 				fs.writeFileSync(outputFilePath + '.html',
-					AST.generateAnnotatedHTML(serializationData.serializedCode, serializationData.styles,
+					AST.generateAnnotatedHTML(inputSource, annotationData,
 						'/*\nLegend:\nVisited Node\nSkipped Node\n*/\n', [{
 							start: 0,
 							bold: false,

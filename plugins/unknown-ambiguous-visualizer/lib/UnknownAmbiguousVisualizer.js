@@ -6,13 +6,13 @@
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
- 
+
 var path = require('path'),
 	fs = require('fs'),
 	existsSync = fs.existsSync || path.existsSync,
-	
+
 	wrench = require('wrench'),
-	
+
 	AST = require(path.join(global.nodeCodeProcessorLibDir, 'AST')),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
 	results = {
@@ -38,9 +38,10 @@ module.exports = function () {
 		var astSet = Runtime.getASTSet(),
 			id,
 			inputDir = path.dirname(Runtime.getEntryPointFile()),
+			inputSource,
 			outputDir = path.resolve(path.join(inputDir, '..', 'analysis', 'unknown-ambiguous-visualizer')),
 			outputFilePath,
-			serializationData;
+			annotationData;
 
 		if (existsSync(outputDir)) {
 			wrench.rmdirSyncRecursive(outputDir);
@@ -51,7 +52,7 @@ module.exports = function () {
 				if (!existsSync(path.dirname(outputFilePath))) {
 					wrench.mkdirSyncRecursive(path.dirname(outputFilePath));
 				}
-				serializationData = AST.serialize(astSet[id], [{
+				annotationData = AST.generateAnnotations(astSet[id], [{
 						property: '_unknown',
 						value: true,
 						italic: true,
@@ -67,10 +68,10 @@ module.exports = function () {
 						backgroundColor: [0.5, 0.5, 1]
 					}
 				]);
-				fs.writeFileSync(outputFilePath + '.js', serializationData.serializedCode);
-				fs.writeFileSync(outputFilePath + '.json', JSON.stringify(serializationData.styles, false, '\t'));
+				fs.writeFileSync(outputFilePath + '.js', inputSource = fs.readFileSync(id).toString());
+				fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
 				fs.writeFileSync(outputFilePath + '.html',
-					AST.generateAnnotatedHTML(serializationData.serializedCode, serializationData.styles,
+					AST.generateAnnotatedHTML(inputSource, annotationData,
 						'/*\nLegend:\nUnknown Value Generated\nAmbiguous Context\nAmbiguous Block\nAmbiguous Block and Context\n*/\n', [{
 							start: 0,
 							bold: false,

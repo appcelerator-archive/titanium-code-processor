@@ -224,16 +224,13 @@ All tests passed
 	* Very esoteric and non-obvious, so not fixing for now
 
 ### Chapter 14
-Preliminary (9 seconds. 20 out of 24 tests (83%) passed)
 
-* ch14/14.1/14.1-14-s.js
+* ch14/14.1/14.1-16-s.js
 	* Two issues: the test assumes global scope, and if there is a bug, it's in uglify
 * ch14/14.1/14.1-4-s.js
 	* Two issues: the test assumes global scope, and if there is a bug, it's in uglify
 * ch14/14.1/14.1-5-s.js
 	* Two issues: the test assumes global scope, and if there is a bug, it's in uglify
-* ch14/14.1/14.1-8-s.js
-	* More complicated, but partly an uglify thing (it tries to detect directives, but is flaky about it, so we also do some detecting)
 
 ### Chapter 15
 Preliminary (1 hour 1 minute 56 seconds. 6564 out of 8074 tests (81%) passed)
