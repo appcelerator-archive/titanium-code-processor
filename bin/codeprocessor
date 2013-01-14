@@ -357,16 +357,18 @@ if (/\.js$/.test(projectRoot)) {
 							pluginResults = results.plugins['analysis-coverage'];
 							if (pluginResults) {
 								console.log('Analysis Coverage');
-								console.log(' Files Not Analyzed');
-								table = new Table({
-									head: ['File']
-								});
-								entries = pluginResults.filesSkipped;
-								for (i = 0, len = entries.length; i < len; i++) {
-									table.push([path.relative(projectRoot, pluginResults.filesSkipped[i])]);
+								if (pluginResults.filesSkipped.length) {
+									console.log(' Files Not Analyzed');
+									table = new Table({
+										head: ['File']
+									});
+									entries = pluginResults.filesSkipped;
+									for (i = 0, len = entries.length; i < len; i++) {
+										table.push([path.relative(projectRoot, pluginResults.filesSkipped[i])]);
+									}
+									console.log(table.toString() + '\n ' + pluginResults.numFilesSkipped +
+										' files skipped out of ' + pluginResults.numTotalFiles + ' total files\n');
 								}
-								console.log(table.toString() + '\n ' + pluginResults.numFilesSkipped +
-									' files skipped out of ' + pluginResults.numTotalFiles + ' total files\n');
 								console.log(' File Content Coverage');
 								table = new Table({
 									head: ['File', 'Nodes Visited', 'Nodes Skipped', 'Total Nodes']
