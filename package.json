@@ -2,7 +2,7 @@
 	"author": "Bryan Hughes <bhughes@appcelerator.com>",
 	"name": "titanium-code-processor",
 	"description": "A code processing tool for Titanium Mobile",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"homepage": "https://github.com/appcelerator/titanium-code-processor",
 	"repository": {
 		"type": "git",
