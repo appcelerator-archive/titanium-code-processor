@@ -2,9 +2,9 @@
 
 ### New Features
 * Upgraded from Uglify-JS v1 to v2
-** This will allow us to take advantage of source maps in the future
+	* This will allow us to take advantage of source maps in the future
 * Analysis maps now annotate the original code, not a serialized AST.
-** Comments, whitespace, and overall formatting are preserved.
+	* Comments, whitespace, and overall formatting are preserved.
 
 ## 0.1.10 (10 December 2012)
 
