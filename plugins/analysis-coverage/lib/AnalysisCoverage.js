@@ -43,7 +43,7 @@ module.exports = function (options) {
 	Runtime.on('fileProcessingBegin', function(e) {
 		processedFilesList.push(e.data.filename);
 	});
-	Runtime.on('processingComplete', function() {
+	Runtime.on('projectProcessingEnd', function() {
 		var astSet = Runtime.getASTSet(),
 			id,
 			result,
