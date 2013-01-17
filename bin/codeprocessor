@@ -141,6 +141,9 @@ if (parsedOptions.config) {
 			case 'nativeExceptionRecovery':
 				options.nativeExceptionRecovery = configOption[1] === 'true';
 				break;
+			case 'processUnvisitedCode':
+				options.processUnvisitedCode = configOption[1] === 'true';
+				break;
 			default:
 				console.error('Invalid option "' + parsedOptions.config[i] + '"\n');
 				process.exit(1);
