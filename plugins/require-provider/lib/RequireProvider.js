@@ -230,7 +230,7 @@ function processFile(filename, createExports) {
 			}
 
 			// Process the code
-			results = RuleProcessor.processRule(root);
+			results = root.processRule();
 			Runtime.exitContext();
 		} else {
 			Base.handleRecoverableNativeException('SyntaxError', root.message, {
