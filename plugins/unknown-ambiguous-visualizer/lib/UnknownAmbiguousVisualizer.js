@@ -34,7 +34,7 @@ var path = require('path'),
  * @name module:plugins/AnalysisCoverageVisualizer
  */
 module.exports = function () {
-	Runtime.on('processingComplete', function() {
+	Runtime.on('projectProcessingEnd', function() {
 		var astSet = Runtime.getASTSet(),
 			id,
 			inputDir = path.dirname(Runtime.getEntryPointFile()),
