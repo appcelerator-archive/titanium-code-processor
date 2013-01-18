@@ -24,7 +24,6 @@ var path = require('path'),
 		numNodesSkipped: 0,
 		numTotalNodes: 0
 	},
-	processedFilesList = [],
 	jsRegex = /\.js$/,
 	platformList = ['android', 'mobileweb', 'iphone', 'ios', 'ipad'];
 
@@ -40,9 +39,6 @@ var path = require('path'),
  */
 module.exports = function (options) {
 	var platform = options.platform;
-	Runtime.on('fileProcessingBegin', function(e) {
-		processedFilesList.push(e.data.filename);
-	});
 	Runtime.on('projectProcessingEnd', function() {
 		var astSet = Runtime.getASTSet(),
 			id,
@@ -76,7 +72,7 @@ module.exports = function (options) {
 			filename = filesList[i];
 			rootDir = filename.split(path.sep)[0];
 			if (jsRegex.test(filename) && (platformList.indexOf(rootDir) === -1 || rootDir === platform)) {
-				if (processedFilesList.indexOf(path.resolve(path.join(parentDirectory, filename))) === -1) {
+				if (Runtime.getProcessedFilesList().indexOf(path.resolve(path.join(parentDirectory, filename))) === -1) {
 					results.filesSkipped.push(path.resolve(path.join(parentDirectory, filename)));
 				}
 				results.numTotalFiles++;
