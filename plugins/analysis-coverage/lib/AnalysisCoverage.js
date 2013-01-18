@@ -61,7 +61,7 @@ module.exports = function () {
 
 		// Analyze the files
 		results.filesSkipped = Runtime.getUnprocessedFilesList();
-		results.numTotalFiles = results.filesSkipped + Runtime.getProcessedFilesList();
+		results.numTotalFiles = results.filesSkipped + Runtime.getProcessedFilesList().length;
 		results.numFilesSkipped = results.filesSkipped.length;
 
 		// Analyze the ASTs
