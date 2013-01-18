@@ -385,7 +385,9 @@ if (/\.js$/.test(projectRoot)) {
 								console.log(table.toString() + '\n ' +
 									pluginResults.numNodesVisited + ' nodes visited and ' +
 									pluginResults.numNodesSkipped + ' nodes skipped out of ' +
-									pluginResults.numTotalNodes + ' nodes total\n');
+									pluginResults.numTotalNodes + ' nodes total (' +
+									Math.round(100 * (pluginResults.numNodesVisited + pluginResults.numNodesSkipped) /
+										pluginResults.numTotalNodes) + '%)\n');
 							}
 							pluginResults = results.plugins['ti-api-usage-finder'];
 							if (pluginResults) {
