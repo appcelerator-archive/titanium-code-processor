@@ -21,7 +21,9 @@ var util = require('util'),
 
 	platform,
 	modules,
-	cache = {};
+	cache = {},
+
+	platformList = ['android', 'mobileweb', 'iphone', 'ios', 'ipad'];
 
 
 /**
@@ -35,6 +37,11 @@ var util = require('util'),
 module.exports = function (options) {
 	platform = options.platform;
 	modules = options.modules;
+
+	Runtime.isFileValid = function isFileValid(filename) {
+		var rootDir = filename.split(path.sep)[0];
+		return fileRegExp.test(filename) && (platformList.indexOf(rootDir) === -1 || rootDir === platform);
+	};
 };
 
 /**
@@ -223,7 +230,7 @@ function processFile(filename, createExports) {
 			}
 
 			// Process the code
-			results = RuleProcessor.processRule(root);
+			results = root.processRule();
 			Runtime.exitContext();
 		} else {
 			Base.handleRecoverableNativeException('SyntaxError', root.message, {
