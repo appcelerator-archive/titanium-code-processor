@@ -24,9 +24,7 @@ var path = require('path'),
 		numNodesSkipped: 0,
 		numTotalNodes: 0
 	},
-	processedFilesList = [],
-	jsRegex = /\.js$/,
-	platformList = ['android', 'mobileweb', 'iphone', 'ios', 'ipad'];
+	jsRegex = /\.js$/;
 
 // ******** Plugin API Methods ********
 
@@ -38,20 +36,11 @@ var path = require('path'),
  * @constructor
  * @name module:plugins/AnalysisCoverage
  */
-module.exports = function (options) {
-	var platform = options.platform;
-	Runtime.on('fileProcessingBegin', function(e) {
-		processedFilesList.push(e.data.filename);
-	});
-	Runtime.on('processingComplete', function() {
+module.exports = function () {
+	Runtime.on('projectProcessingEnd', function() {
 		var astSet = Runtime.getASTSet(),
 			id,
 			result,
-			filesList,
-			filename,
-			rootDir,
-			parentDirectory = path.dirname(Runtime.getEntryPointFile()),
-			i, len,
 			inputDir = path.dirname(Runtime.getEntryPointFile()),
 			inputSource,
 			outputDir = path.resolve(path.join(inputDir, '..', 'analysis', 'analysis-coverage')),
@@ -71,17 +60,8 @@ module.exports = function (options) {
 		}
 
 		// Analyze the files
-		filesList = wrench.readdirSyncRecursive(parentDirectory);
-		for (i = 0, len = filesList.length; i < len; i++) {
-			filename = filesList[i];
-			rootDir = filename.split(path.sep)[0];
-			if (jsRegex.test(filename) && (platformList.indexOf(rootDir) === -1 || rootDir === platform)) {
-				if (processedFilesList.indexOf(path.resolve(path.join(parentDirectory, filename))) === -1) {
-					results.filesSkipped.push(path.resolve(path.join(parentDirectory, filename)));
-				}
-				results.numTotalFiles++;
-			}
-		}
+		results.filesSkipped = Runtime.getUnprocessedFilesList();
+		results.numTotalFiles = results.filesSkipped + Runtime.getProcessedFilesList().length;
 		results.numFilesSkipped = results.filesSkipped.length;
 
 		// Analyze the ASTs
@@ -123,7 +103,7 @@ module.exports = function (options) {
 				fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
 				fs.writeFileSync(outputFilePath + '.html',
 					AST.generateAnnotatedHTML(inputSource, annotationData,
-						'/*\nLegend:\nVisited Node\nSkipped Node\n*/\n', [{
+						'/*\nLegend:\nVisited Node\nSkipped Node\nUnvisited Node\n*/\n', [{
 							start: 0,
 							bold: false,
 							italic: false,

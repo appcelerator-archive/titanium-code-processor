@@ -141,6 +141,9 @@ if (parsedOptions.config) {
 			case 'nativeExceptionRecovery':
 				options.nativeExceptionRecovery = configOption[1] === 'true';
 				break;
+			case 'processUnvisitedCode':
+				options.processUnvisitedCode = configOption[1] === 'true';
+				break;
 			default:
 				console.error('Invalid option "' + parsedOptions.config[i] + '"\n');
 				process.exit(1);
@@ -339,7 +342,7 @@ if (/\.js$/.test(projectRoot)) {
 								});
 								for (i = 0, len = results.errors.length; i < len; i++) {
 									entry = results.errors[i];
-									table.push([entry.description, path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
+									table.push([entry.description, entry.filename || '', entry.line || 0]);
 								}
 								console.log(table.toString() + '\n');
 							}
@@ -350,7 +353,7 @@ if (/\.js$/.test(projectRoot)) {
 								});
 								for (i = 0, len = results.warnings.length; i < len; i++) {
 									entry = results.warnings[i];
-									table.push([entry.description, path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
+									table.push([entry.description, entry.filename || '', entry.line || 0]);
 								}
 								console.log(table.toString() + '\n');
 							}
@@ -364,7 +367,7 @@ if (/\.js$/.test(projectRoot)) {
 									});
 									entries = pluginResults.filesSkipped;
 									for (i = 0, len = entries.length; i < len; i++) {
-										table.push([path.relative(projectRoot, pluginResults.filesSkipped[i])]);
+										table.push([pluginResults.filesSkipped[i]]);
 									}
 									console.log(table.toString() + '\n ' + pluginResults.numFilesSkipped +
 										' files skipped out of ' + pluginResults.numTotalFiles + ' total files\n');
@@ -376,13 +379,15 @@ if (/\.js$/.test(projectRoot)) {
 								entries = Object.keys(pluginResults.details);
 								for (i = 0, len = entries.length; i < len; i++) {
 									entry = pluginResults.details[entries[i]];
-									table.push([path.relative(projectRoot, entries[i]), entry.numNodesVisited,
+									table.push([entries[i], entry.numNodesVisited,
 										entry.numNodesSkipped, entry.numTotalNodes]);
 								}
 								console.log(table.toString() + '\n ' +
 									pluginResults.numNodesVisited + ' nodes visited and ' +
 									pluginResults.numNodesSkipped + ' nodes skipped out of ' +
-									pluginResults.numTotalNodes + ' nodes total\n');
+									pluginResults.numTotalNodes + ' nodes total (' +
+									Math.round(100 * (pluginResults.numNodesVisited + pluginResults.numNodesSkipped) /
+										pluginResults.numTotalNodes) + '%)\n');
 							}
 							pluginResults = results.plugins['ti-api-usage-finder'];
 							if (pluginResults) {
@@ -408,7 +413,7 @@ if (/\.js$/.test(projectRoot)) {
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
 										entry = pluginResults.resolved[entries[i]];
-										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
+										table.push([entry.data.name, entry.filename || '', entry.line || 0]);
 									}
 									console.log(table.toString() + '\n');
 								}
@@ -420,8 +425,8 @@ if (/\.js$/.test(projectRoot)) {
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
 										entry = pluginResults.unresolved[entries[i]];
-										table.push([entry.data.name ? path.relative(projectRoot, entry.data.name) :
-											'<Could not resolve name>', path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
+										table.push([entry.data.name ? entry.data.name :
+											'<Could not resolve name>', entry.filename || '', entry.line || 0]);
 									}
 									console.log(table.toString() + '\n');
 								}
@@ -433,7 +438,7 @@ if (/\.js$/.test(projectRoot)) {
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
 										entry = pluginResults.missing[entries[i]];
-										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
+										table.push([entry.data.name, entry.filename || '', entry.line || 0]);
 									}
 									console.log(table.toString() + '\n');
 								}
@@ -445,7 +450,7 @@ if (/\.js$/.test(projectRoot)) {
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
 										entry = pluginResults.skipped[entries[i]];
-										table.push([path.relative(projectRoot, entry.data.name), path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
+										table.push([entry.data.name, entry.filename || '', entry.line || 0]);
 									}
 									console.log(table.toString() + '\n');
 								}
@@ -460,8 +465,8 @@ if (/\.js$/.test(projectRoot)) {
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
 										entry = pluginResults.resolved[entries[i]];
-										table.push([entry.data.filename ? path.relative(projectRoot, entry.data.filename) :
-											'<Could not resolve name>', path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
+										table.push([entry.data.filename ? entry.data.filename :
+											'<Could not resolve name>', entry.filename || '', entry.line || 0]);
 									}
 									console.log(table.toString() + '\n');
 								}
@@ -473,8 +478,8 @@ if (/\.js$/.test(projectRoot)) {
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
 										entry = pluginResults.unresolved[entries[i]];
-										table.push([entry.data.filename ? path.relative(projectRoot, entry.data.filename) :
-											'<Could not resolve name>', path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
+										table.push([entry.data.filename ? entry.data.filename :
+											'<Could not resolve name>', entry.filename || '', entry.line || 0]);
 									}
 									console.log(table.toString() + '\n');
 								}
@@ -486,8 +491,8 @@ if (/\.js$/.test(projectRoot)) {
 									});
 									for (i = 0, len = entries.length; i < len; i++) {
 										entry = pluginResults.missing[entries[i]];
-										table.push([entry.data.filename ? path.relative(projectRoot, entry.data.filename) :
-											'<Could not resolve name>', path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
+										table.push([entry.data.filename ? entry.data.filename :
+											'<Could not resolve name>', entry.filename || '', entry.line || 0]);
 									}
 									console.log(table.toString() + '\n');
 								}
@@ -529,7 +534,7 @@ if (/\.js$/.test(projectRoot)) {
 								entries = pluginResults;
 								for (i = 0, len = entries.length; i < len; i++) {
 									entry = entries[i];
-									table.push([path.relative(projectRoot, entry.filename || ''), entry.line || 0]);
+									table.push([entry.filename || '', entry.line || 0]);
 								}
 								console.log(table.toString() + '\n');
 							}
