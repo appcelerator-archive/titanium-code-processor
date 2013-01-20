@@ -1,3 +1,8 @@
+## 0.2.2 (20 Janurary 2013)
+
+### Bug Fixes
+* Fixed property references on Ti objects being ignored
+
 ## 0.2.1 (20 January 2013)
 
 ### New Features

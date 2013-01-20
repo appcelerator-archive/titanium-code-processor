@@ -10,7 +10,7 @@
 
 var path = require('path'),
 	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
-	
+
 	results = {};
 
 // ******** Plugin API Methods ********
@@ -25,6 +25,14 @@ var path = require('path'),
  */
 module.exports = function () {
 	Runtime.on('tiPropertyReferenced', function(e) {
+		var name = e.data.name;
+		if (results[name]) {
+			results[name] += 1;
+		} else {
+			results[name] = 1;
+		}
+	});
+	Runtime.on('tiPropertySet', function(e) {
 		var name = e.data.name;
 		if (results[name]) {
 			results[name] += 1;
