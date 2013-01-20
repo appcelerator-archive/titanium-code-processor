@@ -223,18 +223,21 @@ util.inherits(TiObjectType, Base.ObjectType);
  *		{@link module:Base.UndefinedType} if the property does not exist
  * @see ECMA-262 Spec Chapter 8.12.3
  */
-TiObjectType.prototype.get = function get(p) {
-	var value = Base.ObjectType.prototype.get.apply(this, arguments),
-		node = value._api ? value._api.node : value._property ? value._property : value._function;
-	if (node) {
-		Runtime.fireEvent('tiPropertyReferenced', 'Property "' + p + '" was referenced', {
-			name: this._api.node.name + '.' + p,
-			node: node
-		});
-	} else {
-		Runtime.fireEvent('nonTiPropertyReference', 'Property "' + p + '" was referenced but is not part of the API', {
-			name: p
-		});
+TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, suppressEvent) {
+	var value = Base.ObjectType.prototype.getOwnProperty.apply(this, arguments),
+		node;
+	if (value && !suppressEvent) {
+		node = this._api ? this._api.node : this._property ? this._property : this._function;
+		if (node) {
+			Runtime.fireEvent('tiPropertyReferenced', 'Property "' + p + '" was referenced', {
+				name: this._api.node.name + '.' + p,
+				node: node
+			});
+		} else {
+			Runtime.fireEvent('nonTiPropertyReference', 'Property "' + p + '" was referenced but is not part of the API', {
+				name: p
+			});
+		}
 	}
 	return value;
 };
@@ -258,10 +261,13 @@ TiObjectType.prototype.get = function get(p) {
  * @param {Boolean} suppressEvent Suppresses the 'propertySet' event (used when setting prototypes)
  * @see ECMA-262 Spec Chapter 8.12.5
  */
-TiObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent) {
-	var node = v._api ? v._api.node : v._property ? v._property : v._function;
-	Base.ObjectType.prototype.put.apply(this, arguments);
-	if (!suppressEvent) {
+TiObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, throwFlag, suppressEvent) {
+	var node,
+		v;
+	Base.ObjectType.prototype.defineOwnProperty.apply(this, arguments);
+	if (!suppressEvent && Base.isDataDescriptor(desc)) {
+		v = desc.value;
+		node = this._api ? this._api.node : this._property ? this._property : this._function;
 		if (node) {
 			Runtime.fireEvent('tiPropertySet', 'Property "' + p + '" was set', {
 				name: this._api.node.name + '.' + p,
