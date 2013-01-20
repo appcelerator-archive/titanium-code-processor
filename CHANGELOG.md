@@ -1,3 +1,17 @@
+## 0.2.1 (20 January 2013)
+
+### New Features
+* Added a new option "processUnvisitedCode"
+** All .js files that are not processed are processed in an ambiguous context
+** All functions that are not invoked are invoked in an ambiguous context
+** This option, when combined with invokeMethods=false, makes the code processor work in a more static manner. Processing is much faster, but results are not as accurate
+* Removed support for event tags
+** They were never used and getting rid of them improved perfomance
+
+### Bug Fixes
+* Improved maximum recursion detection/handling to avoid maximum call stack exceeded exceptions
+* Lots of small bug fixes dealing with unknown values
+
 ## 0.2.0 (14 January 2013)
 
 ### New Features
