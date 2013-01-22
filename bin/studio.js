@@ -68,8 +68,13 @@ studioInterface.open();
  * }
  */
 
+// ******** Inbound Messages ********
+
 /**
- * Querys a set of plugin search paths for plugins and their options
+ * Querys a set of plugin search paths for plugins and their options.
+ * <p>
+ * Initiated by: Studio
+ * </p>
  * @module queryPlugins
  */
 /**
@@ -107,6 +112,9 @@ studioInterface.listen('queryPlugins', function(request, response) {
 
 /**
  * Queries the set of options
+ * <p>
+ * Initiated by: Studio
+ * </p>
  * @module queryOptions
  */
 /**
@@ -131,6 +139,9 @@ studioInterface.listen('queryOptions', function(request, response) {
 
 /**
  * Sets the options for a run
+ * <p>
+ * Initiated by: Studio
+ * </p>
  * @module setOptions
  */
 /**
@@ -155,6 +166,9 @@ studioInterface.listen('setOptions', function (request, response) {
 
 /**
  * Sets the plugins and their options for a run
+ * <p>
+ * Initiated by: Studio
+ * </p>
  * @module setPlugins
  */
 /**
@@ -184,6 +198,9 @@ studioInterface.listen('setPlugins', function (request, response) {
 
 /**
  * Runs the project
+ * <p>
+ * Initiated by: Studio
+ * </p>
  * @module run
  */
 /**
@@ -207,6 +224,9 @@ studioInterface.listen('run', function (request, response) {
 
 /**
  * Gets the results from the previous run
+ * <p>
+ * Initiated by: Studio
+ * </p>
  * @module getResults
  */
 /**
@@ -232,6 +252,9 @@ studioInterface.listen('getResults', function (request, response) {
 
 /**
  * Tells the app to exit
+ * <p>
+ * Initiated by: Studio
+ * </p>
  * @module exit
  */
 /**
@@ -248,46 +271,58 @@ studioInterface.listen('exit', function (request, response) {
 	studioInterface.close();
 });
 
+// ******** Outbound Messages ********
 
 /**
- * Indicates that a file is about to be processed.
- *
- * @name module:CodeProcessor.fileProcessingBegin
- * @event
- * @property {String} filename The absolute path to the file that is about to be processed.
- * @see module:Runtime.on
+ * Indicates that a file is about to be processed
+ * <p>
+ * Initiated by: Code Processor after the "run" message has been received
+ * </p>
+ * @module fileProcessingBegin
+ */
+/**
+ * @type String
+ * @name module:fileProcessingBegin.fileProcessingBeginRequest
+ * @property {String} filename The absolute path to the file that is about to be processed
+ */
+/**
+ * There is no response data
+ * @type Undefined
+ * @name module:fileProcessingBegin.fileProcessingBeginResponse
  */
 
 /**
- * Indicates that a file has finished being processed.
- *
- * @name module:CodeProcessor.fileProcessingEnd
- * @event
- * @property {String} filename The absolute path to the file that just finished being processed.
- * @see module:Runtime.on
+ * Indicates that the current run of the project is about to be processed, and all pre-processing steps have completed
+ * <p>
+ * Initiated by: Code Processor after the "run" message has been received
+ * </p>
+ * @module projectProcessingBegin
+ */
+/**
+ * There is no request data
+ * @type Undefined
+ * @name module:projectProcessingBegin.projectProcessingBeginRequest
+ */
+/**
+ * There is no response data
+ * @type Undefined
+ * @name module:projectProcessingBegin.projectProcessingBeginResponse
  */
 
 /**
- * Indicates that the current run of the project is about to be processed. Note tht event tags can cause multiple runs,
- * and thus multiple instances of this event.
- *
- * @name module:CodeProcessor.projectProcessingBegin
- * @event
- * @see module:Runtime.on
+ * Indicates that the current run of the project has finished being processed
+ * <p>
+ * Initiated by: Code Processor after the "run" message has been received
+ * </p>
+ * @module projectProcessingEnd
  */
-
 /**
- * Indicates that the current run of the project has finished being processed. Note tht event tags can cause multiple runs,
- * and thus multiple instances of this event.
- *
- * @name module:CodeProcessor.projectProcessingEnd
- * @event
- * @see module:Runtime.on
+ * There is no request data
+ * @type Undefined
+ * @name module:projectProcessingEnd.projectProcessingEndRequest
  */
-
 /**
- * Indicates that all parsing has been completed successfully.
- *
- * @name module:CodeProcessor.processingComplete
- * @event
- * @see module:Runtime#on
+ * There is no response data
+ * @type Undefined
+ * @name module:projectProcessingEnd.projectProcessingEndResponse
+ */
