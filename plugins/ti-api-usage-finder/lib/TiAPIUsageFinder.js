@@ -9,8 +9,8 @@
  */
 
 var path = require('path'),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
-	
+	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+
 	results = {};
 
 // ******** Plugin API Methods ********

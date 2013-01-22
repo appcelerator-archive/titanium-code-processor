@@ -13,8 +13,8 @@ var path = require('path'),
 
 	wrench = require('wrench'),
 
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
-	AST = require(path.join(global.nodeCodeProcessorLibDir, 'AST')),
+	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+	AST = require(path.join(global.titaniumCodeProcessorLibDir, 'AST')),
 	results = {
 		details: {},
 		filesSkipped: [],
@@ -23,8 +23,7 @@ var path = require('path'),
 		numNodesVisited: 0,
 		numNodesSkipped: 0,
 		numTotalNodes: 0
-	},
-	jsRegex = /\.js$/;
+	};
 
 // ******** Plugin API Methods ********
 

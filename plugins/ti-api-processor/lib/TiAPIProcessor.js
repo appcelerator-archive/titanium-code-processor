@@ -13,8 +13,8 @@ var fs = require('fs'),
 	existsSync = fs.existsSync || path.existsSync,
 	util = require('util'),
 
-	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
+	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
+	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 
 	jsca,
 	platform,

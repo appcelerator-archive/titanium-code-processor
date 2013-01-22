@@ -9,8 +9,8 @@
  */
 
 var path = require('path'),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
-	
+	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+
 	results = {};
 
 // ******** Plugin API Methods ********
@@ -24,7 +24,7 @@ var path = require('path'),
  * @name module:plugins/TiAPIPlatformValidator
  */
 module.exports = function (options) {
-	
+
 	var platform = options.platform;
 	if (platform) {
 		Runtime.on('tiPropertyReferenced', function(e) {
@@ -33,7 +33,7 @@ module.exports = function (options) {
 				len = platformList.length,
 				isSupported = false,
 				name = e.data.name;
-			
+
 			for(; i < len; i++) {
 				if (platform === platformList[i].platform) {
 					isSupported = true;
