@@ -4,6 +4,8 @@
 	"description": "A plugin for ti-code-processor that will visualize unknown values and ambiguous contexts/blocks",
 	"version": "0.1.0",
 	"main": "lib/UnknownAmbiguousVisualizer.js",
+	"dependencies": {},
+	"options": {},
 	"engines": {
 		"node": ">=0.8"
 	}

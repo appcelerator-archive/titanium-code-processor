@@ -1,13 +1,14 @@
 {
-  "author": "Allen Yeung <ayeung@appcelerator.com> (https://github.com/ayeung/)",
-  "name": "ti-api-platform-validator",
-  "description": "A plugin for ti-code-processor that finds the Titanium APIs that are used",
-  "version": "0.1.0",
-  "main": "lib/TiAPIPlatformValidator.js",
-  "dependencies": {},
-  "devDependencies": {},
-  "optionalDependencies": {},
-  "engines": {
-    "node": ">=0.8"
-  }
+	"author": "Allen Yeung <ayeung@appcelerator.com> (https://github.com/ayeung/)",
+	"name": "ti-api-platform-validator",
+	"description": "A plugin for ti-code-processor that finds the Titanium APIs that are used",
+	"version": "0.1.0",
+	"main": "lib/TiAPIPlatformValidator.js",
+	"dependencies": {
+		"ti-api-processor": "*"
+	},
+	"options": {},
+	"engines": {
+		"node": ">=0.8"
+	}
 }

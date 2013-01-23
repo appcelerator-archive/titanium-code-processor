@@ -4,6 +4,8 @@
 	"description": "A plugin for ti-code-processor that provides support for the CommonJS require() method",
 	"version": "0.1.0",
 	"main": "lib/RequireProvider.js",
+	"dependencies": {},
+	"options": {},
 	"engines": {
 		"node": ">=0.8"
 	}

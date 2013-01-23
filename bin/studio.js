@@ -7,7 +7,9 @@
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
-var appc = require('node-appc'),
+var path = require('path'),
+	CodeProcessor = require(path.resolve(path.join(__dirname, '..'))),
+	appc = require('node-appc'),
 	studioInterface = appc.messaging.create('stdio');
 studioInterface.open();
 
@@ -71,14 +73,14 @@ studioInterface.open();
 // ******** Inbound Messages ********
 
 /**
- * Querys a set of plugin search paths for plugins and their options.
+ * Queries a set of plugin search paths for plugins and their options.
  * <p>
  * Initiated by: Studio
  * </p>
  * @module queryPlugins
  */
 /**
- * An array of paths to search in addition to the default path, can be empty but must not be undefined
+ * An array of paths to search in addition to the default path. Can be an empty array, but must not be undefined
  * @type Array[Strings]
  * @name module:queryPlugins.queryPluginsRequest
  * @example
@@ -92,12 +94,16 @@ studioInterface.open();
  * @name module:queryPlugins.queryPluginsResponse
  * @property {Object} plugin A plugin entry. The actual key is the name of the plugin
  * @property {String} plugin.path The path to the plugin
+ * @property {Array[String]} plugin.dependencies The plugin dependencies, with each entry being the plugin name
  * @property {Object} plugin.options The options for the plugin
  * @property {option} plugin.options.option The options for the plugin. The key is the name of the option
  * @example
  * {
  *	"require-finder": {
  *		"path":"path/to-plugin",
+ *		"dependencies": [
+ *			"require-provider"
+ *		]
  *		"options": {
  *			"platform": {
  *				"type": "string",
@@ -108,6 +114,7 @@ studioInterface.open();
  * }
  */
 studioInterface.listen('queryPlugins', function(request, response) {
+	CodeProcessor.queryPlugins(request.data, response);
 });
 
 /**
@@ -135,6 +142,7 @@ studioInterface.listen('queryPlugins', function(request, response) {
  * }
  */
 studioInterface.listen('queryOptions', function(request, response) {
+	CodeProcessor.queryOptions(response);
 });
 
 /**
@@ -162,6 +170,7 @@ studioInterface.listen('queryOptions', function(request, response) {
  * @name module:setOptions.setOptionsResponse
  */
 studioInterface.listen('setOptions', function (request, response) {
+	CodeProcessor.setOptions(request.data, response);
 });
 
 /**
@@ -194,6 +203,7 @@ studioInterface.listen('setOptions', function (request, response) {
  * @name module:setPlugins.setPluginsResponse
  */
 studioInterface.listen('setPlugins', function (request, response) {
+	CodeProcessor.setPlugins(request.data, response);
 });
 
 /**

@@ -4,6 +4,8 @@
 	"description": "A plugin for ti-code-processor that finds all Ti.include() files",
 	"version": "0.1.0",
 	"main": "lib/TiIncludeFinder.js",
+	"dependencies": {},
+	"options": {},
 	"engines": {
 		"node": ">=0.8"
 	}
