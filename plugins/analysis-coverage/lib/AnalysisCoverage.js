@@ -35,7 +35,7 @@ var path = require('path'),
  * @constructor
  * @name module:plugins/AnalysisCoverage
  */
-module.exports = function () {
+module.exports = function (options) {
 	Runtime.on('projectProcessingEnd', function() {
 		var astSet = Runtime.getASTSet(),
 			id,
@@ -77,57 +77,59 @@ module.exports = function () {
 			]);
 		}
 
-		if (existsSync(outputDir)) {
-			wrench.rmdirSyncRecursive(outputDir);
-		}
-		for (id in astSet) {
-			if (existsSync(id)) {
-				outputFilePath = path.join(outputDir, path.relative(inputDir, id));
-				if (!existsSync(path.dirname(outputFilePath))) {
-					wrench.mkdirSyncRecursive(path.dirname(outputFilePath));
-				}
-				annotationData = AST.generateAnnotations(astSet[id], [{
-						property: '_visited',
-						value: true,
-						backgroundColor: [0.5, 1, 0.5],
-						local: true
-					},{
-						property: '_skipped',
-						value: true,
-						backgroundColor: [0.5, 0.5, 1],
-						local: true
+		if (options.visualizeData) {
+			if (existsSync(outputDir)) {
+				wrench.rmdirSyncRecursive(outputDir);
+			}
+			for (id in astSet) {
+				if (existsSync(id)) {
+					outputFilePath = path.join(outputDir, path.relative(inputDir, id));
+					if (!existsSync(path.dirname(outputFilePath))) {
+						wrench.mkdirSyncRecursive(path.dirname(outputFilePath));
 					}
-				]);
-				fs.writeFileSync(outputFilePath + '.js', inputSource = fs.readFileSync(id).toString());
-				fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
-				fs.writeFileSync(outputFilePath + '.html',
-					AST.generateAnnotatedHTML(inputSource, annotationData,
-						'/*\nLegend:\nVisited Node\nSkipped Node\nUnvisited Node\n*/\n', [{
-							start: 0,
-							bold: false,
-							italic: false,
-							fontColor: [0, 0, 0],
-							backgroundColor: [1, 1, 1]
-						}, {
-							start: 11,
-							bold: false,
-							italic: false,
-							fontColor: [0, 0, 0],
-							backgroundColor: [0.75, 1, 0.75]
-						}, {
-							start: 24,
-							bold: false,
-							italic: false,
-							fontColor: [0, 0, 0],
-							backgroundColor: [0.75, 0.75, 1]
-						}, {
-							start: 37,
-							bold: false,
-							italic: false,
-							fontColor: [0, 0, 0],
-							backgroundColor: [1, 1, 1]
-						}]
-					));
+					annotationData = AST.generateAnnotations(astSet[id], [{
+							property: '_visited',
+							value: true,
+							backgroundColor: [0.5, 1, 0.5],
+							local: true
+						},{
+							property: '_skipped',
+							value: true,
+							backgroundColor: [0.5, 0.5, 1],
+							local: true
+						}
+					]);
+					fs.writeFileSync(outputFilePath + '.js', inputSource = fs.readFileSync(id).toString());
+					fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
+					fs.writeFileSync(outputFilePath + '.html',
+						AST.generateAnnotatedHTML(inputSource, annotationData,
+							'/*\nLegend:\nVisited Node\nSkipped Node\nUnvisited Node\n*/\n', [{
+								start: 0,
+								bold: false,
+								italic: false,
+								fontColor: [0, 0, 0],
+								backgroundColor: [1, 1, 1]
+							}, {
+								start: 11,
+								bold: false,
+								italic: false,
+								fontColor: [0, 0, 0],
+								backgroundColor: [0.75, 1, 0.75]
+							}, {
+								start: 24,
+								bold: false,
+								italic: false,
+								fontColor: [0, 0, 0],
+								backgroundColor: [0.75, 0.75, 1]
+							}, {
+								start: 37,
+								bold: false,
+								italic: false,
+								fontColor: [0, 0, 0],
+								backgroundColor: [1, 1, 1]
+							}]
+						));
+				}
 			}
 		}
 	});

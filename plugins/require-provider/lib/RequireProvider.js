@@ -38,6 +38,10 @@ module.exports = function (options) {
 	platform = options.platform;
 	modules = options.modules || {};
 
+	if (platformList.indexOf(platform) === -1) {
+		throw new Error('Invalid platform specified in require-provider plugin options: ' + platform);
+	}
+
 	Runtime.isFileValid = function isFileValid(filename) {
 		var rootDir = filename.split(path.sep)[0];
 		return fileRegExp.test(filename) && (platformList.indexOf(rootDir) === -1 || rootDir === platform);
@@ -95,7 +99,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 	} else {
 
 		// Determine if this is a Titanium module
-		if (modules.commonjs && modules.commonjs && modules.commonjs.hasOwnProperty(name)) {
+		if (modules.commonjs && modules.commonjs.hasOwnProperty(name)) {
 			isModule = true;
 			filePath = modules.commonjs[name];
 		} else if (modules[platform] && modules[platform] && modules[platform].hasOwnProperty(name)) {

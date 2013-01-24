@@ -25,7 +25,7 @@ studioInterface.open();
  * @property {String|Object} subType Only for type of 'array', this is the type of the array elements and is
  *		a type definition
  * @property {Object} properties Only for type of 'object', the properties of the object. Each key is the name of the
- *		property, and the value is a type definition
+ *		property, and the value is an option definition
  * @property {String} [allowedValues] Only for primitive types, a list of allowed values
  * @property {String} [description] A description of this type
  * @example
@@ -36,21 +36,27 @@ studioInterface.open();
  *				"type": "object",
  *				"properties": {
  *					"name": {
- *						"type": "string",
+ *						"types": [{
+ *							type": "string",
+ *						}],
  *						"description": "The name of the module"
  *					},
  *					"path": {
- *						"type": "string",
+ *						"types": [{
+ *							type": "string",
+ *						}],
  *						"description": "The path to the module"
  *					},
  *					"type": {
- *						"type": "string",
- *						"allowedValues": [
- *							"commonjs",
- *							"iphone",
- *							"android",
- *							"mobileweb"
- *						]
+ *						"types": [{
+ *							"type": "string",
+ *							"allowedValues": [
+ *								"commonjs",
+ *								"iphone",
+ *								"android",
+ *								"mobileweb"
+ *							]
+ *						}],
  *						"description": "The type of the module"
  *					}
  *				}

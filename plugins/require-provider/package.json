@@ -5,7 +5,48 @@
 	"version": "0.1.0",
 	"main": "lib/RequireProvider.js",
 	"dependencies": {},
-	"options": {},
+	"options": {
+		"platform": {
+			"description": "The platform to use in evaluating require paths",
+			"types": [{
+				"type": "string",
+				"allowedValues": [
+					"android",
+					"mobileweb",
+					"ios",
+					"iphone",
+					"ipad"
+				]
+			}],
+			"required": true
+		},
+		"modules": {
+			"description": "The set of modules the project uses",
+			"types": [{
+				"type": "object",
+				"properties": {
+					"<platform name or 'commonjs'>": {
+						"types": [{
+							"type": "object",
+							"properties": {
+								"<module name>": {
+									"types": [{
+										"type": "string",
+										"description": "The path to the module. Only valid for CommonJS modules"
+									},{
+										"type": "null",
+										"description": "Native modules are not evaluated, so the value should be null"
+									}]
+								}
+							}
+						}],
+						"required": false
+					}
+				}
+			}],
+			"required": "false"
+		}
+	},
 	"engines": {
 		"node": ">=0.8"
 	}

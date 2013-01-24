@@ -5,7 +5,16 @@
 	"version": "0.1.0",
 	"main": "lib/AnalysisCoverage.js",
 	"dependencies": {},
-	"options": {},
+	"options": {
+		"invokeMethods": {
+			"description": "Whether or not methods should be invoked",
+			"types": [{
+				"type": "boolean"
+			}],
+			"defaultValue": "false",
+			"required": "false"
+		}
+	},
 	"engines": {
 		"node": ">=0.8"
 	}
