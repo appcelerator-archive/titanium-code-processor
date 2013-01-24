@@ -85,7 +85,6 @@ var util = require('util'),
 	configOption,
 	options = {},
 	projectRoot = '.',
-	plugins,
 	entryPoint,
 	startTime,
 	result,
@@ -106,6 +105,7 @@ if (!parsedOptions.silent) {
 			error: 5
 		}
 	});
+	CodeProcessor.setLogger(logger);
 }
 
 // Parse the config options
@@ -149,6 +149,7 @@ if (parsedOptions.config) {
 				process.exit(1);
 		}
 	}
+	CodeProcessor.setOptions(options);
 }
 
 // Calculate the project root
@@ -163,20 +164,49 @@ if (!existsSync(projectRoot)) {
 	process.exit(1);
 }
 
-// Get the list of plugins
-plugins = parsedOptions.plugin;
-
 // Check if we are processing a project or a single file
 if (/\.js$/.test(projectRoot)) {
-	startTime = (new Date()).getTime();
-	options.platform = parsedOptions.osname;
-	result = CodeProcessor.process(projectRoot, plugins, options, logger);
-	if (logger) {
-		logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
-		logger.log('info', util.inspect(CodeProcessor.getResults(), false, 4));
-	}
+	CodeProcessor.queryPlugins([], function(err, results) {
+		setTimeout(function () { // Set timeout is used to clean up/reduce the stack
+			var plugins = {},
+				pluginList = parsedOptions.plugin,
+				i, len,
+				plugin,
+				tiRegex = /^ti-/;
+			startTime = (new Date()).getTime();
 
-	process.exit(result && result[0] === 'normal' ? 0 : 1);
+			// Parse the plugins
+			for(i = 0, len = pluginList.length; i < len; i++) {
+				plugin = pluginList[i];
+				if (plugin in results) {
+					if (tiRegex.test(plugin)) {
+						if (logger) {
+							logger.warn('Titanium plugins are not supported when parsing individual files');
+						}
+					} else {
+						plugins[plugin] = {
+							path: results[plugin].path,
+							options: {}
+						};
+					}
+				} else if (logger) {
+					logger.warn('Plugin "' + pluginList[i] + '" is unknown');
+				}
+			}
+			if (plugins['require-provider']) {
+				plugins['require-provider'].options.platform = parsedOptions.osname;
+			}
+			CodeProcessor.setPlugins(plugins);
+
+			result = CodeProcessor.process(projectRoot);
+			if (logger) {
+				logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
+				logger.log('info', util.inspect(CodeProcessor.getResults(), false, 4));
+			}
+
+			process.exit(result && result[0] === 'normal' ? 0 : 1);
+		}, 0);
+	});
 } else {
 	entryPoint = path.join(projectRoot, 'Resources', 'app.js');
 	if (!existsSync(entryPoint)) {
@@ -186,14 +216,7 @@ if (/\.js$/.test(projectRoot)) {
 		if (logger) {
 			logger.info('Analyzing project at "' + projectRoot + '"');
 		}
-		async.series([
-			function (next) {
-				exec('titanium', next);
-			},
-			function (next) {
-				exec('titanium project --project-dir "' + projectRoot + '"', next);
-			}
-		], function (err) {
+		exec('titanium project --project-dir "' + projectRoot + '"', function (err) {
 			var tasks = {
 				tiappxml: function (next) {
 					(new xml2js.Parser()).parseString(fs.readFileSync(path.join(projectRoot, 'tiapp.xml')), function (err, data) {
@@ -235,339 +258,379 @@ if (/\.js$/.test(projectRoot)) {
 
 			if (err) {
 				if (logger) {
-					logger.error('Could not run the "titanium" command: ' + err +
+					logger.error('Could not run the "titanium project" command: ' + err +
 						'Make sure that the Titanium CLI is installed and a 3.0 or newer SDK is installed.\n');
 				}
 			} else {
 				async.parallel(tasks, function (err, result) {
-					var sdkVersion,
-						sdkInfo,
-						projectModules,
-						globalModules,
-						moduleList,
-						results,
-						entry,
-						entries,
-						table,
-						modules = {},
-						i, len,
-						pluginResults;
 					if (err) {
-						console.error(err);
+						if (logger) {
+							logger.error(err);
+						}
 					} else {
-						if (result.info && result.modules && result.project) {
 
-							// Get the SDK path
-							sdkVersion = result.tiappxml['ti:app']['sdk-version'];
-							if (sdkVersion) {
-								sdkVersion = sdkVersion[0].match(/^([0-9]\.[0-9]\.[0-9]).*$/)[1];
-							} else {
-								sdkVersion = Object.keys(result.info.titanium).sort().pop();
-							}
-							sdkInfo = result.info.titanium[sdkVersion];
-							if (!sdkInfo) {
-								if (result.info.titanium[sdkVersion + '.GA']) {
-									sdkVersion = sdkVersion + '.GA';
-									sdkInfo = result.info.titanium[sdkVersion];
-								} else {
-									console.error('SDK version ' + sdkVersion + ' is not available\n');
-									process.exit(1);
+						// Create the plugin info
+						CodeProcessor.queryPlugins([], function(err, results) {
+							setTimeout(function () {
+								var sdkVersion,
+									sdkInfo,
+									projectModules,
+									globalModules,
+									moduleList,
+									entry,
+									entries,
+									table,
+									modules = {},
+									i, len,
+									pluginResults,
+									pluginList = parsedOptions.plugin,
+									plugins = {},
+									plugin;
+
+								// Parse the plugins
+								for(i = 0, len = pluginList.length; i < len; i++) {
+									plugin = pluginList[i];
+									if (plugin in results) {
+										plugins[plugin] = {
+											path: results[plugin].path,
+											options: {}
+										};
+									} else if (logger) {
+										logger.warn('Plugin "' + pluginList[i] + '" is unknown');
+									}
 								}
-							}
-							options.sdkPath = sdkInfo.path;
 
-							// Get the list of modules from the tiapp.xml
-							projectModules = result.modules.project;
-							globalModules = result.modules.global;
-							moduleList = result.tiappxml['ti:app'].modules && result.tiappxml['ti:app'].modules[0].module;
-							if (moduleList) {
-								moduleList.forEach(function (module) {
-									var platform = module.$.platform,
-										name = module._,
-										version = module.$.version,
-										moduleEntry;
-									if (platform) {
-										if (!modules[platform]) {
-											modules[platform] = {};
-										}
-										if (platform === 'commonjs') {
-											if (projectModules && projectModules.commonjs && projectModules.commonjs[name]) {
-												moduleEntry = projectModules.commonjs[name];
-											} else if (globalModules && globalModules.commonjs && globalModules.commonjs[name]) {
-												moduleEntry = globalModules.commonjs[name];
+								// Parse the CLI queries
+								if (result.info && result.modules && result.project) {
+
+									// Get the SDK path
+									sdkVersion = result.tiappxml['ti:app']['sdk-version'];
+									if (sdkVersion) {
+										sdkVersion = sdkVersion[0].match(/^([0-9]\.[0-9]\.[0-9]).*$/)[1];
+									} else {
+										sdkVersion = Object.keys(result.info.titanium).sort().pop();
+									}
+									sdkInfo = result.info.titanium[sdkVersion];
+									if (!sdkInfo) {
+										if (result.info.titanium[sdkVersion + '.GA']) {
+											sdkVersion = sdkVersion + '.GA';
+											sdkInfo = result.info.titanium[sdkVersion];
+										} else {
+											if (logger) {
+												logger.error('SDK version ' + sdkVersion + ' is not available\n');
 											}
-											if (moduleEntry) {
-												if (version) {
-													moduleEntry = moduleEntry[version];
-													if (!moduleEntry) {
-														logger.error('Version ' + version + ' of ' + name + ' does not exist');
-														process.exit(1);
+											process.exit(1);
+										}
+									}
+									if (plugins['ti-api-processor']) {
+										plugins['ti-api-processor'].options.sdkPath = sdkInfo.path;
+									}
+
+									// Get the list of modules from the tiapp.xml
+									projectModules = result.modules.project;
+									globalModules = result.modules.global;
+									moduleList = result.tiappxml['ti:app'].modules && result.tiappxml['ti:app'].modules[0].module;
+									if (moduleList) {
+										moduleList.forEach(function (module) {
+											var platform = module.$.platform,
+												name = module._,
+												version = module.$.version,
+												moduleEntry;
+											if (platform) {
+												if (!modules[platform]) {
+													modules[platform] = {};
+												}
+												if (platform === 'commonjs') {
+													if (projectModules && projectModules.commonjs && projectModules.commonjs[name]) {
+														moduleEntry = projectModules.commonjs[name];
+													} else if (globalModules && globalModules.commonjs && globalModules.commonjs[name]) {
+														moduleEntry = globalModules.commonjs[name];
+													}
+													if (moduleEntry) {
+														if (version) {
+															moduleEntry = moduleEntry[version];
+															if (!moduleEntry) {
+																logger.error('Version ' + version + ' of ' + name + ' does not exist');
+																process.exit(1);
+															}
+														} else {
+															moduleEntry = moduleEntry[Object.keys(moduleEntry).sort().pop()];
+														}
+														modules[platform][name] = path.join(moduleEntry.modulePath, JSON.parse(
+															fs.readFileSync(path.join(moduleEntry.modulePath, 'package.json'))).main + '.js');
 													}
 												} else {
-													moduleEntry = moduleEntry[Object.keys(moduleEntry).sort().pop()];
+													modules[platform][name] = '';
 												}
-												modules[platform][name] = path.join(moduleEntry.modulePath, JSON.parse(
-													fs.readFileSync(path.join(moduleEntry.modulePath, 'package.json'))).main + '.js');
+											} else {
+												if (!modules[parsedOptions.osname]) {
+													modules[parsedOptions.osname] = {};
+												}
+												modules[parsedOptions.osname][name] = ''; // Kinda hacky, but good enough for this script
 											}
-										} else {
-											modules[platform][name] = '';
-										}
-									} else {
-										if (!modules[parsedOptions.osname]) {
-											modules[parsedOptions.osname] = {};
-										}
-										modules[parsedOptions.osname][name] = ''; // Kinda hacky, but good enough for this script
+										});
 									}
-								});
-							}
-							options.modules = modules;
-						}
-						options.platform = parsedOptions.osname;
+									if (plugins['require-provider']) {
+										plugins['require-provider'].options.modules = modules;
+									}
+								}
+								if (plugins['require-provider']) {
+									plugins['require-provider'].options.platform = parsedOptions.osname;
+								}
+								if (plugins['ti-api-platform-validator']) {
+									plugins['ti-api-platform-validator'].options.platform = parsedOptions.osname;
+								}
+								if (plugins['ti-api-processor']) {
+									plugins['ti-api-processor'].options.platform = parsedOptions.osname;
+								}
+								CodeProcessor.setPlugins(plugins);
 
-						// Process the code
-						startTime = (new Date()).getTime();
-						result = CodeProcessor.process(entryPoint, plugins, options, logger);
-						results = CodeProcessor.getResults();
-						if (logger) {
-							logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
-						}
-						if (parsedOptions.json) {
-							console.log(JSON.stringify(results, false, '\t'));
-						} else {
-							console.log();
-							if (results.errors.length) {
-								console.log('Errors');
-								table = new Table({
-									head: ['Description', 'File', 'Line']
-								});
-								for (i = 0, len = results.errors.length; i < len; i++) {
-									entry = results.errors[i];
-									table.push([entry.description, entry.filename || '', entry.line || 0]);
-								}
-								console.log(table.toString() + '\n');
-							}
-							if (results.warnings.length) {
-								console.log('Warnings');
-								table = new Table({
-									head: ['Description', 'File', 'Line']
-								});
-								for (i = 0, len = results.warnings.length; i < len; i++) {
-									entry = results.warnings[i];
-									table.push([entry.description, entry.filename || '', entry.line || 0]);
-								}
-								console.log(table.toString() + '\n');
-							}
-							pluginResults = results.plugins['analysis-coverage'];
-							if (pluginResults) {
-								console.log('Analysis Coverage');
-								if (pluginResults.filesSkipped.length) {
-									console.log(' Files Not Analyzed');
-									table = new Table({
-										head: ['File']
-									});
-									entries = pluginResults.filesSkipped;
-									for (i = 0, len = entries.length; i < len; i++) {
-										table.push([pluginResults.filesSkipped[i]]);
-									}
-									console.log(table.toString() + '\n ' + pluginResults.numFilesSkipped +
-										' files skipped out of ' + pluginResults.numTotalFiles + ' total files\n');
-								}
-								console.log(' File Content Coverage');
-								table = new Table({
-									head: ['File', 'Nodes Visited', 'Nodes Skipped', 'Total Nodes']
-								});
-								entries = Object.keys(pluginResults.details);
-								for (i = 0, len = entries.length; i < len; i++) {
-									entry = pluginResults.details[entries[i]];
-									table.push([entries[i], entry.numNodesVisited,
-										entry.numNodesSkipped, entry.numTotalNodes]);
-								}
-								console.log(table.toString() + '\n ' +
-									pluginResults.numNodesVisited + ' nodes visited and ' +
-									pluginResults.numNodesSkipped + ' nodes skipped out of ' +
-									pluginResults.numTotalNodes + ' nodes total (' +
-									Math.round(100 * (pluginResults.numNodesVisited + pluginResults.numNodesSkipped) /
-										pluginResults.numTotalNodes) + '%)\n');
-							}
-							pluginResults = results.plugins['ti-api-usage-finder'];
-							if (pluginResults) {
-								entries = Object.keys(pluginResults);
-								if (entries.length) {
-									console.log('Titanium API Usage');
-									table = new Table({
-										head: ['API', 'Num References']
-									});
-									for (i = 0, len = entries.length; i < len; i++) {
-										table.push([entries[i], pluginResults[entries[i]]]);
-									}
-									console.log(table.toString() + '\n');
-								}
-							}
-							pluginResults = results.plugins['require-finder'];
-							if (pluginResults) {
-								entries = Object.keys(pluginResults.resolved);
-								if (entries.length) {
-									console.log('Required Modules Resolved');
-									table = new Table({
-										head: ['Required File Name', 'Source File', 'Line']
-									});
-									for (i = 0, len = entries.length; i < len; i++) {
-										entry = pluginResults.resolved[entries[i]];
-										table.push([entry.data.name, entry.filename || '', entry.line || 0]);
-									}
-									console.log(table.toString() + '\n');
-								}
-								entries = Object.keys(pluginResults.unresolved);
-								if (entries.length) {
-									console.log('Required Modules Unresolved');
-									table = new Table({
-										head: ['Required File Name', 'Source File', 'Line']
-									});
-									for (i = 0, len = entries.length; i < len; i++) {
-										entry = pluginResults.unresolved[entries[i]];
-										table.push([entry.data.name ? entry.data.name :
-											'<Could not resolve name>', entry.filename || '', entry.line || 0]);
-									}
-									console.log(table.toString() + '\n');
-								}
-								entries = Object.keys(pluginResults.missing);
-								if (entries.length) {
-									console.log('Required Modules Missing');
-									table = new Table({
-										head: ['Required File Name', 'Source File', 'Line']
-									});
-									for (i = 0, len = entries.length; i < len; i++) {
-										entry = pluginResults.missing[entries[i]];
-										table.push([entry.data.name, entry.filename || '', entry.line || 0]);
-									}
-									console.log(table.toString() + '\n');
-								}
-								entries = Object.keys(pluginResults.skipped);
-								if (entries.length) {
-									console.log('Required Native Modules Skipped');
-									table = new Table({
-										head: ['Required File Name', 'Source File', 'Line']
-									});
-									for (i = 0, len = entries.length; i < len; i++) {
-										entry = pluginResults.skipped[entries[i]];
-										table.push([entry.data.name, entry.filename || '', entry.line || 0]);
-									}
-									console.log(table.toString() + '\n');
-								}
-							}
-							pluginResults = results.plugins['ti-include-finder'];
-							if (pluginResults) {
-								entries = Object.keys(pluginResults.resolved);
-								if (entries.length) {
-									console.log('Ti.include Files Resolved');
-									table = new Table({
-										head: ['Included File Name', 'Source File', 'Line']
-									});
-									for (i = 0, len = entries.length; i < len; i++) {
-										entry = pluginResults.resolved[entries[i]];
-										table.push([entry.data.filename ? entry.data.filename :
-											'<Could not resolve name>', entry.filename || '', entry.line || 0]);
-									}
-									console.log(table.toString() + '\n');
-								}
-								entries = Object.keys(pluginResults.unresolved);
-								if (entries.length) {
-									console.log('Ti.include Files Unresolved');
-									table = new Table({
-										head: ['Included File Name', 'Source File', 'Line']
-									});
-									for (i = 0, len = entries.length; i < len; i++) {
-										entry = pluginResults.unresolved[entries[i]];
-										table.push([entry.data.filename ? entry.data.filename :
-											'<Could not resolve name>', entry.filename || '', entry.line || 0]);
-									}
-									console.log(table.toString() + '\n');
-								}
-								entries = Object.keys(pluginResults.missing);
-								if (entries.length) {
-									console.log('Ti.include Files Missing');
-									table = new Table({
-										head: ['Included File Name', 'Source File', 'Line']
-									});
-									for (i = 0, len = entries.length; i < len; i++) {
-										entry = pluginResults.missing[entries[i]];
-										table.push([entry.data.filename ? entry.data.filename :
-											'<Could not resolve name>', entry.filename || '', entry.line || 0]);
-									}
-									console.log(table.toString() + '\n');
-								}
-							}
-							pluginResults = results.plugins['ti-api-deprecation-finder'];
-							if (pluginResults) {
-								entries = Object.keys(pluginResults);
-								if (entries.length) {
-									console.log('Deprecated Titanium API References');
-									table = new Table({
-										head: ['API', 'Num References']
-									});
-									for (i = 0, len = entries.length; i < len; i++) {
-										table.push([entries[i], pluginResults[entries[i]]]);
-									}
-									console.log(table.toString() + '\n');
-								}
-							}
-							pluginResults = results.plugins['ti-api-platform-validator'];
-							if (pluginResults) {
-								entries = Object.keys(pluginResults);
-								if (entries.length) {
-									console.log('Invalid Platform-Specific Titanium API References');
-									table = new Table({
-										head: ['API', 'Num References']
-									});
-									for (i = 0, len = entries.length; i < len; i++) {
-										table.push([entries[i], pluginResults[entries[i]]]);
-									}
-									console.log(table.toString() + '\n');
-								}
-							}
-							pluginResults = results.plugins['unknown-callback-detector'];
-							if (pluginResults && pluginResults.length) {
-								console.log('Unknown Callback Detector');
-								table = new Table({
-									head: ['File', 'Line']
-								});
-								entries = pluginResults;
-								for (i = 0, len = entries.length; i < len; i++) {
-									entry = entries[i];
-									table.push([entry.filename || '', entry.line || 0]);
-								}
-								console.log(table.toString() + '\n');
-							}
-						}
-
-						// Send the results to Appcelerator, if requested
-						if (parsedOptions.report || parsedOptions['report-with-message']) {
-							if (logger) {
-								logger.log('info', 'Sending report to Appcelerator');
-							}
-							request({
-								url: 'http://50a6d9218978de8f33002638.cloudapp-preview.appcelerator.com',
-								method: 'POST',
-								json: {
-									id: 'bhughes@appcelerator.com',
-									results: CodeProcessor.getResults(),
-									message: parsedOptions['report-with-message']
-								}
-							}, function (error, response, body) {
+								// Process the code
+								startTime = (new Date()).getTime();
+								result = CodeProcessor.process(entryPoint);
+								results = CodeProcessor.getResults();
 								if (logger) {
-									if (body && body.error) {
-										logger.log('error', 'Could not send report: ' + body.error);
-									} else if (body && body.success) {
-										logger.log('info', 'Report sent successfully');
-									} else {
-										logger.log('error', 'Could not send report: invalid server response');
+									logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
+								}
+								if (parsedOptions.json) {
+									console.log(JSON.stringify(results, false, '\t'));
+								} else {
+									console.log();
+									if (results.errors.length) {
+										console.log('Errors');
+										table = new Table({
+											head: ['Description', 'File', 'Line']
+										});
+										for (i = 0, len = results.errors.length; i < len; i++) {
+											entry = results.errors[i];
+											table.push([entry.description, entry.filename || '', entry.line || 0]);
+										}
+										console.log(table.toString() + '\n');
+									}
+									if (results.warnings.length) {
+										console.log('Warnings');
+										table = new Table({
+											head: ['Description', 'File', 'Line']
+										});
+										for (i = 0, len = results.warnings.length; i < len; i++) {
+											entry = results.warnings[i];
+											table.push([entry.description, entry.filename || '', entry.line || 0]);
+										}
+										console.log(table.toString() + '\n');
+									}
+									pluginResults = results.plugins['analysis-coverage'];
+									if (pluginResults) {
+										console.log('Analysis Coverage');
+										if (pluginResults.filesSkipped.length) {
+											console.log(' Files Not Analyzed');
+											table = new Table({
+												head: ['File']
+											});
+											entries = pluginResults.filesSkipped;
+											for (i = 0, len = entries.length; i < len; i++) {
+												table.push([pluginResults.filesSkipped[i]]);
+											}
+											console.log(table.toString() + '\n ' + pluginResults.numFilesSkipped +
+												' files skipped out of ' + pluginResults.numTotalFiles + ' total files\n');
+										}
+										console.log(' File Content Coverage');
+										table = new Table({
+											head: ['File', 'Nodes Visited', 'Nodes Skipped', 'Total Nodes']
+										});
+										entries = Object.keys(pluginResults.details);
+										for (i = 0, len = entries.length; i < len; i++) {
+											entry = pluginResults.details[entries[i]];
+											table.push([entries[i], entry.numNodesVisited,
+												entry.numNodesSkipped, entry.numTotalNodes]);
+										}
+										console.log(table.toString() + '\n ' +
+											pluginResults.numNodesVisited + ' nodes visited and ' +
+											pluginResults.numNodesSkipped + ' nodes skipped out of ' +
+											pluginResults.numTotalNodes + ' nodes total (' +
+											Math.round(100 * (pluginResults.numNodesVisited + pluginResults.numNodesSkipped) /
+												pluginResults.numTotalNodes) + '%)\n');
+									}
+									pluginResults = results.plugins['ti-api-usage-finder'];
+									if (pluginResults) {
+										entries = Object.keys(pluginResults);
+										if (entries.length) {
+											console.log('Titanium API Usage');
+											table = new Table({
+												head: ['API', 'Num References']
+											});
+											for (i = 0, len = entries.length; i < len; i++) {
+												table.push([entries[i], pluginResults[entries[i]]]);
+											}
+											console.log(table.toString() + '\n');
+										}
+									}
+									pluginResults = results.plugins['require-finder'];
+									if (pluginResults) {
+										entries = Object.keys(pluginResults.resolved);
+										if (entries.length) {
+											console.log('Required Modules Resolved');
+											table = new Table({
+												head: ['Required File Name', 'Source File', 'Line']
+											});
+											for (i = 0, len = entries.length; i < len; i++) {
+												entry = pluginResults.resolved[entries[i]];
+												table.push([entry.data.name, entry.filename || '', entry.line || 0]);
+											}
+											console.log(table.toString() + '\n');
+										}
+										entries = Object.keys(pluginResults.unresolved);
+										if (entries.length) {
+											console.log('Required Modules Unresolved');
+											table = new Table({
+												head: ['Required File Name', 'Source File', 'Line']
+											});
+											for (i = 0, len = entries.length; i < len; i++) {
+												entry = pluginResults.unresolved[entries[i]];
+												table.push([entry.data.name ? entry.data.name :
+													'<Could not resolve name>', entry.filename || '', entry.line || 0]);
+											}
+											console.log(table.toString() + '\n');
+										}
+										entries = Object.keys(pluginResults.missing);
+										if (entries.length) {
+											console.log('Required Modules Missing');
+											table = new Table({
+												head: ['Required File Name', 'Source File', 'Line']
+											});
+											for (i = 0, len = entries.length; i < len; i++) {
+												entry = pluginResults.missing[entries[i]];
+												table.push([entry.data.name, entry.filename || '', entry.line || 0]);
+											}
+											console.log(table.toString() + '\n');
+										}
+										entries = Object.keys(pluginResults.skipped);
+										if (entries.length) {
+											console.log('Required Native Modules Skipped');
+											table = new Table({
+												head: ['Required File Name', 'Source File', 'Line']
+											});
+											for (i = 0, len = entries.length; i < len; i++) {
+												entry = pluginResults.skipped[entries[i]];
+												table.push([entry.data.name, entry.filename || '', entry.line || 0]);
+											}
+											console.log(table.toString() + '\n');
+										}
+									}
+									pluginResults = results.plugins['ti-include-finder'];
+									if (pluginResults) {
+										entries = Object.keys(pluginResults.resolved);
+										if (entries.length) {
+											console.log('Ti.include Files Resolved');
+											table = new Table({
+												head: ['Included File Name', 'Source File', 'Line']
+											});
+											for (i = 0, len = entries.length; i < len; i++) {
+												entry = pluginResults.resolved[entries[i]];
+												table.push([entry.data.filename ? entry.data.filename :
+													'<Could not resolve name>', entry.filename || '', entry.line || 0]);
+											}
+											console.log(table.toString() + '\n');
+										}
+										entries = Object.keys(pluginResults.unresolved);
+										if (entries.length) {
+											console.log('Ti.include Files Unresolved');
+											table = new Table({
+												head: ['Included File Name', 'Source File', 'Line']
+											});
+											for (i = 0, len = entries.length; i < len; i++) {
+												entry = pluginResults.unresolved[entries[i]];
+												table.push([entry.data.filename ? entry.data.filename :
+													'<Could not resolve name>', entry.filename || '', entry.line || 0]);
+											}
+											console.log(table.toString() + '\n');
+										}
+										entries = Object.keys(pluginResults.missing);
+										if (entries.length) {
+											console.log('Ti.include Files Missing');
+											table = new Table({
+												head: ['Included File Name', 'Source File', 'Line']
+											});
+											for (i = 0, len = entries.length; i < len; i++) {
+												entry = pluginResults.missing[entries[i]];
+												table.push([entry.data.filename ? entry.data.filename :
+													'<Could not resolve name>', entry.filename || '', entry.line || 0]);
+											}
+											console.log(table.toString() + '\n');
+										}
+									}
+									pluginResults = results.plugins['ti-api-deprecation-finder'];
+									if (pluginResults) {
+										entries = Object.keys(pluginResults);
+										if (entries.length) {
+											console.log('Deprecated Titanium API References');
+											table = new Table({
+												head: ['API', 'Num References']
+											});
+											for (i = 0, len = entries.length; i < len; i++) {
+												table.push([entries[i], pluginResults[entries[i]]]);
+											}
+											console.log(table.toString() + '\n');
+										}
+									}
+									pluginResults = results.plugins['ti-api-platform-validator'];
+									if (pluginResults) {
+										entries = Object.keys(pluginResults);
+										if (entries.length) {
+											console.log('Invalid Platform-Specific Titanium API References');
+											table = new Table({
+												head: ['API', 'Num References']
+											});
+											for (i = 0, len = entries.length; i < len; i++) {
+												table.push([entries[i], pluginResults[entries[i]]]);
+											}
+											console.log(table.toString() + '\n');
+										}
+									}
+									pluginResults = results.plugins['unknown-callback-detector'];
+									if (pluginResults && pluginResults.length) {
+										console.log('Unknown Callback Detector');
+										table = new Table({
+											head: ['File', 'Line']
+										});
+										entries = pluginResults;
+										for (i = 0, len = entries.length; i < len; i++) {
+											entry = entries[i];
+											table.push([entry.filename || '', entry.line || 0]);
+										}
+										console.log(table.toString() + '\n');
 									}
 								}
-								process.exit(result && result[0] === 'normal' ? 0 : 1);
-							});
-						} else {
-							process.exit(result && result[0] === 'normal' ? 0 : 1);
-						}
+
+								// Send the results to Appcelerator, if requested
+								if (parsedOptions.report || parsedOptions['report-with-message']) {
+									if (logger) {
+										logger.log('info', 'Sending report to Appcelerator');
+									}
+									request({
+										url: 'http://50a6d9218978de8f33002638.cloudapp-preview.appcelerator.com',
+										method: 'POST',
+										json: {
+											id: 'bhughes@appcelerator.com',
+											results: CodeProcessor.getResults(),
+											message: parsedOptions['report-with-message']
+										}
+									}, function (error, response, body) {
+										if (logger) {
+											if (body && body.error) {
+												logger.log('error', 'Could not send report: ' + body.error);
+											} else if (body && body.success) {
+												logger.log('info', 'Report sent successfully');
+											} else {
+												logger.log('error', 'Could not send report: invalid server response');
+											}
+										}
+										process.exit(result && result[0] === 'normal' ? 0 : 1);
+									});
+								} else {
+									process.exit(result && result[0] === 'normal' ? 0 : 1);
+								}
+							}, 0);
+						});
 					}
 				});
 			}

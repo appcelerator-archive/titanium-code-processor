@@ -8,8 +8,14 @@
  */
 
 var path = require('path'),
-	CodeProcessor = require(path.resolve(path.join(__dirname, '..'))),
+	fs = require('fs'),
+	existsSync = fs.existsSync || path.existsSync,
+
+	winston = require('winston'),
 	appc = require('node-appc'),
+
+	CodeProcessor = require(path.resolve(path.join(__dirname, '..'))),
+
 	studioInterface = appc.messaging.create('stdio');
 studioInterface.open();
 
@@ -60,13 +66,15 @@ studioInterface.open();
  * @property {Array[{@link type}]} types The list of possible types allowed by the option
  * @property {String} [description] A description of the option
  * @property {Boolean} required Whether or not this option is required
+ * @property {Any} [defaultValue] The devault value
  * @example
  * {
  *		"types": [{
  *			"type": "string"
  *		}],
  *		"required": false,
- *		"description": "I am an option"
+ *		"description": "I am an option",
+ *		"defaultValue": "hi"
  * }
  */
 
@@ -143,6 +151,50 @@ studioInterface.listen('queryPlugins', function(request, response) {
  */
 studioInterface.listen('queryOptions', function(request, response) {
 	CodeProcessor.queryOptions(response);
+});
+
+/**
+ * Sets a file to log to (optional)
+ * <p>
+ * Initiated by: Studio
+ * </p>
+ * @module setLogFile
+ */
+/**
+ * @type Object
+ * @name module:setLogFile.setLogFileRequest
+ * @property {String} filename The path to the log file
+ * @property {String} level The log level (trace, debug, info, notice, warn, or error)
+ * @example
+ * "path/to/log/file"
+ */
+/**
+ * There is no response data, although there may be errors as reported by the "error" property in the messaging packet
+ * @type Undefined
+ * @name module:setLogFile.setLogFileResponse
+ */
+studioInterface.listen('setLogFile', function (request, response) {
+	var filename = request.data.filename,
+		level = request.data.level;
+	if (!existsSync(path.dirname(filename))) {
+		response('Log file parent directory"' + path.dirname(filename) + '" does not exist');
+	} else if (['trace', 'debug', 'info', 'notice', 'warn', 'error'].indexOf(level) === -1) {
+		response('Log level "' + level + '" is not a valid log level');
+	} else {
+		CodeProcessor.setLogger(new (winston.Logger)({
+			transports: [
+				new (winston.transports.File)({ level: level, filename: filename })
+			],
+			levels: {
+				trace: 0,
+				debug: 1,
+				info: 2,
+				notice: 3,
+				warn: 4,
+				error: 5
+			}
+		}));
+	}
 });
 
 /**
