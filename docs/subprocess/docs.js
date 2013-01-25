@@ -1,9 +1,23 @@
-/*
+/**
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
  * Documentation for the subprocess bin file in jsdoc format
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
+ */
+
+/** <pre>Command usage:
+Usage: subprocess run <config file>
+       subprocess queryPlugins [<search path> [<search path> [...]]]
+       subprocess queryOptions
+
+Commands:
+   run       Runs the Titanium Code Processor using the supplied config file in interactive mode
+   plugins   Queries the plugins in the default search path and the listed search paths
+   options   Queries the options
+
+Note: this interface is only intended for applications that subprocess the Titanium Code Processor</pre>
+ * @module CommandUsage
  */
 
 // *******************************
@@ -77,10 +91,10 @@
 /**
  * Queries the code processor options
  *
- * @module options
+ * @module OptionsSubcommand
  */
 /**
- * @name module:options.output
+ * @name module:OptionsSubcommand.output
  * @property {option} optionName The options for the plugin. The key is the name of the option
  */
 
@@ -91,10 +105,10 @@
 /**
  * Searches for plugins in the default path and the (optional) supplied search paths and queries them
  *
- * @module plugins
+ * @module PluginsSubcommand
  */
 /**
- * @name module:plugins.output
+ * @name module:PluginsSubcommand.output
  * @property {Object} pluginName A plugin entry. The actual key is the name of the plugin
  * @property {String} pluginName.path The path to the plugin
  * @property {Array[String]} pluginName.dependencies The plugin dependencies, with each entry being the plugin name
@@ -109,7 +123,7 @@
 /**
  * The run command runs the code processor using the supplied configuration file
  *
- * @module run
+ * @module RunSubcommand
  */
 
 // ******** Config File ********
@@ -117,7 +131,7 @@
 /**
  * The spec for the config file supplied to the run command
  *
- * @name module:run.ConfigFileFormat
+ * @name module:RunSubcommand.ConfigFileFormat
  * @property {String} entryPoint The path to the entry point file (a.k.a. app.js)
  * @property {Object} [log] Logging information. The information logged is the same information output to stdout when
  *		using the normal CLI interface, minus results
@@ -142,7 +156,7 @@
  * Message name: "exit"
  * </p>
  * @event
- * @name module:run.exitMessage
+ * @name module:RunSubcommand.exitMessage
  * @param {Undefined} request There is no request data
  * @param {Undefined} response There is no response data
  */
@@ -157,7 +171,7 @@
  * Message name: 'enteredFile'
  * </p>
  * @event
- * @name module:run.enteredFileMessage
+ * @name module:RunSubcommand.enteredFileMessage
  * @param {String} request The absolute path to the file that was just entered
  * @param {Undefined} response There is no response data
  */
@@ -170,7 +184,7 @@
  * Message name: 'projectProcessingBegin'
  * </p>
  * @event
- * @name module:run.projectProcessingBeginMessage
+ * @name module:RunSubcommand.projectProcessingBeginMessage
  * @param {Undefined} request There is no request data
  * @param {Undefined} response There is no response data
  */
@@ -183,7 +197,7 @@
  * Message name: 'projectProcessingEnd'
  * </p>
  * @event
- * @name module:run.projectProcessingEndMessage
+ * @name module:RunSubcommand.projectProcessingEndMessage
  * @param {Undefined} request There is no request data
  * @param {Undefined} response There is no response data
  */
