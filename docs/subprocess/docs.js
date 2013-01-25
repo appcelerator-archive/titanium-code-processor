@@ -201,3 +201,39 @@ Note: this interface is only intended for applications that subprocess the Titan
  * @param {Undefined} request There is no request data
  * @param {Undefined} response There is no response data
  */
+
+/**
+ * An error was found in the project
+ * <p>
+ * Initiated by: Code Processor
+ * <br/>
+ * Message Name: 'error'
+ * </p>
+ * @event
+ * @name module:RunSubcommand.errorMessage
+ * @param {Object} request The error that occured
+ * @param {String} request.filename The path to the file where the error occured
+ * @param {Number} request.line The line number where the error occured
+ * @param {Number} request.column The column number where the error occured
+ * @param {String} request.type The type of error (e.g. TypeError)
+ * @param {String} request.description A description of the error
+ * @param {Undefined} response There is no response data
+ */
+
+/**
+ * A warning was found in the project
+ * <p>
+ * Initiated by: Code Processor
+ * <br/>
+ * Message Name: 'warning'
+ * </p>
+ * @event
+ * @name module:RunSubcommand.warningMessage
+ * @param {Object} request The warning that occured
+ * @param {String} request.filename The path to the file where the warning occured
+ * @param {Number} request.line The line number where the warning occured
+ * @param {Number} request.column The column number where the warning occured
+ * @param {String} request.type The type of warning (e.g. TypeError)
+ * @param {String} request.description A description of the warning
+ * @param {Undefined} response There is no response data
+ */
