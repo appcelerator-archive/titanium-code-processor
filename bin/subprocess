@@ -145,23 +145,30 @@ function run() {
 	}
 
 	// Create the interface
-	/*studioInterface = appc.messaging.create('stdio');
+	studioInterface = appc.messaging.create('stdio');
 	studioInterface.open();
+
 	studioInterface.listen('exit', function (request, response) {
 		studioInterface.close();
 		process.exit(1); // TODO: update with something more advanced
-	});*/
+	});
+
+	function callback(error) {
+		if (error) {
+			Runtime.log('error', 'Error communicating with studio: ' + error);
+		}
+	}
 
 	Runtime.on('enteredFile', function(e) {
-		console.log('enteredFile', e.data.filename);
+		studioInterface.send('enteredFile', e.data.filename, callback);
 	});
 
 	Runtime.on('projectProcessingBegin', function() {
-		console.log('projectProcessingBegin');
+		studioInterface.send('projectProcessingBegin', undefined, callback);
 	});
 
 	Runtime.on('projectProcessingEnd', function() {
-		console.log('projectProcessingEnd');
+		studioInterface.send('projectProcessingEnd', undefined, callback);
 	});
 
 	Runtime.on('warningReported', function(e) {
@@ -172,7 +179,7 @@ function run() {
 			line: e.line,
 			column: e.column
 		};
-		console.log('warningReported', results);
+		studioInterface.send('warningReported', results, callback);
 	});
 
 	Runtime.on('errorReported', function(e) {
@@ -183,7 +190,7 @@ function run() {
 			line: e.line,
 			column: e.column
 		};
-		console.log('errorReported', results);
+		studioInterface.send('errorReported', results, callback);
 	});
 
 	Runtime.on('consoleOutput', function(e) {
@@ -191,10 +198,10 @@ function run() {
 			level: e.data.level,
 			message: e.data.message
 		};
-		console.log('consoleOutput', results);
+		studioInterface.send('consoleOutput', results, callback);
 	});
 
 	// Run the code processor
 	CodeProcessor.process(path.resolve(config.entryPoint), config.options, config.plugins, logger);
-	//studioInterface.close();
+	studioInterface.close();
 }
