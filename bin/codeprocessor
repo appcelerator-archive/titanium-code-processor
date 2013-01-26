@@ -105,7 +105,6 @@ if (!parsedOptions.silent) {
 			error: 5
 		}
 	});
-	CodeProcessor.setLogger(logger);
 }
 
 // Parse the config options
@@ -149,7 +148,6 @@ if (parsedOptions.config) {
 				process.exit(1);
 		}
 	}
-	CodeProcessor.setOptions(options);
 }
 
 // Calculate the project root
@@ -196,9 +194,8 @@ if (/\.js$/.test(projectRoot)) {
 			if (plugins['require-provider']) {
 				plugins['require-provider'].options.platform = parsedOptions.osname;
 			}
-			CodeProcessor.setPlugins(plugins);
 
-			result = CodeProcessor.process(projectRoot);
+			result = CodeProcessor.process(projectRoot, options, plugins, logger);
 			if (logger) {
 				logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
 				logger.log('info', util.inspect(CodeProcessor.getResults(), false, 4));
@@ -383,11 +380,10 @@ if (/\.js$/.test(projectRoot)) {
 								if (plugins['ti-api-processor']) {
 									plugins['ti-api-processor'].options.platform = parsedOptions.osname;
 								}
-								CodeProcessor.setPlugins(plugins);
 
 								// Process the code
 								startTime = (new Date()).getTime();
-								result = CodeProcessor.process(entryPoint);
+								result = CodeProcessor.process(entryPoint, options, plugins, logger);
 								results = CodeProcessor.getResults();
 								if (logger) {
 									logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
