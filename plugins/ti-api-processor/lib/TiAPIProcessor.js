@@ -362,18 +362,13 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 			});
 
 			// Fire the parsing begin event
-			Runtime.fireEvent('fileProcessingBegin', 'Processing is beginning for file "' + filePath + '"', {
+			Runtime.fireEvent('enteredFile', 'Processing is beginning for file "' + filePath + '"', {
 				filename: filePath
 			});
 
 			// Eval the code
 			evalFunc = Runtime.getGlobalObject().get('eval');
 			evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())], false, filePath);
-
-			// Fire the parsing end event
-			Runtime.fireEvent('fileProcessingEnd', 'Processing finished for file "' + filePath + '"', {
-				filename: filePath
-			});
 
 		} else {
 			eventDescription = 'The Ti.include path "' + filePath + '" could not be found';

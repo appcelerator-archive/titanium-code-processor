@@ -133,10 +133,14 @@ Note: this interface is only intended for applications that subprocess the Titan
  *
  * @name module:RunSubcommand.ConfigFileFormat
  * @property {String} entryPoint The path to the entry point file (a.k.a. app.js)
- * @property {Object} [log] Logging information. The information logged is the same information output to stdout when
+ * @property {Object} [logging] Logging information. The information logged is the same information output to stdout when
  *		using the normal CLI interface, minus results
- * @property {String} log.path The path to the log file. The file does not need to exist, but the directory does
- * @property {String} log.level The log level. One of "trace", "debug", "info", "notice", "warn", or "error"
+ * @property {Object} [logging.console] Options for the console log. If ommitted, nothing will be logged to the console
+ *		(ignored when using the subprocess command)
+ * @property {String} logging.console.level The log level. One of "trace", "debug", "info", "notice", "warn", or "error"
+ * @property {Object} [logging.file] Options for the file log. If ommitted, a file log will not be created
+ * @property {String} logging.file.path The path to the log file. The file does not need to exist, but the directory does
+ * @property {String} logging.file.level The log level. One of "trace", "debug", "info", "notice", "warn", or "error"
  * @property {Object} options The core code processor options (run 'subprocess options' to see the list of options)
  * @property {Any} options.optionName An option value. The object key is the name of the option
  * @property {Object} plugins The plugins to load and their options
@@ -233,7 +237,19 @@ Note: this interface is only intended for applications that subprocess the Titan
  * @param {String} request.filename The path to the file where the warning occured
  * @param {Number} request.line The line number where the warning occured
  * @param {Number} request.column The column number where the warning occured
- * @param {String} request.type The type of warning (e.g. TypeError)
+ * @param {String} request.type The type of warning (e.g. invalidPlatformReference)
  * @param {String} request.description A description of the warning
  * @param {Undefined} response There is no response data
+ */
+
+/**
+ * The program output some data to the console
+ * <p>
+ * Initiated by: Code Processor
+ * <br/>
+ * Message Name: 'consoleOutput'
+ * </p>
+ * @event
+ * @param {String} level The log level, e.g. 'error'
+ * @param {String} message The message output to the console
  */

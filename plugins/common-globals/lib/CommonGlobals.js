@@ -84,18 +84,22 @@ function ConsoleFunc(type, className) {
 }
 util.inherits(ConsoleFunc, Base.FunctionTypeBase);
 ConsoleFunc.prototype.call = function call(thisVal, args) {
+	var level = this._type,
+		message = [];
+	args.forEach(function (arg) {
+		if (Base.type(arg) === 'Unknown') {
+			message.push('<Unknown value>');
+		} else {
+			message.push(Base.toString(arg).value);
+		}
+	});
+	message = message.join(' ');
+	Runtime.fireEvent('consoleOutput', message, {
+		level: level,
+		message: message
+	});
 	if (Runtime.options.logConsoleCalls) {
-		console.log('program output [' + this._type + ']: ' + (function parseArgs() {
-			var str = [];
-			args.forEach(function (arg) {
-				if (Base.type(arg) === 'Unknown') {
-					str.push('<Unknown value>');
-				} else {
-					str.push(Base.toString(arg).value);
-				}
-			});
-			return str.join(' ');
-		})());
+		Runtime.log('program output [' + this._type + ']: ' + message);
 	}
 	return new Base.UndefinedType();
 };

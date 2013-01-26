@@ -209,10 +209,9 @@ function processFile(filename, createExports) {
 	if (existsSync(filename)) {
 
 		// Fire the parsing begin event
-		Runtime.fireEvent('fileProcessingBegin', 'Processing is beginning for file "' + filename + '"', {
+		Runtime.fireEvent('enteredFile', 'Entering file "' + filename + '"', {
 			filename: filename
 		});
-		Runtime.log('debug', 'Processing file ' + filename);
 
 		// Read in the file and generate the AST
 		root = AST.parse(filename);
@@ -248,11 +247,6 @@ function processFile(filename, createExports) {
 		if (createExports) {
 			results[1] = Base.type(context.thisBinding) === 'Unknown' ? new Base.UnknownType() : _module.get('exports');
 		}
-
-		// Fire the parsing end event
-		Runtime.fireEvent('fileProcessingEnd', 'Processing finished for file "' + filename + '"', {
-			filename: filename
-		});
 
 	} else {
 		throw new Error('Internal Error: could not find file "' + filename + '"');

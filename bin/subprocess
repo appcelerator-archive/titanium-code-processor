@@ -11,10 +11,12 @@ var path = require('path'),
 	fs = require('fs'),
 	existsSync = fs.existsSync || path.existsSync,
 
+	wrench = require('wrench'),
 	winston = require('winston'),
 	appc = require('node-appc'),
 
 	CodeProcessor = require(path.resolve(path.join(__dirname, '..'))),
+	Runtime = require(path.resolve(path.join(__dirname, '..', 'lib', 'Runtime'))),
 
 	command = process.argv[2];
 
@@ -80,36 +82,119 @@ function queryOptions() {
 
 function run() {
 
-	var configFile = process.argv[3],
-		studioInterface;
-	studioInterface = appc.messaging.create('stdio');
-	studioInterface.open();
+	var config = process.argv[3],
+		studioInterface,
+		filename,
+		logger;
 
 	// Parse the config file
-	if (typeof configFile === 'undefined') {
+	if (typeof config === 'undefined') {
 		console.error('Config file not specified');
 		process.exit(1);
 	}
-	if (!existsSync(configFile)) {
-		console.error('Could not find config file "' + configFile + '"');
+	if (!existsSync(config)) {
+		console.error('Could not find config file "' + config + '"');
 		process.exit(1);
 	}
 	try {
-		configFile = JSON.parse(configFile);
+		config = JSON.parse(fs.readFileSync(config));
 	} catch(e) {
 		console.error('Could not parse config file: ' + e);
 		process.exit(1);
 	}
 
 	// Validate the entry point
-	if (!configFile.entryPoint) {
+	if (!config.entryPoint) {
 		console.error('Missing entry point in config file');
 		process.exit(1);
 	}
+	if (!existsSync(config.entryPoint)) {
+		console.error('Could not find entry point "' + config.entryPoint + '"');
+		process.exit(1);
+	}
 
-	// Listen for the exit message
+	// Validate the logging and create the logger
+	if (config.logging && config.logging.file) {
+		filename = config.logging.file.path;
+		if (typeof filename === 'undefined') {
+			console.error('Path not specified in file logging section');
+			process.exit(1);
+		}
+		if (['trace', 'debug', 'info', 'notice', 'warn', 'error'].indexOf(config.logging.file.level) === -1) {
+			console.error('Unknown log level "' + config.logging.file.level + '"');
+		}
+		if (!existsSync(path.dirname(filename))) {
+			wrench.mkdirSyncRecursive(path.dirname(filename));
+		}
+		logger = new (winston.Logger)({
+			transports: [
+				new (winston.transports.File)({
+					filename: path.resolve(filename),
+					level: config.logging.file.level
+				})
+			],
+			levels: {
+				trace: 0,
+				debug: 1,
+				info: 2,
+				notice: 3,
+				warn: 4,
+				error: 5
+			}
+		});
+	}
+
+	// Create the interface
+	/*studioInterface = appc.messaging.create('stdio');
+	studioInterface.open();
 	studioInterface.listen('exit', function (request, response) {
 		studioInterface.close();
 		process.exit(1); // TODO: update with something more advanced
+	});*/
+
+	Runtime.on('enteredFile', function(e) {
+		console.log('enteredFile', e.data.filename);
 	});
+
+	Runtime.on('projectProcessingBegin', function() {
+		console.log('projectProcessingBegin');
+	});
+
+	Runtime.on('projectProcessingEnd', function() {
+		console.log('projectProcessingEnd');
+	});
+
+	Runtime.on('warningReported', function(e) {
+		var results = {
+			type: e.data.name,
+			description: e.data.description,
+			filename: e.filename,
+			line: e.line,
+			column: e.column
+		};
+		console.log('warningReported', results);
+	});
+
+	Runtime.on('errorReported', function(e) {
+		var results = {
+			type: e.data.name,
+			description: e.data.description,
+			filename: e.filename,
+			line: e.line,
+			column: e.column
+		};
+		console.log('errorReported', results);
+	});
+
+	Runtime.on('consoleOutput', function(e) {
+		var results = {
+			level: e.data.level,
+			message: e.data.message
+		};
+		console.log('consoleOutput', results);
+	});
+
+	// Run the code processor
+	CodeProcessor.process(path.resolve(config.entryPoint), config.options, config.plugins, logger);
+	//studioInterface.close();
 }
