@@ -13,88 +13,261 @@ var util = require('util'),
 	exec = require('child_process').exec,
 	existsSync = fs.existsSync || path.existsSync,
 
+	wrench = require('wrench'),
 	nomnom = require('nomnom'),
 	winston = require('winston'),
 	async = require('async'),
 	xml2js = require('xml2js'),
-	request = require('request'),
 	Table = require('cli-table'),
 
+	appc = require('node-appc'),
+
 	CodeProcessor = require(path.resolve(path.join(__dirname, '..'))),
+	Runtime = require(path.resolve(path.join(__dirname, '..', 'lib', 'Runtime'))),
 
-// ******** CLI Options Parsing ********
+	subcommand = process.argv.splice(2, 1)[0];
 
-// Process the cli args
-	parsedOptions = nomnom
-		.option('plugin', {
-			abbr: 'p',
-			metavar: 'MODULE_NAME',
-			list: true,
-			type: 'string',
-			help: 'Name of the plugin module to include'
-		})
-		.option('config', {
-			abbr: 'c',
-			metavar: 'CONFIG_OPTION=VALUE',
-			list: true,
-			help: 'Processor options, defined as "key=value"'
-		})
-		.option('verbose', {
-			abbr: 'v',
-			flag: true,
-			help: 'Enable verbose logging. Equivalent to "-l debug"'
-		})
-		.option('log-level', {
-			abbr: 'l',
-			metavar: 'LOG_LEVEL',
-			default: 'info',
-			help: 'The logging level',
-			choices: ['error', 'warn', 'notice', 'info', 'debug', 'trace']
-		})
-		.option('silent', {
-			abbr: 's',
-			flag: true,
-			help: 'Suppresses all output, including errors, and only prints the results. Useful when combined with -j'
-		})
-		.option('json', {
-			abbr: 'j',
-			flag: true,
-			help: 'Outputs the results in JSON format'
-		})
-		.option('osname', {
-			abbr: 'o',
-			metavar: 'PLATFORM',
-			help: 'The name of the OS being built-for. Reflected in code via Ti.Platform.osname',
-			choices: ['ios', 'iphone', 'ipad', 'android', 'mobileweb'],
-			required: true
-		})
-		.option('report', {
-			abbr: 'r',
-			help: 'Generates a report after the code processor has run to send to Appcelerator for debugging',
-			flag: true
-		})
-		.option('report-with-message', {
-			abbr: 'm',
-			help: 'Generates a report after the code processor has run to send to Appcelerator for debugging along with a custom message',
-		})
-		.script('titanium-code-processor -o <platform> [project-dir]')
-		.help('Processes the supplied project using the given plugins.')
-		.nom(),
-	i,
-	len,
-	configOption,
-	options = {},
-	projectRoot = '.',
-	entryPoint,
-	startTime,
-	result,
-	logger;
+switch(subcommand) {
+	case 'plugins':
+		queryPlugins();
+		break;
+	case 'options':
+		queryOptions();
+		break;
+	case 'analyze':
+		analyze();
+		break;
+	case 'subprocess':
+		subprocess();
+		break;
+	case 'help':
+		printHelp();
+		break;
+	case undefined:
+		console.log('\nMissing sub-command');
+		printHelp();
+		process.exit(1);
+		break;
+	default:
+		console.log('\nUnknown sub-command "' + subcommand + '"');
+		printHelp();
+		process.exit(1);
+		break;
+}
 
-if (!parsedOptions.silent) {
+function printHelp() {
+	console.log(
+		'\n' +
+		'Usage: titanium-code-processor analyze [options]\n' +
+		'       titanium-code-processor subprocess <config-file-path>\n' +
+		'       titanium-code-processor queryPlugins [<search path> [<search path> [...]]]\n' +
+		'       titanium-code-processor queryOptions\n\n' +
+		'Sub-commands:\n' +
+		'   analyze      Analysis a project\n' +
+		'   subprocess   Analysis a project using the supplied config file in subprocess mode\n' +
+		'   plugins      Queries the plugins in the default search path and the listed search paths\n' +
+		'   options      Queries the options\n');
+}
+
+function queryPlugins() {
+	CodeProcessor.queryPlugins([], function (err, results) {
+		if (err) {
+			console.error(err);
+			process.exit(1);
+		} else {
+			console.log(JSON.stringify(results, false, '\t'));
+		}
+	});
+}
+
+function queryOptions() {
+	CodeProcessor.queryOptions(function (err, results) {
+		if (err) {
+			console.error(err);
+			process.exit(1);
+		} else {
+			console.log(JSON.stringify(results, false, '\t'));
+		}
+	});
+}
+
+function subprocess() {
+	var config = process.argv[2],
+		studioInterface,
+		filename,
+		logger;
+
+	// Parse the config file
+	if (typeof config === 'undefined') {
+		console.error('Config file not specified');
+		process.exit(1);
+	}
+	if (!existsSync(config)) {
+		console.error('Could not find config file "' + config + '"');
+		process.exit(1);
+	}
+	try {
+		config = JSON.parse(fs.readFileSync(config));
+	} catch(e) {
+		console.error('Could not parse config file: ' + e);
+		process.exit(1);
+	}
+
+	// Validate the entry point
+	if (!config.entryPoint) {
+		console.error('Missing entry point in config file');
+		process.exit(1);
+	}
+	if (!existsSync(config.entryPoint)) {
+		console.error('Could not find entry point "' + config.entryPoint + '"');
+		process.exit(1);
+	}
+
+	// Validate the logging and create the logger
+	if (config.logging && config.logging.file) {
+		filename = config.logging.file.path;
+		if (typeof filename === 'undefined') {
+			console.error('Path not specified in file logging section');
+			process.exit(1);
+		}
+		if (['trace', 'debug', 'info', 'notice', 'warn', 'error'].indexOf(config.logging.file.level) === -1) {
+			console.error('Unknown log level "' + config.logging.file.level + '"');
+		}
+		if (!existsSync(path.dirname(filename))) {
+			wrench.mkdirSyncRecursive(path.dirname(filename));
+		}
+		logger = new (winston.Logger)({
+			transports: [
+				new (winston.transports.File)({
+					filename: path.resolve(filename),
+					level: config.logging.file.level
+				})
+			],
+			levels: {
+				trace: 0,
+				debug: 1,
+				info: 2,
+				notice: 3,
+				warn: 4,
+				error: 5
+			}
+		});
+	}
+
+	// Create the interface
+	studioInterface = appc.messaging.create('stdio');
+	studioInterface.open();
+
+	studioInterface.listen('exit', function (request, response) {
+		studioInterface.close();
+		process.exit(1); // TODO: update with something more advanced
+	});
+
+	function callback(error) {
+		if (error) {
+			Runtime.log('error', 'Error communicating with studio: ' + error);
+		}
+	}
+
+	Runtime.on('enteredFile', function(e) {
+		studioInterface.send('enteredFile', e.data.filename, callback);
+	});
+
+	Runtime.on('projectProcessingBegin', function() {
+		studioInterface.send('projectProcessingBegin', undefined, callback);
+	});
+
+	Runtime.on('projectProcessingEnd', function() {
+		studioInterface.send('projectProcessingEnd', undefined, callback);
+	});
+
+	Runtime.on('warningReported', function(e) {
+		var results = {
+			type: e.data.name,
+			description: e.data.description,
+			filename: e.filename,
+			line: e.line,
+			column: e.column
+		};
+		studioInterface.send('warningReported', results, callback);
+	});
+
+	Runtime.on('errorReported', function(e) {
+		var results = {
+			type: e.data.name,
+			description: e.data.description,
+			filename: e.filename,
+			line: e.line,
+			column: e.column
+		};
+		studioInterface.send('errorReported', results, callback);
+	});
+
+	Runtime.on('consoleOutput', function(e) {
+		var results = {
+			level: e.data.level,
+			message: e.data.message
+		};
+		studioInterface.send('consoleOutput', results, callback);
+	});
+
+	// Run the code processor
+	CodeProcessor.process(path.resolve(config.entryPoint), config.options, config.plugins, logger);
+	studioInterface.close();
+}
+
+function analyze() {
+	var parsedOptions = nomnom
+			.option('plugin', {
+				abbr: 'p',
+				metavar: 'MODULE_NAME',
+				list: true,
+				type: 'string',
+				help: 'Name of the plugin module to include'
+			})
+			.option('config', {
+				abbr: 'c',
+				metavar: 'CONFIG_OPTION=VALUE',
+				list: true,
+				help: 'Processor options, defined as "key=value"'
+			})
+			.option('log-level', {
+				abbr: 'l',
+				metavar: 'LOG_LEVEL',
+				default: 'info',
+				help: 'The logging level',
+				choices: ['error', 'warn', 'notice', 'info', 'debug', 'trace']
+			})
+			.option('osname', {
+				abbr: 'o',
+				metavar: 'PLATFORM',
+				help: 'The name of the OS being built-for. Reflected in code via Ti.Platform.osname',
+				choices: ['ios', 'iphone', 'ipad', 'android', 'mobileweb'],
+				required: true
+			})
+			.option('project-dir', {
+				abbr: 'd',
+				metavar: 'PROJECT_DIR',
+				help: 'The path to the project or file to analyze',
+				type: 'string'
+			})
+			.script('titanium-code-processor <sub-command> [options]')
+			.help('Processes the supplied project using the given plugins.')
+			.nom(),
+		i,
+		len,
+		configOption,
+		options = {},
+		projectRoot = '.',
+		entryPoint,
+		startTime,
+		result,
+		logger;
+
 	// Create the logger
 	logger = new (winston.Logger)({
 		transports: [
-			new (winston.transports.Console)({ level: parsedOptions.verbose ? 'trace' : parsedOptions['log-level'] })
+			new (winston.transports.Console)({ level: parsedOptions['log-level'] })
 		],
 		levels: {
 			trace: 0,
@@ -105,292 +278,298 @@ if (!parsedOptions.silent) {
 			error: 5
 		}
 	});
-}
 
-// Parse the config options
-if (parsedOptions.config) {
-	for(i = 0, len = parsedOptions.config.length; i < len; i++) {
-		configOption = parsedOptions.config[i].split('=');
-		if (configOption.length !== 2) {
-			console.error('Invalid option "' + parsedOptions.config[i] + '"\n');
-			process.exit(1);
-		}
-		switch(configOption[0]) {
-			case 'invokeMethods':
-				options.invokeMethods = configOption[1] === 'true';
-				break;
-			case 'evaluateLoops':
-				options.evaluateLoops = configOption[1] === 'true';
-				break;
-			case 'maxLoopIterations':
-				options.maxLoopIterations = parseInt(configOption[1], 10);
-				break;
-			case 'maxRecursionLimit':
-				options.maxRecursionLimit = parseInt(configOption[1], 10);
-				break;
-			case 'logConsoleCalls':
-				options.logConsoleCalls = configOption[1] === 'true';
-				break;
-			case 'executionTimeLimit':
-				options.executionTimeLimit = parseInt(configOption[1], 10);
-				break;
-			case 'exactMode':
-				options.exactMode = configOption[1] === 'true';
-				break;
-			case 'nativeExceptionRecovery':
-				options.nativeExceptionRecovery = configOption[1] === 'true';
-				break;
-			case 'processUnvisitedCode':
-				options.processUnvisitedCode = configOption[1] === 'true';
-				break;
-			default:
+	// Parse the config options
+	if (parsedOptions.config) {
+		for(i = 0, len = parsedOptions.config.length; i < len; i++) {
+			configOption = parsedOptions.config[i].split('=');
+			if (configOption.length !== 2) {
 				console.error('Invalid option "' + parsedOptions.config[i] + '"\n');
 				process.exit(1);
+			}
+			switch(configOption[0]) {
+				case 'invokeMethods':
+					options.invokeMethods = configOption[1] === 'true';
+					break;
+				case 'evaluateLoops':
+					options.evaluateLoops = configOption[1] === 'true';
+					break;
+				case 'maxLoopIterations':
+					options.maxLoopIterations = parseInt(configOption[1], 10);
+					break;
+				case 'maxRecursionLimit':
+					options.maxRecursionLimit = parseInt(configOption[1], 10);
+					break;
+				case 'logConsoleCalls':
+					options.logConsoleCalls = configOption[1] === 'true';
+					break;
+				case 'executionTimeLimit':
+					options.executionTimeLimit = parseInt(configOption[1], 10);
+					break;
+				case 'exactMode':
+					options.exactMode = configOption[1] === 'true';
+					break;
+				case 'nativeExceptionRecovery':
+					options.nativeExceptionRecovery = configOption[1] === 'true';
+					break;
+				case 'processUnvisitedCode':
+					options.processUnvisitedCode = configOption[1] === 'true';
+					break;
+				default:
+					console.error('Invalid option "' + parsedOptions.config[i] + '"\n');
+					process.exit(1);
+			}
 		}
 	}
-}
 
-// Calculate the project root
-if (parsedOptions[0]) {
-	projectRoot = parsedOptions[0];
-}
-projectRoot = path.resolve(projectRoot);
+	// Calculate the project root
+	if (parsedOptions['project-dir']) {
+		projectRoot = parsedOptions['project-dir'];
+	}
+	projectRoot = path.resolve(projectRoot);
 
-// Make sure that the project exists
-if (!existsSync(projectRoot)) {
-	console.error('project root "' + projectRoot + '" does not exist.\n');
-	process.exit(1);
-}
-
-// Check if we are processing a project or a single file
-if (/\.js$/.test(projectRoot)) {
-	CodeProcessor.queryPlugins([], function(err, results) {
-		setTimeout(function () { // Set timeout is used to clean up/reduce the stack
-			var plugins = {},
-				pluginList = parsedOptions.plugin,
-				i, len,
-				plugin,
-				tiRegex = /^ti-/;
-			startTime = (new Date()).getTime();
-
-			// Parse the plugins
-			for(i = 0, len = pluginList.length; i < len; i++) {
-				plugin = pluginList[i];
-				if (plugin in results) {
-					if (tiRegex.test(plugin)) {
-						if (logger) {
-							logger.warn('Titanium plugins are not supported when parsing individual files');
-						}
-					} else {
-						plugins[plugin] = {
-							path: results[plugin].path,
-							options: {}
-						};
-					}
-				} else if (logger) {
-					logger.warn('Plugin "' + pluginList[i] + '" is unknown');
-				}
-			}
-			if (plugins['require-provider']) {
-				plugins['require-provider'].options.platform = parsedOptions.osname;
-			}
-
-			result = CodeProcessor.process(projectRoot, options, plugins, logger);
-			if (logger) {
-				logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
-				logger.log('info', util.inspect(CodeProcessor.getResults(), false, 4));
-			}
-
-			process.exit(result && result[0] === 'normal' ? 0 : 1);
-		}, 0);
-	});
-} else {
-	entryPoint = path.join(projectRoot, 'Resources', 'app.js');
-	if (!existsSync(entryPoint)) {
-		console.error(projectRoot + ' does not appear to be a valid Titanium Mobile project.\n');
+	// Make sure that the project exists
+	if (!existsSync(projectRoot)) {
+		console.error('project root "' + projectRoot + '" does not exist.\n');
 		process.exit(1);
-	} else {
-		if (logger) {
-			logger.info('Analyzing project at "' + projectRoot + '"');
-		}
-		exec('titanium project --project-dir "' + projectRoot + '"', function (err) {
-			var tasks = {
-				tiappxml: function (next) {
-					(new xml2js.Parser()).parseString(fs.readFileSync(path.join(projectRoot, 'tiapp.xml')), function (err, data) {
-						if (err) {
-							next(err);
-						} else {
-							next(null, data);
-						}
-					});
-				},
-				modules: function (next) {
-					exec('titanium module -o json --project-dir "' + projectRoot + '"', function (err, stdout) {
-						if (err) {
-							next(err);
-						} else {
-							next(null, JSON.parse(stdout));
-						}
-					});
-				},
-				project: function (next) {
-					exec('titanium project -o json --project-dir "' + projectRoot + '"', function (err, stdout) {
-						if (err) {
-							next(err);
-						} else {
-							next(null, JSON.parse(stdout));
-						}
-					});
-				},
-				info: function (next) {
-					exec('titanium info -t titanium -o json', function (err, stdout) {
-						if (err) {
-							next(err);
-						} else {
-							next(null, JSON.parse(stdout));
-						}
-					});
-				}
-			};
+	}
 
-			if (err) {
+	// Check if we are processing a project or a single file
+	if (/\.js$/.test(projectRoot)) {
+		CodeProcessor.queryPlugins([], function(err, results) {
+			setTimeout(function () { // Set timeout is used to clean up/reduce the stack
+				var plugins = {},
+					pluginList = parsedOptions.plugin || [],
+					i, len,
+					plugin,
+					tiRegex = /^ti-/;
+				startTime = (new Date()).getTime();
+
+				// Parse the plugins
+				for(i = 0, len = pluginList.length; i < len; i++) {
+					plugin = pluginList[i];
+					if (plugin in results) {
+						if (tiRegex.test(plugin)) {
+							if (logger) {
+								logger.warn('Titanium plugins are not supported when parsing individual files');
+							}
+						} else {
+							plugins[plugin] = {
+								path: results[plugin].path,
+								options: {}
+							};
+						}
+					} else if (logger) {
+						logger.warn('Plugin "' + pluginList[i] + '" is unknown');
+					}
+				}
+				if (plugins['require-provider']) {
+					plugins['require-provider'].options.platform = parsedOptions.osname;
+				}
+
+				result = CodeProcessor.process(projectRoot, options, plugins, logger);
 				if (logger) {
-					logger.error('Could not run the "titanium project" command: ' + err +
-						'Make sure that the Titanium CLI is installed and a 3.0 or newer SDK is installed.\n');
+					logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
+					logger.log('info', util.inspect(CodeProcessor.getResults(), false, 4));
 				}
-			} else {
-				async.parallel(tasks, function (err, result) {
-					if (err) {
-						if (logger) {
-							logger.error(err);
-						}
-					} else {
 
-						// Create the plugin info
-						CodeProcessor.queryPlugins([], function(err, results) {
-							setTimeout(function () {
-								var sdkVersion,
-									sdkInfo,
-									projectModules,
-									globalModules,
-									moduleList,
-									entry,
-									entries,
-									table,
-									modules = {},
-									i, len,
-									pluginResults,
-									pluginList = parsedOptions.plugin,
-									plugins = {},
-									plugin;
+				process.exit(result && result[0] === 'normal' ? 0 : 1);
+			}, 0);
+		});
+	} else {
+		entryPoint = path.join(projectRoot, 'Resources', 'app.js');
+		if (!existsSync(entryPoint)) {
+			console.error(projectRoot + ' does not appear to be a valid Titanium Mobile project.\n');
+			process.exit(1);
+		} else {
+			if (logger) {
+				logger.info('Analyzing project at "' + projectRoot + '"');
+			}
+			exec('titanium project --project-dir "' + projectRoot + '"', function (err) {
+				var tasks = {
+					tiappxml: function (next) {
+						(new xml2js.Parser()).parseString(fs.readFileSync(path.join(projectRoot, 'tiapp.xml')), function (err, data) {
+							if (err) {
+								next(err);
+							} else {
+								next(null, data);
+							}
+						});
+					},
+					modules: function (next) {
+						exec('titanium module -o json --project-dir "' + projectRoot + '"', function (err, stdout) {
+							if (err) {
+								next(err);
+							} else {
+								next(null, JSON.parse(stdout));
+							}
+						});
+					},
+					project: function (next) {
+						exec('titanium project -o json --project-dir "' + projectRoot + '"', function (err, stdout) {
+							if (err) {
+								next(err);
+							} else {
+								next(null, JSON.parse(stdout));
+							}
+						});
+					},
+					info: function (next) {
+						exec('titanium info -t titanium -o json', function (err, stdout) {
+							if (err) {
+								next(err);
+							} else {
+								next(null, JSON.parse(stdout));
+							}
+						});
+					}
+				};
 
-								// Parse the plugins
-								for(i = 0, len = pluginList.length; i < len; i++) {
-									plugin = pluginList[i];
-									if (plugin in results) {
-										plugins[plugin] = {
-											path: results[plugin].path,
-											options: {}
-										};
-									} else if (logger) {
-										logger.warn('Plugin "' + pluginList[i] + '" is unknown');
-									}
-								}
+				if (err) {
+					if (logger) {
+						logger.error('Could not run the "titanium project" command: ' + err +
+							'Make sure that the Titanium CLI is installed and a 3.0 or newer SDK is installed.\n');
+					}
+				} else {
+					async.parallel(tasks, function (err, result) {
+						if (err) {
+							if (logger) {
+								logger.error(err);
+							}
+						} else {
 
-								// Parse the CLI queries
-								if (result.info && result.modules && result.project) {
+							// Create the plugin info
+							CodeProcessor.queryPlugins([], function(err, results) {
+								setTimeout(function () {
+									var sdkVersion,
+										sdkInfo,
+										projectModules,
+										globalModules,
+										moduleList,
+										entry,
+										entries,
+										table,
+										modules = {},
+										i, len,
+										pluginResults,
+										pluginList = parsedOptions.plugin,
+										plugins = {},
+										plugin;
 
-									// Get the SDK path
-									sdkVersion = result.tiappxml['ti:app']['sdk-version'];
-									if (sdkVersion) {
-										sdkVersion = sdkVersion[0].match(/^([0-9]\.[0-9]\.[0-9]).*$/)[1];
-									} else {
-										sdkVersion = Object.keys(result.info.titanium).sort().pop();
-									}
-									sdkInfo = result.info.titanium[sdkVersion];
-									if (!sdkInfo) {
-										if (result.info.titanium[sdkVersion + '.GA']) {
-											sdkVersion = sdkVersion + '.GA';
-											sdkInfo = result.info.titanium[sdkVersion];
-										} else {
-											if (logger) {
-												logger.error('SDK version ' + sdkVersion + ' is not available\n');
+									if (pluginList) {
+										for(i = 0, len = pluginList.length; i < len; i++) {
+											plugin = pluginList[i];
+											if (plugin in results) {
+												plugins[plugin] = {
+													path: results[plugin].path,
+													options: {}
+												};
+											} else if (logger) {
+												logger.warn('Plugin "' + pluginList[i] + '" is unknown');
 											}
-											process.exit(1);
+										}
+									} else {
+										for(plugin in results) {
+											plugins[plugin] = {
+												path: results[plugin].path,
+												options: {}
+											};
 										}
 									}
-									if (plugins['ti-api-processor']) {
-										plugins['ti-api-processor'].options.sdkPath = sdkInfo.path;
-									}
 
-									// Get the list of modules from the tiapp.xml
-									projectModules = result.modules.project;
-									globalModules = result.modules.global;
-									moduleList = result.tiappxml['ti:app'].modules && result.tiappxml['ti:app'].modules[0].module;
-									if (moduleList) {
-										moduleList.forEach(function (module) {
-											var platform = module.$.platform,
-												name = module._,
-												version = module.$.version,
-												moduleEntry;
-											if (platform) {
-												if (!modules[platform]) {
-													modules[platform] = {};
+									// Parse the CLI queries
+									if (result.info && result.modules && result.project) {
+
+										// Get the SDK path
+										sdkVersion = result.tiappxml['ti:app']['sdk-version'];
+										if (sdkVersion) {
+											sdkVersion = sdkVersion[0].match(/^([0-9]\.[0-9]\.[0-9]).*$/)[1];
+										} else {
+											sdkVersion = Object.keys(result.info.titanium).sort().pop();
+										}
+										sdkInfo = result.info.titanium[sdkVersion];
+										if (!sdkInfo) {
+											if (result.info.titanium[sdkVersion + '.GA']) {
+												sdkVersion = sdkVersion + '.GA';
+												sdkInfo = result.info.titanium[sdkVersion];
+											} else {
+												if (logger) {
+													logger.error('SDK version ' + sdkVersion + ' is not available\n');
 												}
-												if (platform === 'commonjs') {
-													if (projectModules && projectModules.commonjs && projectModules.commonjs[name]) {
-														moduleEntry = projectModules.commonjs[name];
-													} else if (globalModules && globalModules.commonjs && globalModules.commonjs[name]) {
-														moduleEntry = globalModules.commonjs[name];
+												process.exit(1);
+											}
+										}
+										if (plugins['ti-api-processor']) {
+											plugins['ti-api-processor'].options.sdkPath = sdkInfo.path;
+										}
+
+										// Get the list of modules from the tiapp.xml
+										projectModules = result.modules.project;
+										globalModules = result.modules.global;
+										moduleList = result.tiappxml['ti:app'].modules && result.tiappxml['ti:app'].modules[0].module;
+										if (moduleList) {
+											moduleList.forEach(function (module) {
+												var platform = module.$.platform,
+													name = module._,
+													version = module.$.version,
+													moduleEntry;
+												if (platform) {
+													if (!modules[platform]) {
+														modules[platform] = {};
 													}
-													if (moduleEntry) {
-														if (version) {
-															moduleEntry = moduleEntry[version];
-															if (!moduleEntry) {
-																logger.error('Version ' + version + ' of ' + name + ' does not exist');
-																process.exit(1);
-															}
-														} else {
-															moduleEntry = moduleEntry[Object.keys(moduleEntry).sort().pop()];
+													if (platform === 'commonjs') {
+														if (projectModules && projectModules.commonjs && projectModules.commonjs[name]) {
+															moduleEntry = projectModules.commonjs[name];
+														} else if (globalModules && globalModules.commonjs && globalModules.commonjs[name]) {
+															moduleEntry = globalModules.commonjs[name];
 														}
-														modules[platform][name] = path.join(moduleEntry.modulePath, JSON.parse(
-															fs.readFileSync(path.join(moduleEntry.modulePath, 'package.json'))).main + '.js');
+														if (moduleEntry) {
+															if (version) {
+																moduleEntry = moduleEntry[version];
+																if (!moduleEntry) {
+																	logger.error('Version ' + version + ' of ' + name + ' does not exist');
+																	process.exit(1);
+																}
+															} else {
+																moduleEntry = moduleEntry[Object.keys(moduleEntry).sort().pop()];
+															}
+															modules[platform][name] = path.join(moduleEntry.modulePath, JSON.parse(
+																fs.readFileSync(path.join(moduleEntry.modulePath, 'package.json'))).main + '.js');
+														}
+													} else {
+														modules[platform][name] = '';
 													}
 												} else {
-													modules[platform][name] = '';
+													if (!modules[parsedOptions.osname]) {
+														modules[parsedOptions.osname] = {};
+													}
+													modules[parsedOptions.osname][name] = ''; // Kinda hacky, but good enough for this script
 												}
-											} else {
-												if (!modules[parsedOptions.osname]) {
-													modules[parsedOptions.osname] = {};
-												}
-												modules[parsedOptions.osname][name] = ''; // Kinda hacky, but good enough for this script
-											}
-										});
+											});
+										}
+										if (plugins['require-provider']) {
+											plugins['require-provider'].options.modules = modules;
+										}
 									}
 									if (plugins['require-provider']) {
-										plugins['require-provider'].options.modules = modules;
+										plugins['require-provider'].options.platform = parsedOptions.osname;
 									}
-								}
-								if (plugins['require-provider']) {
-									plugins['require-provider'].options.platform = parsedOptions.osname;
-								}
-								if (plugins['ti-api-platform-validator']) {
-									plugins['ti-api-platform-validator'].options.platform = parsedOptions.osname;
-								}
-								if (plugins['ti-api-processor']) {
-									plugins['ti-api-processor'].options.platform = parsedOptions.osname;
-								}
+									if (plugins['ti-api-platform-validator']) {
+										plugins['ti-api-platform-validator'].options.platform = parsedOptions.osname;
+									}
+									if (plugins['ti-api-processor']) {
+										plugins['ti-api-processor'].options.platform = parsedOptions.osname;
+									}
 
-								// Process the code
-								startTime = (new Date()).getTime();
-								result = CodeProcessor.process(entryPoint, options, plugins, logger);
-								results = CodeProcessor.getResults();
-								if (logger) {
-									logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
-								}
-								if (parsedOptions.json) {
-									console.log(JSON.stringify(results, false, '\t'));
-								} else {
+									// Process the code
+									startTime = (new Date()).getTime();
+									result = CodeProcessor.process(entryPoint, options, plugins, logger);
+									results = CodeProcessor.getResults();
+									if (logger) {
+										logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
+									}
+
+									// Log the results
 									console.log();
 									if (results.errors.length) {
 										console.log('Errors');
@@ -595,42 +774,12 @@ if (/\.js$/.test(projectRoot)) {
 										}
 										console.log(table.toString() + '\n');
 									}
-								}
-
-								// Send the results to Appcelerator, if requested
-								if (parsedOptions.report || parsedOptions['report-with-message']) {
-									if (logger) {
-										logger.log('info', 'Sending report to Appcelerator');
-									}
-									request({
-										url: 'http://50a6d9218978de8f33002638.cloudapp-preview.appcelerator.com',
-										method: 'POST',
-										json: {
-											id: 'bhughes@appcelerator.com',
-											results: CodeProcessor.getResults(),
-											message: parsedOptions['report-with-message']
-										}
-									}, function (error, response, body) {
-										if (logger) {
-											if (body && body.error) {
-												logger.log('error', 'Could not send report: ' + body.error);
-											} else if (body && body.success) {
-												logger.log('info', 'Report sent successfully');
-											} else {
-												logger.log('error', 'Could not send report: invalid server response');
-											}
-										}
-										process.exit(result && result[0] === 'normal' ? 0 : 1);
-									});
-								} else {
-									process.exit(result && result[0] === 'normal' ? 0 : 1);
-								}
-							}, 0);
-						});
-					}
-				});
-			}
-		});
+								}, 0);
+							});
+						}
+					});
+				}
+			});
+		}
 	}
 }
-
