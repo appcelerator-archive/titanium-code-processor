@@ -1,3 +1,13 @@
+## 0.2.3
+
+### Bug Fixes
+* Fixed a bug where the code processor crashes when encountering a reference to an undeclared variable that is named the same as an Object prototype property
+
+## 0.2.2 (20 Janurary 2013)
+
+### Bug Fixes
+* Fixed property references on Ti objects being ignored
+
 ## 0.2.1 (20 January 2013)
 
 ### New Features

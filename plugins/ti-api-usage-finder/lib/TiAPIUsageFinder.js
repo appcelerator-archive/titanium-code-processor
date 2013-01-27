@@ -32,6 +32,14 @@ module.exports = function () {
 			results[name] = 1;
 		}
 	});
+	Runtime.on('tiPropertySet', function(e) {
+		var name = e.data.name;
+		if (results[name]) {
+			results[name] += 1;
+		} else {
+			results[name] = 1;
+		}
+	});
 };
 
 /**
