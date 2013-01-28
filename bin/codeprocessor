@@ -213,7 +213,9 @@ function subprocess() {
 
 	// Run the code processor
 	CodeProcessor.process(path.resolve(config.entryPoint), config.options, config.plugins, logger);
-	studioInterface.close();
+	studioInterface.send('results', CodeProcessor.getResults(), function () {
+		studioInterface.close();
+	});
 }
 
 function analyze() {
