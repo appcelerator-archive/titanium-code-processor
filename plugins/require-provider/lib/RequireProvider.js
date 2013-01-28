@@ -11,10 +11,10 @@ var util = require('util'),
 	fs = require('fs'),
 	existsSync = fs.existsSync || path.existsSync,
 
-	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
-	AST = require(path.join(global.nodeCodeProcessorLibDir, 'AST')),
-	RuleProcessor = require(path.join(global.nodeCodeProcessorLibDir, 'RuleProcessor')),
+	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
+	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+	AST = require(path.join(global.titaniumCodeProcessorLibDir, 'AST')),
+	RuleProcessor = require(path.join(global.titaniumCodeProcessorLibDir, 'RuleProcessor')),
 
 	pluginRegExp = /^(.+?)\!(.*)$/,
 	fileRegExp = /\.js$/,
@@ -36,7 +36,14 @@ var util = require('util'),
  */
 module.exports = function (options) {
 	platform = options.platform;
-	modules = options.modules;
+	modules = options.modules || {};
+
+	if (!platform) {
+		throw new Error('No platform specified in require-provider plugin options');
+	}
+	if (platformList.indexOf(platform) === -1) {
+		throw new Error('Invalid platform specified in require-provider plugin options: ' + platform);
+	}
 
 	Runtime.isFileValid = function isFileValid(filename) {
 		var rootDir = filename.split(path.sep)[0];
@@ -95,7 +102,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 	} else {
 
 		// Determine if this is a Titanium module
-		if (modules.commonjs && modules.commonjs && modules.commonjs.hasOwnProperty(name)) {
+		if (modules.commonjs && modules.commonjs.hasOwnProperty(name)) {
 			isModule = true;
 			filePath = modules.commonjs[name];
 		} else if (modules[platform] && modules[platform] && modules[platform].hasOwnProperty(name)) {
@@ -205,10 +212,9 @@ function processFile(filename, createExports) {
 	if (existsSync(filename)) {
 
 		// Fire the parsing begin event
-		Runtime.fireEvent('fileProcessingBegin', 'Processing is beginning for file "' + filename + '"', {
+		Runtime.fireEvent('enteredFile', 'Entering file "' + filename + '"', {
 			filename: filename
 		});
-		Runtime.log('debug', 'Processing file ' + filename);
 
 		// Read in the file and generate the AST
 		root = AST.parse(filename);
@@ -244,11 +250,6 @@ function processFile(filename, createExports) {
 		if (createExports) {
 			results[1] = Base.type(context.thisBinding) === 'Unknown' ? new Base.UnknownType() : _module.get('exports');
 		}
-
-		// Fire the parsing end event
-		Runtime.fireEvent('fileProcessingEnd', 'Processing finished for file "' + filename + '"', {
-			filename: filename
-		});
 
 	} else {
 		throw new Error('Internal Error: could not find file "' + filename + '"');

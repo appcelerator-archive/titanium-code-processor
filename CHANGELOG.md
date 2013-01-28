@@ -1,4 +1,13 @@
-## 0.2.3
+## 0.3.0
+
+### New Features
+* Reworked the CLI interface to be much more robust
+** The code processor now takes a sub-command, one of 'options', 'plugins', 'analyze', and 'subprocess'
+** The 'subprocess' sub-command provides an interactive, structured mechanism for calling the code processor from other programs
+* Plugins can now take options
+** Options must be specified using a configuration file, currently only available through the subprocess interface
+* Plugins can now reside anywhere
+** To specify plugins in another location, they must be specified in a configuration file, currently only available through the subprocess interface
 
 ### Bug Fixes
 * Fixed a bug where the code processor crashes when encountering a reference to an undeclared variable that is named the same as an Object prototype property
