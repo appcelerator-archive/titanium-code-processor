@@ -6,9 +6,9 @@
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
- 
+
 var path = require('path'),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
+	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	results = {
 		resolved: [],
 		unresolved: [],

@@ -4,6 +4,10 @@
 	"description": "A plugin for ti-code-processor that finds all require() files",
 	"version": "0.1.0",
 	"main": "lib/RequireFinder.js",
+	"dependencies": {
+		"require-provider": "*"
+	},
+	"options": {},
 	"engines": {
 		"node": ">=0.8"
 	}

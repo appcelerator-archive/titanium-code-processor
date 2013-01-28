@@ -9,9 +9,11 @@
  */
 
 var path = require('path'),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
-	
-	results = {};
+	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+
+	results = {},
+
+	platformList = ['android', 'mobileweb', 'iphone', 'ios', 'ipad'];
 
 // ******** Plugin API Methods ********
 
@@ -24,36 +26,42 @@ var path = require('path'),
  * @name module:plugins/TiAPIPlatformValidator
  */
 module.exports = function (options) {
-	
-	var platform = options.platform;
-	if (platform) {
-		Runtime.on('tiPropertyReferenced', function(e) {
-			var platformList = e.data.node.userAgents,
-				i = 0,
-				len = platformList.length,
-				isSupported = false,
-				name = e.data.name;
-			
-			for(; i < len; i++) {
-				if (platform === platformList[i].platform) {
-					isSupported = true;
-				}
-			}
-			if (!isSupported) {
-				Runtime.reportWarning('invalidPlatformReferenced', 'Property "' + name +
-					'" is not supported on ' + platform, {
-						property: name,
-						platform: platform
-					});
 
-				if (results[name]) {
-					results[name] += 1;
-				} else {
-					results[name] = 1;
-				}
-			}
-		});
+	var platform = options.platform;
+
+	if (!platform) {
+		throw new Error('No platform specified in require-provider plugin options');
 	}
+	if (platformList.indexOf(platform) === -1) {
+		throw new Error('Invalid platform specified in require-provider plugin options: ' + platform);
+	}
+
+	Runtime.on('tiPropertyReferenced', function(e) {
+		var platformList = e.data.node.userAgents,
+			i = 0,
+			len = platformList.length,
+			isSupported = false,
+			name = e.data.name;
+
+		for(; i < len; i++) {
+			if (platform === platformList[i].platform) {
+				isSupported = true;
+			}
+		}
+		if (!isSupported) {
+			Runtime.reportWarning('invalidPlatformReferenced', 'Property "' + name +
+				'" is not supported on ' + platform, {
+					property: name,
+					platform: platform
+				});
+
+			if (results[name]) {
+				results[name] += 1;
+			} else {
+				results[name] = 1;
+			}
+		}
+	});
 };
 
 /**

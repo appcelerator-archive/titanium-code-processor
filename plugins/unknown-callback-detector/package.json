@@ -4,6 +4,8 @@
 	"description": "A plugin for ti-code-processor that detects when an unknown value is supplied when a callback is expected",
 	"version": "0.1.0",
 	"main": "lib/UnknownCallbackDetector.js",
+	"dependencies": {},
+	"options": {},
 	"engines": {
 		"node": ">=0.8"
 	}

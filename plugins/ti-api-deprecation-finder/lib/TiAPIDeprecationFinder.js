@@ -7,10 +7,10 @@
  * @module plugins/TiAPIDeprecationFinder
  * @author Allen Yeung &lt;<a href='mailto:ayeung@appcelerator.com'>ayeung@appcelerator.com</a>&gt;
  */
- 
+
 var path = require('path'),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
-	
+	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+
 	results = {};
 
 // ******** Plugin API Methods ********

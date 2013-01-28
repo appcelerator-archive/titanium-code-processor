@@ -8,9 +8,9 @@
 
 var path = require('path'),
 	util = require('util'),
-	
-	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime'));
+
+	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
+	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime'));
 
 // ******** Plugin API Methods ********
 
@@ -31,10 +31,10 @@ module.exports = function () {};
  * @name module:plugins/CommonGlobals#init
  */
 module.exports.prototype.init = function init() {
-	
+
 	var globalObject = Runtime.getGlobalObject(),
 		stringObject = globalObject.get('String');
-	
+
 	function addObject(name, value, obj) {
 		obj.defineOwnProperty(name, {
 			value: value,
@@ -51,7 +51,7 @@ module.exports.prototype.init = function init() {
 	addObject('setInterval', new SetIntervalFunc(), globalObject);
 	addObject('setTimeout', new SetTimeoutFunc(), globalObject);
 	addObject('console', new ConsoleObject(), globalObject);
-	
+
 	addObject('format', new StringFunc(), stringObject);
 	addObject('formatCurrency', new StringFunc(), stringObject);
 	addObject('formatDate', new StringFunc(), stringObject);
@@ -84,18 +84,22 @@ function ConsoleFunc(type, className) {
 }
 util.inherits(ConsoleFunc, Base.FunctionTypeBase);
 ConsoleFunc.prototype.call = function call(thisVal, args) {
+	var level = this._type,
+		message = [];
+	args.forEach(function (arg) {
+		if (Base.type(arg) === 'Unknown') {
+			message.push('<Unknown value>');
+		} else {
+			message.push(Base.toString(arg).value);
+		}
+	});
+	message = message.join(' ');
+	Runtime.fireEvent('consoleOutput', message, {
+		level: level,
+		message: message
+	});
 	if (Runtime.options.logConsoleCalls) {
-		console.log('program output [' + this._type + ']: ' + (function parseArgs() {
-			var str = [];
-			args.forEach(function (arg) {
-				if (Base.type(arg) === 'Unknown') {
-					str.push('<Unknown value>');
-				} else {
-					str.push(Base.toString(arg).value);
-				}
-			});
-			return str.join(' ');
-		})());
+		Runtime.log('program output [' + this._type + ']: ' + message);
 	}
 	return new Base.UndefinedType();
 };
@@ -107,7 +111,7 @@ ConsoleFunc.prototype.call = function call(thisVal, args) {
  */
 function ConsoleObject(className) {
 	Base.ObjectType.call(this, className);
-	
+
 	this.put('debug', new ConsoleFunc('debug'), false, true);
 	this.put('error', new ConsoleFunc('error'), false, true);
 	this.put('info', new ConsoleFunc('info'), false, true);
@@ -183,7 +187,7 @@ function SetIntervalFunc(className) {
 }
 util.inherits(SetIntervalFunc, Base.FunctionTypeBase);
 SetIntervalFunc.prototype.call = function call(thisVal, args) {
-	
+
 	var func = args[0];
 
 	// Make sure func is actually a function
@@ -192,13 +196,13 @@ SetIntervalFunc.prototype.call = function call(thisVal, args) {
 			Base.handleRecoverableNativeException('TypeError');
 			return new Base.UnknownType();
 		}
-			
+
 		// Call the function, discarding the result
 		Runtime.queueFunction(func, new Base.UndefinedType(), [], true);
 	} else {
 		Runtime.fireEvent('unknownCallback', 'An unknown value was passed to setInterval. Some source code may not be analyzed.');
 	}
-	
+
 	return new Base.UndefinedType();
 };
 
@@ -221,13 +225,13 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 			Base.handleRecoverableNativeException('TypeError');
 			return new Base.UnknownType();
 		}
-			
+
 		// Call the function, discarding the result
 		Runtime.queueFunction(func, new Base.UndefinedType(), [], true);
 	} else {
 		Runtime.fireEvent('unknownCallback', 'An unknown value was passed to setTimeout. Some source code may not be analyzed.');
 	}
-	
+
 	return new Base.UndefinedType();
 };
 

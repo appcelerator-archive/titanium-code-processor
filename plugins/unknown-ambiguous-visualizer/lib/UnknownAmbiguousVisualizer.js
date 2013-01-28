@@ -13,8 +13,8 @@ var path = require('path'),
 
 	wrench = require('wrench'),
 
-	AST = require(path.join(global.nodeCodeProcessorLibDir, 'AST')),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
+	AST = require(path.join(global.titaniumCodeProcessorLibDir, 'AST')),
+	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	results = {
 		details: {},
 		numAbiguousBlockNodes: 0,

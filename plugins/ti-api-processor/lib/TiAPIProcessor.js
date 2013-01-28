@@ -13,13 +13,15 @@ var fs = require('fs'),
 	existsSync = fs.existsSync || path.existsSync,
 	util = require('util'),
 
-	Base = require(path.join(global.nodeCodeProcessorLibDir, 'Base')),
-	Runtime = require(path.join(global.nodeCodeProcessorLibDir, 'Runtime')),
+	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
+	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 
 	jsca,
 	platform,
 
-	api = { children: {} };
+	api = { children: {} },
+
+	platformList = ['android', 'mobileweb', 'iphone', 'ios', 'ipad'];
 
 // ******** Plugin API Methods ********
 
@@ -34,6 +36,13 @@ var fs = require('fs'),
 module.exports = function(options) {
 	jsca = JSON.parse(fs.readFileSync(path.join(options.sdkPath, 'api.jsca')));
 	platform = options.platform;
+
+	if (!platform) {
+		throw new Error('No platform specified in require-provider plugin options');
+	}
+	if (platformList.indexOf(platform) === -1) {
+		throw new Error('Invalid platform specified in require-provider plugin options: ' + platform);
+	}
 };
 
 /**
@@ -368,18 +377,13 @@ IncludeFunction.prototype.call = function call(thisVal, args) {
 			});
 
 			// Fire the parsing begin event
-			Runtime.fireEvent('fileProcessingBegin', 'Processing is beginning for file "' + filePath + '"', {
+			Runtime.fireEvent('enteredFile', 'Processing is beginning for file "' + filePath + '"', {
 				filename: filePath
 			});
 
 			// Eval the code
 			evalFunc = Runtime.getGlobalObject().get('eval');
 			evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())], false, filePath);
-
-			// Fire the parsing end event
-			Runtime.fireEvent('fileProcessingEnd', 'Processing finished for file "' + filePath + '"', {
-				filename: filePath
-			});
 
 		} else {
 			eventDescription = 'The Ti.include path "' + filePath + '" could not be found';
