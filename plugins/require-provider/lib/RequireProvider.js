@@ -38,6 +38,9 @@ module.exports = function (options) {
 	platform = options.platform;
 	modules = options.modules || {};
 
+	if (!platform) {
+		throw new Error('No platform specified in require-provider plugin options');
+	}
 	if (platformList.indexOf(platform) === -1) {
 		throw new Error('Invalid platform specified in require-provider plugin options: ' + platform);
 	}

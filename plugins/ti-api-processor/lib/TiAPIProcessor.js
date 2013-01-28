@@ -19,7 +19,9 @@ var fs = require('fs'),
 	jsca,
 	platform,
 
-	api = { children: {} };
+	api = { children: {} },
+
+	platformList = ['android', 'mobileweb', 'iphone', 'ios', 'ipad'];
 
 // ******** Plugin API Methods ********
 
@@ -34,6 +36,13 @@ var fs = require('fs'),
 module.exports = function(options) {
 	jsca = JSON.parse(fs.readFileSync(path.join(options.sdkPath, 'api.jsca')));
 	platform = options.platform;
+
+	if (!platform) {
+		throw new Error('No platform specified in require-provider plugin options');
+	}
+	if (platformList.indexOf(platform) === -1) {
+		throw new Error('Invalid platform specified in require-provider plugin options: ' + platform);
+	}
 };
 
 /**
