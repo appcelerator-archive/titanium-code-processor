@@ -44,34 +44,75 @@ Sub-commands
 ```
 titanium options
 ```
-This command provides detailed information on all of the options that are available to the code processor. Results are output in JSON format for easy parsing. Option names, valid value types, etc. are included in the results
+This command provides detailed information on all of the options that are available to the code processor. Results are output in JSON format for easy parsing. Option names, valid value types, etc. are included in the results. Each option has the following format:
+
+Name | Type | Description
+-----|------|------------
+types | Array[type] | The list of possible types allowed by the option
+description (optional) | String | A description of the option
+required | Boolean | Whether or not this option is required
+defaultValue (optional) | Any | The devault value
+
+Types have the following properties:
+
+Name | Type | Description
+-----|------|------------
+type | String | One of 'null', 'boolean', 'number', 'string', 'object', or 'array'
+subType | type | Only for type of 'array', this is the type of the array elements
+properties | Object | Only for type of 'object', the properties of the object, with each key being the property name, and the value an option as defined above
+allowedValues (optional) | Array[Primitive] | Only for primitive types, a list of allowed values
+description (optional) | String | A description of this type
+
+As an example:
+
+```JSON
+{
+	"myOption": {
+		"types": [{
+			"type": "string"
+		}],
+		"required": false,
+		"description": "I am an option",
+		"defaultValue": "hi"
+	}
+}
+```
 
 ### Plugins sub-command
 
 ```
 titanium plugins [&lt;search path 1&gt; [&lt;search path 2&gt; [...]]]
 ```
-This command provides detailed information all plugins found in the default search path (&lt;code processor dir&gt;/plugins) and in the search paths provided (if any) in JSON format for easy parsing. The path to the plugin, options the plugin takes, etc. are included in the results.
+This command provides detailed information all plugins found in the default search path (&lt;code processor dir&gt;/plugins) and in the search paths provided (if any) in JSON format for easy parsing. The path to the plugin, options the plugin takes, etc. are included in the results. Each plugin has the following structure:
+
+Name | Type | Description
+-----|------|------------
+path | String | The path to the plugin
+dependencies | Array[String] | The plugin dependencies, with each entry being the plugin name
+options | Object | The options for the plugin, following the same format as the global options above (if there are no options, the object exists but is empty)
 
 ### Analyze sub-command
 
+Analyzes a project.
+
 List of options
 
-option | description
+Option | Description
 -------|------------
 --plugin, -p &lt;plugin name&gt; | Specifies a plugin to load. The -p flag expects the name of a single plugin, e.g. ```-p analysis-coverage```
 --config, -c &lt;option=value&gt; | Specifies a configuration option and it's value, e.g ```-c invokeMethods=false```
---verbose, -v | Enables verbose logging, equivalent to ```-l debug```
 --log-level, -l | Sets the log level. Possible values are 'error', 'warn', 'notice', 'info', 'debug', or 'trace'
 --osname, -o | The name of the OS being analyzed for. This is the value that will be reported via 'Ti.Platform.osname', e.g. 'android'. This flag is **required**
---help, -h | Displays the help
+project-dir, -d | The directory of the project to load. If not specified, defaults to the current directory
 Note: if no plugins are specified, all plugins are loaded
 
 ### Subprocess sub-command
 
+The subprocess sub-command can be used to sub-process the code processor. Input and output is handled via stdin and stdout using a structured streaming format.
+
 ## Running as part of the Titanium CLI
 
-__Note:__ This information is outdated and will only work with the version of the code processor that shipped with SDK 3.0
+**Note:** This information is outdated and will only work with the version of the code processor that shipped with SDK 3.0
 
 The code processor is integrated as a build step in the CLI. To enable it, add
 the following to your tiapp.xml:
