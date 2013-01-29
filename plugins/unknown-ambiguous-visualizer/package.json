@@ -2,10 +2,255 @@
 	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "unknown-ambiguous-visualizer",
 	"description": "A plugin for ti-code-processor that will visualize unknown values and ambiguous contexts/blocks",
-	"version": "0.1.0",
 	"main": "lib/UnknownAmbiguousVisualizer.js",
 	"dependencies": {},
-	"options": {},
+	"options": {
+		"outputDirectory": {
+			"types": [{
+				"type": "string"
+			}],
+			"required": false,
+			"description": "The directory to store the results in. If ommitted, results are not written to file"
+		},
+		"timestampOutputDirectory": {
+			"types": [{
+				"type": "boolean"
+			}],
+			"require": false,
+			"description": "If set, the output directory name will have a timestamp appended to it"
+		},
+		"styles": {
+			"types": [{
+				"type": "object",
+				"properties": {
+					"unknown": {
+						"types": [{
+							"type": "object",
+							"properties": {
+								"bold": {
+									"types": [{
+										"type": "boolean"
+									}],
+									"required": true
+								},
+								"italic": {
+									"types": [{
+										"type": "boolean"
+									}],
+									"required": true
+								},
+								"fontColor": {
+									"types": [{
+										"type": "object",
+										"properties": {
+											"r": {
+												"types": [{
+													"type": "number"
+												}],
+												"required": true
+											},
+											"g": {
+												"types": [{
+													"type": "number"
+												}],
+												"required": true
+											},
+											"b": {
+												"types": [{
+													"type": "number"
+												}],
+												"required": true
+											}
+										}
+									}],
+									"required": true,
+									"description": "Colors are specified using RGB float values, with r=0, g=0, b=0 being black and r=1, g=1, b=1 being white"
+								},
+								"backgroundColor": {
+									"types": [{
+										"type": "object",
+										"properties": {
+											"r": {
+												"types": [{
+													"type": "number"
+												}],
+												"required": true
+											},
+											"g": {
+												"types": [{
+													"type": "number"
+												}],
+												"required": true
+											},
+											"b": {
+												"types": [{
+													"type": "number"
+												}],
+												"required": true
+											}
+										}
+									}],
+									"required": true,
+									"description": "Colors are specified using RGB float values, with r=0, g=0, b=0 being black and r=1, g=1, b=1 being white"
+								}
+							}
+						}],
+						"required": true
+					},
+					"ambiguousBlock": {
+						"types": [{
+										"type": "object",
+										"properties": {
+											"bold": {
+												"types": [{
+													"type": "boolean"
+												}],
+												"required": true
+											},
+											"italic": {
+												"types": [{
+													"type": "boolean"
+												}],
+												"required": true
+											},
+											"fontColor": {
+												"types": [{
+													"type": "object",
+													"properties": {
+														"r": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"g": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"b": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														}
+													}
+												}],
+												"required": true,
+												"description": "Colors are specified using RGB float values, with r=0, g=0, b=0 being black and r=1, g=1, b=1 being white"
+											},
+											"backgroundColor": {
+												"types": [{
+													"type": "object",
+													"properties": {
+														"r": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"g": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"b": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														}
+													}
+												}],
+												"required": true,
+												"description": "Colors are specified using RGB float values, with r=0, g=0, b=0 being black and r=1, g=1, b=1 being white"
+											}
+										}
+									}],
+									"required": true
+					},
+					"ambiguousContext": {
+						"types": [{
+										"type": "object",
+										"properties": {
+											"bold": {
+												"types": [{
+													"type": "boolean"
+												}],
+												"required": true
+											},
+											"italic": {
+												"types": [{
+													"type": "boolean"
+												}],
+												"required": true
+											},
+											"fontColor": {
+												"types": [{
+													"type": "object",
+													"properties": {
+														"r": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"g": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"b": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														}
+													}
+												}],
+												"required": true,
+												"description": "Colors are specified using RGB float values, with r=0, g=0, b=0 being black and r=1, g=1, b=1 being white"
+											},
+											"backgroundColor": {
+												"types": [{
+													"type": "object",
+													"properties": {
+														"r": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"g": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"b": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														}
+													}
+												}],
+												"required": true,
+												"description": "Colors are specified using RGB float values, with r=0, g=0, b=0 being black and r=1, g=1, b=1 being white"
+											}
+										}
+									}],
+									"required": true
+					}
+				}
+			}],
+			"required": false,
+			"description": "Overrides the font styles for annotations"
+		}
+	},
 	"engines": {
 		"node": ">=0.8"
 	}
