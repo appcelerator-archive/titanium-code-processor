@@ -41,6 +41,8 @@ switch(subcommand) {
 		subprocess();
 		break;
 	case 'help':
+	case '--help':
+	case '-h':
 		printHelp();
 		break;
 	case undefined:
@@ -60,11 +62,11 @@ function printHelp() {
 		'\n' +
 		'Usage: titanium-code-processor analyze [options]\n' +
 		'       titanium-code-processor subprocess <config-file-path>\n' +
-		'       titanium-code-processor queryPlugins [<search path> [<search path> [...]]]\n' +
-		'       titanium-code-processor queryOptions\n\n' +
+		'       titanium-code-processor plugins [<search path> [<search path> [...]]]\n' +
+		'       titanium-code-processor options\n\n' +
 		'Sub-commands:\n' +
-		'   analyze      Analysis a project\n' +
-		'   subprocess   Analysis a project using the supplied config file in subprocess mode\n' +
+		'   analyze      Analyzes a project\n' +
+		'   subprocess   Analyzes a project using the supplied config file in subprocess mode\n' +
 		'   plugins      Queries the plugins in the default search path and the listed search paths\n' +
 		'   options      Queries the options\n');
 }

@@ -231,3 +231,5 @@ if (x) {
 	y = 20;
 }
 ```
+
+#### (C) Copyright 2012-2013, [Appcelerator](http://www.appcelerator.com) Inc. All Rights Reserved.
