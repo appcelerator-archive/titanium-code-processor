@@ -2,7 +2,6 @@
 	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "common-globals",
 	"description": "A plugin for node-code-processor that injects standard globals not in Ti or the ECMAScript spec",
-	"version": "0.1.0",
 	"main": "lib/CommonGlobals.js",
 	"dependencies": {},
 	"options": {},
