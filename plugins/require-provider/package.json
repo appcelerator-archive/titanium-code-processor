@@ -2,7 +2,6 @@
 	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "require-provider",
 	"description": "A plugin for ti-code-processor that provides support for the CommonJS require() method",
-	"version": "0.1.0",
 	"main": "lib/RequireProvider.js",
 	"dependencies": {},
 	"options": {
@@ -44,7 +43,7 @@
 					}
 				}
 			}],
-			"required": "false"
+			"required": false
 		}
 	},
 	"engines": {

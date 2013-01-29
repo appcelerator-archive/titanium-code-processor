@@ -40,10 +40,12 @@ module.exports = function (options) {
 		var astSet = Runtime.getASTSet(),
 			id,
 			result,
+			outputDir,
 			inputDir = path.dirname(Runtime.getEntryPointFile()),
 			inputSource,
-			outputDir = path.resolve(path.join(inputDir, '..', 'analysis', 'analysis-coverage')),
+			styles,
 			outputFilePath,
+			annotationStyle,
 			annotationData;
 
 		function nodeVisitedCallback (node) {
@@ -53,6 +55,8 @@ module.exports = function (options) {
 			} else if (node._skipped) {
 				result.numNodesSkipped++;
 				results.numNodesSkipped++;
+			} else {
+				node._unvisited = true;
 			}
 			result.numTotalNodes++;
 			results.numTotalNodes++;
@@ -77,58 +81,152 @@ module.exports = function (options) {
 			]);
 		}
 
-		if (options.visualizeData) {
-			if (existsSync(outputDir)) {
-				wrench.rmdirSyncRecursive(outputDir);
+		if (options.visualization) {
+
+			// Calculate the output directory
+			outputDir = options.visualization.outputDirectory;
+			if (outputDir) {
+				if (options.visualization.timestampOutputDirectory) {
+					outputDir += '.' + (new Date()).toISOString();
+				}
+				if (existsSync(outputDir)) {
+					wrench.rmdirSyncRecursive(outputDir);
+				}
 			}
+
+			// Calculate the styles
+			styles = options.visualization.styles;
+			if (styles) {
+				annotationStyle = [{
+						property: '_visited',
+						value: true,
+						local: true,
+						bold: styles.visited.bold,
+						italic: styles.visited.italic,
+						fontColor: [
+							styles.visited.fontColor.r,
+							styles.visited.fontColor.g,
+							styles.visited.fontColor.b
+							],
+						backgroundColor: [
+							styles.visited.backgroundColor.r,
+							styles.visited.backgroundColor.g,
+							styles.visited.backgroundColor.b
+						]
+					},{
+						property: '_skipped',
+						value: true,
+						local: true,
+						bold: styles.skipped.bold,
+						italic: styles.skipped.italic,
+						fontColor: [
+							styles.skipped.fontColor.r,
+							styles.skipped.fontColor.g,
+							styles.skipped.fontColor.b
+							],
+						backgroundColor: [
+							styles.skipped.backgroundColor.r,
+							styles.skipped.backgroundColor.g,
+							styles.skipped.backgroundColor.b
+						]
+					},{
+						property: '_unvisited',
+						value: true,
+						local: true,
+						bold: styles.unvisited.bold,
+						italic: styles.unvisited.italic,
+						fontColor: [
+							styles.unvisited.fontColor.r,
+							styles.unvisited.fontColor.g,
+							styles.unvisited.fontColor.b
+							],
+						backgroundColor: [
+							styles.unvisited.backgroundColor.r,
+							styles.unvisited.backgroundColor.g,
+							styles.unvisited.backgroundColor.b
+						]
+					}
+				];
+			} else {
+				annotationStyle = [{
+						property: '_visited',
+						value: true,
+						local: true,
+						bold: false,
+						italic: false,
+						fontColor: [0, 0, 0],
+						backgroundColor: [0.5, 1, 0.5]
+					},{
+						property: '_skipped',
+						value: true,
+						local: true,
+						bold: false,
+						italic: false,
+						fontColor: [0, 0, 0],
+						backgroundColor: [0.5, 0.5, 1]
+					},{
+						property: '_unvisited',
+						value: true,
+						local: true,
+						bold: false,
+						italic: false,
+						fontColor: [0, 0, 0],
+						backgroundColor: [1, 0.5, 0.5]
+					}
+				];
+			}
+
+			// Annotate the data
+			results.annotationData = {};
 			for (id in astSet) {
 				if (existsSync(id)) {
-					outputFilePath = path.join(outputDir, path.relative(inputDir, id));
-					if (!existsSync(path.dirname(outputFilePath))) {
-						wrench.mkdirSyncRecursive(path.dirname(outputFilePath));
-					}
-					annotationData = AST.generateAnnotations(astSet[id], [{
-							property: '_visited',
-							value: true,
-							backgroundColor: [0.5, 1, 0.5],
-							local: true
-						},{
-							property: '_skipped',
-							value: true,
-							backgroundColor: [0.5, 0.5, 1],
-							local: true
+
+					// Calculate the annotation data
+					results.annotationData[id] = annotationData = AST.generateAnnotations(astSet[id], annotationStyle);
+
+					// Write the results to file, if requested
+					if (outputDir) {
+						outputFilePath = path.join(outputDir, path.relative(inputDir, id));
+						if (!existsSync(path.dirname(outputFilePath))) {
+							wrench.mkdirSyncRecursive(path.dirname(outputFilePath));
 						}
-					]);
-					fs.writeFileSync(outputFilePath + '.js', inputSource = fs.readFileSync(id).toString());
-					fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
-					fs.writeFileSync(outputFilePath + '.html',
-						AST.generateAnnotatedHTML(inputSource, annotationData,
-							'/*\nLegend:\nVisited Node\nSkipped Node\nUnvisited Node\n*/\n', [{
-								start: 0,
-								bold: false,
-								italic: false,
-								fontColor: [0, 0, 0],
-								backgroundColor: [1, 1, 1]
-							}, {
-								start: 11,
-								bold: false,
-								italic: false,
-								fontColor: [0, 0, 0],
-								backgroundColor: [0.75, 1, 0.75]
-							}, {
-								start: 24,
-								bold: false,
-								italic: false,
-								fontColor: [0, 0, 0],
-								backgroundColor: [0.75, 0.75, 1]
-							}, {
-								start: 37,
-								bold: false,
-								italic: false,
-								fontColor: [0, 0, 0],
-								backgroundColor: [1, 1, 1]
-							}]
-						));
+						fs.writeFileSync(outputFilePath + '.js', inputSource = fs.readFileSync(id).toString());
+						fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
+						fs.writeFileSync(outputFilePath + '.html',
+							AST.generateAnnotatedHTML(inputSource, annotationData,
+								'/*\nLegend:\nVisited Node\nSkipped Node\nUnvisited Node\n*/\n', [{
+									start: 0,
+									bold: false,
+									italic: false,
+									fontColor: [0, 0, 0],
+									backgroundColor: [1, 1, 1]
+								}, {
+									start: 11,
+									bold: annotationStyle[0].bold,
+									italic: annotationStyle[0].italic,
+									fontColor: annotationStyle[0].fontColor,
+									backgroundColor: annotationStyle[0].backgroundColor
+								}, {
+									start: 24,
+									bold: annotationStyle[1].bold,
+									italic: annotationStyle[1].italic,
+									fontColor: annotationStyle[1].fontColor,
+									backgroundColor: annotationStyle[1].backgroundColor
+								}, {
+									start: 37,
+									bold: annotationStyle[2].bold,
+									italic: annotationStyle[2].italic,
+									fontColor: annotationStyle[2].fontColor,
+									backgroundColor: annotationStyle[2].backgroundColor
+								}, {
+									start: 51,
+									bold: false,
+									italic: false,
+									fontColor: [0, 0, 0],
+									backgroundColor: [1, 1, 1]
+								}]
+							));
+					}
 				}
 			}
 		}
