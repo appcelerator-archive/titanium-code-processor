@@ -103,10 +103,152 @@
 									"required": true
 								},
 								"skipped": {
-
+									"types": [{
+										"type": "object",
+										"properties": {
+											"bold": {
+												"types": [{
+													"type": "boolean"
+												}],
+												"required": true
+											},
+											"italic": {
+												"types": [{
+													"type": "boolean"
+												}],
+												"required": true
+											},
+											"fontColor": {
+												"types": [{
+													"type": "object",
+													"properties": {
+														"r": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"g": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"b": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														}
+													}
+												}],
+												"required": true,
+												"description": "Colors are specified using RGB float values, with r=0, g=0, b=0 being black and r=1, g=1, b=1 being white"
+											},
+											"backgroundColor": {
+												"types": [{
+													"type": "object",
+													"properties": {
+														"r": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"g": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"b": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														}
+													}
+												}],
+												"required": true,
+												"description": "Colors are specified using RGB float values, with r=0, g=0, b=0 being black and r=1, g=1, b=1 being white"
+											}
+										}
+									}],
+									"required": true
 								},
 								"unvisited": {
-
+									"types": [{
+										"type": "object",
+										"properties": {
+											"bold": {
+												"types": [{
+													"type": "boolean"
+												}],
+												"required": true
+											},
+											"italic": {
+												"types": [{
+													"type": "boolean"
+												}],
+												"required": true
+											},
+											"fontColor": {
+												"types": [{
+													"type": "object",
+													"properties": {
+														"r": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"g": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"b": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														}
+													}
+												}],
+												"required": true,
+												"description": "Colors are specified using RGB float values, with r=0, g=0, b=0 being black and r=1, g=1, b=1 being white"
+											},
+											"backgroundColor": {
+												"types": [{
+													"type": "object",
+													"properties": {
+														"r": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"g": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														},
+														"b": {
+															"types": [{
+																"type": "number"
+															}],
+															"required": true
+														}
+													}
+												}],
+												"required": true,
+												"description": "Colors are specified using RGB float values, with r=0, g=0, b=0 being black and r=1, g=1, b=1 being white"
+											}
+										}
+									}],
+									"required": true
 								}
 							}
 						}],

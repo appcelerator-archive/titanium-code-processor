@@ -171,7 +171,7 @@ module.exports = function (options) {
 						bold: false,
 						italic: false,
 						fontColor: [0, 0, 0],
-						backgroundColor: [1, 1, 1]
+						backgroundColor: [1, 0.5, 0.5]
 					}
 				];
 			}
