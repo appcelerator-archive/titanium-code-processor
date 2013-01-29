@@ -5,9 +5,9 @@
 ** The code processor now takes a sub-command, one of 'options', 'plugins', 'analyze', and 'subprocess'
 ** The 'subprocess' sub-command provides an interactive, structured mechanism for calling the code processor from other programs
 * Plugins can now take options
-** Options must be specified using a configuration file, currently only available through the subprocess interface
+** Options must be specified using a configuration file
 * Plugins can now reside anywhere
-** To specify plugins in another location, they must be specified in a configuration file, currently only available through the subprocess interface
+** To specify plugins in another location, they must be specified in a configuration file
 
 ### Bug Fixes
 * Fixed a bug where the code processor crashes when encountering a reference to an undeclared variable that is named the same as an Object prototype property
