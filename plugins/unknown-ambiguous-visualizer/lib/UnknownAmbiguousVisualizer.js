@@ -46,7 +46,7 @@ module.exports = function (options) {
 			annotationData;
 
 		// Calculate the output directory
-		outputDir = options.outputDirectory;
+		outputDir = options && options.outputDirectory;
 		if (outputDir) {
 			if (options.timestampOutputDirectory) {
 				outputDir += '.' + (new Date()).toISOString();
@@ -69,7 +69,7 @@ module.exports = function (options) {
 		}
 
 		// Calculate the styles
-		styles = options.styles;
+		styles = options && options.styles;
 		if (styles) {
 			annotationStyle = [{
 					property: '_unknown',

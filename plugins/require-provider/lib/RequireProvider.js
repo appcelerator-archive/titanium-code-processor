@@ -35,14 +35,16 @@ var util = require('util'),
  * @name module:plugins/RequireProvider
  */
 module.exports = function (options) {
-	platform = options.platform;
-	modules = options.modules || {};
+	platform = options && options.platform;
+	modules = options && options.modules || {};
 
 	if (!platform) {
-		throw new Error('No platform specified in require-provider plugin options');
+		console.error('require-provider plugin requires the "platform" option');
+		process.exit(1);
 	}
 	if (platformList.indexOf(platform) === -1) {
-		throw new Error('Invalid platform specified in require-provider plugin options: ' + platform);
+		console.error('"' + platform + '" is not a valid platform for the require-provider plugin');
+		process.exit(1);
 	}
 
 	Runtime.isFileValid = function isFileValid(filename) {
