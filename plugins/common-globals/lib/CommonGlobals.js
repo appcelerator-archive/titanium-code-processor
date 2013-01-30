@@ -99,7 +99,7 @@ ConsoleFunc.prototype.call = function call(thisVal, args) {
 		message: message
 	});
 	if (Runtime.options.logConsoleCalls) {
-		Runtime.log('program output [' + this._type + ']: ' + message);
+		Runtime.log('info', 'program output [' + this._type + ']: ' + message);
 	}
 	return new Base.UndefinedType();
 };

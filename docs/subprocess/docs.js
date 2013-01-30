@@ -26,16 +26,19 @@ Note: this interface is only intended for applications that subprocess the Titan
 
 /**
  * @name type
- * @property {String} type One of 'null', 'boolean', 'number', 'string', 'object', or 'array'
- * @property {type} subType Only for type of 'array', this is the type of the array elements
+ * @property {String} type One of 'null', 'boolean', 'number', 'string', 'object', 'array', or 'dictionary'. Note: type
+ *		'dictionary' is just an object that takes in an arbitrary set of key:value pairs
+ * @property {Array[{@link type}]} subType Only for type of 'array', this is the types of the array elements
  * @property {Object} properties Only for type of 'object', the properties of the object
  * @property {option} properties.property A property, with the key being the name of the proprety
  * @property {Array[Primitive]} [allowedValues] Only for primitive types, a list of allowed values
- * @property {String} [description] A description of this type
+ * @property {Object} key Only for type of 'dictionary', information about the key
+ * @property {String} [key.description] A description of the key
+ * @property {option} [value] Only for type of 'dictionary', information about the value
  * @example
  * {
  *	"type": "array",
- *	"subType": {
+ *	"subTypes": [{
  *		"type": "object",
  *		"properties": {
  *			"name": {
@@ -62,7 +65,7 @@ Note: this interface is only intended for applications that subprocess the Titan
  *				}],
  *				"description": "The type of the module"
  *			}
- *		}
+ *		}]
  * }
  */
 
