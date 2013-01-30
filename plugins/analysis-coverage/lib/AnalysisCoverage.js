@@ -81,7 +81,7 @@ module.exports = function (options) {
 			]);
 		}
 
-		if (options.visualization) {
+		if (options && options.visualization) {
 
 			// Calculate the output directory
 			outputDir = options.visualization.outputDirectory;

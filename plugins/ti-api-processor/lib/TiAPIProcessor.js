@@ -34,15 +34,26 @@ var fs = require('fs'),
  * @name module:plugins/TiAPIProcessor
  */
 module.exports = function(options) {
-	jsca = JSON.parse(fs.readFileSync(path.join(options.sdkPath, 'api.jsca')));
-	platform = options.platform;
+	jsca = options && options.sdkPath && path.join(options.sdkPath, 'api.jsca');
+	platform = options && options.platform;
 
 	if (!platform) {
-		throw new Error('No platform specified in require-provider plugin options');
+		console.error('ti-api-processor plugin requires the "platform" option');
+		process.exit(1);
 	}
 	if (platformList.indexOf(platform) === -1) {
-		throw new Error('Invalid platform specified in require-provider plugin options: ' + platform);
+		console.error('"' + platform + '" is not a valid platform for the ti-api-processor plugin');
+		process.exit(1);
 	}
+	if (!jsca) {
+		console.error('ti-api-processor plugin requires the "sdkPath" option');
+		process.exit(1);
+	}
+	if (!existsSync(jsca)) {
+		console.error('ti-api-processor plugin could not find a valid JSCA file at "' + jsca + '"');
+		process.exit(1);
+	}
+	jsca = JSON.parse(fs.readFileSync(jsca));
 };
 
 /**
