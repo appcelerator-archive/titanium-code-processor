@@ -27,13 +27,15 @@ var path = require('path'),
  */
 module.exports = function (options) {
 
-	var platform = options.platform;
+	var platform = options && options.platform;
 
 	if (!platform) {
-		throw new Error('No platform specified in require-provider plugin options');
+		console.error('ti-api-platform-validator plugin requires the "platform" option');
+		process.exit(1);
 	}
 	if (platformList.indexOf(platform) === -1) {
-		throw new Error('Invalid platform specified in require-provider plugin options: ' + platform);
+		console.error('"' + platform + '" is not a valid platform for the ti-api-platform-validator plugin');
+		process.exit(1);
 	}
 
 	Runtime.on('tiPropertyReferenced', function(e) {
