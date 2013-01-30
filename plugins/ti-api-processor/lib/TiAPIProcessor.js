@@ -18,6 +18,7 @@ var fs = require('fs'),
 
 	jsca,
 	platform,
+	values,
 
 	api = { children: {} },
 
@@ -36,6 +37,7 @@ var fs = require('fs'),
 module.exports = function(options) {
 	jsca = options && options.sdkPath && path.join(options.sdkPath, 'api.jsca');
 	platform = options && options.platform;
+	values = options && options.values || {};
 
 	if (!platform) {
 		console.error('ti-api-processor plugin requires the "platform" option');
@@ -54,6 +56,9 @@ module.exports = function(options) {
 		process.exit(1);
 	}
 	jsca = JSON.parse(fs.readFileSync(jsca));
+	if(values) {
+
+	}
 };
 
 /**
@@ -426,6 +431,7 @@ function createObject(apiNode) {
 		children = apiNode.children,
 		value,
 		name,
+		fullName,
 		type,
 		p, i, len;
 
@@ -434,9 +440,29 @@ function createObject(apiNode) {
 		property = properties[i];
 		name = property.name;
 		type = property.type;
+		fullName = apiNode.node.name + '.' + name;
 		if (name === 'osname' && apiNode.node.name === 'Titanium.Platform') {
 			value = new Base.StringType(platform);
-		} else if (type in api.children) {
+		} else if (fullName in values) {
+			if (values[fullName] === null) {
+				value = new Base.NullType();
+			} else {
+				switch(typeof values[fullName]) {
+					case 'number':
+						value = new Base.NumberType(values[fullName]);
+						break;
+					case 'string':
+						value = new Base.NumberType(values[fullName]);
+						break;
+					case 'boolean':
+						value = new Base.NumberType(values[fullName]);
+						break;
+					default:
+						console.error('Invalid value specified in ti-api-processor options: ' + values[fullName]);
+						process.exit(1);
+				}
+			}
+		}else if (type in api.children) {
 			value = createObject(api.children[type]);
 		} else {
 			value = new Base.UnknownType();

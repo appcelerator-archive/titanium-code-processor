@@ -1,5 +1,5 @@
 {
-	"author": "Allen Yeung <ayeung@appcelerator.com> (https://github.com/ayeung/)",
+	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "ti-api-processor",
 	"description": "A plugin for ti-code-processor that handles Titanium APIs",
 	"main": "lib/TiAPIProcessor.js",
@@ -25,6 +25,29 @@
 				]
 			}],
 			"required": true
+		},
+		"values": {
+			"description": "Sets the value of primitive properties accessible via the global Ti/Titanium object",
+			"types": [{
+				"type": "dictionary",
+				"key": {
+					"description": "The fully qualified name for the property, e.g. \"Titanium.Platform.version\". Note: the \"Ti\" shorthand name is not supported"
+				},
+				"value": {
+					"types": [{
+						"type": "null"
+					},{
+						"type": "boolean"
+					},{
+						"type": "number"
+					},{
+						"type": "string"
+					}],
+					"description": "The primitive value of the property",
+					"required": true
+				}
+			}],
+			"required": false
 		}
 	},
 	"engines": {
