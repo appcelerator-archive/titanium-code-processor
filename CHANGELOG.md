@@ -8,9 +8,12 @@
 ** Options must be specified using a configuration file
 * Plugins can now reside anywhere
 ** To specify plugins in another location, they must be specified in a configuration file
+* The ti-api-processor plugin now allows you to specify values for any primitive type in the API
+** This can be used to see how an app will react to, say, a specific screen size
 
 ### Bug Fixes
 * Fixed a bug where the code processor crashes when encountering a reference to an undeclared variable that is named the same as an Object prototype property
+* Added a lot of configuration validation
 
 ## 0.2.2 (20 Janurary 2013)
 
