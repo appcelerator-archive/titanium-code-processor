@@ -110,6 +110,67 @@ Note: if no plugins are specified, all plugins are loaded
 
 The subprocess sub-command can be used to sub-process the code processor. Input and output is handled via stdin and stdout using a structured streaming format.
 
+### Config file example
+
+```JSON
+{
+	"entryPoint": "path/to/app.js",
+	"logging": {
+		"console": {
+			"level": "info"
+		},
+		file: {
+			"level": "debug",
+			"path": "path/to/log"
+		}
+	},
+	"options": {
+		"processUnvisitedCode":true,
+		"maxRecursionLimit":500
+	},
+	"plugins": {
+		"common-globals": {
+			"path": "path/to/common-globals",
+			"options": {}
+		},
+		"require-provider": {
+			"path": "path/to/require-provider",
+			"options": {
+				"platform": "iphone",
+				"modules": []
+			}
+		},
+		"ti-api-processor": {
+			"path": "path/to/ti-api-processor",
+			"options": {
+				"platform": "iphone",
+				"sdkPath": "path/to/sdk",
+				"values": {
+					"Titanium.Platform.version": "3.1.0"
+				}
+			}
+		},
+		"ti-api-usage-finder": {
+			"path": "path/to/ti-api-usage-finder",
+			"options": {}
+		},
+		"ti-api-platform-validator": {
+			"path": "path/to/ti-api-platform-validator",
+			"options": {
+				"platform": "iphone"
+			}
+		},
+		"unknown-ambiguous-visualizer": {
+			"path": "path/to/unknown-ambiguous-visualizer",
+			"options": {
+				"outputDirectory": "path/to/output/dir",
+				"timestampOutputDirectory": false
+			}
+		}
+	}
+}
+```
+
 ## Running as part of the Titanium CLI
 
 **Note:** This information is outdated and will only work with the version of the code processor that shipped with SDK 3.0
