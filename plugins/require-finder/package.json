@@ -1,7 +1,7 @@
 {
 	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "require-finder",
-	"description": "A plugin for ti-code-processor that finds all require() files"
+	"description": "A plugin for ti-code-processor that finds all require() files",
 	"main": "lib/RequireFinder.js",
 	"dependencies": {
 		"require-provider": "*"

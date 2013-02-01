@@ -136,9 +136,9 @@ module.exports.run = function () {
 				}
 			} else {
 				try {
-					result = CodeProcessor.process(testFilePath, [], {
+					result = CodeProcessor.run(testFilePath, {
 						exactMode: true
-					});
+					}, []);
 
 					if (result && result[0] === 'throw') {
 						if (result[1]) {
