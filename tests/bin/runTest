@@ -6,16 +6,16 @@
  * Provides a CLI for the code processor unit tests
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
- 
+
 var path = require('path'),
 	fs = require('fs'),
-	
+
 	winston = require('winston'),
-	
+
 	CodeProcessor = require('../../lib/CodeProcessor'),
 	Runtime = require('../../lib/Runtime'),
 	Base = require('../../lib/Base'),
-	
+
 	file = process.argv[2],
 	logger,
 	result,
@@ -57,9 +57,9 @@ logger = new (winston.Logger)({
 // Run the test
 try {
 
-	result = CodeProcessor.process([file], [], {
+	result = CodeProcessor.run(file, {
 		exactMode: true
-	}, logger);
+	}, [], logger);
 	if (result && result[0] === 'throw') {
 		if (result[1]) {
 			var value;

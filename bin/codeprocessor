@@ -159,11 +159,6 @@ function subprocess() {
 	studioInterface = appc.messaging.create('stdio');
 	studioInterface.open();
 
-	studioInterface.listen('exit', function (request, response) {
-		studioInterface.close();
-		process.exit(1); // TODO: update with something more advanced
-	});
-
 	function callback(error) {
 		if (error) {
 			Runtime.log('error', 'Error communicating with studio: ' + error);
@@ -213,9 +208,10 @@ function subprocess() {
 	});
 
 	// Run the code processor
-	CodeProcessor.process(path.resolve(config.entryPoint), config.options, config.plugins, logger);
+	CodeProcessor.run(path.resolve(config.entryPoint), config.options, config.plugins, logger);
 	studioInterface.send('results', CodeProcessor.getResults(), function () {
 		studioInterface.close();
+		process.exit(0);
 	});
 }
 
@@ -236,7 +232,7 @@ function analyze() {
 				pluginResults,
 				entries;
 
-			CodeProcessor.process(entryPoint, options, plugins, logger);
+			CodeProcessor.run(entryPoint, options, plugins, logger);
 			results = CodeProcessor.getResults();
 
 			if (logger) {
@@ -492,6 +488,16 @@ function processAnalayzeInput(callback) {
 				help: 'The path to the config file. Note: when this flag is specified, all other flags are ignored',
 				type: 'string'
 			})
+			.option('all-plugins', {
+				abbr: 'a',
+				help: 'Loads all plugins in the default search path',
+				flag: true
+			})
+			.option('non-ti-plugins', {
+				abbr: 'a',
+				help: 'Loads all non-titanium specific plugins in the default search path',
+				flag: true
+			})
 			.script('titanium-code-processor analyze')
 			.help('Processes the supplied project using the given plugins.')
 			.nom(),
@@ -505,7 +511,8 @@ function processAnalayzeInput(callback) {
 		projectRoot = '.',
 		entryPoint,
 		startTime,
-		logger;
+		logger,
+		tiRegex = /^ti-/;
 
 	// Check if a config file was specified
 	if (parsedOptions['config-file']) {
@@ -678,26 +685,47 @@ function processAnalayzeInput(callback) {
 				var plugins = {},
 					pluginList = parsedOptions.plugin || [],
 					i, len,
-					plugin,
-					tiRegex = /^ti-/;
+					plugin;
 				startTime = (new Date()).getTime();
 
 				// Parse the plugins
-				for(i = 0, len = pluginList.length; i < len; i++) {
-					plugin = pluginList[i];
-					if (plugin in results) {
-						if (tiRegex.test(plugin)) {
-							if (logger) {
-								logger.warn('Titanium plugins are not supported when parsing individual files');
-							}
-						} else {
+				if (parsedOptions['all-plugins']) {
+					for(plugin in results) {
+						if (!tiRegex.test(plugin)) {
+							plugins[plugin] = {
+								path: results[plugin].path,
+								options: {}
+							};
+						} else if (logger) {
+							logger.warn('Plugin "' + plugin + '" is not supported when parsing individual files');
+						}
+					}
+				} else if (parsedOptions['non-ti-plugins']) {
+					for(plugin in results) {
+						if (!tiRegex.test(plugin)) {
 							plugins[plugin] = {
 								path: results[plugin].path,
 								options: {}
 							};
 						}
-					} else if (logger) {
-						logger.warn('Plugin "' + pluginList[i] + '" is unknown');
+					}
+				} else if (pluginList) {
+					for(i = 0, len = pluginList.length; i < len; i++) {
+						plugin = pluginList[i];
+						if (plugin in results) {
+							if (tiRegex.test(plugin)) {
+								if (logger) {
+									logger.warn('Plugin "' + plugin + '"  plugins are not supported when parsing individual files');
+								}
+							} else {
+								plugins[plugin] = {
+									path: results[plugin].path,
+									options: {}
+								};
+							}
+						} else if (logger) {
+							logger.warn('Plugin "' + plugin + '" is unknown');
+						}
 					}
 				}
 				if (plugins['require-provider']) {
@@ -781,7 +809,23 @@ function processAnalayzeInput(callback) {
 										plugins = {},
 										plugin;
 
-									if (pluginList) {
+									if (parsedOptions['all-plugins']) {
+										for(plugin in results) {
+											plugins[plugin] = {
+												path: results[plugin].path,
+												options: {}
+											};
+										}
+									} else if (parsedOptions['non-ti-plugins']) {
+										for(plugin in results) {
+											if (!tiRegex.test(plugin)) {
+												plugins[plugin] = {
+													path: results[plugin].path,
+													options: {}
+												};
+											}
+										}
+									} else if (pluginList) {
 										for(i = 0, len = pluginList.length; i < len; i++) {
 											plugin = pluginList[i];
 											if (plugin in results) {
@@ -792,13 +836,6 @@ function processAnalayzeInput(callback) {
 											} else if (logger) {
 												logger.warn('Plugin "' + pluginList[i] + '" is unknown');
 											}
-										}
-									} else {
-										for(plugin in results) {
-											plugins[plugin] = {
-												path: results[plugin].path,
-												options: {}
-											};
 										}
 									}
 

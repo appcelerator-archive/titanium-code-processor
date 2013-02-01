@@ -56,9 +56,6 @@ module.exports = function(options) {
 		process.exit(1);
 	}
 	jsca = JSON.parse(fs.readFileSync(jsca));
-	if(values) {
-
-	}
 };
 
 /**
