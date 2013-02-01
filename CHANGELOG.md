@@ -1,3 +1,5 @@
+## 0.3.1
+
 ## 0.3.0 (1 February 2013)
 
 ### New Features
