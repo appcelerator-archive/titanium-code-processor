@@ -1,4 +1,4 @@
-## 0.3.0
+## 0.3.0 (1 February 2013)
 
 ### New Features
 * Reworked the CLI interface to be much more robust
