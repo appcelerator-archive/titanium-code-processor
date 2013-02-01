@@ -159,11 +159,6 @@ function subprocess() {
 	studioInterface = appc.messaging.create('stdio');
 	studioInterface.open();
 
-	studioInterface.listen('exit', function (request, response) {
-		studioInterface.close();
-		process.exit(1); // TODO: update with something more advanced
-	});
-
 	function callback(error) {
 		if (error) {
 			Runtime.log('error', 'Error communicating with studio: ' + error);
