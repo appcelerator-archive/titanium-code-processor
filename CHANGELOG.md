@@ -10,10 +10,13 @@
 ** To specify plugins in another location, they must be specified in a configuration file
 * The ti-api-processor plugin now allows you to specify values for any primitive type in the API
 ** This can be used to see how an app will react to, say, a specific screen size
+* Plugins are now checked to make sure their dependencies are also loaded
+* Added --all-plugins and --non-ti-plugins flags to the CLI to load all plugins or all non-Titanium-specific plugins, respectively
+** Now, if no plugins are specified, no plugins are loaded
 
 ### Bug Fixes
 * Fixed a bug where the code processor crashes when encountering a reference to an undeclared variable that is named the same as an Object prototype property
-* Added a lot of configuration validation
+* Added a lot of configuration validation to prevent unexpected behavior/crashes when supplied with bad configuration data
 
 ## 0.2.2 (20 Janurary 2013)
 
