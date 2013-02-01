@@ -208,7 +208,7 @@ function subprocess() {
 	});
 
 	// Run the code processor
-	CodeProcessor.process(path.resolve(config.entryPoint), config.options, config.plugins, logger);
+	CodeProcessor.run(path.resolve(config.entryPoint), config.options, config.plugins, logger);
 	studioInterface.send('results', CodeProcessor.getResults(), function () {
 		studioInterface.close();
 		process.exit(0);
@@ -232,7 +232,7 @@ function analyze() {
 				pluginResults,
 				entries;
 
-			CodeProcessor.process(entryPoint, options, plugins, logger);
+			CodeProcessor.run(entryPoint, options, plugins, logger);
 			results = CodeProcessor.getResults();
 
 			if (logger) {
