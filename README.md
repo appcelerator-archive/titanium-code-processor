@@ -119,7 +119,7 @@ The subprocess sub-command can be used to sub-process the code processor. Input 
 		"console": {
 			"level": "info"
 		},
-		file: {
+		"file": {
 			"level": "debug",
 			"path": "path/to/log"
 		}
