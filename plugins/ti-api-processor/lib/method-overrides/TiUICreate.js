@@ -2,7 +2,7 @@
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
- * Ti.include implementation
+ * Ti.UI.createXXX implementation
  *
  * @module plugins/TiAPIProcessor
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
@@ -16,7 +16,7 @@ var path = require('path'),
 exports.init = function (options) {
 	return {
 		regex: /^Titanium\.UI\.create([a-zA-Z0-9_]*)$/,
-		call:function call(thisVal, args) {
+		call: function call(thisVal, args) {
 			var returnType,
 				root = options.api,
 				i, j, len,

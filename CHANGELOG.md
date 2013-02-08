@@ -2,6 +2,7 @@
 
 ### New Features
 * Added support for parsing values from Ti.UI.createXXX constructors
+* Added support for Ti.UI.Window.url
 
 ## 0.3.0 (1 February 2013)
 
