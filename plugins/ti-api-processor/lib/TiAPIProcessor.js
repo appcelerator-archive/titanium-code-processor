@@ -22,7 +22,13 @@ var fs = require('fs'),
 
 	api = { children: {} },
 
-	platformList = ['android', 'mobileweb', 'iphone', 'ios', 'ipad'];
+	platformList = ['android', 'mobileweb', 'iphone', 'ios', 'ipad'],
+
+	methodOverrides = [
+		require('./method-overrides/TiInclude.js'),
+		require('./method-overrides/TiUICreate.js')
+	],
+	propertyOverrides = [];
 
 // ******** Plugin API Methods ********
 
@@ -94,8 +100,25 @@ module.exports.prototype.init = function init() {
 		root.node = type;
 	}
 
+	for(i = 0, len = methodOverrides.length; i < len; i++) {
+		methodOverrides[i] = methodOverrides[i].init({
+			api: api,
+			platform: platform,
+			values: values,
+			createObject: createObject
+		});
+	}
+	for(i = 0, len = propertyOverrides.length; i < len; i++) {
+		propertyOverrides[i] = propertyOverrides[i].init({
+			api: api,
+			platform: platform,
+			values: values,
+			createObject: createObject
+		});
+	}
+
 	// Create the list of aliases and global objects
-	for (i = 0, aliases.length; i < len; i++) {
+	for (i = 0, len = aliases.length; i < len; i++) {
 		alias = aliases[i];
 		if (alias) {
 			type = alias.type;
@@ -140,14 +163,7 @@ module.exports.prototype.getResults = function getResults() {
 // ******** Function Type ********
 
 /**
- * @classdesc Specialized function that returns information based on the JSCA
- *
- * @constructor
- * @name module:plugins/TiAPIProcessor~TiFunction
  * @private
- * @param {Array[String]|undefined} returnTypes An array of return types, or undefined
- * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a
- *		constructor for an object extending this one.
  */
 function TiFunction(returnTypes, className) {
 	Base.ObjectType.call(this, className || 'Function');
@@ -156,14 +172,7 @@ function TiFunction(returnTypes, className) {
 util.inherits(TiFunction, Base.FunctionType);
 
 /**
- * Calls the require function
- *
- * @method
- * @name module:plugins/TiAPIProcessor~TiFunction#call
- * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
- * @param (Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
- * @returns {module:Base.BaseType} The return value from the function
- * @see ECMA-262 Spec Chapter 13.2.1
+ * @private
  */
 TiFunction.prototype.call = function call(thisVal, args) {
 	var returnType,
@@ -328,89 +337,6 @@ TiObjectType.prototype.delete = function objDelete(p) {
 	return success;
 };
 
-/**
- * @classdesc Customized require() function that doesn't actually execute code in the interpreter, but rather does it here.
- *
- * @constructor
- * @private
- * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a
- *		constructor for an object extending this one.
- */
-function IncludeFunction(className) {
-	Base.ObjectType.call(this, className || 'Function');
-}
-util.inherits(IncludeFunction, Base.FunctionType);
-
-/**
- * Calls the require function
- *
- * @method
- * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
- * @param (Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
- * @returns {module:Base.BaseType} The return value from the function
- * @see ECMA-262 Spec Chapter 13.2.1
- */
-IncludeFunction.prototype.call = function call(thisVal, args) {
-	var files = [],
-		filePath,
-		evalFunc,
-		result = new Base.UnknownType(),
-		i, len,
-		eventDescription;
-
-	args = args || [];
-	for (i = 0, len = args.length; i < len; i++) {
-		files.push(Base.getValue(args[i]));
-	}
-
-	files.forEach(function (filename) {
-		filename = Base.toString(filename);
-		if (Base.type(filename) !== 'String') {
-			eventDescription = 'A value that could not be evaluated was passed to Ti.include';
-			Runtime.fireEvent('tiIncludeUnresolved', eventDescription);
-			Runtime.reportWarning('tiIncludeUnresolved', eventDescription);
-			return result;
-		}
-		filename = filename.value;
-
-		if (filename[0] === '.') {
-			filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentLocation().filename), filename));
-		} else {
-			filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, filename));
-			if (!existsSync(filePath)) {
-				filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), filename));
-			}
-		}
-
-		// Make sure the file exists
-		if (existsSync(filePath)) {
-
-			Runtime.fireEvent('tiIncludeResolved', 'The Ti.include path "' + filePath + '" was resolved', {
-				filename: filePath
-			});
-
-			// Fire the parsing begin event
-			Runtime.fireEvent('enteredFile', 'Processing is beginning for file "' + filePath + '"', {
-				filename: filePath
-			});
-
-			// Eval the code
-			evalFunc = Runtime.getGlobalObject().get('eval');
-			evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())], false, filePath);
-
-		} else {
-			eventDescription = 'The Ti.include path "' + filePath + '" could not be found';
-			Runtime.fireEvent('tiIncludeMissing', eventDescription, {
-				name: filePath
-			});
-			Runtime.reportError('tiIncludeMissing', eventDescription, {
-				name: filePath
-			});
-		}
-	});
-	return new Base.UndefinedType();
-};
-
 // ******** Helper Methods ********
 
 /**
@@ -430,10 +356,10 @@ function createObject(apiNode) {
 		name,
 		fullName,
 		type,
-		p, i, len;
+		p, i, ilen, j, jlen;
 
 	// Add the properties
-	for(i = 0, len = properties.length; i < len; i++) {
+	for(i = 0, ilen = properties.length; i < ilen; i++) {
 		property = properties[i];
 		name = property.name;
 		type = property.type;
@@ -475,12 +401,14 @@ function createObject(apiNode) {
 	}
 
 	// Add the methods
-	for(i = 0, len = functions.length; i < len; i++) {
+	for (i = 0, ilen = functions.length; i < ilen; i++) {
 		func = functions[i];
-		if (func.name === 'include' && apiNode.node.name === 'Titanium') {
-			value = new IncludeFunction();
-		} else {
-			value = new TiFunction(func.returnTypes);
+		name = apiNode.node.name + '.' + func.name;
+		value = new TiFunction(func.returnTypes);
+		for (j = 0, jlen = methodOverrides.length; j < jlen; j++) {
+			if (methodOverrides[j].regex.test(name) && methodOverrides[j].call) {
+				value.call = methodOverrides[j].call;
+			}
 		}
 		if (func.parameters) {
 			value.defineOwnProperty('length', {
