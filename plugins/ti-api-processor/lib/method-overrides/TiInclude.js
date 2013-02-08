@@ -18,7 +18,7 @@ var fs = require('fs'),
 exports.init = function (options) {
 	return {
 		regex: /^Titanium\.include$/,
-		call:function call(thisVal, args) {
+		call: function call(thisVal, args) {
 			var files = [],
 				filePath,
 				evalFunc,

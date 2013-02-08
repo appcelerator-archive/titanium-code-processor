@@ -26,7 +26,8 @@ var fs = require('fs'),
 
 	methodOverrides = [
 		require('./method-overrides/TiInclude.js'),
-		require('./method-overrides/TiUICreate.js')
+		require('./method-overrides/TiUICreate.js'),
+		require('./method-overrides/TiUIWindowOpen.js')
 	],
 	propertyOverrides = [];
 
