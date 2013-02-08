@@ -85,7 +85,6 @@ module.exports.prototype.init = function init() {
 		root,
 		obj,
 		p;
-	debugger;
 
 	// Create the API tree
 	for (i = 0, len = types.length; i < len; i++) {
