@@ -1,4 +1,4 @@
-## 0.3.1
+## 0.3.1 (14 February 2013)
 
 ### New Features
 * Added support for parsing values from Ti.UI.createXXX constructors
