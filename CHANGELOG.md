@@ -4,6 +4,10 @@
 * Added support for parsing values from Ti.UI.createXXX constructors
 * Added support for Ti.UI.Window.url
 
+### Bug Fixes
+* Fixed a bug where deferred analysis of methods wasn't setting up the proper context
+** Methods are deferred either because they are a callback (addEventListener/setTimeout/etc) or because they weren't analyzed and processUnvisitedCode is true
+
 ## 0.3.0 (1 February 2013)
 
 ### New Features
