@@ -7,6 +7,8 @@
 ### Bug Fixes
 * Fixed a bug where deferred analysis of methods wasn't setting up the proper context
 ** Methods are deferred either because they are a callback (addEventListener/setTimeout/etc) or because they weren't analyzed and processUnvisitedCode is true
+* Prevented duplicate errors and warnings from being reported
+** Duplicate errors and warnings were being reported when the same line of code causing the error was visited multiple times, thus throwing multiple errors
 
 ## 0.3.0 (1 February 2013)
 
