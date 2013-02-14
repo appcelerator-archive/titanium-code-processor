@@ -205,10 +205,7 @@ function processFile(filename, createExports) {
 
 	var root,
 		results,
-		_module,
-		_exports,
-		context,
-		envRec;
+		context;
 
 	// Make sure the file exists
 	if (existsSync(filename)) {
@@ -223,19 +220,7 @@ function processFile(filename, createExports) {
 		if (!root.syntaxError) {
 
 			// Create the context, checking for strict mode
-			context = Base.createGlobalContext(root, RuleProcessor.isBlockStrict(root));
-			if (createExports) {
-				envRec = context.lexicalEnvironment.envRec;
-				_module = new Base.ObjectType(),
-				_exports = new Base.ObjectType(),
-
-				_module.put('exports', _exports, false);
-
-				envRec.createMutableBinding('module', true);
-				envRec.setMutableBinding('module', _module);
-				envRec.createMutableBinding('exports', true);
-				envRec.setMutableBinding('exports', _exports);
-			}
+			context = Base.createModuleContext(root, RuleProcessor.isBlockStrict(root), createExports, false);
 
 			// Process the code
 			results = root.processRule();
@@ -250,7 +235,7 @@ function processFile(filename, createExports) {
 
 		// Exit the context and get the results
 		if (createExports) {
-			results[1] = Base.type(context.thisBinding) === 'Unknown' ? new Base.UnknownType() : _module.get('exports');
+			results[1] = Base.type(context.thisBinding) === 'Unknown' ? new Base.UnknownType() : context.thisBinding.get('exports');
 		}
 
 	} else {
