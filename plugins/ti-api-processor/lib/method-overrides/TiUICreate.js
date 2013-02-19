@@ -22,7 +22,7 @@ exports.init = function (options) {
 				i, j, len,
 				value = new Base.UnknownType(),
 				callArgs,
-				props = args && args[0],
+				props = args && Base.type(args[0]) === 'Object' && args[0],
 				propNames;
 			args = args || [];
 			for(i = 0, len = args.length; i < len; i++) {

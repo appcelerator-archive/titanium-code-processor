@@ -1,3 +1,8 @@
+## 0.3.2
+
+### Bug Fixes
+* Fixed some more bugs surrounding setting up contexts for deferred methods
+
 ## 0.3.1 (14 February 2013)
 
 ### New Features
