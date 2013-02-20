@@ -11,7 +11,10 @@
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 
-	results = {};
+	results = {
+		global: {},
+		file: {}
+	};
 
 // ******** Plugin API Methods ********
 
@@ -24,22 +27,28 @@ var path = require('path'),
  * @name module:plugins/TiAPIUsageFinder
  */
 module.exports = function () {
-	Runtime.on('tiPropertyReferenced', function(e) {
-		var name = e.data.name;
-		if (results[name]) {
-			results[name] += 1;
+
+	function processReference(e) {
+		var name = e.data.name,
+			filename = e.filename;
+		if (results.global[name]) {
+			results.global[name]++;
 		} else {
-			results[name] = 1;
+			results.global[name] = 1;
 		}
-	});
-	Runtime.on('tiPropertySet', function(e) {
-		var name = e.data.name;
-		if (results[name]) {
-			results[name] += 1;
+
+		if (!results[filename]) {
+			results[filename] = {};
+		}
+		if (results[filename][name]) {
+			results[filename][name]++;
 		} else {
-			results[name] = 1;
+			results[filename][name] = 1;
 		}
-	});
+	}
+
+	Runtime.on('tiPropertyReferenced', processReference);
+	Runtime.on('tiPropertySet', processReference);
 };
 
 /**

@@ -295,7 +295,7 @@ function analyze() {
 					Math.round(100 * (pluginResults.numNodesVisited + pluginResults.numNodesSkipped) /
 						pluginResults.numTotalNodes) + '%)\n');
 			}
-			pluginResults = results.plugins['ti-api-usage-finder'];
+			pluginResults = results.plugins['ti-api-usage-finder'].global;
 			if (pluginResults) {
 				entries = Object.keys(pluginResults);
 				if (entries.length) {
