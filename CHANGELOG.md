@@ -2,6 +2,7 @@
 
 ### Bug Fixes
 * Fixed some more bugs surrounding setting up contexts for deferred methods
+* Fixed a few miscellaneous bugs and regressions
 
 ## 0.3.1 (14 February 2013)
 
