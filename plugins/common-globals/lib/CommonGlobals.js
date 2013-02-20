@@ -88,7 +88,7 @@ ConsoleFunc.prototype.call = function call(thisVal, args) {
 		message = [];
 	args.forEach(function (arg) {
 		if (Base.type(arg) === 'Unknown') {
-			message.push('<Unknown value>');
+			message.push('<Unknown ' + (arg.typeHint ? arg.typeHint : 'Value') + '>');
 		} else {
 			message.push(Base.toString(arg).value);
 		}
