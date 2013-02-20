@@ -132,7 +132,7 @@ module.exports.prototype.init = function init() {
 
 	// Inject the global objects
 	for (p in typesToInsert) {
-		obj = createObject(api.children[p]);
+		obj = createObject(api.children[p], []);
 		globalObject.defineOwnProperty(p, {
 			value: obj,
 			writable: false,
@@ -202,7 +202,7 @@ TiFunction.prototype.call = function call(thisVal, args) {
 			root = root && root.children[returnType[i]];
 		}
 		if (root && root.node) {
-			value = createObject(root);
+			value = createObject(root, []);
 			Runtime.fireEvent('tiPropertyReferenced', 'Property "' + this._returnTypes[0].type + '" was referenced', {
 				name: this._returnTypes[0].type,
 				node: root.node
@@ -346,7 +346,7 @@ TiObjectType.prototype.delete = function objDelete(p) {
  * @private
  * @method
  */
-function createObject(apiNode) {
+function createObject(apiNode, stack) {
 	var obj = new TiObjectType(apiNode),
 		properties = apiNode.node.properties,
 		property,
@@ -359,46 +359,74 @@ function createObject(apiNode) {
 		type,
 		p, i, ilen, j, jlen;
 
+	function getAPIDef(namespace) {
+		var segment,
+			apiLocation = api;
+		namespace = namespace.split('.');
+		while (namespace.length && apiLocation.children) {
+			segment = namespace.shift();
+			apiLocation = apiLocation.children[segment];
+		}
+		return apiLocation;
+	}
+
 	// Add the properties
 	for(i = 0, ilen = properties.length; i < ilen; i++) {
 		property = properties[i];
-		name = property.name;
-		type = property.type;
-		fullName = apiNode.node.name + '.' + name;
-		if (name === 'osname' && apiNode.node.name === 'Titanium.Platform') {
-			value = new Base.StringType(platform);
-		} else if (fullName in values) {
-			if (values[fullName] === null) {
-				value = new Base.NullType();
+		if (!property.isInternal) {
+			name = property.name;
+			type = property.type;
+			fullName = apiNode.node.name + '.' + name;
+			if (fullName === 'Titanium.Platform.osname') {
+				value = new Base.StringType(platform);
+			} else if (fullName in values) {
+				if (values[fullName] === null) {
+					value = new Base.NullType();
+				} else {
+					switch(typeof values[fullName]) {
+						case 'number':
+							value = new Base.NumberType(values[fullName]);
+							break;
+						case 'string':
+							value = new Base.NumberType(values[fullName]);
+							break;
+						case 'boolean':
+							value = new Base.NumberType(values[fullName]);
+							break;
+						case null:
+							break;
+						default:
+							console.error('Invalid value specified in ti-api-processor options: ' + values[fullName]);
+							process.exit(1);
+					}
+				}
 			} else {
-				switch(typeof values[fullName]) {
-					case 'number':
-						value = new Base.NumberType(values[fullName]);
-						break;
-					case 'string':
-						value = new Base.NumberType(values[fullName]);
-						break;
-					case 'boolean':
-						value = new Base.NumberType(values[fullName]);
+				value = new Base.UnknownType();
+				switch(type) {
+					case 'Boolean':
+					case 'String':
+					case 'Number':
+					case 'Function':
+					case 'Array':
+					case 'Date':
+					case 'Error':
+					case 'RegExp':
+						value.typeHint = type;
 						break;
 					default:
-						console.error('Invalid value specified in ti-api-processor options: ' + values[fullName]);
-						process.exit(1);
+						value.typeHint = 'Object';
+						break;
 				}
 			}
-		}else if (type in api.children) {
-			value = createObject(api.children[type]);
-		} else {
-			value = new Base.UnknownType();
+			value._property = property;
+			obj.defineOwnProperty(name, {
+				value: value,
+				// TODO: Need to read the 'permission' property from the JSCA, only it doesn't exist yet
+				writable: !(name === 'osname' && apiNode.node.name === 'Titanium.Platform') && !property.isClassProperty,
+				enumerable: true,
+				configurable: true
+			}, false, true);
 		}
-		value._property = property;
-		obj.defineOwnProperty(name, {
-			value: value,
-			// TODO: Need to read the 'permission' property from the JSCA, only it doesn't exist yet
-			writable: !(name === 'osname' && apiNode.node.name === 'Titanium.Platform') && !property.isClassProperty,
-			enumerable: true,
-			configurable: true
-		}, false, true);
 	}
 
 	// Add the methods
@@ -431,7 +459,7 @@ function createObject(apiNode) {
 	// Add the children
 	for(p in children) {
 		obj.defineOwnProperty(p, {
-			value: createObject(children[p]),
+			value: createObject(children[p], []),
 			writable: false,
 			enumerable: true,
 			configurable: true
