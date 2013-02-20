@@ -34,6 +34,7 @@ switch(subcommand) {
 		queryOptions();
 		break;
 	case 'analyze':
+		printHeader();
 		analyze();
 		break;
 	case 'subprocess':
@@ -42,18 +43,27 @@ switch(subcommand) {
 	case 'help':
 	case '--help':
 	case '-h':
+		printHeader();
 		printHelp();
 		break;
 	case undefined:
+		printHeader();
 		console.log('\nMissing sub-command');
 		printHelp();
 		process.exit(1);
 		break;
 	default:
+		printHeader();
 		console.log('\nUnknown sub-command "' + subcommand + '"');
 		printHelp();
 		process.exit(1);
 		break;
+}
+
+function printHeader() {
+	console.log('Titanium Code Processor v' +
+		JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json').toString())).version + '\n' +
+		'Copyright (c) 2012-2013, Appcelerator, Inc.  All Rights Reserved.');
 }
 
 function printHelp() {
