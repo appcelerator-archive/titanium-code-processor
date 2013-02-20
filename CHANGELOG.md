@@ -1,5 +1,8 @@
 ## 0.3.2
 
+### New Features
+* Modified the Ti API usage finder to report both global api usage numbers and per-file api usage numbers
+
 ### Bug Fixes
 * Fixed some more bugs surrounding setting up contexts for deferred methods
 * Fixed a few miscellaneous bugs and regressions
