@@ -305,8 +305,9 @@ function analyze() {
 					Math.round(100 * (pluginResults.numNodesVisited + pluginResults.numNodesSkipped) /
 						pluginResults.numTotalNodes) + '%)\n');
 			}
-			pluginResults = results.plugins['ti-api-usage-finder'].global;
+			pluginResults = results.plugins['ti-api-usage-finder'];
 			if (pluginResults) {
+				pluginResults = pluginResults.global;
 				entries = Object.keys(pluginResults);
 				if (entries.length) {
 					console.log('Titanium API Usage');

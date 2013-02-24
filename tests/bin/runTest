@@ -7,41 +7,29 @@
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
-var path = require('path'),
-	fs = require('fs'),
+var winston = require('winston'),
+	testutils = require('../lib/testutils'),
+	testFile = process.argv[2],
+	results;
 
-	winston = require('winston'),
-
-	CodeProcessor = require('../../lib/CodeProcessor'),
-	Runtime = require('../../lib/Runtime'),
-	Base = require('../../lib/Base'),
-
-	file = process.argv[2],
-	logger,
-	result,
-	silent = false;
-
-// Validate the file argument
-if (!file) {
-	if (!silent) {
-		console.error('**** File not specified');
-	}
+if (!testFile) {
+	console.error('A valid test case must be supplied');
 	process.exit(1);
 }
-if (!(fs.existsSync || path.existsSync)(file)) {
-	if (!silent) {
-		console.error('**** Invalid file ' + file);
-	}
+testFile = testutils.getTests(testFile);
+if (!testFile) {
 	process.exit(1);
 }
-if (!silent) {
-	console.log('Processing file "' + file + '"');
+if (testFile.length > 1) {
+	console.error('Only one test case can be run at a time with this tool');
+	process.exit(1);
 }
+testFile = testFile[0];
+console.log('\nRunning test "' + testFile + '"');
 
-// Create the logger
-logger = new (winston.Logger)({
+testutils.initCodeProcessor(new (winston.Logger)({
 	transports: [
-		new (winston.transports.Console)({ level: silent ? 'critical' : 'error'})
+		new (winston.transports.Console)({ level: 'debug'})
 	],
 	levels: {
 		trace: 0,
@@ -52,41 +40,10 @@ logger = new (winston.Logger)({
 		error: 5,
 		critical: 6
 	}
-});
-
-// Run the test
-try {
-
-	result = CodeProcessor.run(file, {
-		exactMode: true
-	}, [], logger);
-	if (result && result[0] === 'throw') {
-		if (result[1]) {
-			var value;
-			switch(Base.type(result[1])) {
-				case 'String': value = result[1].value; break;
-				case 'Object': value = result[1]._lookupProperty.message.value.value; break;
-			}
-		} else {
-			console.error('**** Internal error: missing throw value at line ' + Runtime.getCurrentLocation().line);
-		}
-		if (!silent) {
-			console.log('Exception thrown: ' + value);
-		}
-		process.exit(1);
-	}
-	result = CodeProcessor.getResults();
-	if (result.errors.length) {
-		if (!silent) {
-			console.log('Error generated: ' + result.errors[0].description);
-		}
-		process.exit(1);
-	}
-	if (!silent) {
-		console.log('Code exited properly');
-	}
-	process.exit(0);
-} catch(e) {
-	console.error('**** Internal error: ' + e.message);
-	throw e;
+}));
+results = testutils.evaluateTest(testFile);
+if (results.success) {
+	console.log('\nTest finished successfully\n');
+} else {
+	console.log('\nTest failed:\n' + results.error + '\n');
 }
