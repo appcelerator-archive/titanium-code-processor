@@ -1,62 +1,17 @@
 #!/usr/bin/env node
 /**
- * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+ * <p>Copyright (c) 2012-2013 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
  * Provides a CLI for the code processor unit tests
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
- 
-var path = require('path'),
-	fs = require('fs'),
-	spawn = require('child_process').spawn,
-	nomnom = require('nomnom'),
-	parsedOptions = nomnom
-		.option('test-262-dir', {
-			abbr: 'd',
-			metavar: 'TEST_262_DIR',
-			default: path.resolve(path.join(__dirname, '..', 'test-262')),
-			type: 'string',
-			help: 'Location of the test-262 directory'
-		})
-		.option('multi-threaded', {
-			abbr: 'm',
-			flag: true,
-			help: 'Enable multi-threaded processing'
-		})
-		.option('use-old-harness', {
-			abbr: 'o',
-			flag: true,
-			help: 'Use the test-262 harness instead of the code processor harness'
-		})
-		.option('chapter', {
-			abbr: 'c',
-			metavar: 'CHAPTER',
-			help: 'The chapter number to test in x, x/x, or x/x/x format. Tests all chapters if unspecified.'
-		})
-		.option('test-node', {
-			abbr: 'n',
-			flag: true,
-			help: 'Test node instead of the code processor'
-		})
-		.script('tests')
-		.help('Runs the test-262 unit tests')
-		.nom();
 
-if (!(fs.existsSync || path.existsSync)(path.resolve(parsedOptions['test-262-dir']))) {
-	console.error('Test-262 directory "' + parsedOptions['test-262-dir'] + '" does not exist\n');
-	process.exit(1);
-}
+var cluster = require('cluster'),
+	path = require('path');
 
-if (parsedOptions['use-old-harness']) {
-	spawn('python', [
-		path.resolve(path.join(parsedOptions['test-262-dir'], 'tools', 'packaging', 'test262.py')),
-		'--command',
-		path.resolve(path.join(__dirname, '..', 'bin', 'runTest'))
-	], {
-		stdio: 'inherit',
-		cwd: parsedOptions['test-262-dir']
-	});
+if (cluster.isMaster) {
+	require(path.join(__dirname, '..', 'lib', 'master')).run(cluster);
 } else {
-	require('../lib/harness').run(parsedOptions);
+	require(path.join(__dirname, '..', 'lib', 'worker')).run();
 }
