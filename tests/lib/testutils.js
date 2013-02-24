@@ -249,9 +249,11 @@ exports.evaluateTest = function(testFilePath) {
 			} else {
 				errorMessage = errorMessage._lookupProperty('message').value.value;
 			}
+			success = testProperties.hasOwnProperty('negative');
 
 			Runtime._exception = undefined;
 		} else {
+			success = false;
 			errorMessage = '**** Internal error: ' + e.message + '\n' + e.stack;
 		}
 	}

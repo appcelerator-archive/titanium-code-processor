@@ -146,7 +146,7 @@ function run(cluster, options) {
 					worker.destroy();
 					processFile(createWorker());
 				}, 0);
-			}, 10000);
+			}, 30000);
 		}
 	}
 
