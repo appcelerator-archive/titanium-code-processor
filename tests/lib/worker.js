@@ -29,7 +29,7 @@ module.exports.run = function () {
 
 		process.send({
 			success: results.success,
-			errorMessage: results.errorMessage,
+			error: results.error,
 			file: testFile
 		});
 	}

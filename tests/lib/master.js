@@ -101,7 +101,7 @@ function run(cluster, options) {
 			console.log((message.success ? 'PASS' : 'FAIL') + ' (' + total + ' of ' + numTests +', ' +
 				testutiles.getPrettyTime((numTests - total) * (Date.now() - startTime) / total) + ' remaining, ' +
 				Math.floor(100 * successes / total) + '% pass rate so far): ' +
-				message.file + (!message.success ? '\n   ' + message.errorMessage : ''));
+				message.file + (!message.success ? '\n   ' + message.error : ''));
 
 			setTimeout(function () {
 				processFile(worker);
@@ -146,7 +146,7 @@ function run(cluster, options) {
 					worker.destroy();
 					processFile(createWorker());
 				}, 0);
-			}, 30000);
+			}, 10000);
 		}
 	}
 
