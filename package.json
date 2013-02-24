@@ -21,7 +21,8 @@
 		"async": "0.1.x",
 		"xml2js": "0.2.x",
 		"cli-table": "0.2.x",
-		"node-appc": "0.1.x"
+		"node-appc": "0.1.x",
+		"mu2": "0.5.x"
 	},
 	"engine": {
 		"node": ">=0.8"

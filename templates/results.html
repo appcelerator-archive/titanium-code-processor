@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{{title}}</title>
+<style>
+body {
+	background-color: #E0E8F0;
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333333;
+}
+#container {
+	background-color: #FFF;
+	margin: 10px;
+	border: black solid 1px;
+	border-radius: 3px;
+}
+#contentContainer {
+	margin: 10px;
+}
+table {
+	border-collapse:collapse;
+	width: 100%;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+table,th,td
+{
+	border: 1px solid black;
+	padding: 5px;
+}
+th {
+	background-color: #A0B0FF;
+}
+tr:nth-child(odd) {
+	background-color: #D8E0FF;
+}
+td {
+	font-family: "Courier New", Courier, monospace
+}
+.mono {
+	font-family: "Courier New", Courier, monospace
+}
+#menu {
+	border-bottom: 1px solid black;
+	background-color: #CCC;
+	background-image: -webkit-linear-gradient(top, #EEE, #BBB);
+	background-image: -ms-linear-gradient(top, #EEE, #BBB);
+	background-image: -o-linear-gradient(top, #EEE, #BBB);
+	background-image: linear-gradient(to bottom, #EEE, #BBB);
+}
+#menu > ul {
+	display: inline-block;
+	width:100%;
+	padding: 0px;
+	margin: 0px;
+	list-style-type: none;
+}
+#menu > ul > li {
+	display: inline-block;
+	padding: 0px;
+	margin: 0px;
+}
+.menuEntry {
+	display: inline-block;
+	text-decoration: none;
+	color: #444;
+	padding: 10px;
+	margin: 0px;
+	border-right: 1px solid black;
+	font-size: large;
+}
+.menuEntry:hover {
+	color: #000;
+	background-color: rgba(0, 0, 0, 0.1);
+}
+.menuEntry:active {
+	color: #FFF;
+	background-color: rgba(0, 0, 0, 0.7);
+}
+.menuEntryHighlighted {
+	background-color: rgba(0, 0, 0, 0.5);
+	color: #FFF;
+}
+.menuEntryHighlighted:hover {
+	background-color: rgba(0, 0, 0, 0.6);
+	color: #FFF;
+}
+.menuEntryHighlighted:active {
+	color: #FFF;
+	background-color: rgba(0, 0, 0, 0.7);
+}
+</style>
+</head>
+<body>
+<div id="container">
+	<div id="menu">
+		<ul>
+			{{menu}}
+		</ul>
+	</div>
+	<div id="contentContainer">
+		{{content}}
+	</div>
+</div>
+</body>
+</html>
