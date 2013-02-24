@@ -235,27 +235,21 @@ exports.evaluateTest = function(testFilePath) {
 				}
 			}
 		} else {
-			Base.handleRecoverableNativeException('SyntaxError', ast.message, {
-				line: ast.line,
-				column: ast.col
-			});
+			success = testProperties.hasOwnProperty('negative');
+			errorMessage = 'SyntaxError: ' + ast.message;
 		}
 	} catch (e) {
-		var exception;
 		if (e.isCodeProcessorException) {
 			results = ['throw', Runtime._exception, undefined];
-			exception = Runtime._exception;
-			if (Base.type(exception) === 'String') {
-				exception = exception.value;
-			} else if (Base.type(exception) === 'Unknown') {
-				exception = '<unknown>';
+			errorMessage = Runtime._exception;
+			if (Base.type(errorMessage) === 'String') {
+				errorMessage = errorMessage.value;
+			} else if (Base.type(errorMessage) === 'Unknown') {
+				errorMessage = '<unknown>';
 			} else {
-				exception = exception._lookupProperty('message').value.value;
+				errorMessage = errorMessage._lookupProperty('message').value.value;
 			}
-			Runtime.reportError('uncaughtException', 'An exception was thrown but not caught: ' + exception, {
-				description: 'Uncaught exception',
-				exception: Runtime._exception
-			});
+
 			Runtime._exception = undefined;
 		} else {
 			errorMessage = '**** Internal error: ' + e.message + '\n' + e.stack;
