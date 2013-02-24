@@ -61,41 +61,45 @@ exports.getTest262Dir = function() {
 
 exports.getTests = function (test) {
 	var testPath = [exports.getTest262Dir(), 'test', 'suite'],
-		i,
+		i, len,
 		segments,
 		isS = /^S/.test(test),
 		jsRegex = /\.js$/,
 		fileList,
 		prunedFileList = [];
-	if (isS) {
-		test = test.replace('S', '');
-	}
-	segments = test.match(/(^[0-9\.]*)/)[1].split('.');
-	testPath.push('ch' + (parseInt(segments[0], 10) < 10 ? '0' + segments[0] : segments[0]));
-	for(i = 1; i < segments.length - 1; i++) {
-		testPath.push(segments.slice(0, i).join('.') + '.' + segments[i]);
-	}
-	testPath.push(segments.join('.'));
-	testPath = path.join.apply(path, testPath);
-	if (segments.join('.') !== test) {
-		fileList = [path.join(testPath, (isS ? 'S' : '') + test + '.js')];
-		if (!existsSync(fileList[0])) {
-			console.error('Test file "' + fileList[0] + '" does not exist');
-			return;
+
+	if (test) {
+		if (isS) {
+			test = test.replace('S', '');
+		}
+		segments = test.match(/(^[0-9\.]*)/)[1].split('.');
+		testPath.push('ch' + (parseInt(segments[0], 10) < 10 ? '0' + segments[0] : segments[0]));
+		for(i = 1; i < segments.length ; i++) {
+			testPath.push(segments.slice(0, i).join('.') + '.' + segments[i]);
+		}
+		testPath = path.join.apply(path, testPath);
+		if (segments.join('.') !== test) {
+			fileList = path.join(testPath, (isS ? 'S' : '') + test + '.js');
+			if (!existsSync(fileList)) {
+				console.error('Test file "' + fileList + '" does not exist');
+				return;
+			}
+			return [fileList];
 		}
 	} else {
-		if (!existsSync(testPath)) {
-			console.error('Test path "' + testPath + '" does not exist');
-			return;
-		}
-		fileList = wrench.readdirSyncRecursive(testPath);
-		for(i = 0; i < fileList.length; i++) {
-			if (jsRegex.test(fileList[i])) {
-				prunedFileList.push(path.join(testPath, fileList[i]));
-			}
-		}
-		fileList = prunedFileList;
+		testPath = path.join.apply(path, testPath);
 	}
+	if (!existsSync(testPath)) {
+		console.error('Test path "' + testPath + '" does not exist');
+		return;
+	}
+	fileList = wrench.readdirSyncRecursive(testPath);
+	for(i = 0, len = fileList.length; i < len; i++) {
+		if (jsRegex.test(fileList[i])) {
+			prunedFileList.push(path.join(testPath, fileList[i]));
+		}
+	}
+	fileList = prunedFileList;
 	return fileList;
 };
 

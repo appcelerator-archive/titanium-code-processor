@@ -18,7 +18,6 @@ if (!testFile) {
 }
 testFile = testutils.getTests(testFile);
 if (!testFile) {
-	console.error('A valid test case must be supplied');
 	process.exit(1);
 }
 if (testFile.length > 1) {
