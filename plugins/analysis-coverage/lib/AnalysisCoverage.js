@@ -16,6 +16,7 @@ var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	AST = require(path.join(global.titaniumCodeProcessorLibDir, 'AST')),
 	results = {
+		summary: 'I am the analysis results',
 		details: {},
 		filesSkipped: [],
 		numTotalFiles: 0,

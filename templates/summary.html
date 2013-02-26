@@ -53,14 +53,21 @@
 			{{/warningList}}
 		</table>
 		{{/warnings}}
+		{{#plugins}}
 		<h3>Plugin Summary</h3>
 		<table>
 			<tr>
 				<th>Plugin</th>
-				<th>Info</th>
+				<th>Overview</th>
 			</tr>
-			{{{pluginSummary}}}
+			{{#pluginList}}
+			<tr>
+				<td>{{name}}</td>
+				<td>{{overview}}</td>
+			</tr>
+			{{/pluginList}}
 		</table>
+		{{/plugins}}
 	</div>
 </div>
 </body>
