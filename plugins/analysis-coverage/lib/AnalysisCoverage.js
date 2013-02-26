@@ -242,15 +242,31 @@ module.exports = function (options) {
 module.exports.prototype.init = function init() {};
 
 /**
-* Gets the results of the plugin
-*
-* @method
+ * Gets the results of the plugin
+ *
+ * @method
  * @name module:plugins/AnalysisCoverage#getResults
-* @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
-*		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
-*		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
-*		method.
-*/
+ * @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
+ *		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
+ *		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
+ *		method.
+ */
 module.exports.prototype.getResults = function getResults() {
 	return results;
 };
+
+/**
+ * Generates the results HTML page
+ *
+ * @method
+ * @param {String} path The path to the file to write
+ * @param {String} headerIndex The index of this header item, to be passed into render
+ * @return {String} the HTML content summarizing the results
+ */
+module.exports.prototype.getResultsPageData = function getResultsPageData() {
+	return {
+		template: path.join(__dirname, '..', 'templates', 'template.html'),
+		data: {}
+	};
+};
+module.exports.prototype.displayName = 'Analysis Coverage';

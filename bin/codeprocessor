@@ -499,6 +499,12 @@ function processAnalayzeInput(callback) {
 				help: 'The path to the config file. Note: when this flag is specified, all other flags are ignored',
 				type: 'string'
 			})
+			.option('results-dir', {
+				abbr: 'r',
+				metavar: 'RESULTS_DIR',
+				help: 'The path to the directory that will contain the results',
+				type: 'string'
+			})
 			.option('all-plugins', {
 				abbr: 'a',
 				help: 'Loads all plugins in the default search path',
@@ -689,6 +695,9 @@ function processAnalayzeInput(callback) {
 			projectRoot = parsedOptions['project-dir'];
 		}
 		projectRoot = path.resolve(projectRoot);
+
+		// Store the results dir
+		options['results-dir'] = parsedOptions['results-dir'];
 
 		// Check if we are processing a project or a single file
 		if (/\.js$/.test(projectRoot)) {

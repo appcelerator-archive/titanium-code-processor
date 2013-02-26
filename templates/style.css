@@ -1,20 +1,15 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>{{title}}</title>
-<style>
 body {
 	background-color: #E0E8F0;
 	font-family: Tahoma, Geneva, sans-serif;
 	color: #333333;
 }
-#container {
+.container {
 	background-color: #FFF;
 	margin: 10px;
 	border: black solid 1px;
 	border-radius: 3px;
 }
-#contentContainer {
+.contentContainer {
 	margin: 10px;
 }
 table {
@@ -40,7 +35,8 @@ td {
 .mono {
 	font-family: "Courier New", Courier, monospace
 }
-#menu {
+.menu {
+	overflow: hidden;
 	border-bottom: 1px solid black;
 	background-color: #CCC;
 	background-image: -webkit-linear-gradient(top, #EEE, #BBB);
@@ -48,59 +44,51 @@ td {
 	background-image: -o-linear-gradient(top, #EEE, #BBB);
 	background-image: linear-gradient(to bottom, #EEE, #BBB);
 }
-#menu > ul {
-	display: inline-block;
+.menu > ul {
+	display: block;
+	float: left;
 	width:100%;
-	padding: 0px;
-	margin: 0px;
+	padding: 0;
+	margin: 0;
 	list-style-type: none;
 }
-#menu > ul > li {
-	display: inline-block;
-	padding: 0px;
-	margin: 0px;
+.menu > ul > li {
+	display: block;
+	float: left;
+	padding: 0;
+	margin: 0;
 }
 .menuEntry {
 	display: inline-block;
 	text-decoration: none;
 	color: #444;
 	padding: 10px;
-	margin: 0px;
+	margin: 0;
 	border-right: 1px solid black;
 	font-size: large;
 }
 .menuEntry:hover {
 	color: #000;
-	background-color: rgba(0, 0, 0, 0.1);
+	background-color: #f00;
+	background-color: rgba(255, 0, 0, 0.8);
 }
 .menuEntry:active {
 	color: #FFF;
+	background-color: #666;
 	background-color: rgba(0, 0, 0, 0.7);
 }
 .menuEntryHighlighted {
+	background-color: #888;
 	background-color: rgba(0, 0, 0, 0.5);
 	color: #FFF;
 }
 .menuEntryHighlighted:hover {
+	background-color: #777;
 	background-color: rgba(0, 0, 0, 0.6);
 	color: #FFF;
 }
 .menuEntryHighlighted:active {
 	color: #FFF;
+	background-color: #666;
 	background-color: rgba(0, 0, 0, 0.7);
 }
-</style>
-</head>
-<body>
-<div id="container">
-	<div id="menu">
-		<ul>
-			{{menu}}
-		</ul>
-	</div>
-	<div id="contentContainer">
-		{{content}}
-	</div>
-</div>
-</body>
-</html>

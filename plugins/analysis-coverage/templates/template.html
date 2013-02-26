@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Summary</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class="container">
+	<div class="menu">
+		<ul>
+			{{#header}}
+				<li><a href="{{file}}" class="menuEntry{{#isHighlighted}} menuEntryHighlighted{{/isHighlighted}}">{{name}}</a></li>
+			{{/header}}
+		</ul>
+	</div>
+	<div class="contentContainer">
+		<h3>Overview</h3>
+	</div>
+</div>
+</body>
+</html>
