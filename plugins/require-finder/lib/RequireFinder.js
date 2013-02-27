@@ -62,3 +62,90 @@ module.exports.prototype.init = function init() {};
 module.exports.prototype.getResults = function getResults() {
 	return results;
 };
+
+/**
+ * Generates the results HTML page
+ *
+ * @method
+ * @param {String} path The path to the file to write
+ * @param {String} headerIndex The index of this header item, to be passed into render
+ * @return {String} the HTML content summarizing the results
+ */
+module.exports.prototype.getResultsPageData = function getResultsPageData(baseDirectory) {
+
+	var numRequiresResolved = results.resolved.length,
+		numRequiresUnresolved = results.unresolved.length,
+		numRequiresMissing = results.missing.length,
+		numRequiresSkipped = results.skipped.length,
+		resolved,
+		unresolved,
+		missing,
+		skipped;
+
+	if (numRequiresResolved) {
+		resolved = {
+			list: []
+		};
+		results.resolved.forEach(function (module) {
+			resolved.list.push({
+				name: module.data.name,
+				path: module.data.path.replace(baseDirectory, ''),
+				filename: module.filename.replace(baseDirectory, ''),
+				line: module.line
+			});
+		});
+	}
+
+	if (numRequiresUnresolved) {
+		unresolved = {
+			list: []
+		};
+		results.unresolved.forEach(function (module) {
+			unresolved.list.push({
+				filename: module.filename.replace(baseDirectory, ''),
+				line: module.line
+			});
+		});
+	}
+
+	if (numRequiresMissing) {
+		missing = {
+			list: []
+		};
+		results.missing.forEach(function (module) {
+			missing.list.push({
+				name: module.data.name,
+				filename: module.filename.replace(baseDirectory, ''),
+				line: module.line
+			});
+		});
+	}
+
+	if (numRequiresSkipped) {
+		skipped = {
+			list: []
+		};
+		results.skipped.forEach(function (module) {
+			skipped.list.push({
+				name: module.data.name,
+				filename: module.filename.replace(baseDirectory, ''),
+				line: module.line
+			});
+		});
+	}
+
+	return {
+		template: path.join(__dirname, '..', 'templates', 'requireFinderTemplate.html'),
+		data: {
+			numRequiresResolved: numRequiresResolved === 1 ? '1 module' : numRequiresResolved + ' modules',
+			numRequiresUnresolved: numRequiresUnresolved === 1 ? '1 module' : numRequiresUnresolved + ' modules',
+			numRequiresMissing: numRequiresMissing === 1 ? '1 module' : numRequiresMissing + ' modules',
+			numRequiresSkipped: numRequiresSkipped + ' native module' + (numRequiresSkipped === 1 ? '' : 's'),
+			resolved: resolved,
+			unresolved: unresolved,
+			missing: missing,
+			skipped: skipped
+		}
+	};
+};
+module.exports.prototype.displayName = 'Require Finder';

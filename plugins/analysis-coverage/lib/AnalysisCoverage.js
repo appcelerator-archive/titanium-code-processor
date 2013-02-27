@@ -299,7 +299,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(baseDi
 	}
 
 	return {
-		template: path.join(__dirname, '..', 'templates', 'template.html'),
+		template: path.join(__dirname, '..', 'templates', 'analysisCoverageTemplate.html'),
 		data: {
 			numFilesVisited: results.numFilesVisited,
 			numTotalFiles: results.numTotalFiles,
