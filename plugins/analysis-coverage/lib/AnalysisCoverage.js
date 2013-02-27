@@ -65,8 +65,12 @@ module.exports = function (options) {
 
 		// Analyze the files
 		results.filesSkipped = Runtime.getUnprocessedFilesList();
-		results.numTotalFiles = results.filesSkipped.length + Runtime.getProcessedFilesList().length;
+		results.filesSkipped.forEach(function(file) {
+			AST.parse(file); // Parse the file to add it to the list of unprocessed files remaining
+		});
+		results.numFilesVisited = Runtime.getProcessedFilesList().length;
 		results.numFilesSkipped = results.filesSkipped.length;
+		results.numTotalFiles = results.filesSkipped.length + results.numFilesVisited;
 
 		// Analyze the ASTs
 		for (id in astSet) {
@@ -83,9 +87,8 @@ module.exports = function (options) {
 		}
 
 		// Create the summary report
-		results.summary = (100 * results.numFilesSkipped / results.numTotalFiles *
-			results.numNodesVisited / results.numTotalNodes).toFixed(1) +
-			'% of the project\'s code was analyzed';
+		results.summary = (100 * (results.numNodesVisited + results.numNodesSkipped) / results.numTotalNodes).toFixed(1) +
+			'% of the project\'s source code was analyzed';
 
 		if (options && options.visualization) {
 
@@ -269,10 +272,46 @@ module.exports.prototype.getResults = function getResults() {
  * @param {String} headerIndex The index of this header item, to be passed into render
  * @return {String} the HTML content summarizing the results
  */
-module.exports.prototype.getResultsPageData = function getResultsPageData() {
+module.exports.prototype.getResultsPageData = function getResultsPageData(baseDirectory) {
+	var nodeList = [],
+		filesSkipped;
+
+	// Calculate the node list
+	Object.keys(results.details).forEach(function(id) {
+		var result = results.details[id];
+		nodeList.push({
+			filename: id.replace(baseDirectory, ''),
+			numNodesVisited: result.numNodesVisited,
+			numNodesSkipped: result.numNodesSkipped,
+			numTotalNodes: result.numTotalNodes
+		});
+	});
+
+	if (results.filesSkipped.length) {
+		filesSkipped = {
+			filesSkippedList: []
+		};
+		results.filesSkipped.forEach(function (file) {
+			filesSkipped.filesSkippedList.push({
+				filename: file.replace(baseDirectory, '')
+			});
+		});
+	}
+
 	return {
 		template: path.join(__dirname, '..', 'templates', 'template.html'),
-		data: {}
+		data: {
+			numFilesVisited: results.numFilesVisited,
+			numTotalFiles: results.numTotalFiles,
+			filesPercentage: (100 * results.numFilesVisited / results.numTotalFiles).toFixed(1),
+			numNodesVisited: results.numNodesVisited,
+			numTotalNodes: results.numTotalNodes,
+			nodesPercentage: (100 * (results.numNodesVisited + results.numNodesSkipped) / results.numTotalNodes).toFixed(1),
+			nodeCoverage: {
+				nodeList: nodeList
+			},
+			filesSkipped: filesSkipped
+		}
 	};
 };
 module.exports.prototype.displayName = 'Analysis Coverage';
