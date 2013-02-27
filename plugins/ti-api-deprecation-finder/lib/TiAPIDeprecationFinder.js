@@ -11,7 +11,10 @@
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 
-	results = {};
+	results = {
+		summary: '',
+		deprecatedAPIs: {}
+	};
 
 // ******** Plugin API Methods ********
 
@@ -33,10 +36,10 @@ module.exports = function () {
 				property: name
 			});
 
-			if (results[name]) {
-				results[name] += 1;
+			if (results.deprecatedAPIs[name]) {
+				results.deprecatedAPIs[name] += 1;
 			} else {
-				results[name] = 1;
+				results.deprecatedAPIs[name] = 1;
 			}
 		}
 	});
@@ -58,5 +61,59 @@ module.exports.prototype.init = function init() {};
 * @returns {Object} A dictionary of the deprecated Titanium APIs that were used along with a count of how many times they were used.
 */
 module.exports.prototype.getResults = function getResults() {
+	var summary,
+		numDeprecatedAPIs = Object.keys(results.deprecatedAPIs).length;
+	if (numDeprecatedAPIs) {
+		summary = (numDeprecatedAPIs === 1 ? '1 deprecated API is' : numDeprecatedAPIs + ' deprecated APIs are') + ' used in the project';
+	} else {
+		summary = 'No deprecated APIs are used in the project, hooray!';
+	}
+	results.summary = summary;
 	return results;
 };
+
+/**
+ * Generates the results HTML page
+ *
+ * @method
+ * @param {String} path The path to the file to write
+ * @param {String} headerIndex The index of this header item, to be passed into render
+ * @return {String} the HTML content summarizing the results
+ */
+module.exports.prototype.getResultsPageData = function getResultsPageData() {
+	var deprecatedAPIs,
+		numDeprecatedAPIs = Object.keys(results.deprecatedAPIs).length,
+		numDeprecatedAPIInstances = 0,
+		deprecatedAPI;
+	if (numDeprecatedAPIs) {
+		deprecatedAPIs = {
+			list: []
+		};
+		for (deprecatedAPI in results.deprecatedAPIs) {
+			deprecatedAPIs.list.push({
+				api: deprecatedAPI,
+				numReferences: results.deprecatedAPIs[deprecatedAPI]
+			});
+			numDeprecatedAPIInstances += results.deprecatedAPIs[deprecatedAPI];
+		}
+		if (numDeprecatedAPIs === 1) {
+			numDeprecatedAPIs = '1 deprecated API is';
+		} else {
+			numDeprecatedAPIs = numDeprecatedAPIs + ' deprecated APIs are';
+		}
+		if (numDeprecatedAPIInstances === 1) {
+			numDeprecatedAPIInstances = '1 time';
+		} else {
+			numDeprecatedAPIInstances = numDeprecatedAPIInstances + ' times';
+		}
+	}
+	return {
+		template: path.join(__dirname, '..', 'templates', 'tiApiDeprecationFinderTemplate.html'),
+		data: {
+			numAPIs: numDeprecatedAPIs,
+			numInstances: numDeprecatedAPIInstances,
+			deprecatedAPIs: deprecatedAPIs
+		}
+	};
+};
+module.exports.prototype.displayName = 'Deprecated APIs';

@@ -416,14 +416,14 @@ function analyze() {
 			}
 			pluginResults = results.plugins['ti-api-deprecation-finder'];
 			if (pluginResults) {
-				entries = Object.keys(pluginResults);
+				entries = Object.keys(pluginResults.deprecatedAPIs);
 				if (entries.length) {
 					console.log('Deprecated Titanium API References');
 					table = new Table({
 						head: ['API', 'Num References']
 					});
 					for (i = 0, len = entries.length; i < len; i++) {
-						table.push([entries[i], pluginResults[entries[i]]]);
+						table.push([entries[i], pluginResults.deprecatedAPIs[entries[i]]]);
 					}
 					console.log(table.toString() + '\n');
 				}

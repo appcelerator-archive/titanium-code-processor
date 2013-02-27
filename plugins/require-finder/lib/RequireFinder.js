@@ -173,4 +173,4 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(baseDi
 		}
 	};
 };
-module.exports.prototype.displayName = 'Require Finder';
+module.exports.prototype.displayName = 'Requires';

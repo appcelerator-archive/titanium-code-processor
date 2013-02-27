@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Deprecated APIs</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class="container">
+	<div class="menu">
+		<ul>
+			{{#header}}
+				<li><a href="{{file}}" class="menuEntry{{#isHighlighted}} menuEntryHighlighted{{/isHighlighted}}">{{name}}</a></li>
+			{{/header}}
+		</ul>
+	</div>
+	<div class="contentContainer">
+		<h3>Overview</h3>
+		{{#deprecatedAPIs}}
+		<p class="mono">
+			{{numAPIs}} used {{numInstances}}
+		</p>
+		<h3>Deprecated APIs Used</h3>
+		<table>
+			<tr>
+				<th>API</th>
+				<th>Num References</th>
+			</tr>
+			{{#list}}
+			<tr>
+				<td>{{api}}</td>
+				<td>{{numReferences}}</td>
+			</tr>
+			{{/list}}
+		</table>
+		{{/deprecatedAPIs}}
+		{{^deprecatedAPIs}}
+		<p class="mono">
+			No deprecated APIs are used in the project, hooray!
+		</p>
+		{{/deprecatedAPIs}}
+	</div>
+</div>
+</body>
+</html>
