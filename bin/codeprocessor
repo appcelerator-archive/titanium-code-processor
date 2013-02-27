@@ -430,14 +430,14 @@ function analyze() {
 			}
 			pluginResults = results.plugins['ti-api-platform-validator'];
 			if (pluginResults) {
-				entries = Object.keys(pluginResults);
+				entries = Object.keys(pluginResults.invalidAPIs);
 				if (entries.length) {
 					console.log('Invalid Platform-Specific Titanium API References');
 					table = new Table({
 						head: ['API', 'Num References']
 					});
 					for (i = 0, len = entries.length; i < len; i++) {
-						table.push([entries[i], pluginResults[entries[i]]]);
+						table.push([entries[i], pluginResults.invalidAPIs[entries[i]]]);
 					}
 					console.log(table.toString() + '\n');
 				}

@@ -11,7 +11,10 @@
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 
-	results = {},
+	results = {
+		summary: '',
+		invalidAPIs: {}
+	},
 
 	platformList = ['android', 'mobileweb', 'iphone', 'ios', 'ipad'];
 
@@ -57,10 +60,10 @@ module.exports = function (options) {
 					platform: platform
 				});
 
-			if (results[name]) {
-				results[name] += 1;
+			if (results.invalidAPIs[name]) {
+				results.invalidAPIs[name] += 1;
 			} else {
-				results[name] = 1;
+				results.invalidAPIs[name] = 1;
 			}
 		}
 	});
@@ -82,5 +85,60 @@ module.exports.prototype.init = function init() {};
 * @returns {Object} A dictionary of the Titanium APIs that were used along with a count of how many times they were used.
 */
 module.exports.prototype.getResults = function getResults() {
+	var summary,
+		numInvalidAPIs = Object.keys(results.invalidAPIs).length;
+	if (numInvalidAPIs) {
+		summary = (numInvalidAPIs === 1 ? '1 platform API is' : numInvalidAPIs + ' platform APIs are') + ' used incorrectly';
+	} else {
+		summary = 'All platform specific APIs are used correctly';
+	}
+	results.summary = summary;
 	return results;
 };
+
+/**
+ * Generates the results HTML page
+ *
+ * @method
+ * @param {String} baseDirectory The base directory of the code, useful for shortening paths
+ * @return {Object} The information for generating the template. Two keys are expected: template is the path to the
+ *		mustache template (note the name of the file must be unique, irrespective of path) and data is the information
+ *		to dump into the template
+ */
+module.exports.prototype.getResultsPageData = function getResultsPageData() {
+	var invalidAPIs,
+		numInvalidAPIs = Object.keys(results.invalidAPIs).length,
+		numInvalidAPIInstances = 0,
+		invalidAPI;
+	if (numInvalidAPIs) {
+		invalidAPIs = {
+			list: []
+		};
+		for (invalidAPI in results.invalidAPIs) {
+			invalidAPIs.list.push({
+				api: invalidAPI,
+				numReferences: results.invalidAPIs[invalidAPI]
+			});
+			numInvalidAPIInstances += results.invalidAPIs[invalidAPI];
+		}
+		if (numInvalidAPIs === 1) {
+			numInvalidAPIs = '1 deprecated API is';
+		} else {
+			numInvalidAPIs = numInvalidAPIs + ' deprecated APIs are';
+		}
+		if (numInvalidAPIInstances === 1) {
+			numInvalidAPIInstances = '1 time';
+		} else {
+			numInvalidAPIInstances = numInvalidAPIInstances + ' times';
+		}
+	}
+	return {
+		template: path.join(__dirname, '..', 'templates', 'tiApiPlatformValidatorTemplate.html'),
+		data: {
+			numAPIs: numInvalidAPIs,
+			numInstances: numInvalidAPIInstances,
+			invalidAPIs: invalidAPIs
+		}
+	};
+};
+module.exports.prototype.displayName = 'Platform Validation';

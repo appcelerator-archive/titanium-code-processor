@@ -64,9 +64,9 @@ module.exports.prototype.getResults = function getResults() {
 	var summary,
 		numDeprecatedAPIs = Object.keys(results.deprecatedAPIs).length;
 	if (numDeprecatedAPIs) {
-		summary = (numDeprecatedAPIs === 1 ? '1 deprecated API is' : numDeprecatedAPIs + ' deprecated APIs are') + ' used in the project';
+		summary = (numDeprecatedAPIs === 1 ? '1 deprecated API is' : numDeprecatedAPIs + ' deprecated APIs are') + ' used';
 	} else {
-		summary = 'No deprecated APIs are used in the project, hooray!';
+		summary = 'No deprecated APIs are used';
 	}
 	results.summary = summary;
 	return results;
@@ -76,9 +76,10 @@ module.exports.prototype.getResults = function getResults() {
  * Generates the results HTML page
  *
  * @method
- * @param {String} path The path to the file to write
- * @param {String} headerIndex The index of this header item, to be passed into render
- * @return {String} the HTML content summarizing the results
+ * @param {String} baseDirectory The base directory of the code, useful for shortening paths
+ * @return {Object} The information for generating the template. Two keys are expected: template is the path to the
+ *		mustache template (note the name of the file must be unique, irrespective of path) and data is the information
+ *		to dump into the template
  */
 module.exports.prototype.getResultsPageData = function getResultsPageData() {
 	var deprecatedAPIs,
