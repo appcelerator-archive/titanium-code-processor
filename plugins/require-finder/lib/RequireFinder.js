@@ -77,10 +77,14 @@ module.exports.prototype.getResults = function getResults() {
 	if (skipped) {
 		summary.push(skipped + ' native module' + (skipped === 1 ? '' : 's') + ' skipped');
 	}
-	if (summary > 1) {
-		summary[summary.length - 1] = 'and ' + summary[summary.length - 1];
+	if (summary.length) {
+		if (summary.length > 1) {
+			summary[summary.length - 1] = 'and ' + summary[summary.length - 1];
+		}
+		results.summary = summary.join(', ');
+	} else {
+		results.summary = 'No modules required';
 	}
-	results.summary = summary.join(', ');
 	return results;
 };
 
