@@ -34,8 +34,8 @@ exports.init = function (options) {
 						}
 						Runtime.queueFunction(args[i], new Base.UndefinedType(), callArgs, true);
 					}
-				} else if (this._function.parameters[i] && this._function.parameters[i].type === 'Function') {
-					Runtime.fireEvent('unknownCallback', 'An unknown value was passed to ' + this._function.name +
+				} else if (this._api.parameters[i] && this._api.parameters[i].type === 'Function') {
+					Runtime.fireEvent('unknownCallback', 'An unknown value was passed to ' + this._apiName +
 						'. Some source code may not be analyzed.');
 				}
 			}
