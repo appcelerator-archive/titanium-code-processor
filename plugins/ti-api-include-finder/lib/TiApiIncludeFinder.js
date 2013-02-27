@@ -58,3 +58,74 @@ module.exports.prototype.init = function init() {};
 module.exports.prototype.getResults = function getResults() {
 	return results;
 };
+
+/**
+ * Generates the results HTML page
+ *
+ * @method
+ * @param {String} baseDirectory The base directory of the code, useful for shortening paths
+ * @return {Object} The information for generating the template. Two keys are expected: template is the path to the
+ *		mustache template (note the name of the file must be unique, irrespective of path) and data is the information
+ *		to dump into the template
+ */
+module.exports.prototype.getResultsPageData = function getResultsPageData(baseDirectory) {
+
+	var numIncludesResolved = results.resolved.length,
+		numIncludesUnresolved = results.unresolved.length,
+		numIncludesMissing = results.missing.length,
+		resolved,
+		unresolved,
+		missing;
+
+	if (numIncludesResolved) {
+		resolved = {
+			list: []
+		};
+		results.resolved.forEach(function (file) {
+			resolved.list.push({
+				name: file.data.name,
+				path: file.data.path.replace(baseDirectory, ''),
+				filename: file.filename.replace(baseDirectory, ''),
+				line: file.line
+			});
+		});
+	}
+
+	if (numIncludesUnresolved) {
+		unresolved = {
+			list: []
+		};
+		results.unresolved.forEach(function (file) {
+			unresolved.list.push({
+				filename: file.filename.replace(baseDirectory, ''),
+				line: file.line
+			});
+		});
+	}
+
+	if (numIncludesMissing) {
+		missing = {
+			list: []
+		};
+		results.missing.forEach(function (file) {
+			missing.list.push({
+				name: file.data.name,
+				filename: file.filename.replace(baseDirectory, ''),
+				line: file.line
+			});
+		});
+	}
+
+	return {
+		template: path.join(__dirname, '..', 'templates', 'tiApiIncludeFinderTemplate.html'),
+		data: {
+			numIncludesResolved: numIncludesResolved === 1 ? '1 file' : numIncludesResolved + ' files',
+			numIncludesUnresolved: numIncludesUnresolved === 1 ? '1 file' : numIncludesUnresolved + ' files',
+			numIncludesMissing: numIncludesMissing === 1 ? '1 file' : numIncludesMissing + ' files',
+			resolved: resolved,
+			unresolved: unresolved,
+			missing: missing
+		}
+	};
+};
+module.exports.prototype.displayName = 'Ti.includes';

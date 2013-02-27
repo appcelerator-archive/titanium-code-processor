@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Ti.includes</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class="container">
+	<div class="menu">
+		<ul>
+			{{#header}}
+				<li><a href="{{file}}" class="menuEntry{{#isHighlighted}} menuEntryHighlighted{{/isHighlighted}}">{{name}}</a></li>
+			{{/header}}
+		</ul>
+	</div>
+	<div class="contentContainer">
+		<h3>Overview</h3>
+		<p class="mono">
+			{{numIncludesResolved}} resolved<br />
+			{{numIncludesUnresolved}} unresolved<br />
+			{{numIncludesMissing}} missing<br />
+		</p>
+		{{#resolved}}
+		<h3>Resolved Files</h3>
+		<table>
+			<tr>
+				<th>Name</th>
+				<th>Resolved Path</th>
+				<th>File</th>
+				<th>Line</th>
+			</tr>
+			{{#list}}
+			<tr>
+				<td>"{{name}}"</td>
+				<td>{{path}}</td>
+				<td>{{filename}}</td>
+				<td>{{line}}</td>
+			</tr>
+			{{/list}}
+		</table>
+		{{/resolved}}
+		{{#unresolved}}
+		<h3>Unresolved Files</h3>
+		<table>
+			<tr>
+				<th>File</th>
+				<th>Line</th>
+			</tr>
+			{{#list}}
+			<tr>
+				<td>{{filename}}</td>
+				<td>{{line}}</td>
+			</tr>
+			{{/list}}
+		</table>
+		{{/unresolved}}
+		{{#missing}}
+		<h3>Missing Files</h3>
+		<table>
+			<tr>
+				<th>Name</th>
+				<th>File</th>
+				<th>Line</th>
+			</tr>
+			{{#list}}
+			<tr>
+				<td>"{{name}}"</td>
+				<td>{{filename}}</td>
+				<td>{{line}}</td>
+			</tr>
+			{{/list}}
+		</table>
+		{{/missing}}
+	</div>
+</div>
+</body>
+</html>
