@@ -60,6 +60,27 @@ module.exports.prototype.init = function init() {};
 *		method.
 */
 module.exports.prototype.getResults = function getResults() {
+	var resolved = results.resolved.length,
+		unresolved = results.unresolved.length,
+		missing = results.missing.length,
+		skipped = results.skipped.length,
+		summary = [];
+	if (resolved) {
+		summary.push(resolved + ' module' + (resolved === 1 ? '' : 's') + ' resolved');
+	}
+	if (unresolved) {
+		summary.push(unresolved + ' module' + (unresolved === 1 ? '' : 's') + ' not resolved');
+	}
+	if (missing) {
+		summary.push(missing + ' module' + (missing === 1 ? '' : 's') + ' missing');
+	}
+	if (skipped) {
+		summary.push(skipped + ' native module' + (skipped === 1 ? '' : 's') + ' skipped');
+	}
+	if (summary > 1) {
+		summary[summary.length - 1] = 'and ' + summary[summary.length - 1];
+	}
+	results.summary = summary.join(', ');
 	return results;
 };
 
