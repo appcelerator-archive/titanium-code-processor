@@ -16,7 +16,7 @@ var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	AST = require(path.join(global.titaniumCodeProcessorLibDir, 'AST')),
 	results = {
-		summary: 'I am the analysis results',
+		summary: '',
 		details: {},
 		filesSkipped: [],
 		numTotalFiles: 0,
@@ -81,6 +81,11 @@ module.exports = function (options) {
 				}
 			]);
 		}
+
+		// Create the summary report
+		results.summary = (100 * results.numFilesSkipped / results.numTotalFiles *
+			results.numNodesVisited / results.numTotalNodes).toFixed(1) +
+			'% of the project\'s code was analyzed';
 
 		if (options && options.visualization) {
 
