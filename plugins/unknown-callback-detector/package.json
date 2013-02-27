@@ -2,6 +2,7 @@
 	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "unknown-callback-detector",
 	"description": "A plugin for ti-code-processor that detects when an unknown value is supplied when a callback is expected",
+	"titaniumCodeProcessorPlugin": true,
 	"main": "lib/UnknownCallbackDetector.js",
 	"dependencies": {},
 	"options": {},
