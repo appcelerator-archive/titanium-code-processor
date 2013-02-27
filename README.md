@@ -235,7 +235,7 @@ ti-api-deprecation-finder | analyzer | ti-api-processor | Reports all deprecated
 ti-api-platform-validator | analyer | ti-api-processor | Reports all instances where a platform specific feature is used on the wrong platform, e.g. calling ```Ti.Android.createIntent``` on iOS.
 ti-api-processor | provider | &lt;none&gt; | Provides an implementation of the Titanium Mobile API. This implementation reads the API documentation for the SDK used by the project to create the API implementation. As such, the SDK specified in the project's tiapp.xml file *must* be installed.
 ti-api-usage-finder | analyzer | ti-api-processor | Reports all Titanium Mobile APIs used by the project.
-ti-include-finder | analyzer | ti-api-processor | Reports all files that are ```Ti.include()```'d by the project.
+ti-api-include-finder | analyzer | ti-api-processor | Reports all files that are ```Ti.include()```'d by the project.
 
 ## Internal Concepts
 

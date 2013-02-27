@@ -372,7 +372,7 @@ function analyze() {
 					console.log(table.toString() + '\n');
 				}
 			}
-			pluginResults = results.plugins['ti-include-finder'];
+			pluginResults = results.plugins['ti-api-include-finder'];
 			if (pluginResults) {
 				entries = Object.keys(pluginResults.resolved);
 				if (entries.length) {
