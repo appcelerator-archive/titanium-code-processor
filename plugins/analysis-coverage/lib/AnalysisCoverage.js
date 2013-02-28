@@ -16,7 +16,6 @@ var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	AST = require(path.join(global.titaniumCodeProcessorLibDir, 'AST')),
 	results = {
-		summary: '',
 		details: {},
 		filesSkipped: [],
 		numTotalFiles: 0,
@@ -322,7 +321,6 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 				if (isDefault) {
 					defaultLink = file;
 				}
-				isDefault = false;
 			} else if (!isFolder) {
 				continue;
 			}
@@ -332,6 +330,9 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 				isDefault: !isFolder && isDefault,
 				name: new Array(file.replace(visualizationDataLocation, '').split(path.sep).length - 1).join('&nbsp;&nbsp;&nbsp;') + path.basename(file)
 			});
+			if (isDefault) {
+				isDefault = false;
+			}
 		}
 	}
 
@@ -349,7 +350,6 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 			},
 			filesSkipped: filesSkipped,
 			visualization: visualizationDataLocation,
-			backLink: 'analysis-coverage.html',
 			files: visualizationEntries,
 			defaultLink: defaultLink
 		}

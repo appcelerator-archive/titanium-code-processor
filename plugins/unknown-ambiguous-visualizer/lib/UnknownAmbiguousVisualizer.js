@@ -20,7 +20,7 @@ var path = require('path'),
 		numAbiguousContextNodes: 0,
 		numUnknownNodes: 0,
 		numTotalNodes: 0,
-		annotationData: {}
+		details: {}
 	};
 
 // ******** Plugin API Methods ********
@@ -35,38 +35,76 @@ var path = require('path'),
  */
 module.exports = function (options) {
 	options = options || {};
-	if (options.visualization) {
-		Runtime.on('projectProcessingEnd', function() {
-			var astSet = Runtime.getASTSet(),
-				id,
-				annotationStyle,
-				styles,
-				outputDir,
-				inputDir = path.dirname(Runtime.getEntryPointFile()),
-				inputSource,
-				outputFilePath,
-				annotationData;
+	Runtime.on('projectProcessingEnd', function() {
+		var astSet = Runtime.getASTSet(),
+			id,
+			annotationStyle,
+			styles,
+			outputDir,
+			inputDir = path.dirname(Runtime.getEntryPointFile()),
+			inputSource,
+			outputFilePath,
+			annotationData,
+			result;
 
+		function alphaBlend(color1, color2, def) {
+			if (color1 && color2) {
+				return [
+					color1[0] * 0.5 + color2[0] * 0.5,
+					color1[1] * 0.5 + color2[1] * 0.5,
+					color1[2] * 0.5 + color2[2] * 0.5
+				];
+			} else {
+				return color1 || color2 || def;
+			}
+		}
+
+		function nodeVisitedCallback (node) {
+			if (node._unknown) {
+				result.numUnknownNodes++;
+				results.numUnknownNodes++;
+			}
+			if (node._ambiguousBlock) {
+				result.numAbiguousBlockNodes++;
+				results.numAbiguousBlockNodes++;
+			}
+			if (node._ambiguousContext) {
+				result.numAbiguousContextNodes++;
+				results.numAbiguousContextNodes++;
+			}
+			result.numTotalNodes++;
+			results.numTotalNodes++;
+		}
+
+		// Analyze the ASTs
+		for (id in astSet) {
+			result = results.details[id] = {
+				numUnknownNodes: 0,
+				numAbiguousBlockNodes: 0,
+				numAbiguousContextNodes: 0,
+				numTotalNodes: 0
+			};
+			AST.walk(astSet[id], [
+				{
+					callback: nodeVisitedCallback
+				}
+			]);
+		}
+
+		// Create the summary report
+		results.summary = (100 * results.numUnknownNodes / results.numTotalNodes).toFixed(1) +
+			'% of the project\'s source code is not knowable at compile time';
+
+
+		if (options.visualization) {
 			// Calculate the output directory
-			outputDir = options.visualization.outputDirectory;
+			results.visualizationDataLocation = outputDir = options.visualization.outputDirectory;
 			if (outputDir) {
 				if (options.visualization.timestampOutputDirectory) {
 					outputDir += '.' + (new Date()).toISOString();
 				}
 				if (existsSync(outputDir)) {
 					wrench.rmdirSyncRecursive(outputDir);
-				}
-			}
-
-			function alphaBlend(color1, color2, def) {
-				if (color1 && color2) {
-					return [
-						color1[0] * 0.5 + color2[0] * 0.5,
-						color1[1] * 0.5 + color2[1] * 0.5,
-						color1[2] * 0.5 + color2[2] * 0.5
-					];
-				} else {
-					return color1 || color2 || def;
 				}
 			}
 
@@ -147,7 +185,7 @@ module.exports = function (options) {
 				if (existsSync(id)) {
 
 					// Calculate the annotation data
-					results.annotationData[id] = annotationData = AST.generateAnnotations(astSet[id], annotationStyle);
+					annotationData = AST.generateAnnotations(astSet[id], annotationStyle);
 
 					// Write the results to file, if requested
 					if (outputDir) {
@@ -200,8 +238,8 @@ module.exports = function (options) {
 					}
 				}
 			}
-		});
-	}
+		}
+	});
 };
 
 /**
@@ -225,3 +263,85 @@ module.exports.prototype.init = function init() {};
 module.exports.prototype.getResults = function getResults() {
 	return results;
 };
+
+/**
+ * Generates the results template data to be rendered
+ *
+ * @method
+ * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ *		as one of the entries in the template
+ * @param {String} baseDirectory The base directory of the code, useful for shortening paths
+ * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
+ *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
+ *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
+ *		information to dump into the template
+ */
+module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile, baseDirectory) {
+	var nodeList = [],
+		filesSkipped,
+		template = {},
+		visualizationFiles,
+		i, len,
+		htmlRegex = /\.html$/,
+		visualizationEntries = [],
+		isDefault = true,
+		defaultLink,
+		file,
+		isFolder,
+		visualizationDataLocation = path.resolve(results.visualizationDataLocation);
+
+	// Calculate the node list
+	Object.keys(results.details).forEach(function(id) {
+		var result = results.details[id];
+		nodeList.push({
+			filename: id.replace(baseDirectory, ''),
+			numUnknownNodes: result.numUnknownNodes,
+			numAbiguousBlockNodes: result.numAbiguousBlockNodes,
+			numAbiguousContextNodes: result.numAbiguousContextNodes,
+			numTotalNodes: result.numAbiguousContextNodes
+		});
+	});
+
+	if (visualizationDataLocation) {
+		visualizationFiles = wrench.readdirSyncRecursive(visualizationDataLocation).sort();
+		for (i = 0, len = visualizationFiles.length; i < len; i++) {
+			file = path.join(visualizationDataLocation, visualizationFiles[i]);
+			isFolder = fs.statSync(file).isDirectory();
+			if (htmlRegex.test(file)) {
+				if (isDefault) {
+					defaultLink = file;
+				}
+			} else if (!isFolder) {
+				continue;
+			}
+			visualizationEntries.push({
+				id: file,
+				isFolder: isFolder,
+				isDefault: !isFolder && isDefault,
+				name: new Array(file.replace(visualizationDataLocation, '').split(path.sep).length - 1).join('&nbsp;&nbsp;&nbsp;') + path.basename(file)
+			});
+			if (isDefault) {
+				isDefault = false;
+			}
+		}
+	}
+
+	template[entryFile] = {
+		template: path.join(__dirname, '..', 'templates', 'unknownAmbiguousVisualizerTemplate.html'),
+		data: {
+			numUnknownNodes: results.numUnknownNodes === 1 ? '1 node is' : results.numUnknownNodes + ' nodes are',
+			numAbiguousBlockNodes: results.numAbiguousBlockNodes === 1 ? '1 node is' : results.numAbiguousBlockNodes + ' nodes are',
+			numAbiguousContextNodes: results.numAbiguousContextNodes === 1 ? '1 node is' : results.numAbiguousContextNodes + ' nodes are',
+			numTotalNodes: results.numTotalNodes === 1 ? '1 node' : results.numTotalNodes + ' nodes',
+			nodeCoverage: {
+				nodeList: nodeList
+			},
+			visualization: visualizationDataLocation,
+			files: visualizationEntries,
+			defaultLink: defaultLink
+		}
+	};
+
+	return template;
+};
+module.exports.prototype.displayName = 'Unknown Visualizer';
