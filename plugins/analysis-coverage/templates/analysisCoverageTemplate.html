@@ -2,56 +2,56 @@
 <html>
 <head>
 <title>Analysis Coverage</title>
-<link rel="stylesheet" type="text/css" href="style.css">
+<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
 </head>
 <body>
-<div class="container">
-	<div class="menu">
-		<ul>
+<div class="navbar navbar-inverse">
+	<div class="navbar-inner">
+		<ul class="nav">
+			<li><a href="index.html"><i class="icon-home"></i> Summary</a></li>
 			{{#header}}
-				<li><a href="{{file}}" class="menuEntry{{#isHighlighted}} menuEntryHighlighted{{/isHighlighted}}">{{name}}</a></li>
+			<li class="divider-vertical"></li>
+			<li{{#isHighlighted}} class="active"{{/isHighlighted}}><a href="{{file}}">{{name}}</a></li>
 			{{/header}}
 		</ul>
 	</div>
-	<div class="contentContainer">
-		<h3>Overview</h3>
-		<p class="mono">
-			{{numFilesVisited}} out of {{numTotalFiles}} files analyzed ({{filesPercentage}}%)<br />
-			{{numNodesVisited}} out of {{numTotalNodes}} nodes analyzed ({{nodesPercentage}}%)
-		</p>
-		{{#nodeCoverage}}
-		<h3>Node Analysis Coverage Data</h3>
-		<table>
-			<tr>
-				<th>File</th>
-				<th>Visited</th>
-				<th>Skipped</th>
-				<th>Total</th>
-			</tr>
-			{{#nodeList}}
-			<tr>
-				<td>{{filename}}</td>
-				<td>{{numNodesVisited}}</td>
-				<td>{{numNodesSkipped}}</td>
-				<td>{{numTotalNodes}}</td>
-			</tr>
-			{{/nodeList}}
-		</table>
-		{{/nodeCoverage}}
-		{{#filesSkipped}}
-		<h3>Files Not Analyzed</h3>
-		<table>
-			<tr>
-				<th>File</th>
-			</tr>
-			{{#filesSkippedList}}
-			<tr>
-				<td>{{filename}}</td>
-			</tr>
-			{{/filesSkippedList}}
-		</table>
-		{{/filesSkipped}}
-	</div>
+</div>
+<div class="container-fluid">
+	<h3>Overview</h3>
+	<pre>{{numFilesVisited}} out of {{numTotalFiles}} files analyzed ({{filesPercentage}}%)
+{{numNodesVisited}} out of {{numTotalNodes}} nodes analyzed ({{nodesPercentage}}%)</pre>
+	{{#nodeCoverage}}
+	<h3>Node Analysis Coverage Data</h3>
+	<table class="table table-striped table-bordered">
+		<tr>
+			<th>File</th>
+			<th>Visited</th>
+			<th>Skipped</th>
+			<th>Total</th>
+		</tr>
+		{{#nodeList}}
+		<tr>
+			<td>{{filename}}</td>
+			<td>{{numNodesVisited}}</td>
+			<td>{{numNodesSkipped}}</td>
+			<td>{{numTotalNodes}}</td>
+		</tr>
+		{{/nodeList}}
+	</table>
+	{{/nodeCoverage}}
+	{{#filesSkipped}}
+	<h3>Files Not Analyzed</h3>
+	<table class="table table-striped table-bordered">
+		<tr>
+			<th>File</th>
+		</tr>
+		{{#filesSkippedList}}
+		<tr>
+			<td>{{filename}}</td>
+		</tr>
+		{{/filesSkippedList}}
+	</table>
+	{{/filesSkipped}}
 </div>
 </body>
 </html>
