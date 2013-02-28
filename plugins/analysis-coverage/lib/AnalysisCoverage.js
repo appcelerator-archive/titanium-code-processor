@@ -265,17 +265,21 @@ module.exports.prototype.getResults = function getResults() {
 };
 
 /**
- * Generates the results HTML page
+ * Generates the results template data to be rendered
  *
  * @method
+ * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ *		as one of the entries in the template
  * @param {String} baseDirectory The base directory of the code, useful for shortening paths
- * @return {Object} The information for generating the template. Two keys are expected: template is the path to the
- *		mustache template (note the name of the file must be unique, irrespective of path) and data is the information
- *		to dump into the template
+ * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
+ *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
+ *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
+ *		information to dump into the template
  */
-module.exports.prototype.getResultsPageData = function getResultsPageData(baseDirectory) {
+module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile, baseDirectory) {
 	var nodeList = [],
-		filesSkipped;
+		filesSkipped,
+		template = {};
 
 	// Calculate the node list
 	Object.keys(results.details).forEach(function(id) {
@@ -299,7 +303,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(baseDi
 		});
 	}
 
-	return {
+	template[entryFile] = {
 		template: path.join(__dirname, '..', 'templates', 'analysisCoverageTemplate.html'),
 		data: {
 			numFilesVisited: results.numFilesVisited,
@@ -314,5 +318,15 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(baseDi
 			filesSkipped: filesSkipped
 		}
 	};
+
+	template['analysis-coverage-visualization.html'] = {
+		template: path.join(__dirname, '..', '..', '..', 'templates', 'treeview.html'),
+		data: {
+			backLink: 'analysis-coverage.html',
+			entries: []
+		}
+	};
+
+	return template;
 };
 module.exports.prototype.displayName = 'Analysis Coverage';

@@ -73,19 +73,24 @@ module.exports.prototype.getResults = function getResults() {
 };
 
 /**
- * Generates the results HTML page
+ * Generates the results template data to be rendered
  *
  * @method
+ * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ *		as one of the entries in the template
  * @param {String} baseDirectory The base directory of the code, useful for shortening paths
- * @return {Object} The information for generating the template. Two keys are expected: template is the path to the
- *		mustache template (note the name of the file must be unique, irrespective of path) and data is the information
- *		to dump into the template
+ * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
+ *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
+ *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
+ *		information to dump into the template
  */
-module.exports.prototype.getResultsPageData = function getResultsPageData() {
+module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile) {
 	var deprecatedAPIs,
 		numDeprecatedAPIs = Object.keys(results.deprecatedAPIs).length,
 		numDeprecatedAPIInstances = 0,
-		deprecatedAPI;
+		deprecatedAPI,
+		template = {};
+
 	if (numDeprecatedAPIs) {
 		deprecatedAPIs = {
 			list: []
@@ -108,7 +113,9 @@ module.exports.prototype.getResultsPageData = function getResultsPageData() {
 			numDeprecatedAPIInstances = numDeprecatedAPIInstances + ' times';
 		}
 	}
-	return {
+
+
+	template[entryFile] = {
 		template: path.join(__dirname, '..', 'templates', 'tiApiDeprecationFinderTemplate.html'),
 		data: {
 			numAPIs: numDeprecatedAPIs,
@@ -116,5 +123,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData() {
 			deprecatedAPIs: deprecatedAPIs
 		}
 	};
+
+	return template;
 };
 module.exports.prototype.displayName = 'Deprecated APIs';
