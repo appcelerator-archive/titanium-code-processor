@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Unknown Callbacks</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class="container">
+	<div class="menu">
+		<ul>
+			{{#header}}
+				<li><a href="{{file}}" class="menuEntry{{#isHighlighted}} menuEntryHighlighted{{/isHighlighted}}">{{name}}</a></li>
+			{{/header}}
+		</ul>
+	</div>
+	<div class="contentContainer">
+		<h3>Overview</h3>
+		{{#unknownCallbacks}}
+		<p class="mono">
+			{{summary}}
+		</p>
+		<h3>Unknown Callbacks Detected</h3>
+		<table>
+			<tr>
+				<th>File</th>
+				<th>Line</th>
+			</tr>
+			{{#list}}
+			<tr>
+				<td>{{filename}}</td>
+				<td>{{line}}</td>
+			</tr>
+			{{/list}}
+		</table>
+		{{/unknownCallbacks}}
+		{{^unknownCallbacks}}
+		<p class="mono">
+			No unknown callbacks were detected in the project
+		</p>
+		{{/unknownCallbacks}}
+	</div>
+</div>
+</body>
+</html>

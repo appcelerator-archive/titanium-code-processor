@@ -8,7 +8,9 @@
 
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
-	results = [];
+	results = {
+		unknownCallbacks: []
+	};
 
 // ******** Plugin API Methods ********
 
@@ -22,7 +24,7 @@ var path = require('path'),
  */
 module.exports = function () {
 	Runtime.on('unknownCallback', function(e) {
-		results.push(e);
+		results.unknownCallbacks.push(e);
 	});
 };
 
@@ -42,5 +44,47 @@ module.exports.prototype.init = function init() {};
 * @returns {Array[Object]} An array of locations
 */
 module.exports.prototype.getResults = function getResults() {
+	var summary,
+		numUnknownCallbacks = results.unknownCallbacks.length;
+	if (numUnknownCallbacks) {
+		summary = (numUnknownCallbacks === 1 ? '1 unknown callback was' : numUnknownCallbacks + ' unknown callbacks were') + ' detected';
+	} else {
+		summary = 'No unknown callbacks were detected';
+	}
+	results.summary = summary;
 	return results;
 };
+
+/**
+ * Generates the results HTML page
+ *
+ * @method
+ * @param {String} baseDirectory The base directory of the code, useful for shortening paths
+ * @return {Object} The information for generating the template. Two keys are expected: template is the path to the
+ *		mustache template (note the name of the file must be unique, irrespective of path) and data is the information
+ *		to dump into the template
+ */
+module.exports.prototype.getResultsPageData = function getResultsPageData(baseDirectory) {
+	var numUnknownCallbacks = results.unknownCallbacks.length,
+		unknownCallbacks,
+		i, len;
+	if (numUnknownCallbacks) {
+		unknownCallbacks = {
+			summary: (numUnknownCallbacks === 1 ? '1 unknown callback was' : numUnknownCallbacks + ' unknown callbacks were') + ' detected',
+			list: []
+		};
+		for (i = 0, len = results.unknownCallbacks.length; i < len; i++) {
+			unknownCallbacks.list.push({
+				filename: results.unknownCallbacks[i].filename.replace(baseDirectory, ''),
+				line: results.unknownCallbacks[i].line
+			});
+		}
+	}
+	return {
+		template: path.join(__dirname, '..', 'templates', 'tiApiUnknownCallbackDetectorTemplate.html'),
+		data: {
+			unknownCallbacks: unknownCallbacks
+		}
+	};
+};
+module.exports.prototype.displayName = 'Unknown Callbacks';
