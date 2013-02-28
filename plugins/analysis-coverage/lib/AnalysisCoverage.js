@@ -313,24 +313,6 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 		});
 	}
 
-	template[entryFile] = {
-		template: path.join(__dirname, '..', 'templates', 'analysisCoverageTemplate.html'),
-		data: {
-			numFilesVisited: results.numFilesVisited,
-			numTotalFiles: results.numTotalFiles,
-			filesPercentage: (100 * results.numFilesVisited / results.numTotalFiles).toFixed(1),
-			numNodesVisited: results.numNodesVisited,
-			numTotalNodes: results.numTotalNodes,
-			nodesPercentage: (100 * (results.numNodesVisited + results.numNodesSkipped) / results.numTotalNodes).toFixed(1),
-			nodeCoverage: {
-				nodeList: nodeList
-			},
-			filesSkipped: filesSkipped,
-			visualization: visualizationDataLocation
-		}
-	};
-
-	debugger;
 	if (visualizationDataLocation) {
 		visualizationFiles = wrench.readdirSyncRecursive(visualizationDataLocation).sort();
 		for (i = 0, len = visualizationFiles.length; i < len; i++) {
@@ -351,16 +333,27 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 				name: new Array(file.replace(visualizationDataLocation, '').split(path.sep).length - 1).join('&nbsp;&nbsp;&nbsp;') + path.basename(file)
 			});
 		}
-		template['analysis-coverage-visualization.html'] = {
-			template: path.join(__dirname, '..', '..', '..', 'templates', 'treeview.html'),
-			data: {
-				backLink: 'analysis-coverage.html',
-				files: visualizationEntries,
-				defaultLink: defaultLink
-			}
-		};
-
 	}
+
+	template[entryFile] = {
+		template: path.join(__dirname, '..', 'templates', 'analysisCoverageTemplate.html'),
+		data: {
+			numFilesVisited: results.numFilesVisited,
+			numTotalFiles: results.numTotalFiles,
+			filesPercentage: (100 * results.numFilesVisited / results.numTotalFiles).toFixed(1),
+			numNodesVisited: results.numNodesVisited,
+			numTotalNodes: results.numTotalNodes,
+			nodesPercentage: (100 * (results.numNodesVisited + results.numNodesSkipped) / results.numTotalNodes).toFixed(1),
+			nodeCoverage: {
+				nodeList: nodeList
+			},
+			filesSkipped: filesSkipped,
+			visualization: visualizationDataLocation,
+			backLink: 'analysis-coverage.html',
+			files: visualizationEntries,
+			defaultLink: defaultLink
+		}
+	};
 
 	return template;
 };
