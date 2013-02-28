@@ -942,6 +942,16 @@ function processAnalayzeInput(callback) {
 									if (plugins['ti-api-processor']) {
 										plugins['ti-api-processor'].options.platform = parsedOptions.osname;
 									}
+									if (plugins['analysis-coverage']) {
+										plugins['analysis-coverage'].options.visualization = {
+											outputDirectory: path.join(options['results-dir'], 'analysis-coverage')
+										};
+									}
+									if (plugins['unknown-ambiguous-visualizer']) {
+										plugins['unknown-ambiguous-visualizer'].options.visualization = {
+											outputDirectory: path.join(options['results-dir'], 'unknown-ambiguous-visualizer')
+										};
+									}
 									callback(entryPoint, options, plugins, logger);
 								});
 							}

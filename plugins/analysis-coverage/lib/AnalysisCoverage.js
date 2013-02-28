@@ -37,6 +37,7 @@ var path = require('path'),
  * @name module:plugins/AnalysisCoverage
  */
 module.exports = function (options) {
+	options = options || {};
 	Runtime.on('projectProcessingEnd', function() {
 		var astSet = Runtime.getASTSet(),
 			id,
@@ -90,10 +91,10 @@ module.exports = function (options) {
 		results.summary = (100 * (results.numNodesVisited + results.numNodesSkipped) / results.numTotalNodes).toFixed(1) +
 			'% of the project\'s source code was analyzed';
 
-		if (options && options.visualization) {
+		if (options.visualization) {
 
 			// Calculate the output directory
-			outputDir = options.visualization.outputDirectory;
+			results.visualizationDataLocation = outputDir = options.visualization.outputDirectory;
 			if (outputDir) {
 				if (options.visualization.timestampOutputDirectory) {
 					outputDir += '.' + (new Date()).toISOString();
@@ -279,7 +280,16 @@ module.exports.prototype.getResults = function getResults() {
 module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile, baseDirectory) {
 	var nodeList = [],
 		filesSkipped,
-		template = {};
+		template = {},
+		visualizationFiles,
+		i, len,
+		htmlRegex = /\.html$/,
+		visualizationEntries = [],
+		isDefault = true,
+		defaultLink,
+		file,
+		isFolder,
+		visualizationDataLocation = path.resolve(results.visualizationDataLocation);
 
 	// Calculate the node list
 	Object.keys(results.details).forEach(function(id) {
@@ -315,17 +325,42 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 			nodeCoverage: {
 				nodeList: nodeList
 			},
-			filesSkipped: filesSkipped
+			filesSkipped: filesSkipped,
+			visualization: visualizationDataLocation
 		}
 	};
 
-	template['analysis-coverage-visualization.html'] = {
-		template: path.join(__dirname, '..', '..', '..', 'templates', 'treeview.html'),
-		data: {
-			backLink: 'analysis-coverage.html',
-			entries: []
+	debugger;
+	if (visualizationDataLocation) {
+		visualizationFiles = wrench.readdirSyncRecursive(visualizationDataLocation).sort();
+		for (i = 0, len = visualizationFiles.length; i < len; i++) {
+			file = path.join(visualizationDataLocation, visualizationFiles[i]);
+			isFolder = fs.statSync(file).isDirectory();
+			if (htmlRegex.test(file)) {
+				if (isDefault) {
+					defaultLink = file;
+				}
+				isDefault = false;
+			} else if (!isFolder) {
+				continue;
+			}
+			visualizationEntries.push({
+				id: file,
+				isFolder: isFolder,
+				isDefault: !isFolder && isDefault,
+				name: new Array(file.replace(visualizationDataLocation, '').split(path.sep).length - 1).join('&nbsp;&nbsp;&nbsp;') + path.basename(file)
+			});
 		}
-	};
+		template['analysis-coverage-visualization.html'] = {
+			template: path.join(__dirname, '..', '..', '..', 'templates', 'treeview.html'),
+			data: {
+				backLink: 'analysis-coverage.html',
+				files: visualizationEntries,
+				defaultLink: defaultLink
+			}
+		};
+
+	}
 
 	return template;
 };

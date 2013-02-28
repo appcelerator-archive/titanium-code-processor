@@ -39,7 +39,7 @@ html, body {
 			<br/><a href="{{backLink}}" class="btn btn-large">Back</a>
 			<ul id="fileList" class="nav nav-pills nav-stacked">
 				{{#files}}
-				<li id="{{id}}" onclick="onClick({{id}})"{{#isFolder}} class="disabled"{{/isFolder}}{{#isDefault}} class="active"{{/isDefault}}><a>{{name}}</a></li>
+				<li id="{{id}}" onclick="onClick('{{id}}')"{{#isFolder}} class="disabled"{{/isFolder}}{{#isDefault}} class="active"{{/isDefault}}><a href='#'>{{{name}}}</a></li>
 				{{/files}}
 			</ul>
 		</div>
