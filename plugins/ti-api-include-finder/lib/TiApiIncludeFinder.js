@@ -56,7 +56,27 @@ module.exports.prototype.init = function init() {};
 *		method.
 */
 module.exports.prototype.getResults = function getResults() {
-	return results;
+	var resolved = results.resolved.length,
+		unresolved = results.unresolved.length,
+		missing = results.missing.length,
+		summary = [];
+	if (resolved) {
+		summary.push(resolved + ' file' + (resolved === 1 ? '' : 's') + ' resolved');
+	}
+	if (unresolved) {
+		summary.push(unresolved + ' file' + (unresolved === 1 ? '' : 's') + ' not resolved');
+	}
+	if (missing) {
+		summary.push(missing + ' file' + (missing === 1 ? '' : 's') + ' missing');
+	}
+	if (summary.length) {
+		if (summary.length > 1) {
+			summary[summary.length - 1] = 'and ' + summary[summary.length - 1];
+		}
+		results.summary = summary.join(', ');
+	} else {
+		results.summary = 'No files included';
+	}return results;
 };
 
 /**

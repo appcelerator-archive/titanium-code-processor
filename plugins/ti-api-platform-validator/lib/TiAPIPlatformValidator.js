@@ -90,7 +90,7 @@ module.exports.prototype.getResults = function getResults() {
 	if (numInvalidAPIs) {
 		summary = (numInvalidAPIs === 1 ? '1 platform API is' : numInvalidAPIs + ' platform APIs are') + ' used incorrectly';
 	} else {
-		summary = 'All platform specific APIs are used correctly';
+		summary = 'No platform specific APIs are used incorrectly';
 	}
 	results.summary = summary;
 	return results;

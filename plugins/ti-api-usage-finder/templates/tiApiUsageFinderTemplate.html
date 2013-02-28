@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Platform Validation</title>
+<title>API Usage</title>
 <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
@@ -15,11 +15,18 @@
 	</div>
 	<div class="contentContainer">
 		<h3>Overview</h3>
-		{{#invalidAPIs}}
+		{{#summary}}
 		<p class="mono">
 			{{numAPIs}} used {{numInstances}}
 		</p>
-		<h3>Invalid Platform-Specific API References</h3>
+		{{/summary}}
+		{{^summary}}
+		<p class="mono">
+			No Titanium APIs are used in the project, so go make something cool!
+		</p>
+		{{/summary}}
+		{{#apiSummary}}
+		<h3>APIs Used</h3>
 		<table>
 			<tr>
 				<th>API</th>
@@ -32,12 +39,25 @@
 			</tr>
 			{{/list}}
 		</table>
-		{{/invalidAPIs}}
-		{{^invalidAPIs}}
-		<p class="mono">
-			No platform specific APIs are used incorrectly in the project, hooray!
-		</p>
-		{{/invalidAPIs}}
+		{{/apiSummary}}
+		{{#apiByFile}}
+			<h3>APIs Used by File</h3>
+			{{#files}}
+				<h4>{{filename}}</h4>
+				<table>
+					<tr>
+						<th>API</th>
+						<th>Num References</th>
+					</tr>
+					{{#list}}
+					<tr>
+						<td>{{api}}</td>
+						<td>{{numReferences}}</td>
+					</tr>
+					{{/list}}
+				</table>
+			{{/files}}
+		{{/apiByFile}}
 	</div>
 </div>
 </body>
