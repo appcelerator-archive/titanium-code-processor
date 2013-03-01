@@ -103,8 +103,11 @@ Option | Description
 --config, -c &lt;option=value&gt; | Specifies a configuration option and it's value, e.g ```-c invokeMethods=false```
 --log-level, -l | Sets the log level. Possible values are 'error', 'warn', 'notice', 'info', 'debug', or 'trace'
 --osname, -o | The name of the OS being analyzed for. This is the value that will be reported via 'Ti.Platform.osname', e.g. 'android'. This flag is **required**
-project-dir, -d | The directory of the project to load. If not specified, defaults to the current directory
-Note: if no plugins are specified, all plugins are loaded
+--project-dir, -d | The directory of the project to load. If not specified, defaults to the current directory
+--config-file, -f | The path to the config file. Note: when this flag is specified, all other flags are ignored and tiapp.xml is not parsed
+--results-dir, -r | The path to the directory that will contain the results
+--all-plugins, -a | Loads all plugins in the default search path
+--non-ti-plugins, -t | Loads all non-titanium specific plugins in the default search path
 
 ### Subprocess sub-command
 
@@ -128,19 +131,23 @@ The subprocess sub-command can be used to sub-process the code processor. Input 
 		"processUnvisitedCode":true,
 		"maxRecursionLimit":500
 	},
-	"plugins": {
-		"common-globals": {
+	"resultsPath": "path/to/results/directory"
+	"plugins": [
+		{
+			"name": "common-globals",
 			"path": "path/to/common-globals",
 			"options": {}
 		},
-		"require-provider": {
+		{
+			"name": "require-provider",
 			"path": "path/to/require-provider",
 			"options": {
 				"platform": "iphone",
 				"modules": []
 			}
 		},
-		"ti-api-processor": {
+		{
+			"name": "ti-api-processor",
 			"path": "path/to/ti-api-processor",
 			"options": {
 				"platform": "iphone",
@@ -150,30 +157,33 @@ The subprocess sub-command can be used to sub-process the code processor. Input 
 				}
 			}
 		},
-		"ti-api-usage-finder": {
+		{
+			"name": "ti-api-usage-finder",
 			"path": "path/to/ti-api-usage-finder",
 			"options": {}
 		},
-		"ti-api-platform-validator": {
+		{
+			"name": "ti-api-platform-validator": {
 			"path": "path/to/ti-api-platform-validator",
 			"options": {
 				"platform": "iphone"
 			}
 		},
-		"unknown-ambiguous-visualizer": {
+		{
+			"name": "unknown-ambiguous-visualizer",
 			"path": "path/to/unknown-ambiguous-visualizer",
 			"options": {
 				"outputDirectory": "path/to/output/dir",
 				"timestampOutputDirectory": false
 			}
 		}
-	}
+	]
 }
 ```
 
 ## Running as part of the Titanium CLI
 
-**Note:** This information is outdated and will only work with the version of the code processor that shipped with SDK 3.0
+**Note:** This information is outdated and will only work with the version 0.1.x, the code processor that shipped with SDK 3.0
 
 The code processor is integrated as a build step in the CLI. To enable it, add
 the following to your tiapp.xml:
