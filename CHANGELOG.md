@@ -1,11 +1,14 @@
-## 0.3.2
+## 0.3.2 (28 February 2013)
 
 ### New Features
 * Modified the Ti API usage finder to report both global api usage numbers and per-file api usage numbers
+* Added HTML-bases results pages that studio can use to display results graphically
+* Rearchitected unit tests so that they run 30 times faster
 
 ### Bug Fixes
 * Fixed some more bugs surrounding setting up contexts for deferred methods
 * Fixed a few miscellaneous bugs and regressions
+* The plugins command now ignores node modules that are not code processor plugins that exist in the plugins search path
 
 ## 0.3.1 (14 February 2013)
 

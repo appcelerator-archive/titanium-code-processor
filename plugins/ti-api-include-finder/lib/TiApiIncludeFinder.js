@@ -2,7 +2,7 @@
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
- * @module plugins/RequireFinder
+ * @module plugins/TiIncludeFinder
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
@@ -12,8 +12,7 @@ var path = require('path'),
 	results = {
 		resolved: [],
 		unresolved: [],
-		missing: [],
-		skipped: []
+		missing: []
 	};
 
 // ******** Plugin API Methods ********
@@ -24,20 +23,17 @@ var path = require('path'),
  * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
  *
  * @constructor
- * @name module:plugins/RequireFinder
+ * @name module:plugins/TiIncludeFinder
  */
 module.exports = function () {
-	Runtime.on('requireUnresolved', function(e) {
-		results.unresolved.push(e);
-	});
-	Runtime.on('requireResolved', function(e) {
+	Runtime.on('tiIncludeResolved', function(e) {
 		results.resolved.push(e);
 	});
-	Runtime.on('requireMissing', function(e) {
-		results.missing.push(e);
+	Runtime.on('tiIncludeUnresolved', function(e) {
+		results.unresolved.push(e);
 	});
-	Runtime.on('requireSkipped', function(e) {
-		results.skipped.push(e);
+	Runtime.on('tiIncludeMissing', function(e) {
+		results.missing.push(e);
 	});
 };
 
@@ -45,7 +41,7 @@ module.exports = function () {
  * Initializes the plugin
  *
  * @method
- * @name module:plugins/RequireFinder#init
+ * @name module:plugins/TiIncludeFinder#init
  */
 module.exports.prototype.init = function init() {};
 
@@ -53,7 +49,7 @@ module.exports.prototype.init = function init() {};
 * Gets the results of the plugin
 *
 * @method
- * @name module:plugins/RequireFinder#getResults
+ * @name module:plugins/TiIncludeFinder#getResults
 * @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
 *		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
 *		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
@@ -63,19 +59,15 @@ module.exports.prototype.getResults = function getResults() {
 	var resolved = results.resolved.length,
 		unresolved = results.unresolved.length,
 		missing = results.missing.length,
-		skipped = results.skipped.length,
 		summary = [];
 	if (resolved) {
-		summary.push(resolved + ' module' + (resolved === 1 ? '' : 's') + ' resolved');
+		summary.push(resolved + ' file' + (resolved === 1 ? '' : 's') + ' resolved');
 	}
 	if (unresolved) {
-		summary.push(unresolved + ' module' + (unresolved === 1 ? '' : 's') + ' not resolved');
+		summary.push(unresolved + ' file' + (unresolved === 1 ? '' : 's') + ' not resolved');
 	}
 	if (missing) {
-		summary.push(missing + ' module' + (missing === 1 ? '' : 's') + ' missing');
-	}
-	if (skipped) {
-		summary.push(skipped + ' native module' + (skipped === 1 ? '' : 's') + ' skipped');
+		summary.push(missing + ' file' + (missing === 1 ? '' : 's') + ' missing');
 	}
 	if (summary.length) {
 		if (summary.length > 1) {
@@ -83,9 +75,8 @@ module.exports.prototype.getResults = function getResults() {
 		}
 		results.summary = summary.join(', ');
 	} else {
-		results.summary = 'No modules required';
-	}
-	return results;
+		results.summary = 'No files included';
+	}return results;
 };
 
 /**
@@ -102,82 +93,65 @@ module.exports.prototype.getResults = function getResults() {
  */
 module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile, baseDirectory) {
 
-	var numRequiresResolved = results.resolved.length,
-		numRequiresUnresolved = results.unresolved.length,
-		numRequiresMissing = results.missing.length,
-		numRequiresSkipped = results.skipped.length,
+	var numIncludesResolved = results.resolved.length,
+		numIncludesUnresolved = results.unresolved.length,
+		numIncludesMissing = results.missing.length,
 		resolved,
 		unresolved,
 		missing,
-		skipped,
 		template = {};
 
-	if (numRequiresResolved) {
+	if (numIncludesResolved) {
 		resolved = {
 			list: []
 		};
-		results.resolved.forEach(function (module) {
+		results.resolved.forEach(function (file) {
 			resolved.list.push({
-				name: module.data.name,
-				path: module.data.path.replace(baseDirectory, ''),
-				filename: module.filename.replace(baseDirectory, ''),
-				line: module.line
+				name: file.data.name,
+				path: file.data.path.replace(baseDirectory, ''),
+				filename: file.filename.replace(baseDirectory, ''),
+				line: file.line
 			});
 		});
 	}
 
-	if (numRequiresUnresolved) {
+	if (numIncludesUnresolved) {
 		unresolved = {
 			list: []
 		};
-		results.unresolved.forEach(function (module) {
+		results.unresolved.forEach(function (file) {
 			unresolved.list.push({
-				filename: module.filename.replace(baseDirectory, ''),
-				line: module.line
+				filename: file.filename.replace(baseDirectory, ''),
+				line: file.line
 			});
 		});
 	}
 
-	if (numRequiresMissing) {
+	if (numIncludesMissing) {
 		missing = {
 			list: []
 		};
-		results.missing.forEach(function (module) {
+		results.missing.forEach(function (file) {
 			missing.list.push({
-				name: module.data.name,
-				filename: module.filename.replace(baseDirectory, ''),
-				line: module.line
-			});
-		});
-	}
-
-	if (numRequiresSkipped) {
-		skipped = {
-			list: []
-		};
-		results.skipped.forEach(function (module) {
-			skipped.list.push({
-				name: module.data.name,
-				filename: module.filename.replace(baseDirectory, ''),
-				line: module.line
+				name: file.data.name,
+				filename: file.filename.replace(baseDirectory, ''),
+				line: file.line
 			});
 		});
 	}
 
 	template[entryFile] = {
-		template: path.join(__dirname, '..', 'templates', 'requireFinderTemplate.html'),
+		template: path.join(__dirname, '..', 'templates', 'tiApiIncludeFinderTemplate.html'),
 		data: {
-			numRequiresResolved: numRequiresResolved === 1 ? '1 module' : numRequiresResolved + ' modules',
-			numRequiresUnresolved: numRequiresUnresolved === 1 ? '1 module' : numRequiresUnresolved + ' modules',
-			numRequiresMissing: numRequiresMissing === 1 ? '1 module' : numRequiresMissing + ' modules',
-			numRequiresSkipped: numRequiresSkipped + ' native module' + (numRequiresSkipped === 1 ? '' : 's'),
+			numIncludesResolved: numIncludesResolved === 1 ? '1 file' : numIncludesResolved + ' files',
+			numIncludesUnresolved: numIncludesUnresolved === 1 ? '1 file' : numIncludesUnresolved + ' files',
+			numIncludesMissing: numIncludesMissing === 1 ? '1 file' : numIncludesMissing + ' files',
 			resolved: resolved,
 			unresolved: unresolved,
-			missing: missing,
-			skipped: skipped
+			missing: missing
 		}
 	};
 
 	return template;
 };
-module.exports.prototype.displayName = 'Requires';
+module.exports.prototype.displayName = 'Ti.includes';

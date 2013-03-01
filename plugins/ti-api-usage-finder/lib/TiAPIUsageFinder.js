@@ -13,7 +13,8 @@ var path = require('path'),
 
 	results = {
 		global: {},
-		file: {}
+		file: {},
+		summary: ''
 	};
 
 // ******** Plugin API Methods ********
@@ -37,13 +38,13 @@ module.exports = function () {
 			results.global[name] = 1;
 		}
 
-		if (!results[filename]) {
-			results[filename] = {};
+		if (!results.file[filename]) {
+			results.file[filename] = {};
 		}
-		if (results[filename][name]) {
-			results[filename][name]++;
+		if (results.file[filename][name]) {
+			results.file[filename][name]++;
 		} else {
-			results[filename][name] = 1;
+			results.file[filename][name] = 1;
 		}
 	}
 
@@ -67,5 +68,97 @@ module.exports.prototype.init = function init() {};
 * @returns {Object} A dictionary of the Titanium APIs that were used along with a count of how many times they were used.
 */
 module.exports.prototype.getResults = function getResults() {
+	var summary,
+		numAPIs = Object.keys(results.global).length,
+		numInstances = 0,
+		api;
+	if (numAPIs) {
+		for (api in results.global) {
+			numInstances += results.global[api];
+		}
+		summary = (numAPIs === 1 ? '1 distinct API is' : numAPIs + ' distinct APIs are') + ' used ' +
+			(numInstances === 1 ? '1 time' : numInstances + ' times');
+	} else {
+		summary = 'No Titanium APIs are used';
+	}
+	results.summary = summary;
 	return results;
 };
+
+/**
+ * Generates the results template data to be rendered
+ *
+ * @method
+ * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ *		as one of the entries in the template
+ * @param {String} baseDirectory The base directory of the code, useful for shortening paths
+ * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
+ *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
+ *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
+ *		information to dump into the template
+ */
+module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile, baseDirectory) {
+	var numAPIs = Object.keys(results.global).length,
+		numInstances = 0,
+		api,
+		file,
+		fileEntry,
+		summary,
+		apiSummary,
+		apiByFile,
+		template = {};
+
+	if (numAPIs) {
+		apiSummary = {
+			list: []
+		};
+		apiByFile = {
+			files: []
+		};
+		for (api in results.global) {
+			apiSummary.list.push({
+				api: api,
+				numReferences: results.global[api]
+			});
+			numInstances += results.global[api];
+		}
+		for (file in results.file) {
+			apiByFile.files.push({
+				filename: file.replace(baseDirectory, ''),
+				list: fileEntry = []
+			});
+			for (api in results.file[file]) {
+				fileEntry.push({
+					api: api,
+					numReferences: results.file[file][api]
+				});
+			}
+		}
+		if (numAPIs === 1) {
+			numAPIs = '1 distinct API is';
+		} else {
+			numAPIs = numAPIs + ' distinct APIs are';
+		}
+		if (numInstances === 1) {
+			numInstances = '1 time';
+		} else {
+			numInstances = numInstances + ' times';
+		}
+		summary = {
+			numAPIs: numAPIs,
+			numInstances: numInstances
+		};
+	}
+
+	template[entryFile] = {
+		template: path.join(__dirname, '..', 'templates', 'tiApiUsageFinderTemplate.html'),
+		data: {
+			summary: summary,
+			apiSummary: apiSummary,
+			apiByFile: apiByFile
+		}
+	};
+
+	return template;
+};
+module.exports.prototype.displayName = 'API Usage';

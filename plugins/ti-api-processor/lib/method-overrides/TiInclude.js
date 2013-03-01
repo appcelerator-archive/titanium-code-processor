@@ -54,7 +54,8 @@ exports.init = function (options) {
 				if (existsSync(filePath)) {
 
 					Runtime.fireEvent('tiIncludeResolved', 'The Ti.include path "' + filePath + '" was resolved', {
-						filename: filePath
+						name: filename,
+						path: filePath
 					});
 
 					// Fire the parsing begin event
@@ -67,12 +68,12 @@ exports.init = function (options) {
 					evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())], false, filePath);
 
 				} else {
-					eventDescription = 'The Ti.include path "' + filePath + '" could not be found';
+					eventDescription = 'The Ti.include path "' + filename + '" could not be found';
 					Runtime.fireEvent('tiIncludeMissing', eventDescription, {
-						name: filePath
+						name: filename
 					});
 					Runtime.reportError('tiIncludeMissing', eventDescription, {
-						name: filePath
+						name: filename
 					});
 				}
 			});

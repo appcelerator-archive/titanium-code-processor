@@ -191,8 +191,8 @@ TiFunction.prototype.call = function call(thisVal, args) {
 				}
 				Runtime.queueFunction(args[i], new Base.UndefinedType(), callArgs, true);
 			}
-		} else if (this._function.parameters[i] && this._function.parameters[i].type === 'Function') {
-			Runtime.fireEvent('unknownCallback', 'An unknown value was passed to ' + this._function.name +
+		} else if (this._api.parameters[i] && this._api.parameters[i].type === 'Function') {
+			Runtime.fireEvent('unknownCallback', 'An unknown value was passed to ' + this._apiName +
 				'. Some source code may not be analyzed.');
 		}
 	}
@@ -259,10 +259,10 @@ TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, suppressEvent
 	var value = Base.ObjectType.prototype.getOwnProperty.apply(this, arguments),
 		node;
 	if (value && !suppressEvent) {
-		node = this._api ? this._api.node : this._property ? this._property : this._function;
+		node = value.value._api;
 		if (node) {
 			Runtime.fireEvent('tiPropertyReferenced', 'Property "' + p + '" was referenced', {
-				name: this._api.node.name + '.' + p,
+				name: value.value._apiName,
 				node: node
 			});
 		} else {
@@ -294,16 +294,14 @@ TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, suppressEvent
  * @see ECMA-262 Spec Chapter 8.12.5
  */
 TiObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, throwFlag, suppressEvent) {
-	var node,
-		v;
+	var v;
 	Base.ObjectType.prototype.defineOwnProperty.apply(this, arguments);
 	if (!suppressEvent && Base.isDataDescriptor(desc)) {
 		v = desc.value;
-		node = this._api ? this._api.node : this._property ? this._property : this._function;
-		if (node) {
+		if (v._api) {
 			Runtime.fireEvent('tiPropertySet', 'Property "' + p + '" was set', {
-				name: this._api.node.name + '.' + p,
-				node: node
+				name: v._apiName,
+				node: v._api
 			});
 		} else {
 			Runtime.fireEvent('nonTiPropertySet', 'Property "' + p + '" was set but is not part of the API', {
@@ -332,7 +330,7 @@ TiObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, t
 TiObjectType.prototype.delete = function objDelete(p) {
 	var success = Base.ObjectType.prototype['delete'].apply(this, arguments);
 	Runtime.fireEvent('tiPropertyDeleted', 'Property "' + p + '" was deleted', {
-		name: this._api.node.name + '.' + p,
+		name: this._apiName + '.' + p,
 		success: success
 	});
 	return success;
@@ -358,6 +356,9 @@ function createObject(apiNode) {
 		fullName,
 		type,
 		p, i, ilen, j, jlen;
+
+	obj._api = apiNode.node;
+	obj._apiName = apiNode.node.name;
 
 	// Add the properties
 	for(i = 0, ilen = properties.length; i < ilen; i++) {
@@ -391,7 +392,8 @@ function createObject(apiNode) {
 		} else {
 			value = new Base.UnknownType();
 		}
-		value._property = property;
+		value._api = property;
+		value._apiName = name;
 		obj.defineOwnProperty(name, {
 			value: value,
 			// TODO: Need to read the 'permission' property from the JSCA, only it doesn't exist yet
@@ -419,7 +421,8 @@ function createObject(apiNode) {
 				configurable: true
 			}, false, true);
 		}
-		value._function = func;
+		value._api = func;
+		value._apiName = name;
 		obj.defineOwnProperty(func.name, {
 			value: value,
 			writable: false,
