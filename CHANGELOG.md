@@ -1,4 +1,4 @@
-## 0.3.2
+## 0.3.2 (28 February 2013)
 
 ### New Features
 * Modified the Ti API usage finder to report both global api usage numbers and per-file api usage numbers
