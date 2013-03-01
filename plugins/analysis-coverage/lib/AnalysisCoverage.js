@@ -36,6 +36,7 @@ var path = require('path'),
  * @name module:plugins/AnalysisCoverage
  */
 module.exports = function (options) {
+	options = options || {};
 	Runtime.on('projectProcessingEnd', function() {
 		var astSet = Runtime.getASTSet(),
 			id,
@@ -64,8 +65,12 @@ module.exports = function (options) {
 
 		// Analyze the files
 		results.filesSkipped = Runtime.getUnprocessedFilesList();
-		results.numTotalFiles = results.filesSkipped.length + Runtime.getProcessedFilesList().length;
+		results.filesSkipped.forEach(function(file) {
+			AST.parse(file); // Parse the file to add it to the list of unprocessed files remaining
+		});
+		results.numFilesVisited = Runtime.getProcessedFilesList().length;
 		results.numFilesSkipped = results.filesSkipped.length;
+		results.numTotalFiles = results.filesSkipped.length + results.numFilesVisited;
 
 		// Analyze the ASTs
 		for (id in astSet) {
@@ -81,10 +86,14 @@ module.exports = function (options) {
 			]);
 		}
 
-		if (options && options.visualization) {
+		// Create the summary report
+		results.summary = (100 * (results.numNodesVisited + results.numNodesSkipped) / results.numTotalNodes).toFixed(1) +
+			'% of the project\'s source code was analyzed';
+
+		if (options.visualization) {
 
 			// Calculate the output directory
-			outputDir = options.visualization.outputDirectory;
+			results.visualizationDataLocation = outputDir = options.visualization.outputDirectory;
 			if (outputDir) {
 				if (options.visualization.timestampOutputDirectory) {
 					outputDir += '.' + (new Date()).toISOString();
@@ -242,15 +251,110 @@ module.exports = function (options) {
 module.exports.prototype.init = function init() {};
 
 /**
-* Gets the results of the plugin
-*
-* @method
+ * Gets the results of the plugin
+ *
+ * @method
  * @name module:plugins/AnalysisCoverage#getResults
-* @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
-*		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
-*		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
-*		method.
-*/
+ * @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
+ *		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
+ *		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
+ *		method.
+ */
 module.exports.prototype.getResults = function getResults() {
 	return results;
 };
+
+/**
+ * Generates the results template data to be rendered
+ *
+ * @method
+ * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ *		as one of the entries in the template
+ * @param {String} baseDirectory The base directory of the code, useful for shortening paths
+ * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
+ *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
+ *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
+ *		information to dump into the template
+ */
+module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile, baseDirectory) {
+	var nodeList = [],
+		filesSkipped,
+		template = {},
+		visualizationFiles,
+		i, len,
+		htmlRegex = /\.html$/,
+		visualizationEntries = [],
+		isDefault = true,
+		defaultLink,
+		file,
+		isFolder,
+		visualizationDataLocation = path.resolve(results.visualizationDataLocation);
+
+	// Calculate the node list
+	Object.keys(results.details).forEach(function(id) {
+		var result = results.details[id];
+		nodeList.push({
+			filename: id.replace(baseDirectory, ''),
+			numNodesVisited: result.numNodesVisited,
+			numNodesSkipped: result.numNodesSkipped,
+			numTotalNodes: result.numTotalNodes
+		});
+	});
+
+	if (results.filesSkipped.length) {
+		filesSkipped = {
+			filesSkippedList: []
+		};
+		results.filesSkipped.forEach(function (file) {
+			filesSkipped.filesSkippedList.push({
+				filename: file.replace(baseDirectory, '')
+			});
+		});
+	}
+
+	if (visualizationDataLocation) {
+		visualizationFiles = wrench.readdirSyncRecursive(visualizationDataLocation).sort();
+		for (i = 0, len = visualizationFiles.length; i < len; i++) {
+			file = path.join(visualizationDataLocation, visualizationFiles[i]);
+			isFolder = fs.statSync(file).isDirectory();
+			if (htmlRegex.test(file)) {
+				if (isDefault) {
+					defaultLink = file;
+				}
+			} else if (!isFolder) {
+				continue;
+			}
+			visualizationEntries.push({
+				id: file,
+				isFolder: isFolder,
+				isDefault: !isFolder && isDefault,
+				name: new Array(file.replace(visualizationDataLocation, '').split(path.sep).length - 1).join('&nbsp;&nbsp;&nbsp;') + path.basename(file)
+			});
+			if (isDefault) {
+				isDefault = false;
+			}
+		}
+	}
+
+	template[entryFile] = {
+		template: path.join(__dirname, '..', 'templates', 'analysisCoverageTemplate.html'),
+		data: {
+			numFilesVisited: results.numFilesVisited,
+			numTotalFiles: results.numTotalFiles,
+			filesPercentage: (100 * results.numFilesVisited / results.numTotalFiles).toFixed(1),
+			numNodesVisited: results.numNodesVisited,
+			numTotalNodes: results.numTotalNodes,
+			nodesPercentage: (100 * (results.numNodesVisited + results.numNodesSkipped) / results.numTotalNodes).toFixed(1),
+			nodeCoverage: {
+				nodeList: nodeList
+			},
+			filesSkipped: filesSkipped,
+			visualization: visualizationDataLocation,
+			files: visualizationEntries,
+			defaultLink: defaultLink
+		}
+	};
+
+	return template;
+};
+module.exports.prototype.displayName = 'Analysis Coverage';

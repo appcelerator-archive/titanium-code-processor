@@ -20,7 +20,7 @@ var path = require('path'),
 		numAbiguousContextNodes: 0,
 		numUnknownNodes: 0,
 		numTotalNodes: 0,
-		annotationData: {}
+		details: {}
 	};
 
 // ******** Plugin API Methods ********
@@ -34,6 +34,7 @@ var path = require('path'),
  * @name module:plugins/AnalysisCoverageVisualizer
  */
 module.exports = function (options) {
+	options = options || {};
 	Runtime.on('projectProcessingEnd', function() {
 		var astSet = Runtime.getASTSet(),
 			id,
@@ -43,18 +44,8 @@ module.exports = function (options) {
 			inputDir = path.dirname(Runtime.getEntryPointFile()),
 			inputSource,
 			outputFilePath,
-			annotationData;
-
-		// Calculate the output directory
-		outputDir = options && options.outputDirectory;
-		if (outputDir) {
-			if (options.timestampOutputDirectory) {
-				outputDir += '.' + (new Date()).toISOString();
-			}
-			if (existsSync(outputDir)) {
-				wrench.rmdirSyncRecursive(outputDir);
-			}
-		}
+			annotationData,
+			result;
 
 		function alphaBlend(color1, color2, def) {
 			if (color1 && color2) {
@@ -68,133 +59,183 @@ module.exports = function (options) {
 			}
 		}
 
-		// Calculate the styles
-		styles = options && options.styles;
-		if (styles) {
-			annotationStyle = [{
-					property: '_unknown',
-					value: true,
-					bold: styles.unknown.bold,
-					italic: styles.unknown.italic,
-					fontColor: [
-						styles.unknown.fontColor.r,
-						styles.unknown.fontColor.g,
-						styles.unknown.fontColor.b
-						],
-					backgroundColor: [
-						styles.unknown.backgroundColor.r,
-						styles.unknown.backgroundColor.g,
-						styles.unknown.backgroundColor.b
-					]
-				},{
-					property: '_ambiguousBlock',
-					value: true,
-					bold: styles.ambiguousBlock.bold,
-					italic: styles.ambiguousBlock.italic,
-					fontColor: [
-						styles.ambiguousBlock.fontColor.r,
-						styles.ambiguousBlock.fontColor.g,
-						styles.ambiguousBlock.fontColor.b
-						],
-					backgroundColor: [
-						styles.ambiguousBlock.backgroundColor.r,
-						styles.ambiguousBlock.backgroundColor.g,
-						styles.ambiguousBlock.backgroundColor.b
-					]
-				},{
-					property: '_ambiguousContext',
-					value: true,
-					bold: styles.ambiguousContext.bold,
-					italic: styles.ambiguousContext.italic,
-					fontColor: [
-						styles.ambiguousContext.fontColor.r,
-						styles.ambiguousContext.fontColor.g,
-						styles.ambiguousContext.fontColor.b
-						],
-					backgroundColor: [
-						styles.ambiguousContext.backgroundColor.r,
-						styles.ambiguousContext.backgroundColor.g,
-						styles.ambiguousContext.backgroundColor.b
-					]
-				}
-			];
-		} else {
-			annotationStyle = [{
-					property: '_unknown',
-					value: true,
-					bold: true,
-					italic: true,
-					fontColor: [0, 0.5, 0]
-				},{
-					property: '_ambiguousBlock',
-					value: true,
-					bold: false,
-					italic: false,
-					backgroundColor: [1, 0.5, 0.5]
-				},{
-					property: '_ambiguousContext',
-					value: true,
-					bold: false,
-					italic: false,
-					backgroundColor: [0.5, 0.5, 1]
-				}
-			];
+		function nodeVisitedCallback (node) {
+			if (node._unknown) {
+				result.numUnknownNodes++;
+				results.numUnknownNodes++;
+			}
+			if (node._ambiguousBlock) {
+				result.numAbiguousBlockNodes++;
+				results.numAbiguousBlockNodes++;
+			}
+			if (node._ambiguousContext) {
+				result.numAbiguousContextNodes++;
+				results.numAbiguousContextNodes++;
+			}
+			result.numTotalNodes++;
+			results.numTotalNodes++;
 		}
 
+		// Analyze the ASTs
 		for (id in astSet) {
-			if (existsSync(id)) {
+			result = results.details[id] = {
+				numUnknownNodes: 0,
+				numAbiguousBlockNodes: 0,
+				numAbiguousContextNodes: 0,
+				numTotalNodes: 0
+			};
+			AST.walk(astSet[id], [
+				{
+					callback: nodeVisitedCallback
+				}
+			]);
+		}
 
-				// Calculate the annotation data
-				results.annotationData[id] = annotationData = AST.generateAnnotations(astSet[id], annotationStyle);
+		// Create the summary report
+		results.summary = (100 * results.numUnknownNodes / results.numTotalNodes).toFixed(1) +
+			'% of the project\'s source code is not knowable at compile time';
 
-				// Write the results to file, if requested
-				if (outputDir) {
-					outputFilePath = path.join(outputDir, path.relative(inputDir, id));
-					if (!existsSync(path.dirname(outputFilePath))) {
-						wrench.mkdirSyncRecursive(path.dirname(outputFilePath));
+
+		if (options.visualization) {
+			// Calculate the output directory
+			results.visualizationDataLocation = outputDir = options.visualization.outputDirectory;
+			if (outputDir) {
+				if (options.visualization.timestampOutputDirectory) {
+					outputDir += '.' + (new Date()).toISOString();
+				}
+				if (existsSync(outputDir)) {
+					wrench.rmdirSyncRecursive(outputDir);
+				}
+			}
+
+			// Calculate the styles
+			styles = options && options.styles;
+			if (styles) {
+				annotationStyle = [{
+						property: '_unknown',
+						value: true,
+						bold: styles.unknown.bold,
+						italic: styles.unknown.italic,
+						fontColor: [
+							styles.unknown.fontColor.r,
+							styles.unknown.fontColor.g,
+							styles.unknown.fontColor.b
+							],
+						backgroundColor: [
+							styles.unknown.backgroundColor.r,
+							styles.unknown.backgroundColor.g,
+							styles.unknown.backgroundColor.b
+						]
+					},{
+						property: '_ambiguousBlock',
+						value: true,
+						bold: styles.ambiguousBlock.bold,
+						italic: styles.ambiguousBlock.italic,
+						fontColor: [
+							styles.ambiguousBlock.fontColor.r,
+							styles.ambiguousBlock.fontColor.g,
+							styles.ambiguousBlock.fontColor.b
+							],
+						backgroundColor: [
+							styles.ambiguousBlock.backgroundColor.r,
+							styles.ambiguousBlock.backgroundColor.g,
+							styles.ambiguousBlock.backgroundColor.b
+						]
+					},{
+						property: '_ambiguousContext',
+						value: true,
+						bold: styles.ambiguousContext.bold,
+						italic: styles.ambiguousContext.italic,
+						fontColor: [
+							styles.ambiguousContext.fontColor.r,
+							styles.ambiguousContext.fontColor.g,
+							styles.ambiguousContext.fontColor.b
+							],
+						backgroundColor: [
+							styles.ambiguousContext.backgroundColor.r,
+							styles.ambiguousContext.backgroundColor.g,
+							styles.ambiguousContext.backgroundColor.b
+						]
 					}
-					fs.writeFileSync(outputFilePath + '.js', inputSource = fs.readFileSync(id).toString());
-					fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
-					fs.writeFileSync(outputFilePath + '.html',
-						AST.generateAnnotatedHTML(inputSource, annotationData,
-							'/*\nLegend:\nUnknown Value Generated\nAmbiguous Context\nAmbiguous Block\nAmbiguous Block and Context\n*/\n', [{
-								start: 0,
-								bold: false,
-								italic: false,
-								fontColor: [0, 0, 0],
-								backgroundColor: [1, 1, 1]
-							}, {
-								start: 11,
-								bold: annotationStyle[0].bold,
-								italic: annotationStyle[0].italic,
-								fontColor: annotationStyle[0].fontColor,
-								backgroundColor: annotationStyle[0].backgroundColor
-							}, {
-								start: 35,
-								bold: annotationStyle[1].bold,
-								italic: annotationStyle[1].italic,
-								fontColor: annotationStyle[1].fontColor,
-								backgroundColor: annotationStyle[1].backgroundColor
-							}, {
-								start: 52,
-								bold: annotationStyle[2].bold,
-								italic: annotationStyle[2].italic,
-								fontColor: annotationStyle[2].fontColor,
-								backgroundColor: annotationStyle[2].backgroundColor
-							}, {
-								start: 68,
-								bold: annotationStyle[1].bold || annotationStyle[2].bold,
-								italic: annotationStyle[1].italic || annotationStyle[2].italic,
-								fontColor: alphaBlend(annotationStyle[1].fontColor, annotationStyle[2].fontColor, [0, 0, 0]),
-								backgroundColor: alphaBlend(annotationStyle[1].backgroundColor, annotationStyle[2].backgroundColor, [1, 1, 1])
-							}, {
-								start: 97,
-								bold: false,
-								italic: false,
-								fontColor: [0, 0, 0],
-								backgroundColor: [1, 1, 1]
-							}]
-						));
+				];
+			} else {
+				annotationStyle = [{
+						property: '_unknown',
+						value: true,
+						bold: true,
+						italic: true,
+						fontColor: [0, 0.5, 0]
+					},{
+						property: '_ambiguousBlock',
+						value: true,
+						bold: false,
+						italic: false,
+						backgroundColor: [1, 0.5, 0.5]
+					},{
+						property: '_ambiguousContext',
+						value: true,
+						bold: false,
+						italic: false,
+						backgroundColor: [0.5, 0.5, 1]
+					}
+				];
+			}
+
+			for (id in astSet) {
+				if (existsSync(id)) {
+
+					// Calculate the annotation data
+					annotationData = AST.generateAnnotations(astSet[id], annotationStyle);
+
+					// Write the results to file, if requested
+					if (outputDir) {
+						outputFilePath = path.join(outputDir, path.relative(inputDir, id));
+						if (!existsSync(path.dirname(outputFilePath))) {
+							wrench.mkdirSyncRecursive(path.dirname(outputFilePath));
+						}
+						fs.writeFileSync(outputFilePath + '.js', inputSource = fs.readFileSync(id).toString());
+						fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
+						fs.writeFileSync(outputFilePath + '.html',
+							AST.generateAnnotatedHTML(inputSource, annotationData,
+								'/*\nLegend:\nUnknown Value Generated\nAmbiguous Context\nAmbiguous Block\nAmbiguous Block and Context\n*/\n', [{
+									start: 0,
+									bold: false,
+									italic: false,
+									fontColor: [0, 0, 0],
+									backgroundColor: [1, 1, 1]
+								}, {
+									start: 11,
+									bold: annotationStyle[0].bold,
+									italic: annotationStyle[0].italic,
+									fontColor: annotationStyle[0].fontColor,
+									backgroundColor: annotationStyle[0].backgroundColor
+								}, {
+									start: 35,
+									bold: annotationStyle[1].bold,
+									italic: annotationStyle[1].italic,
+									fontColor: annotationStyle[1].fontColor,
+									backgroundColor: annotationStyle[1].backgroundColor
+								}, {
+									start: 52,
+									bold: annotationStyle[2].bold,
+									italic: annotationStyle[2].italic,
+									fontColor: annotationStyle[2].fontColor,
+									backgroundColor: annotationStyle[2].backgroundColor
+								}, {
+									start: 68,
+									bold: annotationStyle[1].bold || annotationStyle[2].bold,
+									italic: annotationStyle[1].italic || annotationStyle[2].italic,
+									fontColor: alphaBlend(annotationStyle[1].fontColor, annotationStyle[2].fontColor, [0, 0, 0]),
+									backgroundColor: alphaBlend(annotationStyle[1].backgroundColor, annotationStyle[2].backgroundColor, [1, 1, 1])
+								}, {
+									start: 97,
+									bold: false,
+									italic: false,
+									fontColor: [0, 0, 0],
+									backgroundColor: [1, 1, 1]
+								}]
+							));
+					}
 				}
 			}
 		}
@@ -222,3 +263,85 @@ module.exports.prototype.init = function init() {};
 module.exports.prototype.getResults = function getResults() {
 	return results;
 };
+
+/**
+ * Generates the results template data to be rendered
+ *
+ * @method
+ * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ *		as one of the entries in the template
+ * @param {String} baseDirectory The base directory of the code, useful for shortening paths
+ * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
+ *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
+ *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
+ *		information to dump into the template
+ */
+module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile, baseDirectory) {
+	var nodeList = [],
+		filesSkipped,
+		template = {},
+		visualizationFiles,
+		i, len,
+		htmlRegex = /\.html$/,
+		visualizationEntries = [],
+		isDefault = true,
+		defaultLink,
+		file,
+		isFolder,
+		visualizationDataLocation = path.resolve(results.visualizationDataLocation);
+
+	// Calculate the node list
+	Object.keys(results.details).forEach(function(id) {
+		var result = results.details[id];
+		nodeList.push({
+			filename: id.replace(baseDirectory, ''),
+			numUnknownNodes: result.numUnknownNodes,
+			numAbiguousBlockNodes: result.numAbiguousBlockNodes,
+			numAbiguousContextNodes: result.numAbiguousContextNodes,
+			numTotalNodes: result.numAbiguousContextNodes
+		});
+	});
+
+	if (visualizationDataLocation) {
+		visualizationFiles = wrench.readdirSyncRecursive(visualizationDataLocation).sort();
+		for (i = 0, len = visualizationFiles.length; i < len; i++) {
+			file = path.join(visualizationDataLocation, visualizationFiles[i]);
+			isFolder = fs.statSync(file).isDirectory();
+			if (htmlRegex.test(file)) {
+				if (isDefault) {
+					defaultLink = file;
+				}
+			} else if (!isFolder) {
+				continue;
+			}
+			visualizationEntries.push({
+				id: file,
+				isFolder: isFolder,
+				isDefault: !isFolder && isDefault,
+				name: new Array(file.replace(visualizationDataLocation, '').split(path.sep).length - 1).join('&nbsp;&nbsp;&nbsp;') + path.basename(file)
+			});
+			if (isDefault) {
+				isDefault = false;
+			}
+		}
+	}
+
+	template[entryFile] = {
+		template: path.join(__dirname, '..', 'templates', 'unknownAmbiguousVisualizerTemplate.html'),
+		data: {
+			numUnknownNodes: results.numUnknownNodes === 1 ? '1 node is' : results.numUnknownNodes + ' nodes are',
+			numAbiguousBlockNodes: results.numAbiguousBlockNodes === 1 ? '1 node is' : results.numAbiguousBlockNodes + ' nodes are',
+			numAbiguousContextNodes: results.numAbiguousContextNodes === 1 ? '1 node is' : results.numAbiguousContextNodes + ' nodes are',
+			numTotalNodes: results.numTotalNodes === 1 ? '1 node' : results.numTotalNodes + ' nodes',
+			nodeCoverage: {
+				nodeList: nodeList
+			},
+			visualization: visualizationDataLocation,
+			files: visualizationEntries,
+			defaultLink: defaultLink
+		}
+	};
+
+	return template;
+};
+module.exports.prototype.displayName = 'Unknown Visualizer';

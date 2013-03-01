@@ -114,8 +114,9 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 		if (isModule) {
 			if (filePath) {
 				if (cache[filePath]) {
-					Runtime.fireEvent('requireResolved', 'The require path "' + filePath + '" was resolved', {
-						name: filePath
+					Runtime.fireEvent('requireResolved', 'Module "' + name + '" was resolved to "' + filePath + '"', {
+						name: name,
+						path: filePath
 					});
 					result = cache[filePath];
 				} else {
@@ -124,7 +125,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 				}
 			} else {
 				Runtime.fireEvent('requireSkipped',
-					'Native modules cannot be evaluated at compile-time and will be deferred until runtime', {
+					'Native modules cannot be evaluated by the Titanium Code Processor', {
 						name: name
 				});
 			}
@@ -149,20 +150,21 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 				if (cache[filePath]) {
 					result = cache[filePath];
 				} else {
-					Runtime.fireEvent('requireResolved', 'The require path "' + filePath + '" was resolved', {
-						name: filePath
+					Runtime.fireEvent('requireResolved', 'Module "' + name + '" was resolved to "' + filePath + '"', {
+						name: name,
+						path: filePath
 					});
 					result = processFile(filePath, isModule)[1];
 					cache[filePath] = result;
 				}
 
 			} else {
-				eventDescription = 'The require path "' + filePath + '" could not be found';
+				eventDescription = 'The module "' + name + '" could not be found';
 				Runtime.fireEvent('requireMissing', eventDescription, {
-					name: filePath
+					name: name
 				});
 				Runtime.reportError('requireMissing', eventDescription, {
-					name: filePath
+					name: name
 				});
 			}
 		}

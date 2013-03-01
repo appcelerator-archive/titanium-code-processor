@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Platform Validation</title>
+<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+</head>
+<body>
+<div class="navbar navbar-inverse">
+	<div class="navbar-inner">
+		<ul class="nav">
+			<li><a href="index.html"><i class="icon-home"></i> Summary</a></li>
+			{{#header}}
+			<li class="divider-vertical"></li>
+			<li{{#isHighlighted}} class="active"{{/isHighlighted}}><a href="{{file}}">{{name}}</a></li>
+			{{/header}}
+		</ul>
+	</div>
+</div>
+<div class="container-fluid">
+	<h3>Overview</h3>
+	{{#invalidAPIs}}
+	<pre>{{numAPIs}} used {{numInstances}}</pre>
+	<h3>Invalid Platform-Specific API References</h3>
+	<table class="table table-striped table-bordered">
+		<tr>
+			<th>API</th>
+			<th>Num References</th>
+		</tr>
+		{{#list}}
+		<tr>
+			<td>{{api}}</td>
+			<td>{{numReferences}}</td>
+		</tr>
+		{{/list}}
+	</table>
+	{{/invalidAPIs}}
+	{{^invalidAPIs}}
+	<pre>No platform specific APIs are used incorrectly in the project</pre>
+	{{/invalidAPIs}}
+</div>
+</body>
+</html>

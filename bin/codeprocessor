@@ -372,7 +372,7 @@ function analyze() {
 					console.log(table.toString() + '\n');
 				}
 			}
-			pluginResults = results.plugins['ti-include-finder'];
+			pluginResults = results.plugins['ti-api-include-finder'];
 			if (pluginResults) {
 				entries = Object.keys(pluginResults.resolved);
 				if (entries.length) {
@@ -416,28 +416,28 @@ function analyze() {
 			}
 			pluginResults = results.plugins['ti-api-deprecation-finder'];
 			if (pluginResults) {
-				entries = Object.keys(pluginResults);
+				entries = Object.keys(pluginResults.deprecatedAPIs);
 				if (entries.length) {
 					console.log('Deprecated Titanium API References');
 					table = new Table({
 						head: ['API', 'Num References']
 					});
 					for (i = 0, len = entries.length; i < len; i++) {
-						table.push([entries[i], pluginResults[entries[i]]]);
+						table.push([entries[i], pluginResults.deprecatedAPIs[entries[i]]]);
 					}
 					console.log(table.toString() + '\n');
 				}
 			}
 			pluginResults = results.plugins['ti-api-platform-validator'];
 			if (pluginResults) {
-				entries = Object.keys(pluginResults);
+				entries = Object.keys(pluginResults.invalidAPIs);
 				if (entries.length) {
 					console.log('Invalid Platform-Specific Titanium API References');
 					table = new Table({
 						head: ['API', 'Num References']
 					});
 					for (i = 0, len = entries.length; i < len; i++) {
-						table.push([entries[i], pluginResults[entries[i]]]);
+						table.push([entries[i], pluginResults.invalidAPIs[entries[i]]]);
 					}
 					console.log(table.toString() + '\n');
 				}
@@ -499,13 +499,19 @@ function processAnalayzeInput(callback) {
 				help: 'The path to the config file. Note: when this flag is specified, all other flags are ignored',
 				type: 'string'
 			})
+			.option('results-dir', {
+				abbr: 'r',
+				metavar: 'RESULTS_DIR',
+				help: 'The path to the directory that will contain the results',
+				type: 'string'
+			})
 			.option('all-plugins', {
 				abbr: 'a',
 				help: 'Loads all plugins in the default search path',
 				flag: true
 			})
 			.option('non-ti-plugins', {
-				abbr: 'a',
+				abbr: 't',
 				help: 'Loads all non-titanium specific plugins in the default search path',
 				flag: true
 			})
@@ -607,10 +613,10 @@ function processAnalayzeInput(callback) {
 		}
 
 		if (!config.plugins) {
-			config.plugins = {};
+			config.plugins = [];
 		}
-		if (typeof config.plugins !== 'object' || Array.isArray(config.plugins)) {
-			console.error('Config "plugins" entry must be an object');
+		if (typeof config.plugins !== 'object' || !Array.isArray(config.plugins)) {
+			console.error('Config "plugins" entry must be an array');
 			process.exit(1);
 		}
 
@@ -690,10 +696,13 @@ function processAnalayzeInput(callback) {
 		}
 		projectRoot = path.resolve(projectRoot);
 
+		// Store the results dir
+		options.resultsPath = parsedOptions['results-dir'];
+
 		// Check if we are processing a project or a single file
 		if (/\.js$/.test(projectRoot)) {
 			CodeProcessor.queryPlugins([], function(err, results) {
-				var plugins = {},
+				var plugins = [],
 					pluginList = parsedOptions.plugin || [],
 					i, len,
 					plugin;
@@ -703,10 +712,11 @@ function processAnalayzeInput(callback) {
 				if (parsedOptions['all-plugins']) {
 					for(plugin in results) {
 						if (!tiRegex.test(plugin)) {
-							plugins[plugin] = {
+							plugins.push({
+								name: plugin,
 								path: results[plugin].path,
 								options: {}
-							};
+							});
 						} else if (logger) {
 							logger.warn('Plugin "' + plugin + '" is not supported when parsing individual files');
 						}
@@ -714,10 +724,11 @@ function processAnalayzeInput(callback) {
 				} else if (parsedOptions['non-ti-plugins']) {
 					for(plugin in results) {
 						if (!tiRegex.test(plugin)) {
-							plugins[plugin] = {
+							plugins.push({
+								name: plugin,
 								path: results[plugin].path,
 								options: {}
-							};
+							});
 						}
 					}
 				} else if (pluginList) {
@@ -726,21 +737,24 @@ function processAnalayzeInput(callback) {
 						if (plugin in results) {
 							if (tiRegex.test(plugin)) {
 								if (logger) {
-									logger.warn('Plugin "' + plugin + '"  plugins are not supported when parsing individual files');
+									logger.warn('Plugin "' + plugin + '"  is not supported when parsing individual files');
 								}
 							} else {
-								plugins[plugin] = {
+								plugins.push({
+									name: plugin,
 									path: results[plugin].path,
 									options: {}
-								};
+								});
 							}
 						} else if (logger) {
 							logger.warn('Plugin "' + plugin + '" is unknown');
 						}
 					}
 				}
-				if (plugins['require-provider']) {
-					plugins['require-provider'].options.platform = parsedOptions.osname;
+				for (i = 0, len = plugins.length; i < len; i++) {
+					if (plugins[i].name === 'require-provider') {
+						plugins[i].options.platform = parsedOptions.osname;
+					}
 				}
 
 				callback(projectRoot, options, plugins, logger);
@@ -817,33 +831,36 @@ function processAnalayzeInput(callback) {
 										modules = {},
 										i, len,
 										pluginList = parsedOptions.plugin,
-										plugins = {},
+										plugins = [],
 										plugin;
 
 									if (parsedOptions['all-plugins']) {
 										for(plugin in results) {
-											plugins[plugin] = {
+											plugins.push({
+												name: plugin,
 												path: results[plugin].path,
 												options: {}
-											};
+											});
 										}
 									} else if (parsedOptions['non-ti-plugins']) {
 										for(plugin in results) {
 											if (!tiRegex.test(plugin)) {
-												plugins[plugin] = {
+												plugins.push({
+													name: plugin,
 													path: results[plugin].path,
 													options: {}
-												};
+												});
 											}
 										}
 									} else if (pluginList) {
 										for(i = 0, len = pluginList.length; i < len; i++) {
 											plugin = pluginList[i];
 											if (plugin in results) {
-												plugins[plugin] = {
+												plugins.push({
+													name: plugin,
 													path: results[plugin].path,
 													options: {}
-												};
+												});
 											} else if (logger) {
 												logger.warn('Plugin "' + pluginList[i] + '" is unknown');
 											}
@@ -871,9 +888,6 @@ function processAnalayzeInput(callback) {
 												}
 												process.exit(1);
 											}
-										}
-										if (plugins['ti-api-processor']) {
-											plugins['ti-api-processor'].options.sdkPath = sdkInfo.path;
 										}
 
 										// Get the list of modules from the tiapp.xml
@@ -920,18 +934,30 @@ function processAnalayzeInput(callback) {
 												}
 											});
 										}
-										if (plugins['require-provider']) {
-											plugins['require-provider'].options.modules = modules;
+										for(i = 0, len = plugins.length; i < len; i++) {
+											if (plugins[i].name === 'require-provider') {
+												plugins[i].options.modules = modules;
+											} else if (plugins[i].name === 'ti-api-processor') {
+												plugins[i].options.sdkPath = sdkInfo.path;
+											}
 										}
 									}
-									if (plugins['require-provider']) {
-										plugins['require-provider'].options.platform = parsedOptions.osname;
-									}
-									if (plugins['ti-api-platform-validator']) {
-										plugins['ti-api-platform-validator'].options.platform = parsedOptions.osname;
-									}
-									if (plugins['ti-api-processor']) {
-										plugins['ti-api-processor'].options.platform = parsedOptions.osname;
+									for(i = 0, len = plugins.length; i < len; i++) {
+										if (plugins[i].name === 'require-provider') {
+											plugins[i].options.platform = parsedOptions.osname;
+										} else if (plugins[i].name === 'ti-api-platform-validator') {
+											plugins[i].options.platform = parsedOptions.osname;
+										} else if (plugins[i].name === 'ti-api-processor') {
+											plugins[i].options.platform = parsedOptions.osname;
+										} else if (plugins[i].name === 'analysis-coverage') {
+											plugins[i].options.visualization = {
+												outputDirectory: path.join(options.resultsPath, 'analysis-coverage')
+											};
+										} else if (plugins[i].name === 'unknown-ambiguous-visualizer') {
+											plugins[i].options.visualization = {
+												outputDirectory: path.join(options.resultsPath, 'unknown-ambiguous-visualizer')
+											};
+										}
 									}
 									callback(entryPoint, options, plugins, logger);
 								});

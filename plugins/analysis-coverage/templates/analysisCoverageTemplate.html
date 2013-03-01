@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Analysis Coverage</title>
+<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<script>
+function onClick(source) {
+	var sourceLink = document.getElementById(source),
+		sourceIFrame = document.getElementById('sourceIFrame'),
+		fileList = document.getElementById('fileList'),
+		i, len;
+	if (source) {
+		sourceIFrame.src = source;
+		for(i = 0, len = fileList.children.length; i < len; i++) {
+			fileList.children[i].classList.remove('active');
+		}
+		sourceLink.classList.add('active');
+	}
+}
+function preventLink(e) {
+	e.preventDefault();
+}
+</script>
+<style type="text/css">
+html, body {
+	height: 100%;
+}
+.sourceIFrame {
+	width: 95%;
+	height: 95%;
+	border-width: 0;
+}
+</style>
+</head>
+</head>
+<body>
+<div class="navbar navbar-inverse">
+	<div class="navbar-inner">
+		<ul class="nav">
+			<li><a href="index.html"><i class="icon-home"></i> Summary</a></li>
+			{{#header}}
+			<li class="divider-vertical"></li>
+			<li{{#isHighlighted}} class="active"{{/isHighlighted}}><a href="{{file}}">{{name}}</a></li>
+			{{/header}}
+		</ul>
+	</div>
+</div>
+<div class="container-fluid">
+	<h3>Overview</h3>
+	<pre>{{numFilesVisited}} out of {{numTotalFiles}} files analyzed ({{filesPercentage}}%)
+{{numNodesVisited}} out of {{numTotalNodes}} nodes analyzed ({{nodesPercentage}}%)</pre>
+	{{#nodeCoverage}}
+	<h3>Node Analysis Coverage Data</h3>
+	<table class="table table-striped table-bordered">
+		<tr>
+			<th>File</th>
+			<th>Visited</th>
+			<th>Skipped</th>
+			<th>Total</th>
+		</tr>
+		{{#nodeList}}
+		<tr>
+			<td>{{filename}}</td>
+			<td>{{numNodesVisited}}</td>
+			<td>{{numNodesSkipped}}</td>
+			<td>{{numTotalNodes}}</td>
+		</tr>
+		{{/nodeList}}
+	</table>
+	{{/nodeCoverage}}
+	{{#filesSkipped}}
+	<h3>Files Not Analyzed</h3>
+	<table class="table table-striped table-bordered">
+		<tr>
+			<th>File</th>
+		</tr>
+		{{#filesSkippedList}}
+		<tr>
+			<td>{{filename}}</td>
+		</tr>
+		{{/filesSkippedList}}
+	</table>
+	{{/filesSkipped}}
+	{{#visualization}}
+	<h3>Visualization Information</h3>
+	<div class="row-fluid columns content">
+		<div class="span2 article-tree">
+			<ul id="fileList" class="nav nav-pills nav-stacked">
+				{{#files}}
+				<li id="{{id}}" onclick="onClick('{{id}}')"{{#isFolder}} class="disabled"{{/isFolder}}{{#isDefault}} class="active"{{/isDefault}}><a href='#' onclick="preventLink(event)">{{{name}}}</a></li>
+				{{/files}}
+			</ul>
+		</div>
+		<div class="span10 content-area">
+			<iframe id="sourceIFrame" class="sourceIFrame" src="{{defaultLink}}"></iframe>
+		</div>
+	</div>
+	{{/visualization}}
+</div>
+</body>
+</html>

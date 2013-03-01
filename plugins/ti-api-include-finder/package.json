@@ -1,8 +1,9 @@
 {
 	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
-	"name": "ti-include-finder",
+	"name": "ti-api-include-finder",
 	"description": "A plugin for ti-code-processor that finds all Ti.include() files",
-	"main": "lib/TiIncludeFinder.js",
+	"titaniumCodeProcessorPlugin": true,
+	"main": "lib/TiApiIncludeFinder.js",
 	"dependencies": {},
 	"options": {},
 	"engines": {
