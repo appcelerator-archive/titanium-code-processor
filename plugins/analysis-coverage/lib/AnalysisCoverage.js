@@ -288,7 +288,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 		defaultLink,
 		file,
 		isFolder,
-		visualizationDataLocation = path.resolve(results.visualizationDataLocation);
+		visualizationDataLocation = results.visualizationDataLocation && path.resolve(results.visualizationDataLocation);
 
 	// Calculate the node list
 	Object.keys(results.details).forEach(function(id) {
