@@ -393,17 +393,17 @@ dependencies
 
 name | type | dependencies | description
 -----|------|--------------|------------
-[analysis-coverage](plugins/analysis-coverage/README.md) | analyzer | &lt;none&gt; | Reports the number of AST nodes that were analyzed on a global and per-file/eval basis. Optionally creates a visualization map of all the code that was analyzed
-[common-globals](plugins/common-globals/README.md) | provider | &lt;none&gt; | Provides implementations for common globals that aren't part of the JavaScript spec but are provided on all Titanium Mobile platforms (setTimeout, console, etc).
-[require-provider](plugins/require-provider/README.md) | provider | &lt;none&gt; | Provides an implementation of ```require()``` that matches the Titanium Mobile implementation, including its inconsistencies with CommonJS.
-[require-finder](plugins/require-finder/README.md) | analyzer | require-provider | Reports all files that are ```require()```'d in a project.
-[ti-api-processor](plugins/ti-api-processor/README.md) | provider | &lt;none&gt; | Provides an implementation of the Titanium Mobile API. This implementation reads the API documentation for the SDK used by the project to create the API implementation. As such, the SDK specified in the project's tiapp.xml file *must* be installed.
-[ti-api-deprecation-finder](plugins/ti-api-deprecation-finder/README.md) | analyzer | ti-api-processor | Reports all deprecated APIs used by the project.
-[ti-api-platform-validator](plugins/ti-api-platform-validator/README.md) | analyer | ti-api-processor | Reports all instances where a platform specific feature is used on the wrong platform, e.g. calling ```Ti.Android.createIntent``` on iOS.
-[ti-api-usage-finder](plugins/ti-api-usage-finder/README.md) | analyzer | ti-api-processor | Reports all Titanium Mobile APIs used by the project.
-[ti-api-include-finder](plugins/ti-api-include-finder/README.md) | analyzer | ti-api-processor | Reports all files that are ```Ti.include()```'d by the project.
-[unknown-ambiguous-visualizer](plugins/unknown-ambiguous-visualizer/README.md) | analyzer | &lt;none&gt; | Creates a visualization map of unknown values and ambiguous contexts/blocks
-[unknown-callback-detector](plugins/unknown-callback-detector/README.md) | analyzer | &lt;none&gt; | Detects when an unknown value is supplied to a method when a callback is expected
+[analysis-coverage](plugins/analysis-coverage) | analyzer | &lt;none&gt; | Reports the number of AST nodes that were analyzed on a global and per-file/eval basis. Optionally creates a visualization map of all the code that was analyzed
+[common-globals](plugins/common-globals) | provider | &lt;none&gt; | Provides implementations for common globals that aren't part of the JavaScript spec but are provided on all Titanium Mobile platforms (setTimeout, console, etc).
+[require-provider](plugins/require-provider) | provider | &lt;none&gt; | Provides an implementation of ```require()``` that matches the Titanium Mobile implementation, including its inconsistencies with CommonJS.
+[require-finder](plugins/require-finder) | analyzer | require-provider | Reports all files that are ```require()```'d in a project.
+[ti-api-processor](plugins/ti-api-processor) | provider | &lt;none&gt; | Provides an implementation of the Titanium Mobile API. This implementation reads the API documentation for the SDK used by the project to create the API implementation. As such, the SDK specified in the project's tiapp.xml file *must* be installed.
+[ti-api-deprecation-finder](plugins/ti-api-deprecation-finder) | analyzer | ti-api-processor | Reports all deprecated APIs used by the project.
+[ti-api-platform-validator](plugins/ti-api-platform-validator) | analyer | ti-api-processor | Reports all instances where a platform specific feature is used on the wrong platform, e.g. calling ```Ti.Android.createIntent``` on iOS.
+[ti-api-usage-finder](plugins/ti-api-usage-finder) | analyzer | ti-api-processor | Reports all Titanium Mobile APIs used by the project.
+[ti-api-include-finder](plugins/ti-api-include-finder) | analyzer | ti-api-processor | Reports all files that are ```Ti.include()```'d by the project.
+[unknown-ambiguous-visualizer](plugins/unknown-ambiguous-visualizer) | analyzer | &lt;none&gt; | Creates a visualization map of unknown values and ambiguous contexts/blocks
+[unknown-callback-detector](plugins/unknown-callback-detector) | analyzer | &lt;none&gt; | Detects when an unknown value is supplied to a method when a callback is expected
 
 ## Internal Concepts
 
