@@ -11,38 +11,78 @@ used as part of the Titanium CLI, or incorporated as a library into other node.j
 applications (See the API documentation in the 'docs' folder for more
 information on using the code processor as a library).
 
-## Quickstart
+## Table of Contents
+* [Quick Start](#quick-start)
+	* [Install Using NPM](#install-using-npm)
+	* [Run](#run)
+* [Running Using the Standalone Command](#running-using-the-standalone-command)
+	* [Analyze Sub-Command](#analyze-sub-command)
+	* [Options Sub-Command](#options-sub-command)
+	* [Plugins Sub-Command](#plugins-sub-command)
+	* [Subprocess sub-command](#subprocess-sub-command)
+		* [Low Level Packet Format](#low-level-packet-format)
+		* [High Level Packet Format](#high-level-packet-format)
+	* [Config File Example](#config-file-example)
+* [Running as Part of the Titanium CLI](#running-as-part-of-the-titanium-cli)
+* [Runtime Options](#runtime-options)
+* [Built-in Plugins](#built-in-plugins)
+* [Internal Concepts](#internal-concepts)
 
-### Install the code processor using NPM
+## Quick Start
+
+### Install Using NPM
 
 ```
 [sudo] npm install -g titanium-code-processor
 ```
-The code processor relies on the new [Titanium CLI](https://github.com/appcelerator/titanium),
-so if you haven't installed it already, do so before running the code processor.
+The code processor relies on the new [Titanium CLI](https://github.com/appcelerator/titanium), so make sure
+it is installed before continuing. If you have a 3.0.0. or newer Titanium SDK installed, you already have the CLI.
 
-### Run the code processor
+### Run
 
 From within your project directory, run:
 ```
-titanium-code-processor analyze -o <platform>
+titanium-code-processor analyze -o iphone
 ```
 
-## Running using the standalone bin script
+## Running Using the Standalone Command
 
 ```
 titanium-code-processor [sub-command] [options]
 ```
 Sub-commands
-* options - Queries the options available
-* plugins - Queries the plugins available in the given search paths and default paths
 * analyze - Analyzes a project
+* options - Queries the options available
+* plugins - Queries the plugins available in the supplied search paths, if any, and the default path
 * subprocess - Provides an interactive interface for working with the code processor from another process
 
-### Options sub-commannd
+Note: if you are not going to subprocess the Titanium Code Processor, then the analyze command is all you need.
+
+### Analyze Sub-Command
 
 ```
-titanium options
+titanium-code-processor analyze [options]
+```
+Analyzes a project.
+
+List of options
+
+Option | Description
+-------|------------
+--plugin, -p &lt;plugin name&gt; | Specifies a plugin to load. The -p flag expects the name of a single plugin, e.g. ```-p ti-api-deprecation-finder```
+--config, -c &lt;option=value&gt; | Specifies a configuration option and it's value, e.g ```-c invokeMethods=false```
+--log-level, -l | Sets the log level. Possible values are 'error', 'warn', 'notice', 'info', 'debug', or 'trace'
+--osname, -o | The name of the OS being analyzed for. This is the value that will be reported via 'Ti.Platform.osname', and must be one of 'android', 'iphone', 'ipad', or 'mobileweb'. This flag is **required**
+--project-dir, -d | The directory of the project to load. If not specified, defaults to the current directory
+--config-file, -f | The path to the config file. Note: when this flag is specified, all other flags are ignored and tiapp.xml is not parsed
+--results-dir, -r | The path to the directory that will contain the results
+--all-plugins, -a | Loads all plugins in the default search path
+--non-ti-plugins, -t | Loads all non-titanium specific plugins in the default search path
+
+### Options Sub-Command
+
+```
+titanium-code-processor options
 ```
 This command provides detailed information on all of the options that are available to the code processor. Results are output in JSON format for easy parsing. Option names, valid value types, etc. are included in the results. Each option has the following format:
 
@@ -69,7 +109,15 @@ As an example:
 {
 	"myOption": {
 		"types": [{
-			"type": "string"
+			"type": "object",
+			"properties": {
+				"foo": {
+					"types": [{
+						"type": "string"
+					}]
+					"required": true
+				}
+			}
 		}],
 		"required": false,
 		"description": "I am an option",
@@ -78,10 +126,10 @@ As an example:
 }
 ```
 
-### Plugins sub-command
+### Plugins Sub-Command
 
 ```
-titanium plugins [&lt;search path 1&gt; [&lt;search path 2&gt; [...]]]
+titanium-code-processor plugins [<search path 1> [<search path 2> [...]]]
 ```
 This command provides detailed information all plugins found in the default search path (&lt;code processor dir&gt;/plugins) and in the search paths provided (if any) in JSON format for easy parsing. The path to the plugin, options the plugin takes, etc. are included in the results. Each plugin has the following structure:
 
@@ -91,29 +139,137 @@ path | String | The path to the plugin
 dependencies | Array[String] | The plugin dependencies, with each entry being the plugin name
 options | Object | The options for the plugin, following the same format as the global options above (if there are no options, the object exists but is empty)
 
-### Analyze sub-command
+### Subprocess Sub-Command
 
-Analyzes a project.
+```
+titanium-code-processor subprocess <path/to/config/file>
+```
+The subprocess sub-command can be used to sub-process the code processor. Input and output is handled via stdin and stdout using a structured streaming format. All options are set via the config file. Information is passed back and forth using a custom two-layer packet format. The lower layer is completely custom, while the upper layer is formatted JSON and is encapsulated by the lower layer
 
-List of options
+#### Low Level Packet Format
 
-Option | Description
--------|------------
---plugin, -p &lt;plugin name&gt; | Specifies a plugin to load. The -p flag expects the name of a single plugin, e.g. ```-p analysis-coverage```
---config, -c &lt;option=value&gt; | Specifies a configuration option and it's value, e.g ```-c invokeMethods=false```
---log-level, -l | Sets the log level. Possible values are 'error', 'warn', 'notice', 'info', 'debug', or 'trace'
---osname, -o | The name of the OS being analyzed for. This is the value that will be reported via 'Ti.Platform.osname', e.g. 'android'. This flag is **required**
---project-dir, -d | The directory of the project to load. If not specified, defaults to the current directory
---config-file, -f | The path to the config file. Note: when this flag is specified, all other flags are ignored and tiapp.xml is not parsed
---results-dir, -r | The path to the directory that will contain the results
---all-plugins, -a | Loads all plugins in the default search path
---non-ti-plugins, -t | Loads all non-titanium specific plugins in the default search path
+The low level packet consists of four comma separated fields that forms either a request or a response message
+```
+[Message Type],[Sequence ID],[Message Length],[data]
+```
+Note: the packet header at this level is ASCII formatted, although the data can theoretically be in any format
 
-### Subprocess sub-command
+Name | Description
+-----|------------
+MessageType | A three character sequence that is either 'REQ' (request) or 'RES' (response)
+Sequence ID | A 32-bit, base 16 number that identifies the message. This value is always 8 characters long, and includes 0 padding if necessary. Note: Response messages have the same Sequence ID as the request that generated the response
+Message Length | A 32-bit, base 16 number that identifies the length of the message. This value is always 8 characters long, and includes 0 padding if necessary. Hex letters must be lower case.
 
-The subprocess sub-command can be used to sub-process the code processor. Input and output is handled via stdin and stdout using a structured streaming format.
+Example:
+```
+REQ,000079AC,0000000C,{foo: 'bar'}
+RES,000079AC,0000000C,{foo: 'baz'}
+```
 
-### Config file example
+#### High Level Packet Format
+
+The high level packet is just a JSON string. The contents of the JSON object vary depending on message type and context.
+
+A request always contains two keys: messageType and Data. ```messageType``` is a free form string, and is typically the name of an event. ```data``` can be any valid JSON value, but it must exist. Set to ```null``` if there is no data. Example:
+```JSON
+{
+	"messageType": "enteredFile",
+	"data": {
+		"filename": "path/to/file"
+	}
+}
+```
+
+A response contains a single key: either ```error``` or ```data```. ```error``` must be a string describing the error, and ```data``` can be any valid JSON value, but it must exist. Set to ```null``` if there is no data. Example:
+```JSON
+{
+	"data": 10
+}
+```
+The code processor sends seven possible messages, listed below with an accompanying example
+
+***enteredFile***
+```JSON
+"path/to/file"
+```
+
+***projectProcessingBegin***
+```JSON
+null
+```
+
+***projectProcessingEnd***
+```JSON
+null
+```
+
+***warningReported***
+```JSON
+{
+	"type": "WarningType",
+	"description": "The description of the warning",
+	"filename": "path/to/file",
+	"line": 0,
+	"column: 0
+}
+```
+
+***errorReported***
+```JSON
+{
+	"type": "ErrorType",
+	"description": "The description of the error",
+	"filename": "path/to/file",
+	"line": 0,
+	"column": 0
+}
+```
+
+***consoleOutput***
+```JSON
+{
+	"level": "log",
+	"message": "The console message sent to console.[level]"
+}
+```
+
+***results***
+```JSON
+{
+	"errors": [{
+		"name": "SyntaxError",
+		"description": "The description of the error",
+		"data": {
+			"otherKeys": "other data, including message, type, etc"
+		}
+		"filename": "path/to/file",
+		"line": 0,
+		"column": 0,
+		"occurances": 0
+	}],
+	"warnings": [{
+		"name": "SyntaxError",
+		"description": "The description of the error",
+		"data": {
+			"otherKeys": "other data, including message, type, etc"
+		}
+		"filename": "path/to/file",
+		"line": 0,
+		"column": 0,
+		"occurances": 0
+	}],
+	"plugins": [{
+		"name": "plugin-name",
+		"otherKeys": 'other values"'
+	}],
+	"elapsedTime": 0
+	"resultsPath": "resultsPath/from/config/file"
+}
+```
+
+Note: The code processor can technically recieve requests too, but it is not currently listening for any messages and will return an error stating as much. Eventually there are plans for sending messages to do things like cancelling processing.
+
+### Config File Example
 
 ```JSON
 {
@@ -128,10 +284,10 @@ The subprocess sub-command can be used to sub-process the code processor. Input 
 		}
 	},
 	"options": {
-		"processUnvisitedCode":true,
-		"maxRecursionLimit":500
+		"resultsPath": "path/to/results/directory",
+		"processUnvisitedCode": true,
+		"maxRecursionLimit": 500
 	},
-	"resultsPath": "path/to/results/directory"
 	"plugins": [
 		{
 			"name": "common-globals",
@@ -153,7 +309,7 @@ The subprocess sub-command can be used to sub-process the code processor. Input 
 				"platform": "iphone",
 				"sdkPath": "path/to/sdk",
 				"values": {
-					"Titanium.Platform.version": "3.1.0"
+					"Titanium.Platform.displayCaps.platformWidth": 720
 				}
 			}
 		},
@@ -163,7 +319,7 @@ The subprocess sub-command can be used to sub-process the code processor. Input 
 			"options": {}
 		},
 		{
-			"name": "ti-api-platform-validator": {
+			"name": "ti-api-platform-validator",
 			"path": "path/to/ti-api-platform-validator",
 			"options": {
 				"platform": "iphone"
@@ -181,7 +337,7 @@ The subprocess sub-command can be used to sub-process the code processor. Input 
 }
 ```
 
-## Running as part of the Titanium CLI
+## Running as Part of the Titanium CLI
 
 **Note:** This information is outdated and will only work with the version 0.1.x, the code processor that shipped with SDK 3.0
 
@@ -208,7 +364,7 @@ example shows:
 </code-processor>
 ```
 
-### Runtime Options
+## Runtime Options
 
 These options can be set at the command line by using the '-c' flag from the code
 processor command, or by setting the option in the tiapp.xml file if using the
@@ -237,15 +393,17 @@ dependencies
 
 name | type | dependencies | description
 -----|------|--------------|------------
-analysis-coverage | analyzer | &lt;none&gt; | Reports the number of AST nodes that were analyzed on a global and per-file/eval basis.
-common-globals | provider | &lt;none&gt; | Provides implementations for common globals that aren't part of the JavaScript spec but are provided on all Titanium Mobile platforms (setTimeout, console, etc).
-require-finder | analyzer | require-provider | Reports all files that are ```require()```'d in a project.
-require-provider | provider | &lt;none&gt; | Provides an implementation of ```require()``` that matches the Titanium Mobile implementation, including its inconsistencies with CommonJS.
-ti-api-deprecation-finder | analyzer | ti-api-processor | Reports all deprecated APIs used by the project.
-ti-api-platform-validator | analyer | ti-api-processor | Reports all instances where a platform specific feature is used on the wrong platform, e.g. calling ```Ti.Android.createIntent``` on iOS.
-ti-api-processor | provider | &lt;none&gt; | Provides an implementation of the Titanium Mobile API. This implementation reads the API documentation for the SDK used by the project to create the API implementation. As such, the SDK specified in the project's tiapp.xml file *must* be installed.
-ti-api-usage-finder | analyzer | ti-api-processor | Reports all Titanium Mobile APIs used by the project.
-ti-api-include-finder | analyzer | ti-api-processor | Reports all files that are ```Ti.include()```'d by the project.
+[analysis-coverage](plugins/analysis-coverage/README.md) | analyzer | &lt;none&gt; | Reports the number of AST nodes that were analyzed on a global and per-file/eval basis. Optionally creates a visualization map of all the code that was analyzed
+[common-globals](plugins/common-globals/README.md) | provider | &lt;none&gt; | Provides implementations for common globals that aren't part of the JavaScript spec but are provided on all Titanium Mobile platforms (setTimeout, console, etc).
+[require-provider](plugins/require-provider/README.md) | provider | &lt;none&gt; | Provides an implementation of ```require()``` that matches the Titanium Mobile implementation, including its inconsistencies with CommonJS.
+[require-finder](plugins/require-finder/README.md) | analyzer | require-provider | Reports all files that are ```require()```'d in a project.
+[ti-api-processor](plugins/ti-api-processor/README.md) | provider | &lt;none&gt; | Provides an implementation of the Titanium Mobile API. This implementation reads the API documentation for the SDK used by the project to create the API implementation. As such, the SDK specified in the project's tiapp.xml file *must* be installed.
+[ti-api-deprecation-finder](plugins/ti-api-deprecation-finder/README.md) | analyzer | ti-api-processor | Reports all deprecated APIs used by the project.
+[ti-api-platform-validator](plugins/ti-api-platform-validator/README.md) | analyer | ti-api-processor | Reports all instances where a platform specific feature is used on the wrong platform, e.g. calling ```Ti.Android.createIntent``` on iOS.
+[ti-api-usage-finder](plugins/ti-api-usage-finder/README.md) | analyzer | ti-api-processor | Reports all Titanium Mobile APIs used by the project.
+[ti-api-include-finder](plugins/ti-api-include-finder/README.md) | analyzer | ti-api-processor | Reports all files that are ```Ti.include()```'d by the project.
+[unknown-ambiguous-visualizer](plugins/unknown-ambiguous-visualizer/README.md) | analyzer | &lt;none&gt; | Creates a visualization map of unknown values and ambiguous contexts/blocks
+[unknown-callback-detector](plugins/unknown-callback-detector/README.md) | analyzer | &lt;none&gt; | Detects when an unknown value is supplied to a method when a callback is expected
 
 ## Internal Concepts
 

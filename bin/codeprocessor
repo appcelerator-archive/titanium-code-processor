@@ -180,11 +180,11 @@ function subprocess() {
 	});
 
 	Runtime.on('projectProcessingBegin', function() {
-		studioInterface.send('projectProcessingBegin', undefined, callback);
+		studioInterface.send('projectProcessingBegin', null, callback);
 	});
 
 	Runtime.on('projectProcessingEnd', function() {
-		studioInterface.send('projectProcessingEnd', undefined, callback);
+		studioInterface.send('projectProcessingEnd', null, callback);
 	});
 
 	Runtime.on('warningReported', function(e) {
