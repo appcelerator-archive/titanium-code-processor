@@ -11,6 +11,14 @@ used as part of the Titanium CLI, or incorporated as a library into other node.j
 applications (See the API documentation in the 'docs' folder for more
 information on using the code processor as a library).
 
+Note: In this document, whenever a data structure is defined, it uses the following convention:
+
+**[{name}]** [&lt;optional&gt;] _{type}_ [{description}]
+
+Fields in [] are optional. If the type definition does not explicitly say &lt;optional&gt;, then it is required. If a
+type has children, i.e. it is an object or array, then it's children are specified using indented lines immediately
+below the type definition. Object properties always have a name and array entries never have a name.
+
 ## Table of Contents
 * [Quick Start](#quick-start)
 	* [Install Using NPM](#install-using-npm)
@@ -22,6 +30,7 @@ information on using the code processor as a library).
 	* [Subprocess sub-command](#subprocess-sub-command)
 		* [Low Level Packet Format](#low-level-packet-format)
 		* [High Level Packet Format](#high-level-packet-format)
+		* [Code Processor Message Types](#code-processor-message-types)
 	* [Config File Example](#config-file-example)
 * [Running as Part of the Titanium CLI](#running-as-part-of-the-titanium-cli)
 * [Runtime Options](#runtime-options)
@@ -86,22 +95,21 @@ titanium-code-processor options
 ```
 This command provides detailed information on all of the options that are available to the code processor. Results are output in JSON format for easy parsing. Option names, valid value types, etc. are included in the results. Each option has the following format:
 
-Name | Type | Description
------|------|------------
-types | Array[type] | The list of possible types allowed by the option
-description (optional) | String | A description of the option
-required | Boolean | Whether or not this option is required
-defaultValue (optional) | Any | The devault value
+Option definition:
+* **types** _array_ The list of possible types allowed by the option
+	* _type_ See type definition below
+* **description** &lt;optional&gt; _string_ A description of the option
+* **required** _boolean_ Whether or not this option is required
+* **defaultValue** &lt;optional&gt; _any_ The devault value
 
-Types have the following properties:
-
-Name | Type | Description
------|------|------------
-type | String | One of 'null', 'boolean', 'number', 'string', 'object', or 'array'
-subType | type | Only for type of 'array', this is the type of the array elements
-properties | Object | Only for type of 'object', the properties of the object, with each key being the property name, and the value an option as defined above
-allowedValues (optional) | Array[Primitive] | Only for primitive types, a list of allowed values
-description (optional) | String | A description of this type
+Type definition:
+* **type** _string_ One of 'null', 'boolean', 'number', 'string', 'object', or 'array'
+* **subType** _type_ Only for type of 'array', this is the type of the array elements
+* **properties** _object_ Only for type of 'object', the properties of the object, with each key being the property name, and the value an option as defined above
+	* **&lt;propertyName&gt;** _option_ A property of the object
+* **allowedValues** &lt;optional&gt; _array_ A list of allowed values
+	* _primitive_ only primitive types (boolean, number, string, null, undefined) are allowed
+* **description** &lt;optional&gt; _string_ A description of this type
 
 As an example:
 
@@ -131,13 +139,11 @@ As an example:
 ```
 titanium-code-processor plugins [<search path 1> [<search path 2> [...]]]
 ```
-This command provides detailed information all plugins found in the default search path (&lt;code processor dir&gt;/plugins) and in the search paths provided (if any) in JSON format for easy parsing. The path to the plugin, options the plugin takes, etc. are included in the results. Each plugin has the following structure:
+This command provides detailed information all plugins found in the default search path (&lt;code processor dir&gt;/plugins) and in the search paths provided (if any) in JSON format for easy parsing. The path to the plugin, options the plugin takes, etc. are included in the results. The output has the following format:
 
-Name | Type | Description
------|------|------------
-path | String | The path to the plugin
-dependencies | Array[String] | The plugin dependencies, with each entry being the plugin name
-options | Object | The options for the plugin, following the same format as the global options above (if there are no options, the object exists but is empty)
+* **&lt;plugin-name&gt;** _object_
+	* **path** _string_ The full path to the plugin
+	* **otherEntry** _any_ Each entry from the package.json is duplicated here
 
 ### Subprocess Sub-Command
 
@@ -170,7 +176,12 @@ RES,000079AC,0000000C,{foo: 'baz'}
 
 The high level packet is just a JSON string. The contents of the JSON object vary depending on message type and context.
 
-A request always contains two keys: messageType and Data. ```messageType``` is a free form string, and is typically the name of an event. ```data``` can be any valid JSON value, but it must exist. Set to ```null``` if there is no data. Example:
+A request always has the following definition:
+
+* **messageType** _string_ A free form string defining the type of message, and is typically the name of an event
+* **data** _any_ Any valid JSON value. Set to ```null``` if there is no data.
+
+Example:
 ```JSON
 {
 	"messageType": "enteredFile",
@@ -180,41 +191,97 @@ A request always contains two keys: messageType and Data. ```messageType``` is a
 }
 ```
 
-A response contains a single key: either ```error``` or ```data```. ```error``` must be a string describing the error, and ```data``` can be any valid JSON value, but it must exist. Set to ```null``` if there is no data. Example:
+A response is one of two possible definitions:
+
+* **error** _string_ A string describing the error
+
+or
+
+* **data** _any_ Any valid JSON value. Set to ```null``` if there is no data
+
+Examples:
+```JSON
+{
+	"error": "I can't do that Dave"
+}
+```
 ```JSON
 {
 	"data": 10
 }
 ```
-The code processor sends seven possible messages, listed below with an accompanying example
 
-***enteredFile***
+#### Code Processor Message Types
+
+The code processor sends seven possible messages, listed below
+
+**enteredFile**
+
+A file was just entered. Note that it is possible for a file to be entered multiple times.
+
+* _string_ The path to the file that was just entered
+
+Example:
 ```JSON
 "path/to/file"
 ```
 
-***projectProcessingBegin***
+**projectProcessingBegin**
+
+All pre-processing has completed and processing is about to begin. Contains no data
+
+* _null_
+
+Example:
 ```JSON
 null
 ```
 
-***projectProcessingEnd***
+**projectProcessingEnd**
+
+The project processing has completed, results are being calculated. Contains no data
+
+* _null_
+
+Exmaple:
 ```JSON
 null
 ```
 
-***warningReported***
+**warningReported**
+
+A warning was encountered. When a warning is detected, this message is immediately sent, meaning that they will always
+come before ```projectProcessingEnd```
+
+* **type** _string_ The type of warning
+* **description** _string_ A description of the warning
+* **filename** _string_ The full path to the file where the warning was detected
+* **line** _number_ The line number where the warning was detected
+* **column** _number_ The column number where the warning was detected
+
+Example:
 ```JSON
 {
 	"type": "WarningType",
 	"description": "The description of the warning",
 	"filename": "path/to/file",
 	"line": 0,
-	"column: 0
+	"column": 0
 }
 ```
 
-***errorReported***
+**errorReported**
+
+An error was encountered. When an error is detected, this message is immediately sent, meaning that they will always
+come before ```projectProcessingEnd```
+
+* **type** _string_ The type of error
+* **description** _string_ A description of the error
+* **filename** _string_ The full path to the file where the error was detected
+* **line** _number_ The line number where the error was detected
+* **column** _number_ The column number where the error was detected
+
+Example:
 ```JSON
 {
 	"type": "ErrorType",
@@ -225,15 +292,45 @@ null
 }
 ```
 
-***consoleOutput***
+**consoleOutput**
+
+The program being analyzed output something to the console via ```console.*``` or ```Ti.API.*```
+
+* **level** _string_ The log level of the message, e.g. "info" for ```Ti.API.info```
+* **message** _string_ The message being logged to the console
+
 ```JSON
 {
-	"level": "log",
-	"message": "The console message sent to console.[level]"
+	"level": "error",
+	"message": "I am being logged"
 }
 ```
 
-***results***
+**results**
+
+The results from the project
+
+* **errors** _array_ The errors from the project. The array is empty, but exists, if no errors were found
+	* **name** _string_ The type of error
+	* **description** _string_ A description of the error
+	* **data** _object_ More in-depth information about the error, not documented here
+	* **filename** _string_ The full path to the file where the error was detected
+	* **line** _number_ The line number where the error was detected
+	* **column** _number_ The column number where the error was detected
+* **warnings** _array_ The warnings from the project. The array is empty, but exists, if no warnings were found
+	* **name** _string_ The type of warning
+	* **description** _string_ A description of the warning
+	* **data** _object_ More in-depth information about the warning, not documented here
+	* **filename** _string_ The full path to the file where the warning was detected
+	* **line** _number_ The line number where the warning was detected
+	* **column** _number_ The column number where the warning was detected
+* **plugins** _array_
+	* **name** _string_ The name of the plugin, e.g. "ti-api-deprecation-finder"
+	* **&lt;other key&gt;** Some other key specific to the plugin. See the plugin's README for detailed information
+* **elapsedTime** _number_ The amount of time it took to process the project, in ms
+* **resultsPath** _string_ The value of ```resultsPath``` passed to the code processor, for easy reference
+
+Example:
 ```JSON
 {
 	"errors": [{
@@ -241,7 +338,7 @@ null
 		"description": "The description of the error",
 		"data": {
 			"otherKeys": "other data, including message, type, etc"
-		}
+		},
 		"filename": "path/to/file",
 		"line": 0,
 		"column": 0,
@@ -252,7 +349,7 @@ null
 		"description": "The description of the error",
 		"data": {
 			"otherKeys": "other data, including message, type, etc"
-		}
+		},
 		"filename": "path/to/file",
 		"line": 0,
 		"column": 0,
@@ -260,16 +357,35 @@ null
 	}],
 	"plugins": [{
 		"name": "plugin-name",
-		"otherKeys": 'other values"'
+		"otherKeys": "other values"
 	}],
-	"elapsedTime": 0
+	"elapsedTime": 0,
 	"resultsPath": "resultsPath/from/config/file"
 }
 ```
 
-Note: The code processor can technically recieve requests too, but it is not currently listening for any messages and will return an error stating as much. Eventually there are plans for sending messages to do things like cancelling processing.
+Note: The code processor can technically recieve requests too, but it is not currently listening for any messages and
+will return an error stating as much. Eventually there are plans for sending messages to do things like cancel processing.
 
-### Config File Example
+### Config File
+
+The config file contains everything necessary for processing a project. Below is it's definition
+
+* **entryPoint** _string_ The path to the entry point
+* **logging** _object_ Logging configuration
+	* **console** &lt;optional&gt; _object_ The configuration for logging to the console
+		* **level** _string_ The log level, e.g. "debug"
+	* **file** &lt;optional&gt; _object_ The configuration for logging to a file
+		* **level** _string_ The log level, e.g. "debug"
+		* **path** _string_ The full path to the log file. The file does not have to previously exist
+* **options** _object_ The options for the project. See [Runtime Options](#runtime-options) for details
+* **plugins** _array_ The plugins to load
+	* _object_ The configuration for a plugin to load
+		* **name** _string_ The name of the plugin, e.g. "require-finder." Note: some plugins depend on other plugins. You must make sure to include all depedencies
+		* **path** _string_ The path to the plugin
+		* **options** _object_ The plugin options. See the plugin's README for details
+
+Note: all paths are relative to the CWD. ```~``` is not supported, and it is recommended to use absolute paths
 
 ```JSON
 {
