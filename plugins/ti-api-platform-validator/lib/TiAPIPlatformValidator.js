@@ -127,9 +127,9 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 			numInvalidAPIInstances += results.invalidAPIs[invalidAPI];
 		}
 		if (numInvalidAPIs === 1) {
-			numInvalidAPIs = '1 deprecated API is';
+			numInvalidAPIs = '1 platform-specific API is';
 		} else {
-			numInvalidAPIs = numInvalidAPIs + ' deprecated APIs are';
+			numInvalidAPIs = numInvalidAPIs + ' platform-specific APIs are';
 		}
 		if (numInvalidAPIInstances === 1) {
 			numInvalidAPIInstances = '1 time';
