@@ -161,10 +161,12 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 			} else {
 				eventDescription = 'The module "' + name + '" could not be found';
 				Runtime.fireEvent('requireMissing', eventDescription, {
-					name: name
+					name: name,
+					path: filePath
 				});
 				Runtime.reportError('requireMissing', eventDescription, {
-					name: name
+					name: name,
+					path: filePath
 				});
 			}
 		}

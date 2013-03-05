@@ -3,7 +3,7 @@ Analysis Coverage Plugin
 
 ## Overview
 
-The analysis coverage plugin reports how much of the visualization plugin was analyzed. It reports back project and file level statistics and can optionally generate visualization data.
+The Analysis Coverage plugin reports how much of the project was analyzed. It reports back project and file level statistics and can optionally generate visualization data.
 
 ## Options
 
