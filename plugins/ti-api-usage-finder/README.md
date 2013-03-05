@@ -14,4 +14,4 @@ No options
 * **name** _string_ Always equals "ti-api-usage-finder"
 * **summary** _string_ A short summary of the results
 * **invalidAPIs** _object_ The APIs used in the project
-	* **&lt;API name&gt;** _number_ The number of times the API indicated by the object key  is used
+	* **&lt;API name&gt;** _number_ The number of times the API indicated by the object key is used
