@@ -16,9 +16,11 @@ var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	AST = require(path.join(global.titaniumCodeProcessorLibDir, 'AST')),
 	results = {
+		summary: '',
 		details: {},
 		filesSkipped: [],
 		numTotalFiles: 0,
+		numFilesVisited: 0,
 		numFilesSkipped: 0,
 		numNodesVisited: 0,
 		numNodesSkipped: 0,
@@ -288,7 +290,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 		defaultLink,
 		file,
 		isFolder,
-		visualizationDataLocation = path.resolve(results.visualizationDataLocation);
+		visualizationDataLocation = results.visualizationDataLocation && path.resolve(results.visualizationDataLocation);
 
 	// Calculate the node list
 	Object.keys(results.details).forEach(function(id) {

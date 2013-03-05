@@ -1,3 +1,10 @@
+## 0.3.3
+
+### New Features
+
+### Bug Fixes
+* Updated the README's to contain accurate information about the Code Processor
+
 ## 0.3.2 (28 February 2013)
 
 ### New Features

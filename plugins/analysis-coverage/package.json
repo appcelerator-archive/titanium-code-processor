@@ -15,7 +15,7 @@
 						"types": [{
 							"type": "string"
 						}],
-						"required": false,
+						"required": true,
 						"description": "The directory to store the results in. If ommitted, results are not written to file"
 					},
 					"timestampOutputDirectory": {
