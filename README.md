@@ -311,16 +311,14 @@ The program being analyzed output something to the console via ```console.*``` o
 The results from the project
 
 * **errors** _array_ The errors from the project. The array is empty, but exists, if no errors were found
-	* **name** _string_ The type of error
+	* **type** _string_ The type of error
 	* **description** _string_ A description of the error
-	* **data** _object_ More in-depth information about the error, not documented here
 	* **filename** _string_ The full path to the file where the error was detected
 	* **line** _number_ The line number where the error was detected
 	* **column** _number_ The column number where the error was detected
 * **warnings** _array_ The warnings from the project. The array is empty, but exists, if no warnings were found
-	* **name** _string_ The type of warning
+	* **type** _string_ The type of warning
 	* **description** _string_ A description of the warning
-	* **data** _object_ More in-depth information about the warning, not documented here
 	* **filename** _string_ The full path to the file where the warning was detected
 	* **line** _number_ The line number where the warning was detected
 	* **column** _number_ The column number where the warning was detected

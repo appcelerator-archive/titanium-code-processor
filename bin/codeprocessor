@@ -189,7 +189,7 @@ function subprocess() {
 
 	Runtime.on('warningReported', function(e) {
 		var results = {
-			type: e.data.name,
+			type: e.data.type,
 			description: e.data.description,
 			filename: e.filename,
 			line: e.line,
@@ -200,7 +200,7 @@ function subprocess() {
 
 	Runtime.on('errorReported', function(e) {
 		var results = {
-			type: e.data.name,
+			type: e.data.type,
 			description: e.data.description,
 			filename: e.filename,
 			line: e.line,
