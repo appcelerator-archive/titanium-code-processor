@@ -21,6 +21,7 @@ var path = require('path'),
 		numAbiguousContextNodes: 0,
 		numUnknownNodes: 0,
 		numTotalNodes: 0,
+		unknownCallbacks: [],
 		details: {}
 	};
 
@@ -36,6 +37,9 @@ var path = require('path'),
  */
 module.exports = function (newOptions) {
 	options = newOptions || {};
+	Runtime.on('unknownCallback', function(e) {
+		results.unknownCallbacks.push(e);
+	});
 };
 
 /**
@@ -67,7 +71,9 @@ module.exports.prototype.getResults = function getResults() {
 		inputSource,
 		outputFilePath,
 		annotationData,
-		result;
+		result,
+		summary,
+		numUnknownCallbacks = results.unknownCallbacks.length;
 
 	function alphaBlend(color1, color2, def) {
 		if (color1 && color2) {
@@ -116,6 +122,10 @@ module.exports.prototype.getResults = function getResults() {
 	// Create the summary report
 	results.summary = (100 * results.numUnknownNodes / results.numTotalNodes).toFixed(1) +
 		'% of the project\'s source code is not knowable at compile time';
+	if (numUnknownCallbacks) {
+		summary += (numUnknownCallbacks === 1 ? '\n1 unknown callback was' : '\n' + numUnknownCallbacks + ' unknown callbacks were') + ' detected';
+	}
+	results.summary = summary;
 
 
 	if (options.visualization) {
@@ -142,7 +152,7 @@ module.exports.prototype.getResults = function getResults() {
 						styles.unknown.fontColor.r,
 						styles.unknown.fontColor.g,
 						styles.unknown.fontColor.b
-						],
+					],
 					backgroundColor: [
 						styles.unknown.backgroundColor.r,
 						styles.unknown.backgroundColor.g,
@@ -157,7 +167,7 @@ module.exports.prototype.getResults = function getResults() {
 						styles.ambiguousBlock.fontColor.r,
 						styles.ambiguousBlock.fontColor.g,
 						styles.ambiguousBlock.fontColor.b
-						],
+					],
 					backgroundColor: [
 						styles.ambiguousBlock.backgroundColor.r,
 						styles.ambiguousBlock.backgroundColor.g,
@@ -172,7 +182,7 @@ module.exports.prototype.getResults = function getResults() {
 						styles.ambiguousContext.fontColor.r,
 						styles.ambiguousContext.fontColor.g,
 						styles.ambiguousContext.fontColor.b
-						],
+					],
 					backgroundColor: [
 						styles.ambiguousContext.backgroundColor.r,
 						styles.ambiguousContext.backgroundColor.g,
@@ -278,8 +288,9 @@ module.exports.prototype.getResults = function getResults() {
  */
 module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile, baseDirectory) {
 	var nodeList = [],
-		filesSkipped,
 		template = {},
+		numUnknownCallbacks = results.unknownCallbacks.length,
+		unknownCallbacks,
 		visualizationFiles,
 		i, len,
 		htmlRegex = /\.html$/,
@@ -301,6 +312,19 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 			numTotalNodes: result.numAbiguousContextNodes
 		});
 	});
+
+	if (numUnknownCallbacks) {
+		unknownCallbacks = {
+			summary: (numUnknownCallbacks === 1 ? '1 unknown callback was' : numUnknownCallbacks + ' unknown callbacks were') + ' detected',
+			list: []
+		};
+		for (i = 0, len = results.unknownCallbacks.length; i < len; i++) {
+			unknownCallbacks.list.push({
+				filename: results.unknownCallbacks[i].filename.replace(baseDirectory, ''),
+				line: results.unknownCallbacks[i].line
+			});
+		}
+	}
 
 	if (visualizationDataLocation) {
 		visualizationFiles = wrench.readdirSyncRecursive(visualizationDataLocation).sort();
@@ -333,9 +357,11 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 			numAbiguousBlockNodes: results.numAbiguousBlockNodes === 1 ? '1 node is' : results.numAbiguousBlockNodes + ' nodes are',
 			numAbiguousContextNodes: results.numAbiguousContextNodes === 1 ? '1 node is' : results.numAbiguousContextNodes + ' nodes are',
 			numTotalNodes: results.numTotalNodes === 1 ? '1 node' : results.numTotalNodes + ' nodes',
+			numUnknownCallbacks: numUnknownCallbacks,
 			nodeCoverage: {
 				nodeList: nodeList
 			},
+			unknownCallbacks: unknownCallbacks,
 			visualization: visualizationDataLocation,
 			files: visualizationEntries,
 			defaultLink: defaultLink

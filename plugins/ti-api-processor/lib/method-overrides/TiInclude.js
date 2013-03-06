@@ -72,9 +72,7 @@ exports.init = function (options) {
 					Runtime.fireEvent('tiIncludeMissing', eventDescription, {
 						name: filename
 					});
-					Runtime.reportError('tiIncludeMissing', eventDescription, {
-						name: filename
-					});
+					Runtime.reportError('tiIncludeMissing', eventDescription);
 				}
 			});
 			return new Base.UndefinedType();
