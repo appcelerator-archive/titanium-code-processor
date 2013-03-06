@@ -50,7 +50,24 @@ html, body {
 	<pre>{{numUnknownNodes}} not knowable at compile time
 {{numAbiguousBlockNodes}} in an ambiguous block
 {{numAbiguousContextNodes}} in an ambiguous context
-{{numTotalNodes}} total</pre>
+{{numTotalNodes}} total{{#unknownCallbacks}}
+{{summary}}</pre>
+	<h3>Unknown Callbacks Detected</h3>
+		<table class="table table-striped table-bordered">
+		<tr>
+		<th>File</th>
+		<th>Line</th>
+		</tr>
+		{{#list}}
+		<tr>
+		<td>{{filename}}</td>
+		<td>{{line}}</td>
+		</tr>
+		{{/list}}
+	</table>
+	{{/unknownCallbacks}}
+{{^unknownCallbacks}}</pre>
+{{/unknownCallbacks}}
 	{{#nodeCoverage}}
 	<h3>Node Analysis Coverage Data</h3>
 	<table class="table table-striped table-bordered">

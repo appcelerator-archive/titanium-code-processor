@@ -164,10 +164,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 					name: name,
 					path: filePath
 				});
-				Runtime.reportError('requireMissing', eventDescription, {
-					name: name,
-					path: filePath
-				});
+				Runtime.reportError('RequireMissing', eventDescription);
 			}
 		}
 	}
@@ -230,11 +227,7 @@ function processFile(filename, createExports) {
 			results = root.processRule();
 			Runtime.exitContext();
 		} else {
-			Base.handleRecoverableNativeException('SyntaxError', root.message, {
-				filename: filename,
-				line: root.line,
-				column: root.col
-			});
+			Base.handleRecoverableNativeException('SyntaxError', root.message);
 		}
 
 		// Exit the context and get the results
