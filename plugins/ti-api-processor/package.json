@@ -1,11 +1,13 @@
 {
 	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "ti-api-processor",
-	"description": "A plugin for ti-code-processor that handles Titanium APIs",
+	"displayName": "Titanium API Processor",
+	"description": "Provides an implementation of th Titanium SDK",
 	"titaniumCodeProcessorPlugin": true,
 	"main": "lib/TiAPIProcessor.js",
 	"dependencies": {
-		"require-provider": "*"
+		"require-provider": "*",
+		"common-globals": "*"
 	},
 	"options": {
 		"sdkPath": {

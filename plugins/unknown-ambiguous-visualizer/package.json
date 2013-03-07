@@ -1,7 +1,8 @@
 {
 	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "unknown-ambiguous-visualizer",
-	"description": "A plugin for ti-code-processor that will visualize unknown values and ambiguous contexts/blocks",
+	"displayName": "Unknown and Ambiguous Visualizer",
+	"description": "Creates visualization data showing where unknown values and ambiguous blocks/contexts are",
 	"titaniumCodeProcessorPlugin": true,
 	"main": "lib/UnknownAmbiguousVisualizer.js",
 	"dependencies": {},

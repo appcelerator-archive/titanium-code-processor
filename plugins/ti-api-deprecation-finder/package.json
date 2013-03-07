@@ -1,7 +1,8 @@
 {
 	"author": "Allen Yeung <ayeung@appcelerator.com> (https://github.com/ayeung/)",
 	"name": "ti-api-deprecation-finder",
-	"description": "A plugin for ti-code-processor that finds the deprecated Titanium APIs that are used",
+	"displayName": "API Deprecation Finder",
+	"description": "Finds any deprecated APIs used by the project",
 	"titaniumCodeProcessorPlugin": true,
 	"main": "lib/TiAPIDeprecationFinder.js",
 	"dependencies": {

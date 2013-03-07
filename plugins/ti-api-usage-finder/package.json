@@ -1,7 +1,8 @@
 {
 	"author": "Allen Yeung <ayeung@appcelerator.com> (https://github.com/ayeung/)",
 	"name": "ti-api-usage-finder",
-	"description": "A plugin for ti-code-processor that finds the Titanium APIs that are used",
+	"displayName": "Titanium API Usage Finder",
+	"description": "Lists all of the Titanium APIs used by the project and how often they are used",
 	"titaniumCodeProcessorPlugin": true,
 	"main": "lib/TiAPIUsageFinder.js",
 	"dependencies": {

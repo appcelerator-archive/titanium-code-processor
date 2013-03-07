@@ -1,7 +1,8 @@
 {
 	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "analysis-coverage",
-	"description": "A plugin for ti-code-processor that reports the amount of code analyzed",
+	"displayName": "Analysis Coverage",
+	"description": "Determines the amount of the project that was analyzed and optionally visualizes the results",
 	"titaniumCodeProcessorPlugin": true,
 	"main": "lib/AnalysisCoverage.js",
 	"dependencies": {},

@@ -1,7 +1,8 @@
 {
 	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "require-finder",
-	"description": "A plugin for ti-code-processor that finds all require() files",
+	"displayName": "Require Finder",
+	"description": "Lists all require statments that were found, and how they were evaluated",
 	"titaniumCodeProcessorPlugin": true,
 	"main": "lib/RequireFinder.js",
 	"dependencies": {
