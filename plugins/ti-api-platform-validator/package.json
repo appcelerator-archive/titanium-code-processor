@@ -6,7 +6,7 @@
 	"titaniumCodeProcessorPlugin": true,
 	"main": "lib/TiAPIPlatformValidator.js",
 	"dependencies": {
-		"ti-api-processor": "*"
+		"ti-api-provider": "*"
 	},
 	"options": {
 		"platform": {

@@ -6,7 +6,7 @@
 	"titaniumCodeProcessorPlugin": true,
 	"main": "lib/TiAPIDeprecationFinder.js",
 	"dependencies": {
-		"ti-api-processor": "*"
+		"ti-api-provider": "*"
 	},
 	"options": {},
 	"engines": {
