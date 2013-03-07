@@ -154,4 +154,3 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 
 	return template;
 };
-module.exports.prototype.displayName = 'Ti.includes';

@@ -149,4 +149,3 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 
 	return template;
 };
-module.exports.prototype.displayName = 'Platform Validation';
