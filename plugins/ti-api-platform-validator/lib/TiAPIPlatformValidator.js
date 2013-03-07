@@ -141,6 +141,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 	template[entryFile] = {
 		template: path.join(__dirname, '..', 'templates', 'tiApiPlatformValidatorTemplate.html'),
 		data: {
+			pluginDisplayName: this.displayName,
 			numAPIs: numInvalidAPIs,
 			numInstances: numInvalidAPIInstances,
 			invalidAPIs: invalidAPIs
@@ -149,4 +150,3 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 
 	return template;
 };
-module.exports.prototype.displayName = 'Platform Validation';

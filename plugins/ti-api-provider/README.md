@@ -12,4 +12,4 @@ The Titanium API processor is a provider plugin that provides an implementation 
 
 ## Output
 
-* **name** _string_ Always equals "ti-api-processor"
+* **name** _string_ Always equals "ti-api-provider"

@@ -143,6 +143,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 	template[entryFile] = {
 		template: path.join(__dirname, '..', 'templates', 'tiApiIncludeFinderTemplate.html'),
 		data: {
+			pluginDisplayName: this.displayName,
 			numIncludesResolved: numIncludesResolved === 1 ? '1 file' : numIncludesResolved + ' files',
 			numIncludesUnresolved: numIncludesUnresolved === 1 ? '1 file' : numIncludesUnresolved + ' files',
 			numIncludesMissing: numIncludesMissing === 1 ? '1 file' : numIncludesMissing + ' files',
@@ -154,4 +155,3 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 
 	return template;
 };
-module.exports.prototype.displayName = 'Ti.includes';

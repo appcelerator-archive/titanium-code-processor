@@ -47,19 +47,19 @@ module.exports = function(options) {
 	values = options && options.values || {};
 
 	if (!platform) {
-		console.error('ti-api-processor plugin requires the "platform" option');
+		console.error(this.name + ' plugin requires the "platform" option');
 		process.exit(1);
 	}
 	if (platformList.indexOf(platform) === -1) {
-		console.error('"' + platform + '" is not a valid platform for the ti-api-processor plugin');
+		console.error('"' + platform + '" is not a valid platform for the ' + this.name + ' plugin');
 		process.exit(1);
 	}
 	if (!jsca) {
-		console.error('ti-api-processor plugin requires the "sdkPath" option');
+		console.error(this.name + ' plugin requires the "sdkPath" option');
 		process.exit(1);
 	}
 	if (!existsSync(jsca)) {
-		console.error('ti-api-processor plugin could not find a valid JSCA file at "' + jsca + '"');
+		console.error(this.name + ' plugin could not find a valid JSCA file at "' + jsca + '"');
 		process.exit(1);
 	}
 	jsca = JSON.parse(fs.readFileSync(jsca));
@@ -383,7 +383,7 @@ function createObject(apiNode) {
 						value = new Base.NumberType(values[fullName]);
 						break;
 					default:
-						console.error('Invalid value specified in ti-api-processor options: ' + values[fullName]);
+						console.error('Invalid value specified in ' + this.name + ' options: ' + values[fullName]);
 						process.exit(1);
 				}
 			}
