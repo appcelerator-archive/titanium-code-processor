@@ -153,6 +153,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 	template[entryFile] = {
 		template: path.join(__dirname, '..', 'templates', 'tiApiUsageFinderTemplate.html'),
 		data: {
+			pluginDisplayName: this.displayName,
 			summary: summary,
 			apiSummary: apiSummary,
 			apiByFile: apiByFile

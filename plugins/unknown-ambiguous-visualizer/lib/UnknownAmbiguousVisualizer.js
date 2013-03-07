@@ -353,6 +353,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 	template[entryFile] = {
 		template: path.join(__dirname, '..', 'templates', 'unknownAmbiguousVisualizerTemplate.html'),
 		data: {
+			pluginDisplayName: this.displayName,
 			numUnknownNodes: results.numUnknownNodes === 1 ? '1 node is' : results.numUnknownNodes + ' nodes are',
 			numAbiguousBlockNodes: results.numAbiguousBlockNodes === 1 ? '1 node is' : results.numAbiguousBlockNodes + ' nodes are',
 			numAbiguousContextNodes: results.numAbiguousContextNodes === 1 ? '1 node is' : results.numAbiguousContextNodes + ' nodes are',

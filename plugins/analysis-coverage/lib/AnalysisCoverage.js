@@ -340,6 +340,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 	template[entryFile] = {
 		template: path.join(__dirname, '..', 'templates', 'analysisCoverageTemplate.html'),
 		data: {
+			pluginDisplayName: this.displayName,
 			numFilesVisited: results.numFilesVisited,
 			numTotalFiles: results.numTotalFiles,
 			filesPercentage: (100 * results.numFilesVisited / results.numTotalFiles).toFixed(1),

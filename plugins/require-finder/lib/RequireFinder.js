@@ -167,6 +167,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 	template[entryFile] = {
 		template: path.join(__dirname, '..', 'templates', 'requireFinderTemplate.html'),
 		data: {
+			pluginDisplayName: this.displayName,
 			numRequiresResolved: numRequiresResolved === 1 ? '1 module' : numRequiresResolved + ' modules',
 			numRequiresUnresolved: numRequiresUnresolved === 1 ? '1 module' : numRequiresUnresolved + ' modules',
 			numRequiresMissing: numRequiresMissing === 1 ? '1 module' : numRequiresMissing + ' modules',
