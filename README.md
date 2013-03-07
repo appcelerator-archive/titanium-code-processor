@@ -379,7 +379,6 @@ The config file contains everything necessary for processing a project. Below is
 * **options** _object_ The options for the project. See [Runtime Options](#runtime-options) for details
 * **plugins** _array_ The plugins to load
 	* _object_ The configuration for a plugin to load
-		* **name** _string_ The name of the plugin, e.g. "require-finder." Note: some plugins depend on other plugins. You must make sure to include all depedencies
 		* **path** _string_ The path to the plugin
 		* **options** _object_ The plugin options. See the plugin's README for details
 
