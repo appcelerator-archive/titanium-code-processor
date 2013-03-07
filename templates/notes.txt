@@ -1,0 +1,16 @@
+Light theme
+===========
+
+Values used in the bootstrap generator:
+@headingsColor = #5a6a7f
+@tableBackgroundAccent = #f8faff
+@tableBorder = #c3d5f3
+@navbarBackground = #ecf2fc
+@navbarBackgroundHighlight = @white
+@navbarLinkColor = #5a6a7f
+
+Manual tweaks to css:
+Added "color: #5a6a7f" to ".table th" rule
+Changed "background-color: #f5f5f5;" to "background-color: #f8faff;" in "pre" rule
+Deleted "border: 1px solid rgba(0, 0, 0, 0.15);" from the "pre" rule
+Changed "border: 1px solid #ccc;" to "border: 1px solid #c3d5f3;" in "pre" rule

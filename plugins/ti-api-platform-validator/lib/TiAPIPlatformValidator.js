@@ -16,7 +16,7 @@ var path = require('path'),
 		invalidAPIs: {}
 	},
 
-	platformList = ['android', 'mobileweb', 'iphone', 'ios', 'ipad'];
+	platformList = ['android', 'mobileweb', 'iphone', 'ipad', 'blackberry'];
 
 // ******** Plugin API Methods ********
 

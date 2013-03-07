@@ -487,7 +487,7 @@ function processAnalayzeInput(callback) {
 				abbr: 'o',
 				metavar: 'PLATFORM',
 				help: 'The name of the OS being built-for. Reflected in code via Ti.Platform.osname',
-				choices: ['ios', 'iphone', 'ipad', 'android', 'mobileweb']
+				choices: ['iphone', 'ipad', 'android', 'mobileweb', 'blackberry']
 			})
 			.option('project-dir', {
 				abbr: 'd',
@@ -505,6 +505,13 @@ function processAnalayzeInput(callback) {
 				abbr: 'r',
 				metavar: 'RESULTS_DIR',
 				help: 'The path to the directory that will contain the results',
+				type: 'string'
+			})
+			.option('results-theme', {
+				abbr: 'm',
+				metavar: 'RESULTS_THEME',
+				help: 'The theme for the results page',
+				choices: ['light'],
 				type: 'string'
 			})
 			.option('all-plugins', {
@@ -532,6 +539,8 @@ function processAnalayzeInput(callback) {
 		startTime,
 		logger,
 		tiRegex = /^ti-/;
+
+	debugger;
 
 	// Check if a config file was specified
 	if (parsedOptions['config-file']) {
@@ -700,6 +709,7 @@ function processAnalayzeInput(callback) {
 
 		// Store the results dir
 		options.resultsPath = parsedOptions['results-dir'];
+		options.resultsTheme = parsedOptions['results-theme'];
 
 		// Check if we are processing a project or a single file
 		if (/\.js$/.test(projectRoot)) {
@@ -715,7 +725,6 @@ function processAnalayzeInput(callback) {
 					for(plugin in results) {
 						if (!tiRegex.test(plugin)) {
 							plugins.push({
-								name: plugin,
 								path: results[plugin].path,
 								options: {}
 							});
@@ -727,7 +736,6 @@ function processAnalayzeInput(callback) {
 					for(plugin in results) {
 						if (!tiRegex.test(plugin)) {
 							plugins.push({
-								name: plugin,
 								path: results[plugin].path,
 								options: {}
 							});
@@ -743,7 +751,6 @@ function processAnalayzeInput(callback) {
 								}
 							} else {
 								plugins.push({
-									name: plugin,
 									path: results[plugin].path,
 									options: {}
 								});
@@ -754,8 +761,9 @@ function processAnalayzeInput(callback) {
 					}
 				}
 				for (i = 0, len = plugins.length; i < len; i++) {
-					if (plugins[i].name === 'require-provider') {
+					if (path.basename(plugins[i].path) === 'require-provider') {
 						plugins[i].options.platform = parsedOptions.osname;
+						break;
 					}
 				}
 
@@ -839,7 +847,6 @@ function processAnalayzeInput(callback) {
 									if (parsedOptions['all-plugins']) {
 										for(plugin in results) {
 											plugins.push({
-												name: plugin,
 												path: results[plugin].path,
 												options: {}
 											});
@@ -848,7 +855,6 @@ function processAnalayzeInput(callback) {
 										for(plugin in results) {
 											if (!tiRegex.test(plugin)) {
 												plugins.push({
-													name: plugin,
 													path: results[plugin].path,
 													options: {}
 												});
@@ -859,7 +865,6 @@ function processAnalayzeInput(callback) {
 											plugin = pluginList[i];
 											if (plugin in results) {
 												plugins.push({
-													name: plugin,
 													path: results[plugin].path,
 													options: {}
 												});
@@ -937,25 +942,25 @@ function processAnalayzeInput(callback) {
 											});
 										}
 										for(i = 0, len = plugins.length; i < len; i++) {
-											if (plugins[i].name === 'require-provider') {
+											if (path.basename(plugins[i].path) === 'require-provider') {
 												plugins[i].options.modules = modules;
-											} else if (plugins[i].name === 'ti-api-processor') {
+											} else if (path.basename(plugins[i].path) === 'ti-api-provider') {
 												plugins[i].options.sdkPath = sdkInfo.path;
 											}
 										}
 									}
 									for(i = 0, len = plugins.length; i < len; i++) {
-										if (plugins[i].name === 'require-provider') {
+										if (path.basename(plugins[i].path) === 'require-provider') {
 											plugins[i].options.platform = parsedOptions.osname;
-										} else if (plugins[i].name === 'ti-api-platform-validator') {
+										} else if (path.basename(plugins[i].path) === 'ti-api-platform-validator') {
 											plugins[i].options.platform = parsedOptions.osname;
-										} else if (plugins[i].name === 'ti-api-processor') {
+										} else if (path.basename(plugins[i].path) === 'ti-api-provider') {
 											plugins[i].options.platform = parsedOptions.osname;
-										} else if (plugins[i].name === 'analysis-coverage') {
+										} else if (path.basename(plugins[i].path) === 'analysis-coverage') {
 											plugins[i].options.visualization = {
 												outputDirectory: path.join(options.resultsPath, 'analysis-coverage')
 											};
-										} else if (plugins[i].name === 'unknown-ambiguous-visualizer') {
+										} else if (path.basename(plugins[i].path) === 'unknown-ambiguous-visualizer') {
 											plugins[i].options.visualization = {
 												outputDirectory: path.join(options.resultsPath, 'unknown-ambiguous-visualizer')
 											};
