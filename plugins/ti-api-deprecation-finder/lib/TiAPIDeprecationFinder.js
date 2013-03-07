@@ -118,6 +118,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 	template[entryFile] = {
 		template: path.join(__dirname, '..', 'templates', 'tiApiDeprecationFinderTemplate.html'),
 		data: {
+			pluginDisplayName: this.displayName,
 			numAPIs: numDeprecatedAPIs,
 			numInstances: numDeprecatedAPIInstances,
 			deprecatedAPIs: deprecatedAPIs
@@ -126,4 +127,3 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 
 	return template;
 };
-module.exports.prototype.displayName = 'Deprecated APIs';

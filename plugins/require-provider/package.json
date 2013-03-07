@@ -1,7 +1,8 @@
 {
 	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "require-provider",
-	"description": "A plugin for ti-code-processor that provides support for the CommonJS require() method",
+	"displayName": "Require Provider",
+	"description": "Provides a Titanium compliant implementation of require()",
 	"titaniumCodeProcessorPlugin": true,
 	"main": "lib/RequireProvider.js",
 	"dependencies": {},

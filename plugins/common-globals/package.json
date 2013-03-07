@@ -1,7 +1,8 @@
 {
 	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "common-globals",
-	"description": "A plugin for node-code-processor that injects standard globals not in Ti or the ECMAScript spec",
+	"displayName": "Common Globals",
+	"description": "Injects common global properies and functions not in Titanium or the ECMAScript spec, such as console",
 	"titaniumCodeProcessorPlugin": true,
 	"main": "lib/CommonGlobals.js",
 	"dependencies": {},
