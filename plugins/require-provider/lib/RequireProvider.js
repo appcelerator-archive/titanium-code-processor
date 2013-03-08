@@ -23,7 +23,7 @@ var util = require('util'),
 	modules,
 	cache = {},
 
-	platformList = ['android', 'mobileweb', 'iphone', 'ios', 'ipad'];
+	platformList = ['android', 'mobileweb', 'iphone', 'ipad', 'blackberry'];
 
 
 /**

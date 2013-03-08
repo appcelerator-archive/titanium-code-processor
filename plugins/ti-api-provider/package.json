@@ -24,9 +24,9 @@
 				"allowedValues": [
 					"android",
 					"mobileweb",
-					"ios",
 					"iphone",
-					"ipad"
+					"ipad",
+					"blackberry"
 				]
 			}],
 			"required": true
