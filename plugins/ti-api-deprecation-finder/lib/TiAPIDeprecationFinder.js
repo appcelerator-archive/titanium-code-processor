@@ -11,7 +11,60 @@
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 
-	results;
+	results,
+	renderData;
+
+// ******** Helper Methods ********
+
+function generateResultsData() {
+	var summary,
+		numDeprecatedAPIs = Object.keys(results.deprecatedAPIs).length;
+
+	// Generate the results data
+	if (numDeprecatedAPIs) {
+		summary = (numDeprecatedAPIs === 1 ? '1 deprecated API is' : numDeprecatedAPIs + ' deprecated APIs are') + ' used';
+	} else {
+		summary = 'No deprecated APIs are used';
+	}
+	results.summary = summary;
+}
+
+function generateRenderData() {
+	var numDeprecatedAPIs = Object.keys(results.deprecatedAPIs).length,
+		deprecatedAPIs,
+		numDeprecatedAPIInstances = 0,
+		deprecatedAPI;
+
+	// Generate the render data
+	if (numDeprecatedAPIs) {
+		deprecatedAPIs = {
+			list: []
+		};
+		for (deprecatedAPI in results.deprecatedAPIs) {
+			deprecatedAPIs.list.push({
+				api: deprecatedAPI,
+				numReferences: results.deprecatedAPIs[deprecatedAPI]
+			});
+			numDeprecatedAPIInstances += results.deprecatedAPIs[deprecatedAPI];
+		}
+		if (numDeprecatedAPIs === 1) {
+			numDeprecatedAPIs = '1 deprecated API is';
+		} else {
+			numDeprecatedAPIs = numDeprecatedAPIs + ' deprecated APIs are';
+		}
+		if (numDeprecatedAPIInstances === 1) {
+			numDeprecatedAPIInstances = '1 time';
+		} else {
+			numDeprecatedAPIInstances = numDeprecatedAPIInstances + ' times';
+		}
+	}
+	renderData = {
+		pluginDisplayName: this.displayName,
+		numAPIs: numDeprecatedAPIs,
+		numInstances: numDeprecatedAPIInstances,
+		deprecatedAPIs: deprecatedAPIs
+	};
+}
 
 // ******** Plugin API Methods ********
 
@@ -25,7 +78,6 @@ var path = require('path'),
  */
 module.exports = function () {
 	results = {
-		summary: '',
 		deprecatedAPIs: {}
 	};
 	Runtime.on('tiPropertyReferenced', function (e) {
@@ -45,14 +97,8 @@ module.exports = function () {
 		}
 	});
 	Runtime.on('projectProcessingEnd', function () {
-		var summary,
-			numDeprecatedAPIs = Object.keys(results.deprecatedAPIs).length;
-		if (numDeprecatedAPIs) {
-			summary = (numDeprecatedAPIs === 1 ? '1 deprecated API is' : numDeprecatedAPIs + ' deprecated APIs are') + ' used';
-		} else {
-			summary = 'No deprecated APIs are used';
-		}
-		results.summary = summary;
+		generateResultsData();
+		generateRenderData();
 	});
 };
 
@@ -81,51 +127,17 @@ module.exports.prototype.getResults = function getResults() {
  * @method
  * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
  *		as one of the entries in the template
- * @param {String} baseDirectory The base directory of the code, useful for shortening paths
  * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
  *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
  *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
  *		information to dump into the template
  */
 module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile) {
-	var deprecatedAPIs,
-		numDeprecatedAPIs = Object.keys(results.deprecatedAPIs).length,
-		numDeprecatedAPIInstances = 0,
-		deprecatedAPI,
-		template = {};
-
-	if (numDeprecatedAPIs) {
-		deprecatedAPIs = {
-			list: []
-		};
-		for (deprecatedAPI in results.deprecatedAPIs) {
-			deprecatedAPIs.list.push({
-				api: deprecatedAPI,
-				numReferences: results.deprecatedAPIs[deprecatedAPI]
-			});
-			numDeprecatedAPIInstances += results.deprecatedAPIs[deprecatedAPI];
-		}
-		if (numDeprecatedAPIs === 1) {
-			numDeprecatedAPIs = '1 deprecated API is';
-		} else {
-			numDeprecatedAPIs = numDeprecatedAPIs + ' deprecated APIs are';
-		}
-		if (numDeprecatedAPIInstances === 1) {
-			numDeprecatedAPIInstances = '1 time';
-		} else {
-			numDeprecatedAPIInstances = numDeprecatedAPIInstances + ' times';
-		}
-	}
-
+	var template = {};
 
 	template[entryFile] = {
 		template: path.join(__dirname, '..', 'templates', 'tiApiDeprecationFinderTemplate.html'),
-		data: {
-			pluginDisplayName: this.displayName,
-			numAPIs: numDeprecatedAPIs,
-			numInstances: numDeprecatedAPIInstances,
-			deprecatedAPIs: deprecatedAPIs
-		}
+		data: renderData
 	};
 
 	return template;

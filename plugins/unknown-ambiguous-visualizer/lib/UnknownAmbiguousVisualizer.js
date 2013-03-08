@@ -17,281 +17,226 @@ var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 
 	options,
-	results;
+	results,
+	renderData;
 
-// ******** Plugin API Methods ********
+// ******** Helper Methods ********
 
-/**
- * Creates an instance of the require provider plugin
- *
- * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
- *
- * @constructor
- * @name module:plugins/AnalysisCoverageVisualizer
- */
-module.exports = function (newOptions) {
-	options = newOptions || {};
-	results = {
-		numAbiguousBlockNodes: 0,
-		numAbiguousContextNodes: 0,
-		numUnknownNodes: 0,
-		numTotalNodes: 0,
-		unknownCallbacks: [],
-		details: {}
-	};
-	Runtime.on('unknownCallback', function(e) {
-		results.unknownCallbacks.push(e);
-	});
-	Runtime.on('projectProcessingEnd', function () {
-		var astSet = Runtime.getASTSet(),
-			id,
-			annotationStyle,
-			styles,
-			outputDir,
-			inputDir = path.dirname(Runtime.getEntryPointFile()),
-			inputSource,
-			outputFilePath,
-			annotationData,
-			result,
-			summary,
-			numUnknownCallbacks = results.unknownCallbacks.length;
+function generateResultsData() {
+	var astSet = Runtime.getASTSet(),
+		id,
+		annotationStyle,
+		styles,
+		outputDir,
+		inputDir = path.dirname(Runtime.getEntryPointFile()),
+		inputSource,
+		outputFilePath,
+		annotationData,
+		result,
+		summary,
+		numUnknownCallbacks = results.unknownCallbacks.length;
 
-		function alphaBlend(color1, color2, def) {
-			if (color1 && color2) {
-				return [
-					color1[0] * 0.5 + color2[0] * 0.5,
-					color1[1] * 0.5 + color2[1] * 0.5,
-					color1[2] * 0.5 + color2[2] * 0.5
-				];
-			} else {
-				return color1 || color2 || def;
+	function alphaBlend(color1, color2, def) {
+		if (color1 && color2) {
+			return [
+				color1[0] * 0.5 + color2[0] * 0.5,
+				color1[1] * 0.5 + color2[1] * 0.5,
+				color1[2] * 0.5 + color2[2] * 0.5
+			];
+		} else {
+			return color1 || color2 || def;
+		}
+	}
+
+	function nodeVisitedCallback (node) {
+		if (node._unknown) {
+			result.numUnknownNodes++;
+			results.numUnknownNodes++;
+		}
+		if (node._ambiguousBlock) {
+			result.numAbiguousBlockNodes++;
+			results.numAbiguousBlockNodes++;
+		}
+		if (node._ambiguousContext) {
+			result.numAbiguousContextNodes++;
+			results.numAbiguousContextNodes++;
+		}
+		result.numTotalNodes++;
+		results.numTotalNodes++;
+	}
+
+	// Analyze the ASTs
+	for (id in astSet) {
+		result = results.details[id] = {
+			numUnknownNodes: 0,
+			numAbiguousBlockNodes: 0,
+			numAbiguousContextNodes: 0,
+			numTotalNodes: 0
+		};
+		AST.walk(astSet[id], [
+			{
+				callback: nodeVisitedCallback
+			}
+		]);
+	}
+
+	// Create the summary report
+	results.summary = (100 * results.numUnknownNodes / results.numTotalNodes).toFixed(1) +
+		'% of the project\'s source code is not knowable at compile time';
+	if (numUnknownCallbacks) {
+		summary += (numUnknownCallbacks === 1 ? '\n1 unknown callback was' : '\n' + numUnknownCallbacks + ' unknown callbacks were') + ' detected';
+	}
+	results.summary = summary;
+
+
+	if (options.visualization) {
+		// Calculate the output directory
+		results.visualizationDataLocation = outputDir = options.visualization.outputDirectory;
+		if (outputDir) {
+			if (options.visualization.timestampOutputDirectory) {
+				outputDir += '.' + (new Date()).toISOString();
+			}
+			if (existsSync(outputDir)) {
+				wrench.rmdirSyncRecursive(outputDir);
 			}
 		}
 
-		function nodeVisitedCallback (node) {
-			if (node._unknown) {
-				result.numUnknownNodes++;
-				results.numUnknownNodes++;
-			}
-			if (node._ambiguousBlock) {
-				result.numAbiguousBlockNodes++;
-				results.numAbiguousBlockNodes++;
-			}
-			if (node._ambiguousContext) {
-				result.numAbiguousContextNodes++;
-				results.numAbiguousContextNodes++;
-			}
-			result.numTotalNodes++;
-			results.numTotalNodes++;
+		// Calculate the styles
+		styles = options && options.styles;
+		if (styles) {
+			annotationStyle = [{
+					property: '_unknown',
+					value: true,
+					bold: styles.unknown.bold,
+					italic: styles.unknown.italic,
+					fontColor: [
+						styles.unknown.fontColor.r,
+						styles.unknown.fontColor.g,
+						styles.unknown.fontColor.b
+					],
+					backgroundColor: [
+						styles.unknown.backgroundColor.r,
+						styles.unknown.backgroundColor.g,
+						styles.unknown.backgroundColor.b
+					]
+				},{
+					property: '_ambiguousBlock',
+					value: true,
+					bold: styles.ambiguousBlock.bold,
+					italic: styles.ambiguousBlock.italic,
+					fontColor: [
+						styles.ambiguousBlock.fontColor.r,
+						styles.ambiguousBlock.fontColor.g,
+						styles.ambiguousBlock.fontColor.b
+					],
+					backgroundColor: [
+						styles.ambiguousBlock.backgroundColor.r,
+						styles.ambiguousBlock.backgroundColor.g,
+						styles.ambiguousBlock.backgroundColor.b
+					]
+				},{
+					property: '_ambiguousContext',
+					value: true,
+					bold: styles.ambiguousContext.bold,
+					italic: styles.ambiguousContext.italic,
+					fontColor: [
+						styles.ambiguousContext.fontColor.r,
+						styles.ambiguousContext.fontColor.g,
+						styles.ambiguousContext.fontColor.b
+					],
+					backgroundColor: [
+						styles.ambiguousContext.backgroundColor.r,
+						styles.ambiguousContext.backgroundColor.g,
+						styles.ambiguousContext.backgroundColor.b
+					]
+				}
+			];
+		} else {
+			annotationStyle = [{
+					property: '_unknown',
+					value: true,
+					bold: true,
+					italic: true,
+					fontColor: [0, 0.5, 0]
+				},{
+					property: '_ambiguousBlock',
+					value: true,
+					bold: false,
+					italic: false,
+					backgroundColor: [1, 0.5, 0.5]
+				},{
+					property: '_ambiguousContext',
+					value: true,
+					bold: false,
+					italic: false,
+					backgroundColor: [0.5, 0.5, 1]
+				}
+			];
 		}
 
-		// Analyze the ASTs
 		for (id in astSet) {
-			result = results.details[id] = {
-				numUnknownNodes: 0,
-				numAbiguousBlockNodes: 0,
-				numAbiguousContextNodes: 0,
-				numTotalNodes: 0
-			};
-			AST.walk(astSet[id], [
-				{
-					callback: nodeVisitedCallback
-				}
-			]);
-		}
+			if (existsSync(id)) {
 
-		// Create the summary report
-		results.summary = (100 * results.numUnknownNodes / results.numTotalNodes).toFixed(1) +
-			'% of the project\'s source code is not knowable at compile time';
-		if (numUnknownCallbacks) {
-			summary += (numUnknownCallbacks === 1 ? '\n1 unknown callback was' : '\n' + numUnknownCallbacks + ' unknown callbacks were') + ' detected';
-		}
-		results.summary = summary;
+				// Calculate the annotation data
+				annotationData = AST.generateAnnotations(astSet[id], annotationStyle);
 
-
-		if (options.visualization) {
-			// Calculate the output directory
-			results.visualizationDataLocation = outputDir = options.visualization.outputDirectory;
-			if (outputDir) {
-				if (options.visualization.timestampOutputDirectory) {
-					outputDir += '.' + (new Date()).toISOString();
-				}
-				if (existsSync(outputDir)) {
-					wrench.rmdirSyncRecursive(outputDir);
-				}
-			}
-
-			// Calculate the styles
-			styles = options && options.styles;
-			if (styles) {
-				annotationStyle = [{
-						property: '_unknown',
-						value: true,
-						bold: styles.unknown.bold,
-						italic: styles.unknown.italic,
-						fontColor: [
-							styles.unknown.fontColor.r,
-							styles.unknown.fontColor.g,
-							styles.unknown.fontColor.b
-						],
-						backgroundColor: [
-							styles.unknown.backgroundColor.r,
-							styles.unknown.backgroundColor.g,
-							styles.unknown.backgroundColor.b
-						]
-					},{
-						property: '_ambiguousBlock',
-						value: true,
-						bold: styles.ambiguousBlock.bold,
-						italic: styles.ambiguousBlock.italic,
-						fontColor: [
-							styles.ambiguousBlock.fontColor.r,
-							styles.ambiguousBlock.fontColor.g,
-							styles.ambiguousBlock.fontColor.b
-						],
-						backgroundColor: [
-							styles.ambiguousBlock.backgroundColor.r,
-							styles.ambiguousBlock.backgroundColor.g,
-							styles.ambiguousBlock.backgroundColor.b
-						]
-					},{
-						property: '_ambiguousContext',
-						value: true,
-						bold: styles.ambiguousContext.bold,
-						italic: styles.ambiguousContext.italic,
-						fontColor: [
-							styles.ambiguousContext.fontColor.r,
-							styles.ambiguousContext.fontColor.g,
-							styles.ambiguousContext.fontColor.b
-						],
-						backgroundColor: [
-							styles.ambiguousContext.backgroundColor.r,
-							styles.ambiguousContext.backgroundColor.g,
-							styles.ambiguousContext.backgroundColor.b
-						]
+				// Write the results to file, if requested
+				if (outputDir) {
+					outputFilePath = path.join(outputDir, path.relative(inputDir, id));
+					if (!existsSync(path.dirname(outputFilePath))) {
+						wrench.mkdirSyncRecursive(path.dirname(outputFilePath));
 					}
-				];
-			} else {
-				annotationStyle = [{
-						property: '_unknown',
-						value: true,
-						bold: true,
-						italic: true,
-						fontColor: [0, 0.5, 0]
-					},{
-						property: '_ambiguousBlock',
-						value: true,
-						bold: false,
-						italic: false,
-						backgroundColor: [1, 0.5, 0.5]
-					},{
-						property: '_ambiguousContext',
-						value: true,
-						bold: false,
-						italic: false,
-						backgroundColor: [0.5, 0.5, 1]
-					}
-				];
-			}
-
-			for (id in astSet) {
-				if (existsSync(id)) {
-
-					// Calculate the annotation data
-					annotationData = AST.generateAnnotations(astSet[id], annotationStyle);
-
-					// Write the results to file, if requested
-					if (outputDir) {
-						outputFilePath = path.join(outputDir, path.relative(inputDir, id));
-						if (!existsSync(path.dirname(outputFilePath))) {
-							wrench.mkdirSyncRecursive(path.dirname(outputFilePath));
-						}
-						fs.writeFileSync(outputFilePath + '.js', inputSource = fs.readFileSync(id).toString());
-						fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
-						fs.writeFileSync(outputFilePath + '.html',
-							AST.generateAnnotatedHTML(inputSource, annotationData,
-								'/*\nLegend:\nUnknown Value Generated\nAmbiguous Context\nAmbiguous Block\nAmbiguous Block and Context\n*/\n', [{
-									start: 0,
-									bold: false,
-									italic: false,
-									fontColor: [0, 0, 0],
-									backgroundColor: [1, 1, 1]
-								}, {
-									start: 11,
-									bold: annotationStyle[0].bold,
-									italic: annotationStyle[0].italic,
-									fontColor: annotationStyle[0].fontColor,
-									backgroundColor: annotationStyle[0].backgroundColor
-								}, {
-									start: 35,
-									bold: annotationStyle[1].bold,
-									italic: annotationStyle[1].italic,
-									fontColor: annotationStyle[1].fontColor,
-									backgroundColor: annotationStyle[1].backgroundColor
-								}, {
-									start: 52,
-									bold: annotationStyle[2].bold,
-									italic: annotationStyle[2].italic,
-									fontColor: annotationStyle[2].fontColor,
-									backgroundColor: annotationStyle[2].backgroundColor
-								}, {
-									start: 68,
-									bold: annotationStyle[1].bold || annotationStyle[2].bold,
-									italic: annotationStyle[1].italic || annotationStyle[2].italic,
-									fontColor: alphaBlend(annotationStyle[1].fontColor, annotationStyle[2].fontColor, [0, 0, 0]),
-									backgroundColor: alphaBlend(annotationStyle[1].backgroundColor, annotationStyle[2].backgroundColor, [1, 1, 1])
-								}, {
-									start: 97,
-									bold: false,
-									italic: false,
-									fontColor: [0, 0, 0],
-									backgroundColor: [1, 1, 1]
-								}]
-							));
-					}
+					fs.writeFileSync(outputFilePath + '.js', inputSource = fs.readFileSync(id).toString());
+					fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
+					fs.writeFileSync(outputFilePath + '.html',
+						AST.generateAnnotatedHTML(inputSource, annotationData,
+							'/*\nLegend:\nUnknown Value Generated\nAmbiguous Context\nAmbiguous Block\nAmbiguous Block and Context\n*/\n', [{
+								start: 0,
+								bold: false,
+								italic: false,
+								fontColor: [0, 0, 0],
+								backgroundColor: [1, 1, 1]
+							}, {
+								start: 11,
+								bold: annotationStyle[0].bold,
+								italic: annotationStyle[0].italic,
+								fontColor: annotationStyle[0].fontColor,
+								backgroundColor: annotationStyle[0].backgroundColor
+							}, {
+								start: 35,
+								bold: annotationStyle[1].bold,
+								italic: annotationStyle[1].italic,
+								fontColor: annotationStyle[1].fontColor,
+								backgroundColor: annotationStyle[1].backgroundColor
+							}, {
+								start: 52,
+								bold: annotationStyle[2].bold,
+								italic: annotationStyle[2].italic,
+								fontColor: annotationStyle[2].fontColor,
+								backgroundColor: annotationStyle[2].backgroundColor
+							}, {
+								start: 68,
+								bold: annotationStyle[1].bold || annotationStyle[2].bold,
+								italic: annotationStyle[1].italic || annotationStyle[2].italic,
+								fontColor: alphaBlend(annotationStyle[1].fontColor, annotationStyle[2].fontColor, [0, 0, 0]),
+								backgroundColor: alphaBlend(annotationStyle[1].backgroundColor, annotationStyle[2].backgroundColor, [1, 1, 1])
+							}, {
+								start: 97,
+								bold: false,
+								italic: false,
+								fontColor: [0, 0, 0],
+								backgroundColor: [1, 1, 1]
+							}]
+						));
 				}
 			}
 		}
-	});
-};
+	}
+}
 
-/**
- * Initializes the plugin
- *
- * @method
- * @name module:plugins/AnalysisCoverageVisualizer#init
- */
-module.exports.prototype.init = function init() {};
-
-/**
-* Gets the results of the plugin
-*
-* @method
- * @name module:plugins/AnalysisCoverageVisualizer#getResults
-* @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
-*		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
-*		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
-*		method.
-*/
-module.exports.prototype.getResults = function getResults() {
-	return results;
-};
-
-/**
- * Generates the results template data to be rendered
- *
- * @method
- * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
- *		as one of the entries in the template
- * @param {String} baseDirectory The base directory of the code, useful for shortening paths
- * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
- *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
- *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
- *		information to dump into the template
- */
-module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile, baseDirectory) {
+function generateRenderData() {
 	var nodeList = [],
-		template = {},
+		baseDirectory = path.dirname(Runtime.getEntryPointFile()) + path.sep,
 		numUnknownCallbacks = results.unknownCallbacks.length,
 		unknownCallbacks,
 		visualizationFiles,
@@ -353,23 +298,91 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 		}
 	}
 
+	renderData = {
+		pluginDisplayName: this.displayName,
+		numUnknownNodes: results.numUnknownNodes === 1 ? '1 node is' : results.numUnknownNodes + ' nodes are',
+		numAbiguousBlockNodes: results.numAbiguousBlockNodes === 1 ? '1 node is' : results.numAbiguousBlockNodes + ' nodes are',
+		numAbiguousContextNodes: results.numAbiguousContextNodes === 1 ? '1 node is' : results.numAbiguousContextNodes + ' nodes are',
+		numTotalNodes: results.numTotalNodes === 1 ? '1 node' : results.numTotalNodes + ' nodes',
+		numUnknownCallbacks: numUnknownCallbacks,
+		nodeCoverage: {
+			nodeList: nodeList
+		},
+		unknownCallbacks: unknownCallbacks,
+		visualization: visualizationDataLocation,
+		files: visualizationEntries,
+		defaultLink: defaultLink
+	};
+}
+
+// ******** Plugin API Methods ********
+
+/**
+ * Creates an instance of the require provider plugin
+ *
+ * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
+ *
+ * @constructor
+ * @name module:plugins/AnalysisCoverageVisualizer
+ */
+module.exports = function (newOptions) {
+	options = newOptions || {};
+	results = {
+		numAbiguousBlockNodes: 0,
+		numAbiguousContextNodes: 0,
+		numUnknownNodes: 0,
+		numTotalNodes: 0,
+		unknownCallbacks: [],
+		details: {}
+	};
+	Runtime.on('unknownCallback', function(e) {
+		results.unknownCallbacks.push(e);
+	});
+	Runtime.on('projectProcessingEnd', function () {
+		generateResultsData();
+		generateRenderData();
+	});
+};
+
+/**
+ * Initializes the plugin
+ *
+ * @method
+ * @name module:plugins/AnalysisCoverageVisualizer#init
+ */
+module.exports.prototype.init = function init() {};
+
+/**
+* Gets the results of the plugin
+*
+* @method
+ * @name module:plugins/AnalysisCoverageVisualizer#getResults
+* @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
+*		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
+*		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
+*		method.
+*/
+module.exports.prototype.getResults = function getResults() {
+	return results;
+};
+
+/**
+ * Generates the results template data to be rendered
+ *
+ * @method
+ * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ *		as one of the entries in the template
+ * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
+ *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
+ *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
+ *		information to dump into the template
+ */
+module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile) {
+	var template = {};
+
 	template[entryFile] = {
 		template: path.join(__dirname, '..', 'templates', 'unknownAmbiguousVisualizerTemplate.html'),
-		data: {
-			pluginDisplayName: this.displayName,
-			numUnknownNodes: results.numUnknownNodes === 1 ? '1 node is' : results.numUnknownNodes + ' nodes are',
-			numAbiguousBlockNodes: results.numAbiguousBlockNodes === 1 ? '1 node is' : results.numAbiguousBlockNodes + ' nodes are',
-			numAbiguousContextNodes: results.numAbiguousContextNodes === 1 ? '1 node is' : results.numAbiguousContextNodes + ' nodes are',
-			numTotalNodes: results.numTotalNodes === 1 ? '1 node' : results.numTotalNodes + ' nodes',
-			numUnknownCallbacks: numUnknownCallbacks,
-			nodeCoverage: {
-				nodeList: nodeList
-			},
-			unknownCallbacks: unknownCallbacks,
-			visualization: visualizationDataLocation,
-			files: visualizationEntries,
-			defaultLink: defaultLink
-		}
+		data: renderData
 	};
 
 	return template;

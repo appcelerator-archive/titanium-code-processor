@@ -11,105 +11,38 @@
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 
-	results;
+	results,
+	renderData;
 
-// ******** Plugin API Methods ********
+// ******** Helper Methods ********
 
-/**
- * Creates an instance of the Titanium Usage Finder plugin
- *
- * @classdesc Captures and keeps track of Titanium APIs that are used.
- *
- * @constructor
- * @name module:plugins/TiAPIUsageFinder
- */
-module.exports = function () {
-	results = {
-		global: {},
-		file: {},
-		summary: ''
-	};
-	function processReference(e) {
-		var name = e.data.name,
-			filename = e.filename;
-		if (results.global[name]) {
-			results.global[name]++;
-		} else {
-			results.global[name] = 1;
+function generateResultsData() {
+	var summary,
+		numAPIs = Object.keys(results.global).length,
+		numInstances = 0,
+		api;
+	if (numAPIs) {
+		for (api in results.global) {
+			numInstances += results.global[api];
 		}
-
-		if (!results.file[filename]) {
-			results.file[filename] = {};
-		}
-		if (results.file[filename][name]) {
-			results.file[filename][name]++;
-		} else {
-			results.file[filename][name] = 1;
-		}
+		summary = (numAPIs === 1 ? '1 distinct API is' : numAPIs + ' distinct APIs are') + ' used ' +
+			(numInstances === 1 ? '1 time' : numInstances + ' times');
+	} else {
+		summary = 'No Titanium APIs are used';
 	}
+	results.summary = summary;
+}
 
-	Runtime.on('tiPropertyReferenced', processReference);
-	Runtime.on('tiPropertySet', processReference);
-
-	Runtime.on('projectProcessingEnd', function () {
-		var summary,
-			numAPIs = Object.keys(results.global).length,
-			numInstances = 0,
-			api;
-		if (numAPIs) {
-			for (api in results.global) {
-				numInstances += results.global[api];
-			}
-			summary = (numAPIs === 1 ? '1 distinct API is' : numAPIs + ' distinct APIs are') + ' used ' +
-				(numInstances === 1 ? '1 time' : numInstances + ' times');
-		} else {
-			summary = 'No Titanium APIs are used';
-		}
-		results.summary = summary;
-	});
-};
-
-/**
- * Initializes the plugin
- *
- * @method
- * @name module:plugins/TiAPIUsageFinder#init
- */
-module.exports.prototype.init = function init() {};
-
-/**
-* Gets the results of the plugin
-*
-* @method
-* @name module:plugins/TiAPIUsageFinder#getResults
-* @returns {Object} A dictionary of the Titanium APIs that were used along with a count of how many times they were used.
-*/
-module.exports.prototype.getResults = function getResults() {
-	return results;
-};
-
-/**
- * Generates the results template data to be rendered
- *
- * @method
- * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
- *		as one of the entries in the template
- * @param {String} baseDirectory The base directory of the code, useful for shortening paths
- * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
- *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
- *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
- *		information to dump into the template
- */
-module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile, baseDirectory) {
+function generateRenderData() {
 	var numAPIs = Object.keys(results.global).length,
+		baseDirectory = path.dirname(Runtime.getEntryPointFile()) + path.sep,
 		numInstances = 0,
 		api,
 		file,
 		fileEntry,
 		summary,
 		apiSummary,
-		apiByFile,
-		template = {};
+		apiByFile;
 
 	if (numAPIs) {
 		apiSummary = {
@@ -153,14 +86,95 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 		};
 	}
 
+	renderData = {
+		pluginDisplayName: this.displayName,
+		summary: summary,
+		apiSummary: apiSummary,
+		apiByFile: apiByFile
+	};
+}
+
+// ******** Plugin API Methods ********
+
+/**
+ * Creates an instance of the Titanium Usage Finder plugin
+ *
+ * @classdesc Captures and keeps track of Titanium APIs that are used.
+ *
+ * @constructor
+ * @name module:plugins/TiAPIUsageFinder
+ */
+module.exports = function () {
+	function processReference(e) {
+		var name = e.data.name,
+			filename = e.filename;
+		if (results.global[name]) {
+			results.global[name]++;
+		} else {
+			results.global[name] = 1;
+		}
+
+		if (!results.file[filename]) {
+			results.file[filename] = {};
+		}
+		if (results.file[filename][name]) {
+			results.file[filename][name]++;
+		} else {
+			results.file[filename][name] = 1;
+		}
+	}
+
+	results = {
+		global: {},
+		file: {},
+		summary: ''
+	};
+
+	Runtime.on('tiPropertyReferenced', processReference);
+	Runtime.on('tiPropertySet', processReference);
+
+	Runtime.on('projectProcessingEnd', function () {
+		generateResultsData();
+		generateRenderData();
+	});
+};
+
+/**
+ * Initializes the plugin
+ *
+ * @method
+ * @name module:plugins/TiAPIUsageFinder#init
+ */
+module.exports.prototype.init = function init() {};
+
+/**
+* Gets the results of the plugin
+*
+* @method
+* @name module:plugins/TiAPIUsageFinder#getResults
+* @returns {Object} A dictionary of the Titanium APIs that were used along with a count of how many times they were used.
+*/
+module.exports.prototype.getResults = function getResults() {
+	return results;
+};
+
+/**
+ * Generates the results template data to be rendered
+ *
+ * @method
+ * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ *		as one of the entries in the template
+ * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
+ *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
+ *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
+ *		information to dump into the template
+ */
+module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile) {
+	var template = {};
+
 	template[entryFile] = {
 		template: path.join(__dirname, '..', 'templates', 'tiApiUsageFinderTemplate.html'),
-		data: {
-			pluginDisplayName: this.displayName,
-			summary: summary,
-			apiSummary: apiSummary,
-			apiByFile: apiByFile
-		}
+		data: renderData
 	};
 
 	return template;

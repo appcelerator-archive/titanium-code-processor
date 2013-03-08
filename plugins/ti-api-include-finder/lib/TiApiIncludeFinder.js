@@ -9,101 +9,44 @@
 
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
-	results;
 
-// ******** Plugin API Methods ********
+	results,
+	renderData;
 
-/**
- * Creates an instance of the require provider plugin
- *
- * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
- *
- * @constructor
- * @name module:plugins/TiIncludeFinder
- */
-module.exports = function () {
-	results = {
-		resolved: [],
-		unresolved: [],
-		missing: []
-	};
-	Runtime.on('tiIncludeResolved', function(e) {
-		results.resolved.push(e);
-	});
-	Runtime.on('tiIncludeUnresolved', function(e) {
-		results.unresolved.push(e);
-	});
-	Runtime.on('tiIncludeMissing', function(e) {
-		results.missing.push(e);
-	});
-	Runtime.on('projectProcessingEnd', function () {
-		var resolved = results.resolved.length,
-			unresolved = results.unresolved.length,
-			missing = results.missing.length,
-			summary = [];
-		if (resolved) {
-			summary.push(resolved + ' file' + (resolved === 1 ? '' : 's') + ' resolved');
+// ******** Helper Methods ********
+
+function generateResultsData() {
+	var resolved = results.resolved.length,
+		unresolved = results.unresolved.length,
+		missing = results.missing.length,
+		summary = [];
+	if (resolved) {
+		summary.push(resolved + ' file' + (resolved === 1 ? '' : 's') + ' resolved');
+	}
+	if (unresolved) {
+		summary.push(unresolved + ' file' + (unresolved === 1 ? '' : 's') + ' not resolved');
+	}
+	if (missing) {
+		summary.push(missing + ' file' + (missing === 1 ? '' : 's') + ' missing');
+	}
+	if (summary.length) {
+		if (summary.length > 1) {
+			summary[summary.length - 1] = 'and ' + summary[summary.length - 1];
 		}
-		if (unresolved) {
-			summary.push(unresolved + ' file' + (unresolved === 1 ? '' : 's') + ' not resolved');
-		}
-		if (missing) {
-			summary.push(missing + ' file' + (missing === 1 ? '' : 's') + ' missing');
-		}
-		if (summary.length) {
-			if (summary.length > 1) {
-				summary[summary.length - 1] = 'and ' + summary[summary.length - 1];
-			}
-			results.summary = summary.join(', ');
-		} else {
-			results.summary = 'No files included';
-		}
-	});
-};
+		results.summary = summary.join(', ');
+	} else {
+		results.summary = 'No files included';
+	}
+}
 
-/**
- * Initializes the plugin
- *
- * @method
- * @name module:plugins/TiIncludeFinder#init
- */
-module.exports.prototype.init = function init() {};
-
-/**
-* Gets the results of the plugin
-*
-* @method
- * @name module:plugins/TiIncludeFinder#getResults
-* @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
-*		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
-*		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
-*		method.
-*/
-module.exports.prototype.getResults = function getResults() {
-	return results;
-};
-
-/**
- * Generates the results template data to be rendered
- *
- * @method
- * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
- *		as one of the entries in the template
- * @param {String} baseDirectory The base directory of the code, useful for shortening paths
- * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
- *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
- *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
- *		information to dump into the template
- */
-module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile, baseDirectory) {
-
+function generateRenderData() {
 	var numIncludesResolved = results.resolved.length,
 		numIncludesUnresolved = results.unresolved.length,
 		numIncludesMissing = results.missing.length,
 		resolved,
 		unresolved,
 		missing,
-		template = {};
+		baseDirectory = path.dirname(Runtime.getEntryPointFile()) + path.sep;
 
 	if (numIncludesResolved) {
 		resolved = {
@@ -144,17 +87,87 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 		});
 	}
 
+	renderData = {
+		pluginDisplayName: this.displayName,
+		numIncludesResolved: numIncludesResolved === 1 ? '1 file' : numIncludesResolved + ' files',
+		numIncludesUnresolved: numIncludesUnresolved === 1 ? '1 file' : numIncludesUnresolved + ' files',
+		numIncludesMissing: numIncludesMissing === 1 ? '1 file' : numIncludesMissing + ' files',
+		resolved: resolved,
+		unresolved: unresolved,
+		missing: missing
+	};
+}
+
+// ******** Plugin API Methods ********
+
+/**
+ * Creates an instance of the require provider plugin
+ *
+ * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
+ *
+ * @constructor
+ * @name module:plugins/TiIncludeFinder
+ */
+module.exports = function () {
+	results = {
+		resolved: [],
+		unresolved: [],
+		missing: []
+	};
+	Runtime.on('tiIncludeResolved', function(e) {
+		results.resolved.push(e);
+	});
+	Runtime.on('tiIncludeUnresolved', function(e) {
+		results.unresolved.push(e);
+	});
+	Runtime.on('tiIncludeMissing', function(e) {
+		results.missing.push(e);
+	});
+	Runtime.on('projectProcessingEnd', function () {
+		generateResultsData();
+		generateRenderData();
+	});
+};
+
+/**
+ * Initializes the plugin
+ *
+ * @method
+ * @name module:plugins/TiIncludeFinder#init
+ */
+module.exports.prototype.init = function init() {};
+
+/**
+* Gets the results of the plugin
+*
+* @method
+ * @name module:plugins/TiIncludeFinder#getResults
+* @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
+*		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
+*		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
+*		method.
+*/
+module.exports.prototype.getResults = function getResults() {
+	return results;
+};
+
+/**
+ * Generates the results template data to be rendered
+ *
+ * @method
+ * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ *		as one of the entries in the template
+ * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
+ *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
+ *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
+ *		information to dump into the template
+ */
+module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile) {
+	var template = {};
+
 	template[entryFile] = {
 		template: path.join(__dirname, '..', 'templates', 'tiApiIncludeFinderTemplate.html'),
-		data: {
-			pluginDisplayName: this.displayName,
-			numIncludesResolved: numIncludesResolved === 1 ? '1 file' : numIncludesResolved + ' files',
-			numIncludesUnresolved: numIncludesUnresolved === 1 ? '1 file' : numIncludesUnresolved + ' files',
-			numIncludesMissing: numIncludesMissing === 1 ? '1 file' : numIncludesMissing + ' files',
-			resolved: resolved,
-			unresolved: unresolved,
-			missing: missing
-		}
+		data: renderData
 	};
 
 	return template;
