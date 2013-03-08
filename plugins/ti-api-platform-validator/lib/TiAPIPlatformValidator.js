@@ -171,6 +171,15 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
  * @param {Function} arrayGen Log-friendly table generator
  * @return {String} The rendered data
  */
-module.exports.prototype.renderLogOutput = function () {
-	return 'Rendered output for ' + this.displayName;
+module.exports.prototype.renderLogOutput = function (arrayGen) {
+	var resultsToLog;
+
+	if (renderData.invalidAPIs) {
+		resultsToLog = renderData.numAPIs + ' used ' + renderData.numInstances + '\n\nInvalid Platform-Specific API References\n';
+		resultsToLog += arrayGen(['API', 'Num References'], renderData.invalidAPIs.list, ['api', 'numReferences']);
+	} else {
+		resultsToLog = 'No platform specific APIs are used incorrectly in the project';
+	}
+
+	return resultsToLog;
 };

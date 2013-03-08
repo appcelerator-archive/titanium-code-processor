@@ -186,6 +186,26 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
  * @param {Function} arrayGen Log-friendly table generator
  * @return {String} The rendered data
  */
-module.exports.prototype.renderLogOutput = function () {
-	return 'Rendered output for ' + this.displayName;
+module.exports.prototype.renderLogOutput = function (arrayGen) {
+	var resultsToLog,
+		i, len;
+
+	if (renderData.summary) {
+		resultsToLog = renderData.summary.numAPIs + ' used ' + renderData.summary.numInstances;
+	} else {
+		resultsToLog = 'No Titanium APIs are used in the project';
+	}
+	if (renderData.apiSummary) {
+		resultsToLog += '\n\nAPIs Used\n';
+		resultsToLog += arrayGen(['API', 'Num References'], renderData.apiSummary.list, ['api', 'numReferences']);
+	}
+	if (renderData.apiByFile) {
+		resultsToLog += '\n\nAPIs Used by File';
+		for (i = 0, len = renderData.apiByFile.list.length; i < len; i++) {
+			resultsToLog += '\n\n' + renderData.apiByFile.list[i].filename + '\n';
+			resultsToLog += arrayGen(['API', 'Num References'], renderData.apiByFile.list[i].list, ['api', 'numReferences']);
+		}
+	}
+
+	return resultsToLog;
 };
