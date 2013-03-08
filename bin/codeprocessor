@@ -227,8 +227,6 @@ function subprocess() {
 
 function analyze() {
 	processAnalayzeInput(function (entryPoint, options, plugins, logger) {
-
-		// Make sure that the project exists
 		if (!existsSync(entryPoint)) {
 			console.error('project root "' + entryPoint + '" does not exist.\n');
 			process.exit(1);
@@ -289,7 +287,7 @@ function processAnalayzeInput(callback) {
 			})
 			.option('suppress-results', {
 				abbr: 's',
-				help: 'Don\'t print the results to the console',
+				help: 'Don\'t log the results',
 				flag: true
 			})
 			.option('results-dir', {
@@ -499,7 +497,7 @@ function processAnalayzeInput(callback) {
 		// Store the results dir
 		options.resultsPath = parsedOptions['results-dir'];
 		options.resultsTheme = parsedOptions['results-theme'];
-		options.logResults = !parsedOptions['suppress-results'];
+		options.suppressResults = parsedOptions['suppress-results'];
 
 		// Check if we are processing a project or a single file
 		if (/\.js$/.test(projectRoot)) {
