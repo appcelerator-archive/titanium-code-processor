@@ -11,10 +11,7 @@
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 
-	results = {
-		summary: '',
-		deprecatedAPIs: {}
-	};
+	results;
 
 // ******** Plugin API Methods ********
 
@@ -27,7 +24,11 @@ var path = require('path'),
  * @name module:plugins/TiAPIDeprecationFinder
  */
 module.exports = function () {
-	Runtime.on('tiPropertyReferenced', function(e) {
+	results = {
+		summary: '',
+		deprecatedAPIs: {}
+	};
+	Runtime.on('tiPropertyReferenced', function (e) {
 		var name = e.data.name;
 
 		if (e.data.node.deprecated) {
@@ -42,6 +43,16 @@ module.exports = function () {
 				results.deprecatedAPIs[name] = 1;
 			}
 		}
+	});
+	Runtime.on('projectProcessingEnd', function () {
+		var summary,
+			numDeprecatedAPIs = Object.keys(results.deprecatedAPIs).length;
+		if (numDeprecatedAPIs) {
+			summary = (numDeprecatedAPIs === 1 ? '1 deprecated API is' : numDeprecatedAPIs + ' deprecated APIs are') + ' used';
+		} else {
+			summary = 'No deprecated APIs are used';
+		}
+		results.summary = summary;
 	});
 };
 
@@ -61,14 +72,6 @@ module.exports.prototype.init = function init() {};
 * @returns {Object} A dictionary of the deprecated Titanium APIs that were used along with a count of how many times they were used.
 */
 module.exports.prototype.getResults = function getResults() {
-	var summary,
-		numDeprecatedAPIs = Object.keys(results.deprecatedAPIs).length;
-	if (numDeprecatedAPIs) {
-		summary = (numDeprecatedAPIs === 1 ? '1 deprecated API is' : numDeprecatedAPIs + ' deprecated APIs are') + ' used';
-	} else {
-		summary = 'No deprecated APIs are used';
-	}
-	results.summary = summary;
 	return results;
 };
 

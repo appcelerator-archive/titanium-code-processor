@@ -9,11 +9,7 @@
 
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
-	results = {
-		resolved: [],
-		unresolved: [],
-		missing: []
-	};
+	results;
 
 // ******** Plugin API Methods ********
 
@@ -26,6 +22,11 @@ var path = require('path'),
  * @name module:plugins/TiIncludeFinder
  */
 module.exports = function () {
+	results = {
+		resolved: [],
+		unresolved: [],
+		missing: []
+	};
 	Runtime.on('tiIncludeResolved', function(e) {
 		results.resolved.push(e);
 	});
@@ -34,6 +35,29 @@ module.exports = function () {
 	});
 	Runtime.on('tiIncludeMissing', function(e) {
 		results.missing.push(e);
+	});
+	Runtime.on('projectProcessingEnd', function () {
+		var resolved = results.resolved.length,
+			unresolved = results.unresolved.length,
+			missing = results.missing.length,
+			summary = [];
+		if (resolved) {
+			summary.push(resolved + ' file' + (resolved === 1 ? '' : 's') + ' resolved');
+		}
+		if (unresolved) {
+			summary.push(unresolved + ' file' + (unresolved === 1 ? '' : 's') + ' not resolved');
+		}
+		if (missing) {
+			summary.push(missing + ' file' + (missing === 1 ? '' : 's') + ' missing');
+		}
+		if (summary.length) {
+			if (summary.length > 1) {
+				summary[summary.length - 1] = 'and ' + summary[summary.length - 1];
+			}
+			results.summary = summary.join(', ');
+		} else {
+			results.summary = 'No files included';
+		}
 	});
 };
 
@@ -56,27 +80,7 @@ module.exports.prototype.init = function init() {};
 *		method.
 */
 module.exports.prototype.getResults = function getResults() {
-	var resolved = results.resolved.length,
-		unresolved = results.unresolved.length,
-		missing = results.missing.length,
-		summary = [];
-	if (resolved) {
-		summary.push(resolved + ' file' + (resolved === 1 ? '' : 's') + ' resolved');
-	}
-	if (unresolved) {
-		summary.push(unresolved + ' file' + (unresolved === 1 ? '' : 's') + ' not resolved');
-	}
-	if (missing) {
-		summary.push(missing + ' file' + (missing === 1 ? '' : 's') + ' missing');
-	}
-	if (summary.length) {
-		if (summary.length > 1) {
-			summary[summary.length - 1] = 'and ' + summary[summary.length - 1];
-		}
-		results.summary = summary.join(', ');
-	} else {
-		results.summary = 'No files included';
-	}return results;
+	return results;
 };
 
 /**

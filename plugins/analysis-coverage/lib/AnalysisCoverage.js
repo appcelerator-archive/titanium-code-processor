@@ -16,17 +16,7 @@ var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	AST = require(path.join(global.titaniumCodeProcessorLibDir, 'AST')),
 	options,
-	results = {
-		summary: '',
-		details: {},
-		filesSkipped: [],
-		numTotalFiles: 0,
-		numFilesVisited: 0,
-		numFilesSkipped: 0,
-		numNodesVisited: 0,
-		numNodesSkipped: 0,
-		numTotalNodes: 0
-	};
+	results;
 
 // ******** Plugin API Methods ********
 
@@ -40,6 +30,220 @@ var path = require('path'),
  */
 module.exports = function (newOptions) {
 	options = newOptions || {};
+	results = {
+		summary: '',
+		details: {},
+		filesSkipped: [],
+		numTotalFiles: 0,
+		numFilesVisited: 0,
+		numFilesSkipped: 0,
+		numNodesVisited: 0,
+		numNodesSkipped: 0,
+		numTotalNodes: 0
+	};
+	Runtime.on('projectProcessingEnd', function () {
+		var astSet = Runtime.getASTSet(),
+			id,
+			result,
+			outputDir,
+			inputDir = path.dirname(Runtime.getEntryPointFile()),
+			inputSource,
+			styles,
+			outputFilePath,
+			annotationStyle,
+			annotationData;
+
+		function nodeVisitedCallback (node) {
+			if (node._visited) {
+				result.numNodesVisited++;
+				results.numNodesVisited++;
+			} else if (node._skipped) {
+				result.numNodesSkipped++;
+				results.numNodesSkipped++;
+			} else {
+				node._unvisited = true;
+			}
+			result.numTotalNodes++;
+			results.numTotalNodes++;
+		}
+
+		// Analyze the files
+		results.filesSkipped = Runtime.getUnprocessedFilesList();
+		results.filesSkipped.forEach(function(file) {
+			AST.parse(file); // Parse the file to add it to the list of unprocessed files remaining
+		});
+		results.numFilesVisited = Runtime.getProcessedFilesList().length;
+		results.numFilesSkipped = results.filesSkipped.length;
+		results.numTotalFiles = results.filesSkipped.length + results.numFilesVisited;
+
+		// Analyze the ASTs
+		for (id in astSet) {
+			result = results.details[id] = {
+				numNodesVisited: 0,
+				numNodesSkipped: 0,
+				numTotalNodes: 0
+			};
+			AST.walk(astSet[id], [
+				{
+					callback: nodeVisitedCallback
+				}
+			]);
+		}
+
+		// Create the summary report
+		results.summary = (100 * (results.numNodesVisited + results.numNodesSkipped) / results.numTotalNodes).toFixed(1) +
+			'% of the project\'s source code was analyzed';
+
+		if (options.visualization) {
+
+			// Calculate the output directory
+			results.visualizationDataLocation = outputDir = options.visualization.outputDirectory;
+			if (outputDir) {
+				if (options.visualization.timestampOutputDirectory) {
+					outputDir += '.' + (new Date()).toISOString();
+				}
+				if (existsSync(outputDir)) {
+					wrench.rmdirSyncRecursive(outputDir);
+				}
+			}
+
+			// Calculate the styles
+			styles = options.visualization.styles;
+			if (styles) {
+				annotationStyle = [{
+						property: '_visited',
+						value: true,
+						local: true,
+						bold: styles.visited.bold,
+						italic: styles.visited.italic,
+						fontColor: [
+							styles.visited.fontColor.r,
+							styles.visited.fontColor.g,
+							styles.visited.fontColor.b
+							],
+						backgroundColor: [
+							styles.visited.backgroundColor.r,
+							styles.visited.backgroundColor.g,
+							styles.visited.backgroundColor.b
+						]
+					},{
+						property: '_skipped',
+						value: true,
+						local: true,
+						bold: styles.skipped.bold,
+						italic: styles.skipped.italic,
+						fontColor: [
+							styles.skipped.fontColor.r,
+							styles.skipped.fontColor.g,
+							styles.skipped.fontColor.b
+							],
+						backgroundColor: [
+							styles.skipped.backgroundColor.r,
+							styles.skipped.backgroundColor.g,
+							styles.skipped.backgroundColor.b
+						]
+					},{
+						property: '_unvisited',
+						value: true,
+						local: true,
+						bold: styles.unvisited.bold,
+						italic: styles.unvisited.italic,
+						fontColor: [
+							styles.unvisited.fontColor.r,
+							styles.unvisited.fontColor.g,
+							styles.unvisited.fontColor.b
+							],
+						backgroundColor: [
+							styles.unvisited.backgroundColor.r,
+							styles.unvisited.backgroundColor.g,
+							styles.unvisited.backgroundColor.b
+						]
+					}
+				];
+			} else {
+				annotationStyle = [{
+						property: '_visited',
+						value: true,
+						local: true,
+						bold: false,
+						italic: false,
+						fontColor: [0, 0, 0],
+						backgroundColor: [0.5, 1, 0.5]
+					},{
+						property: '_skipped',
+						value: true,
+						local: true,
+						bold: false,
+						italic: false,
+						fontColor: [0, 0, 0],
+						backgroundColor: [0.5, 0.5, 1]
+					},{
+						property: '_unvisited',
+						value: true,
+						local: true,
+						bold: false,
+						italic: false,
+						fontColor: [0, 0, 0],
+						backgroundColor: [1, 0.5, 0.5]
+					}
+				];
+			}
+
+			// Annotate the data
+			results.annotationData = {};
+			for (id in astSet) {
+				if (existsSync(id)) {
+
+					// Calculate the annotation data
+					results.annotationData[id] = annotationData = AST.generateAnnotations(astSet[id], annotationStyle);
+
+					// Write the results to file, if requested
+					if (outputDir) {
+						outputFilePath = path.join(outputDir, path.relative(inputDir, id));
+						if (!existsSync(path.dirname(outputFilePath))) {
+							wrench.mkdirSyncRecursive(path.dirname(outputFilePath));
+						}
+						fs.writeFileSync(outputFilePath + '.js', inputSource = fs.readFileSync(id).toString());
+						fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
+						fs.writeFileSync(outputFilePath + '.html',
+							AST.generateAnnotatedHTML(inputSource, annotationData,
+								'/*\nLegend:\nVisited Node\nSkipped Node\nUnvisited Node\n*/\n', [{
+									start: 0,
+									bold: false,
+									italic: false,
+									fontColor: [0, 0, 0],
+									backgroundColor: [1, 1, 1]
+								}, {
+									start: 11,
+									bold: annotationStyle[0].bold,
+									italic: annotationStyle[0].italic,
+									fontColor: annotationStyle[0].fontColor,
+									backgroundColor: annotationStyle[0].backgroundColor
+								}, {
+									start: 24,
+									bold: annotationStyle[1].bold,
+									italic: annotationStyle[1].italic,
+									fontColor: annotationStyle[1].fontColor,
+									backgroundColor: annotationStyle[1].backgroundColor
+								}, {
+									start: 37,
+									bold: annotationStyle[2].bold,
+									italic: annotationStyle[2].italic,
+									fontColor: annotationStyle[2].fontColor,
+									backgroundColor: annotationStyle[2].backgroundColor
+								}, {
+									start: 51,
+									bold: false,
+									italic: false,
+									fontColor: [0, 0, 0],
+									backgroundColor: [1, 1, 1]
+								}]
+							));
+					}
+				}
+			}
+		}
+	});
 };
 
 /**
@@ -61,207 +265,6 @@ module.exports.prototype.init = function init() {};
  *		method.
  */
 module.exports.prototype.getResults = function getResults() {
-	var astSet = Runtime.getASTSet(),
-		id,
-		result,
-		outputDir,
-		inputDir = path.dirname(Runtime.getEntryPointFile()),
-		inputSource,
-		styles,
-		outputFilePath,
-		annotationStyle,
-		annotationData;
-
-	function nodeVisitedCallback (node) {
-		if (node._visited) {
-			result.numNodesVisited++;
-			results.numNodesVisited++;
-		} else if (node._skipped) {
-			result.numNodesSkipped++;
-			results.numNodesSkipped++;
-		} else {
-			node._unvisited = true;
-		}
-		result.numTotalNodes++;
-		results.numTotalNodes++;
-	}
-
-	// Analyze the files
-	results.filesSkipped = Runtime.getUnprocessedFilesList();
-	results.filesSkipped.forEach(function(file) {
-		AST.parse(file); // Parse the file to add it to the list of unprocessed files remaining
-	});
-	results.numFilesVisited = Runtime.getProcessedFilesList().length;
-	results.numFilesSkipped = results.filesSkipped.length;
-	results.numTotalFiles = results.filesSkipped.length + results.numFilesVisited;
-
-	// Analyze the ASTs
-	for (id in astSet) {
-		result = results.details[id] = {
-			numNodesVisited: 0,
-			numNodesSkipped: 0,
-			numTotalNodes: 0
-		};
-		AST.walk(astSet[id], [
-			{
-				callback: nodeVisitedCallback
-			}
-		]);
-	}
-
-	// Create the summary report
-	results.summary = (100 * (results.numNodesVisited + results.numNodesSkipped) / results.numTotalNodes).toFixed(1) +
-		'% of the project\'s source code was analyzed';
-
-	if (options.visualization) {
-
-		// Calculate the output directory
-		results.visualizationDataLocation = outputDir = options.visualization.outputDirectory;
-		if (outputDir) {
-			if (options.visualization.timestampOutputDirectory) {
-				outputDir += '.' + (new Date()).toISOString();
-			}
-			if (existsSync(outputDir)) {
-				wrench.rmdirSyncRecursive(outputDir);
-			}
-		}
-
-		// Calculate the styles
-		styles = options.visualization.styles;
-		if (styles) {
-			annotationStyle = [{
-					property: '_visited',
-					value: true,
-					local: true,
-					bold: styles.visited.bold,
-					italic: styles.visited.italic,
-					fontColor: [
-						styles.visited.fontColor.r,
-						styles.visited.fontColor.g,
-						styles.visited.fontColor.b
-						],
-					backgroundColor: [
-						styles.visited.backgroundColor.r,
-						styles.visited.backgroundColor.g,
-						styles.visited.backgroundColor.b
-					]
-				},{
-					property: '_skipped',
-					value: true,
-					local: true,
-					bold: styles.skipped.bold,
-					italic: styles.skipped.italic,
-					fontColor: [
-						styles.skipped.fontColor.r,
-						styles.skipped.fontColor.g,
-						styles.skipped.fontColor.b
-						],
-					backgroundColor: [
-						styles.skipped.backgroundColor.r,
-						styles.skipped.backgroundColor.g,
-						styles.skipped.backgroundColor.b
-					]
-				},{
-					property: '_unvisited',
-					value: true,
-					local: true,
-					bold: styles.unvisited.bold,
-					italic: styles.unvisited.italic,
-					fontColor: [
-						styles.unvisited.fontColor.r,
-						styles.unvisited.fontColor.g,
-						styles.unvisited.fontColor.b
-						],
-					backgroundColor: [
-						styles.unvisited.backgroundColor.r,
-						styles.unvisited.backgroundColor.g,
-						styles.unvisited.backgroundColor.b
-					]
-				}
-			];
-		} else {
-			annotationStyle = [{
-					property: '_visited',
-					value: true,
-					local: true,
-					bold: false,
-					italic: false,
-					fontColor: [0, 0, 0],
-					backgroundColor: [0.5, 1, 0.5]
-				},{
-					property: '_skipped',
-					value: true,
-					local: true,
-					bold: false,
-					italic: false,
-					fontColor: [0, 0, 0],
-					backgroundColor: [0.5, 0.5, 1]
-				},{
-					property: '_unvisited',
-					value: true,
-					local: true,
-					bold: false,
-					italic: false,
-					fontColor: [0, 0, 0],
-					backgroundColor: [1, 0.5, 0.5]
-				}
-			];
-		}
-
-		// Annotate the data
-		results.annotationData = {};
-		for (id in astSet) {
-			if (existsSync(id)) {
-
-				// Calculate the annotation data
-				results.annotationData[id] = annotationData = AST.generateAnnotations(astSet[id], annotationStyle);
-
-				// Write the results to file, if requested
-				if (outputDir) {
-					outputFilePath = path.join(outputDir, path.relative(inputDir, id));
-					if (!existsSync(path.dirname(outputFilePath))) {
-						wrench.mkdirSyncRecursive(path.dirname(outputFilePath));
-					}
-					fs.writeFileSync(outputFilePath + '.js', inputSource = fs.readFileSync(id).toString());
-					fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
-					fs.writeFileSync(outputFilePath + '.html',
-						AST.generateAnnotatedHTML(inputSource, annotationData,
-							'/*\nLegend:\nVisited Node\nSkipped Node\nUnvisited Node\n*/\n', [{
-								start: 0,
-								bold: false,
-								italic: false,
-								fontColor: [0, 0, 0],
-								backgroundColor: [1, 1, 1]
-							}, {
-								start: 11,
-								bold: annotationStyle[0].bold,
-								italic: annotationStyle[0].italic,
-								fontColor: annotationStyle[0].fontColor,
-								backgroundColor: annotationStyle[0].backgroundColor
-							}, {
-								start: 24,
-								bold: annotationStyle[1].bold,
-								italic: annotationStyle[1].italic,
-								fontColor: annotationStyle[1].fontColor,
-								backgroundColor: annotationStyle[1].backgroundColor
-							}, {
-								start: 37,
-								bold: annotationStyle[2].bold,
-								italic: annotationStyle[2].italic,
-								fontColor: annotationStyle[2].fontColor,
-								backgroundColor: annotationStyle[2].backgroundColor
-							}, {
-								start: 51,
-								bold: false,
-								italic: false,
-								fontColor: [0, 0, 0],
-								backgroundColor: [1, 1, 1]
-							}]
-						));
-				}
-			}
-		}
-	}
 	return results;
 };
 

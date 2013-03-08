@@ -11,10 +11,7 @@
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 
-	results = {
-		summary: '',
-		invalidAPIs: {}
-	},
+	results,
 
 	platformList = ['android', 'mobileweb', 'iphone', 'ipad', 'blackberry'];
 
@@ -31,7 +28,10 @@ var path = require('path'),
 module.exports = function (options) {
 
 	var platform = options && options.platform;
-
+	results = {
+		summary: '',
+		invalidAPIs: {}
+	};
 	if (!platform) {
 		console.error('ti-api-platform-validator plugin requires the "platform" option');
 		process.exit(1);
@@ -67,6 +67,16 @@ module.exports = function (options) {
 			}
 		}
 	});
+	Runtime.on('projectProcessingEnd', function () {
+		var summary,
+			numInvalidAPIs = Object.keys(results.invalidAPIs).length;
+		if (numInvalidAPIs) {
+			summary = (numInvalidAPIs === 1 ? '1 platform API is' : numInvalidAPIs + ' platform APIs are') + ' used incorrectly';
+		} else {
+			summary = 'No platform specific APIs are used incorrectly';
+		}
+		results.summary = summary;
+	});
 };
 
 /**
@@ -85,14 +95,6 @@ module.exports.prototype.init = function init() {};
 * @returns {Object} A dictionary of the Titanium APIs that were used along with a count of how many times they were used.
 */
 module.exports.prototype.getResults = function getResults() {
-	var summary,
-		numInvalidAPIs = Object.keys(results.invalidAPIs).length;
-	if (numInvalidAPIs) {
-		summary = (numInvalidAPIs === 1 ? '1 platform API is' : numInvalidAPIs + ' platform APIs are') + ' used incorrectly';
-	} else {
-		summary = 'No platform specific APIs are used incorrectly';
-	}
-	results.summary = summary;
 	return results;
 };
 

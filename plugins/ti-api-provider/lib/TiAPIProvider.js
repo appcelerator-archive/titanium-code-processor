@@ -19,8 +19,7 @@ var fs = require('fs'),
 	jsca,
 	platform,
 	values,
-
-	api = { children: {} },
+	api,
 
 	platformList = ['android', 'mobileweb', 'iphone', 'ipad', 'blackberry'],
 
@@ -45,6 +44,9 @@ module.exports = function(options) {
 	jsca = options && options.sdkPath && path.join(options.sdkPath, 'api.jsca');
 	platform = options && options.platform;
 	values = options && options.values || {};
+	api = {
+		children: {}
+	};
 };
 
 /**

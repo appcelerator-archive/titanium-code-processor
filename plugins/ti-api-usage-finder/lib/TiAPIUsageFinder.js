@@ -11,11 +11,7 @@
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 
-	results = {
-		global: {},
-		file: {},
-		summary: ''
-	};
+	results;
 
 // ******** Plugin API Methods ********
 
@@ -28,7 +24,11 @@ var path = require('path'),
  * @name module:plugins/TiAPIUsageFinder
  */
 module.exports = function () {
-
+	results = {
+		global: {},
+		file: {},
+		summary: ''
+	};
 	function processReference(e) {
 		var name = e.data.name,
 			filename = e.filename;
@@ -50,6 +50,23 @@ module.exports = function () {
 
 	Runtime.on('tiPropertyReferenced', processReference);
 	Runtime.on('tiPropertySet', processReference);
+
+	Runtime.on('projectProcessingEnd', function () {
+		var summary,
+			numAPIs = Object.keys(results.global).length,
+			numInstances = 0,
+			api;
+		if (numAPIs) {
+			for (api in results.global) {
+				numInstances += results.global[api];
+			}
+			summary = (numAPIs === 1 ? '1 distinct API is' : numAPIs + ' distinct APIs are') + ' used ' +
+				(numInstances === 1 ? '1 time' : numInstances + ' times');
+		} else {
+			summary = 'No Titanium APIs are used';
+		}
+		results.summary = summary;
+	});
 };
 
 /**
@@ -68,20 +85,6 @@ module.exports.prototype.init = function init() {};
 * @returns {Object} A dictionary of the Titanium APIs that were used along with a count of how many times they were used.
 */
 module.exports.prototype.getResults = function getResults() {
-	var summary,
-		numAPIs = Object.keys(results.global).length,
-		numInstances = 0,
-		api;
-	if (numAPIs) {
-		for (api in results.global) {
-			numInstances += results.global[api];
-		}
-		summary = (numAPIs === 1 ? '1 distinct API is' : numAPIs + ' distinct APIs are') + ' used ' +
-			(numInstances === 1 ? '1 time' : numInstances + ' times');
-	} else {
-		summary = 'No Titanium APIs are used';
-	}
-	results.summary = summary;
 	return results;
 };
 

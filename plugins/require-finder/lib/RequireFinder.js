@@ -9,12 +9,7 @@
 
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
-	results = {
-		resolved: [],
-		unresolved: [],
-		missing: [],
-		skipped: []
-	};
+	results;
 
 // ******** Plugin API Methods ********
 
@@ -27,6 +22,12 @@ var path = require('path'),
  * @name module:plugins/RequireFinder
  */
 module.exports = function () {
+	results = {
+		resolved: [],
+		unresolved: [],
+		missing: [],
+		skipped: []
+	};
 	Runtime.on('requireUnresolved', function(e) {
 		results.unresolved.push(e);
 	});
@@ -38,6 +39,33 @@ module.exports = function () {
 	});
 	Runtime.on('requireSkipped', function(e) {
 		results.skipped.push(e);
+	});
+	Runtime.on('projectProcessingEnd', function () {
+		var resolved = results.resolved.length,
+			unresolved = results.unresolved.length,
+			missing = results.missing.length,
+			skipped = results.skipped.length,
+			summary = [];
+		if (resolved) {
+			summary.push(resolved + ' module' + (resolved === 1 ? '' : 's') + ' resolved');
+		}
+		if (unresolved) {
+			summary.push(unresolved + ' module' + (unresolved === 1 ? '' : 's') + ' not resolved');
+		}
+		if (missing) {
+			summary.push(missing + ' module' + (missing === 1 ? '' : 's') + ' missing');
+		}
+		if (skipped) {
+			summary.push(skipped + ' native module' + (skipped === 1 ? '' : 's') + ' skipped');
+		}
+		if (summary.length) {
+			if (summary.length > 1) {
+				summary[summary.length - 1] = 'and ' + summary[summary.length - 1];
+			}
+			results.summary = summary.join(', ');
+		} else {
+			results.summary = 'No modules required';
+		}
 	});
 };
 
@@ -60,31 +88,6 @@ module.exports.prototype.init = function init() {};
 *		method.
 */
 module.exports.prototype.getResults = function getResults() {
-	var resolved = results.resolved.length,
-		unresolved = results.unresolved.length,
-		missing = results.missing.length,
-		skipped = results.skipped.length,
-		summary = [];
-	if (resolved) {
-		summary.push(resolved + ' module' + (resolved === 1 ? '' : 's') + ' resolved');
-	}
-	if (unresolved) {
-		summary.push(unresolved + ' module' + (unresolved === 1 ? '' : 's') + ' not resolved');
-	}
-	if (missing) {
-		summary.push(missing + ' module' + (missing === 1 ? '' : 's') + ' missing');
-	}
-	if (skipped) {
-		summary.push(skipped + ' native module' + (skipped === 1 ? '' : 's') + ' skipped');
-	}
-	if (summary.length) {
-		if (summary.length > 1) {
-			summary[summary.length - 1] = 'and ' + summary[summary.length - 1];
-		}
-		results.summary = summary.join(', ');
-	} else {
-		results.summary = 'No modules required';
-	}
 	return results;
 };
 
