@@ -179,6 +179,21 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
  * @param {Function} arrayGen Log-friendly table generator
  * @return {String} The rendered data
  */
-module.exports.prototype.renderLogOutput = function () {
-	return 'Rendered output for ' + this.displayName;
+module.exports.prototype.renderLogOutput = function (arrayGen) {
+	var resultsToLog = renderData.numIncludesResolved + ' resolved\n' +
+		renderData.numIncludesUnresolved + ' unresolved\n' +
+		renderData.numIncludesMissing + ' missing\n';
+	if (renderData.resolved) {
+		resultsToLog += '\n\nResolved Files\n';
+		resultsToLog += arrayGen(['File', 'Line', 'Name', 'Resolved Path'], renderData.resolved.list, ['filename', 'line', 'name', 'path']);
+	}
+	if (renderData.unresolved) {
+		resultsToLog += '\n\nUnresolved Files\n';
+		resultsToLog += arrayGen(['File', 'Line'], renderData.unresolved.list, ['filename', 'line']);
+	}
+	if (renderData.missing) {
+		resultsToLog += '\n\nMissing Files\n';
+		resultsToLog += arrayGen(['File', 'Line', 'Name'], renderData.missing.list, ['filename', 'line', 'name']);
+	}
+	return resultsToLog;
 };

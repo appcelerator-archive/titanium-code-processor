@@ -81,7 +81,7 @@ function generateResultsData() {
 	}
 
 	// Create the summary report
-	results.summary = (100 * results.numUnknownNodes / results.numTotalNodes).toFixed(1) +
+	summary = (100 * results.numUnknownNodes / results.numTotalNodes).toFixed(1) +
 		'% of the project\'s source code is not knowable at compile time';
 	if (numUnknownCallbacks) {
 		summary += (numUnknownCallbacks === 1 ? '\n1 unknown callback was' : '\n' + numUnknownCallbacks + ' unknown callbacks were') + ' detected';
