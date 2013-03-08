@@ -2,13 +2,13 @@
 <html>
 <head>
 <title>{{pluginDisplayName}}</title>
-<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
 </head>
 <body>
-<div class="navbar navbar-inverse">
+<div class="navbar">
 	<div class="navbar-inner">
 		<ul class="nav">
-			<li><a href="index.html"><i class="icon-home"></i> Summary</a></li>
+			<li><a href="index.html">Summary</a></li>
 			{{#header}}
 			<li class="divider-vertical"></li>
 			<li{{#isHighlighted}} class="active"{{/isHighlighted}}><a href="{{file}}">{{name}}</a></li>

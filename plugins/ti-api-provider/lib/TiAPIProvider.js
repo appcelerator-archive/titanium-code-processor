@@ -22,7 +22,7 @@ var fs = require('fs'),
 
 	api = { children: {} },
 
-	platformList = ['android', 'mobileweb', 'iphone', 'ios', 'ipad'],
+	platformList = ['android', 'mobileweb', 'iphone', 'ipad', 'blackberry'],
 
 	methodOverrides = [
 		require('./method-overrides/TiInclude.js'),
@@ -45,7 +45,17 @@ module.exports = function(options) {
 	jsca = options && options.sdkPath && path.join(options.sdkPath, 'api.jsca');
 	platform = options && options.platform;
 	values = options && options.values || {};
+};
 
+/**
+ * Initializes the plugin
+ *
+ * @method
+ * @name module:plugins/TiAPIProcessor#init
+ */
+module.exports.prototype.init = function init() {
+
+	// Validate the options
 	if (!platform) {
 		console.error(this.name + ' plugin requires the "platform" option');
 		process.exit(1);
@@ -63,15 +73,6 @@ module.exports = function(options) {
 		process.exit(1);
 	}
 	jsca = JSON.parse(fs.readFileSync(jsca));
-};
-
-/**
- * Initializes the plugin
- *
- * @method
- * @name module:plugins/TiAPIProcessor#init
- */
-module.exports.prototype.init = function init() {
 
 	// Iterate through the json object and inject all the APIs
 	var typesToInsert = {},
