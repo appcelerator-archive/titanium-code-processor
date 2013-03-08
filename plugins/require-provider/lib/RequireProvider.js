@@ -21,7 +21,7 @@ var util = require('util'),
 
 	platform,
 	modules,
-	cache = {},
+	cache,
 
 	platformList = ['android', 'mobileweb', 'iphone', 'ipad', 'blackberry'];
 
@@ -37,6 +37,7 @@ var util = require('util'),
 module.exports = function (options) {
 	platform = options && options.platform;
 	modules = options && options.modules || {};
+	cache = {};
 
 	if (!platform) {
 		console.error('require-provider plugin requires the "platform" option');

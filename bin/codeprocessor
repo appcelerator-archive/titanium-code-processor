@@ -17,7 +17,6 @@ var path = require('path'),
 	winston = require('winston'),
 	async = require('async'),
 	xml2js = require('xml2js'),
-	Table = require('cli-table'),
 
 	appc = require('node-appc'),
 
@@ -227,241 +226,6 @@ function subprocess() {
 }
 
 function analyze() {
-	processAnalayzeInput(function (entryPoint, options, plugins, logger) {
-
-		// Make sure that the project exists
-		if (!existsSync(entryPoint)) {
-			console.error('project root "' + entryPoint + '" does not exist.\n');
-			process.exit(1);
-		}
-		setTimeout(function(){
-			var startTime = (new Date()).getTime(),
-				results,
-				table,
-				i, len,
-				entry,
-				pluginResults,
-				entries;
-
-			CodeProcessor.run(entryPoint, options, plugins, logger, function () {
-				results = CodeProcessor.getResults();
-
-				if (logger) {
-					logger.log('info', 'Code processing finished successfully in ' + ((new Date()).getTime() - startTime) + ' ms.');
-				}
-
-				// Log the results
-				console.log();
-				if (results.errors.length) {
-					console.log('Errors');
-					table = new Table({
-						head: ['Description', 'File', 'Line']
-					});
-					for (i = 0, len = results.errors.length; i < len; i++) {
-						entry = results.errors[i];
-						table.push([entry.description, entry.filename || '', entry.line || 0]);
-					}
-					console.log(table.toString() + '\n');
-				}
-				if (results.warnings.length) {
-					console.log('Warnings');
-					table = new Table({
-						head: ['Description', 'File', 'Line']
-					});
-					for (i = 0, len = results.warnings.length; i < len; i++) {
-						entry = results.warnings[i];
-						table.push([entry.description, entry.filename || '', entry.line || 0]);
-					}
-					console.log(table.toString() + '\n');
-				}
-				pluginResults = results.plugins['analysis-coverage'];
-				if (pluginResults) {
-					console.log('Analysis Coverage');
-					if (pluginResults.filesSkipped.length) {
-						console.log(' Files Not Analyzed');
-						table = new Table({
-							head: ['File']
-						});
-						entries = pluginResults.filesSkipped;
-						for (i = 0, len = entries.length; i < len; i++) {
-							table.push([pluginResults.filesSkipped[i]]);
-						}
-						console.log(table.toString() + '\n ' + pluginResults.numFilesSkipped +
-							' files skipped out of ' + pluginResults.numTotalFiles + ' total files\n');
-					}
-					console.log(' File Content Coverage');
-					table = new Table({
-						head: ['File', 'Nodes Visited', 'Nodes Skipped', 'Total Nodes']
-					});
-					entries = Object.keys(pluginResults.details);
-					for (i = 0, len = entries.length; i < len; i++) {
-						entry = pluginResults.details[entries[i]];
-						table.push([entries[i], entry.numNodesVisited,
-							entry.numNodesSkipped, entry.numTotalNodes]);
-					}
-					console.log(table.toString() + '\n ' +
-						pluginResults.numNodesVisited + ' nodes visited and ' +
-						pluginResults.numNodesSkipped + ' nodes skipped out of ' +
-						pluginResults.numTotalNodes + ' nodes total (' +
-						Math.round(100 * (pluginResults.numNodesVisited + pluginResults.numNodesSkipped) /
-							pluginResults.numTotalNodes) + '%)\n');
-				}
-				pluginResults = results.plugins['ti-api-usage-finder'];
-				if (pluginResults) {
-					pluginResults = pluginResults.global;
-					entries = Object.keys(pluginResults);
-					if (entries.length) {
-						console.log('Titanium API Usage');
-						table = new Table({
-							head: ['API', 'Num References']
-						});
-						for (i = 0, len = entries.length; i < len; i++) {
-							table.push([entries[i], pluginResults[entries[i]]]);
-						}
-						console.log(table.toString() + '\n');
-					}
-				}
-				pluginResults = results.plugins['require-finder'];
-				if (pluginResults) {
-					entries = Object.keys(pluginResults.resolved);
-					if (entries.length) {
-						console.log('Required Modules Resolved');
-						table = new Table({
-							head: ['Required File Name', 'Source File', 'Line']
-						});
-						for (i = 0, len = entries.length; i < len; i++) {
-							entry = pluginResults.resolved[entries[i]];
-							table.push([entry.data.name, entry.filename || '', entry.line || 0]);
-						}
-						console.log(table.toString() + '\n');
-					}
-					entries = Object.keys(pluginResults.unresolved);
-					if (entries.length) {
-						console.log('Required Modules Unresolved');
-						table = new Table({
-							head: ['Required File Name', 'Source File', 'Line']
-						});
-						for (i = 0, len = entries.length; i < len; i++) {
-							entry = pluginResults.unresolved[entries[i]];
-							table.push([entry.data.name ? entry.data.name :
-								'<Could not resolve name>', entry.filename || '', entry.line || 0]);
-						}
-						console.log(table.toString() + '\n');
-					}
-					entries = Object.keys(pluginResults.missing);
-					if (entries.length) {
-						console.log('Required Modules Missing');
-						table = new Table({
-							head: ['Required File Name', 'Source File', 'Line']
-						});
-						for (i = 0, len = entries.length; i < len; i++) {
-							entry = pluginResults.missing[entries[i]];
-							table.push([entry.data.name, entry.filename || '', entry.line || 0]);
-						}
-						console.log(table.toString() + '\n');
-					}
-					entries = Object.keys(pluginResults.skipped);
-					if (entries.length) {
-						console.log('Required Native Modules Skipped');
-						table = new Table({
-							head: ['Required File Name', 'Source File', 'Line']
-						});
-						for (i = 0, len = entries.length; i < len; i++) {
-							entry = pluginResults.skipped[entries[i]];
-							table.push([entry.data.name, entry.filename || '', entry.line || 0]);
-						}
-						console.log(table.toString() + '\n');
-					}
-				}
-				pluginResults = results.plugins['ti-api-include-finder'];
-				if (pluginResults) {
-					entries = Object.keys(pluginResults.resolved);
-					if (entries.length) {
-						console.log('Ti.include Files Resolved');
-						table = new Table({
-							head: ['Included File Name', 'Source File', 'Line']
-						});
-						for (i = 0, len = entries.length; i < len; i++) {
-							entry = pluginResults.resolved[entries[i]];
-							table.push([entry.data.filename ? entry.data.filename :
-								'<Could not resolve name>', entry.filename || '', entry.line || 0]);
-						}
-						console.log(table.toString() + '\n');
-					}
-					entries = Object.keys(pluginResults.unresolved);
-					if (entries.length) {
-						console.log('Ti.include Files Unresolved');
-						table = new Table({
-							head: ['Included File Name', 'Source File', 'Line']
-						});
-						for (i = 0, len = entries.length; i < len; i++) {
-							entry = pluginResults.unresolved[entries[i]];
-							table.push([entry.data.filename ? entry.data.filename :
-								'<Could not resolve name>', entry.filename || '', entry.line || 0]);
-						}
-						console.log(table.toString() + '\n');
-					}
-					entries = Object.keys(pluginResults.missing);
-					if (entries.length) {
-						console.log('Ti.include Files Missing');
-						table = new Table({
-							head: ['Included File Name', 'Source File', 'Line']
-						});
-						for (i = 0, len = entries.length; i < len; i++) {
-							entry = pluginResults.missing[entries[i]];
-							table.push([entry.data.filename ? entry.data.filename :
-								'<Could not resolve name>', entry.filename || '', entry.line || 0]);
-						}
-						console.log(table.toString() + '\n');
-					}
-				}
-				pluginResults = results.plugins['ti-api-deprecation-finder'];
-				if (pluginResults) {
-					entries = Object.keys(pluginResults.deprecatedAPIs);
-					if (entries.length) {
-						console.log('Deprecated Titanium API References');
-						table = new Table({
-							head: ['API', 'Num References']
-						});
-						for (i = 0, len = entries.length; i < len; i++) {
-							table.push([entries[i], pluginResults.deprecatedAPIs[entries[i]]]);
-						}
-						console.log(table.toString() + '\n');
-					}
-				}
-				pluginResults = results.plugins['ti-api-platform-validator'];
-				if (pluginResults) {
-					entries = Object.keys(pluginResults.invalidAPIs);
-					if (entries.length) {
-						console.log('Invalid Platform-Specific Titanium API References');
-						table = new Table({
-							head: ['API', 'Num References']
-						});
-						for (i = 0, len = entries.length; i < len; i++) {
-							table.push([entries[i], pluginResults.invalidAPIs[entries[i]]]);
-						}
-						console.log(table.toString() + '\n');
-					}
-				}
-				pluginResults = results.plugins['unknown-callback-detector'];
-				if (pluginResults && pluginResults.length) {
-					console.log('Unknown Callback Detector');
-					table = new Table({
-						head: ['File', 'Line']
-					});
-					entries = pluginResults;
-					for (i = 0, len = entries.length; i < len; i++) {
-						entry = entries[i];
-						table.push([entry.filename || '', entry.line || 0]);
-					}
-					console.log(table.toString() + '\n');
-				}
-			});
-		}, 0);
-	});
-}
-
-function processAnalayzeInput(callback) {
 	var parsedOptions = nomnom
 			.option('plugin', {
 				abbr: 'p',
@@ -501,6 +265,11 @@ function processAnalayzeInput(callback) {
 				help: 'The path to the config file. Note: when this flag is specified, all other flags are ignored',
 				type: 'string'
 			})
+			.option('suppress-results', {
+				abbr: 's',
+				help: 'Don\'t log the results',
+				flag: true
+			})
 			.option('results-dir', {
 				abbr: 'r',
 				metavar: 'RESULTS_DIR',
@@ -539,6 +308,16 @@ function processAnalayzeInput(callback) {
 		startTime,
 		logger,
 		tiRegex = /^ti-/;
+
+	function run(entryPoint, options, plugins, logger) {
+		if (!existsSync(entryPoint)) {
+			console.error('project root "' + entryPoint + '" does not exist.\n');
+			process.exit(1);
+		}
+		setTimeout(function(){
+			CodeProcessor.run(entryPoint, options, plugins, logger);
+		}, 0);
+	}
 
 	// Check if a config file was specified
 	if (parsedOptions['config-file']) {
@@ -629,7 +408,7 @@ function processAnalayzeInput(callback) {
 			process.exit(1);
 		}
 
-		callback(config.entryPoint, config.options, config.plugins, logger);
+		run(config.entryPoint, config.options, config.plugins, logger);
 	} else {
 
 		if (!parsedOptions.osname) {
@@ -708,6 +487,7 @@ function processAnalayzeInput(callback) {
 		// Store the results dir
 		options.resultsPath = parsedOptions['results-dir'];
 		options.resultsTheme = parsedOptions['results-theme'];
+		options.suppressResults = parsedOptions['suppress-results'];
 
 		// Check if we are processing a project or a single file
 		if (/\.js$/.test(projectRoot)) {
@@ -765,7 +545,7 @@ function processAnalayzeInput(callback) {
 					}
 				}
 
-				callback(projectRoot, options, plugins, logger);
+				run(projectRoot, options, plugins, logger);
 			});
 		} else {
 			entryPoint = path.join(projectRoot, 'Resources', 'app.js');
@@ -964,7 +744,7 @@ function processAnalayzeInput(callback) {
 											};
 										}
 									}
-									callback(entryPoint, options, plugins, logger);
+									run(entryPoint, options, plugins, logger);
 								});
 							}
 						});

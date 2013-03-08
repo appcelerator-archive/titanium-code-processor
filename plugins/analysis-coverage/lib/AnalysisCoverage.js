@@ -15,52 +15,14 @@ var path = require('path'),
 
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	AST = require(path.join(global.titaniumCodeProcessorLibDir, 'AST')),
+
 	options,
-	results = {
-		summary: '',
-		details: {},
-		filesSkipped: [],
-		numTotalFiles: 0,
-		numFilesVisited: 0,
-		numFilesSkipped: 0,
-		numNodesVisited: 0,
-		numNodesSkipped: 0,
-		numTotalNodes: 0
-	};
+	results,
+	renderData;
 
-// ******** Plugin API Methods ********
+// ******** Helper Methods ********
 
-/**
- * Creates an instance of the require provider plugin
- *
- * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
- *
- * @constructor
- * @name module:plugins/AnalysisCoverage
- */
-module.exports = function (newOptions) {
-	options = newOptions || {};
-};
-
-/**
- * Initializes the plugin
- *
- * @method
- * @name module:plugins/AnalysisCoverage#init
- */
-module.exports.prototype.init = function init() {};
-
-/**
- * Gets the results of the plugin
- *
- * @method
- * @name module:plugins/AnalysisCoverage#getResults
- * @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
- *		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
- *		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
- *		method.
- */
-module.exports.prototype.getResults = function getResults() {
+function generateResultsData() {
 	var astSet = Runtime.getASTSet(),
 		id,
 		result,
@@ -85,6 +47,18 @@ module.exports.prototype.getResults = function getResults() {
 		result.numTotalNodes++;
 		results.numTotalNodes++;
 	}
+
+	// Initialize the results
+	results = {
+		details: {},
+		filesSkipped: [],
+		numTotalFiles: 0,
+		numFilesVisited: 0,
+		numFilesSkipped: 0,
+		numNodesVisited: 0,
+		numNodesSkipped: 0,
+		numTotalNodes: 0
+	};
 
 	// Analyze the files
 	results.filesSkipped = Runtime.getUnprocessedFilesList();
@@ -262,25 +236,12 @@ module.exports.prototype.getResults = function getResults() {
 			}
 		}
 	}
-	return results;
-};
+}
 
-/**
- * Generates the results template data to be rendered
- *
- * @method
- * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
- *		as one of the entries in the template
- * @param {String} baseDirectory The base directory of the code, useful for shortening paths
- * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
- *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
- *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
- *		information to dump into the template
- */
-module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile, baseDirectory) {
-	var nodeList = [],
+function generateRenderData() {
+	var list = [],
 		filesSkipped,
-		template = {},
+		baseDirectory = path.dirname(Runtime.getEntryPointFile()) + path.sep,
 		visualizationFiles,
 		i, len,
 		htmlRegex = /\.html$/,
@@ -294,7 +255,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 	// Calculate the node list
 	Object.keys(results.details).forEach(function(id) {
 		var result = results.details[id];
-		nodeList.push({
+		list.push({
 			filename: id.replace(baseDirectory, ''),
 			numNodesVisited: result.numNodesVisited,
 			numNodesSkipped: result.numNodesSkipped,
@@ -304,10 +265,10 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 
 	if (results.filesSkipped.length) {
 		filesSkipped = {
-			filesSkippedList: []
+			list: []
 		};
 		results.filesSkipped.forEach(function (file) {
-			filesSkipped.filesSkippedList.push({
+			filesSkipped.list.push({
 				filename: file.replace(baseDirectory, '')
 			});
 		});
@@ -337,25 +298,102 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 		}
 	}
 
+	renderData = {
+		pluginDisplayName: this.displayName,
+		numFilesVisited: results.numFilesVisited,
+		numTotalFiles: results.numTotalFiles,
+		filesPercentage: (100 * results.numFilesVisited / results.numTotalFiles).toFixed(1),
+		numNodesVisited: results.numNodesVisited,
+		numTotalNodes: results.numTotalNodes,
+		nodesPercentage: (100 * (results.numNodesVisited + results.numNodesSkipped) / results.numTotalNodes).toFixed(1),
+		nodeCoverage: {
+			list: list
+		},
+		filesSkipped: filesSkipped,
+		visualization: visualizationDataLocation,
+		files: visualizationEntries,
+		defaultLink: defaultLink
+	};
+}
+
+// ******** Plugin API Methods ********
+
+/**
+ * Creates an instance of the require provider plugin
+ *
+ * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
+ *
+ * @constructor
+ * @name module:plugins/AnalysisCoverage
+ */
+module.exports = function (newOptions) {
+	options = newOptions || {};
+	Runtime.on('projectProcessingEnd', function () {
+		generateResultsData();
+		generateRenderData();
+	});
+};
+
+/**
+ * Initializes the plugin
+ *
+ * @method
+ * @name module:plugins/AnalysisCoverage#init
+ */
+module.exports.prototype.init = function init() {};
+
+/**
+ * Gets the results of the plugin
+ *
+ * @method
+ * @name module:plugins/AnalysisCoverage#getResults
+ * @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
+ *		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
+ *		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
+ *		method.
+ */
+module.exports.prototype.getResults = function getResults() {
+	return results;
+};
+
+/**
+ * Generates the results template data to be rendered
+ *
+ * @method
+ * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ *		as one of the entries in the template
+ * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
+ *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
+ *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
+ *		information to dump into the template
+ */
+module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile) {
+	var template = {};
+
 	template[entryFile] = {
 		template: path.join(__dirname, '..', 'templates', 'analysisCoverageTemplate.html'),
-		data: {
-			pluginDisplayName: this.displayName,
-			numFilesVisited: results.numFilesVisited,
-			numTotalFiles: results.numTotalFiles,
-			filesPercentage: (100 * results.numFilesVisited / results.numTotalFiles).toFixed(1),
-			numNodesVisited: results.numNodesVisited,
-			numTotalNodes: results.numTotalNodes,
-			nodesPercentage: (100 * (results.numNodesVisited + results.numNodesSkipped) / results.numTotalNodes).toFixed(1),
-			nodeCoverage: {
-				nodeList: nodeList
-			},
-			filesSkipped: filesSkipped,
-			visualization: visualizationDataLocation,
-			files: visualizationEntries,
-			defaultLink: defaultLink
-		}
+		data: renderData
 	};
 
 	return template;
+};
+
+/**
+ * Renders the results data to a log-friendly string
+ *
+ * @param {Function} arrayGen Log-friendly table generator
+ * @return {String} The rendered data
+ */
+module.exports.prototype.renderLogOutput = function (arrayGen) {
+	var resultsToLog = renderData.numFilesVisited + ' out of ' + renderData.numTotalFiles + ' files analyzed (' + renderData.filesPercentage + '%)\n' +
+		renderData.numNodesVisited + ' out of ' + renderData.numTotalNodes + ' nodes analyzed (' + renderData.nodesPercentage + '%)';
+	if (renderData.nodeCoverage) {
+		resultsToLog += '\n\nNode Analysis Coverage Data\n';
+		resultsToLog += arrayGen(['File', 'Visited', 'Skipped', 'Total'], renderData.nodeCoverage.list, ['filename', 'numNodesVisited', 'numNodesSkipped', 'numTotalNodes']);
+	}
+	if (renderData.filesSkipped) {
+		resultsToLog += '\n\nFiles Not Analyzed\n';
+		resultsToLog += arrayGen(['File'], renderData.filesSkipped.list, ['filename']);
+	}
+	return resultsToLog;
 };

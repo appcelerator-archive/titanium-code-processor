@@ -1,9 +1,15 @@
 ## 0.3.3
 
 ### New Features
+* Added theme support for HTML results page
+* Switched the CLI output to use the HTML templates
+* Added runtime options and date/time finished to the results page
+* Merged unknown-ambiguous-visualizer and unknown-callback-detector plugins
+* Cleaned up the config file and output data formats. See the README for details
 
 ### Bug Fixes
 * Updated the README's to contain accurate information about the Code Processor
+* Fixed a bug with sending the results message in subprocess before the HTML results were ready
 
 ## 0.3.2 (28 February 2013)
 
