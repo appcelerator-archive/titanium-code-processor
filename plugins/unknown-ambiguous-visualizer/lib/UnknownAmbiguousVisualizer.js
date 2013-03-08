@@ -15,53 +15,14 @@ var path = require('path'),
 
 	AST = require(path.join(global.titaniumCodeProcessorLibDir, 'AST')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+
 	options,
-	results = {
-		numAbiguousBlockNodes: 0,
-		numAbiguousContextNodes: 0,
-		numUnknownNodes: 0,
-		numTotalNodes: 0,
-		unknownCallbacks: [],
-		details: {}
-	};
+	results,
+	renderData;
 
-// ******** Plugin API Methods ********
+// ******** Helper Methods ********
 
-/**
- * Creates an instance of the require provider plugin
- *
- * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
- *
- * @constructor
- * @name module:plugins/AnalysisCoverageVisualizer
- */
-module.exports = function (newOptions) {
-	options = newOptions || {};
-	Runtime.on('unknownCallback', function(e) {
-		results.unknownCallbacks.push(e);
-	});
-};
-
-/**
- * Initializes the plugin
- *
- * @method
- * @name module:plugins/AnalysisCoverageVisualizer#init
- */
-module.exports.prototype.init = function init() {};
-
-/**
-* Gets the results of the plugin
-*
-* @method
- * @name module:plugins/AnalysisCoverageVisualizer#getResults
-* @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
-*		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
-*		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
-*		method.
-*/
-module.exports.prototype.getResults = function getResults() {
-
+function generateResultsData() {
 	var astSet = Runtime.getASTSet(),
 		id,
 		annotationStyle,
@@ -120,10 +81,10 @@ module.exports.prototype.getResults = function getResults() {
 	}
 
 	// Create the summary report
-	results.summary = (100 * results.numUnknownNodes / results.numTotalNodes).toFixed(1) +
+	summary = (100 * results.numUnknownNodes / results.numTotalNodes).toFixed(1) +
 		'% of the project\'s source code is not knowable at compile time';
 	if (numUnknownCallbacks) {
-		summary += (numUnknownCallbacks === 1 ? '\n1 unknown callback was' : '\n' + numUnknownCallbacks + ' unknown callbacks were') + ' detected';
+		summary += (numUnknownCallbacks === 1 ? '. 1 unknown callback was' : '\n' + numUnknownCallbacks + ' unknown callbacks were') + ' detected';
 	}
 	results.summary = summary;
 
@@ -271,24 +232,11 @@ module.exports.prototype.getResults = function getResults() {
 			}
 		}
 	}
-	return results;
-};
+}
 
-/**
- * Generates the results template data to be rendered
- *
- * @method
- * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
- *		as one of the entries in the template
- * @param {String} baseDirectory The base directory of the code, useful for shortening paths
- * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
- *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
- *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
- *		information to dump into the template
- */
-module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile, baseDirectory) {
-	var nodeList = [],
-		template = {},
+function generateRenderData() {
+	var list = [],
+		baseDirectory = path.dirname(Runtime.getEntryPointFile()) + path.sep,
 		numUnknownCallbacks = results.unknownCallbacks.length,
 		unknownCallbacks,
 		visualizationFiles,
@@ -304,7 +252,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 	// Calculate the node list
 	Object.keys(results.details).forEach(function(id) {
 		var result = results.details[id];
-		nodeList.push({
+		list.push({
 			filename: id.replace(baseDirectory, ''),
 			numUnknownNodes: result.numUnknownNodes,
 			numAbiguousBlockNodes: result.numAbiguousBlockNodes,
@@ -350,24 +298,117 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 		}
 	}
 
+	renderData = {
+		pluginDisplayName: this.displayName,
+		numUnknownNodes: results.numUnknownNodes === 1 ? '1 node is' : results.numUnknownNodes + ' nodes are',
+		numAbiguousBlockNodes: results.numAbiguousBlockNodes === 1 ? '1 node is' : results.numAbiguousBlockNodes + ' nodes are',
+		numAbiguousContextNodes: results.numAbiguousContextNodes === 1 ? '1 node is' : results.numAbiguousContextNodes + ' nodes are',
+		numTotalNodes: results.numTotalNodes === 1 ? '1 node' : results.numTotalNodes + ' nodes',
+		numUnknownCallbacks: numUnknownCallbacks,
+		nodeCoverage: {
+			list: list
+		},
+		unknownCallbacks: unknownCallbacks,
+		visualization: visualizationDataLocation,
+		files: visualizationEntries,
+		defaultLink: defaultLink
+	};
+}
+
+// ******** Plugin API Methods ********
+
+/**
+ * Creates an instance of the require provider plugin
+ *
+ * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
+ *
+ * @constructor
+ * @name module:plugins/AnalysisCoverageVisualizer
+ */
+module.exports = function (newOptions) {
+	options = newOptions || {};
+	results = {
+		numAbiguousBlockNodes: 0,
+		numAbiguousContextNodes: 0,
+		numUnknownNodes: 0,
+		numTotalNodes: 0,
+		unknownCallbacks: [],
+		details: {}
+	};
+	Runtime.on('unknownCallback', function(e) {
+		results.unknownCallbacks.push(e);
+	});
+	Runtime.on('projectProcessingEnd', function () {
+		generateResultsData();
+		generateRenderData();
+	});
+};
+
+/**
+ * Initializes the plugin
+ *
+ * @method
+ * @name module:plugins/AnalysisCoverageVisualizer#init
+ */
+module.exports.prototype.init = function init() {};
+
+/**
+* Gets the results of the plugin
+*
+* @method
+ * @name module:plugins/AnalysisCoverageVisualizer#getResults
+* @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
+*		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
+*		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
+*		method.
+*/
+module.exports.prototype.getResults = function getResults() {
+	return results;
+};
+
+/**
+ * Generates the results template data to be rendered
+ *
+ * @method
+ * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ *		as one of the entries in the template
+ * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
+ *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
+ *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
+ *		information to dump into the template
+ */
+module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile) {
+	var template = {};
+
 	template[entryFile] = {
 		template: path.join(__dirname, '..', 'templates', 'unknownAmbiguousVisualizerTemplate.html'),
-		data: {
-			pluginDisplayName: this.displayName,
-			numUnknownNodes: results.numUnknownNodes === 1 ? '1 node is' : results.numUnknownNodes + ' nodes are',
-			numAbiguousBlockNodes: results.numAbiguousBlockNodes === 1 ? '1 node is' : results.numAbiguousBlockNodes + ' nodes are',
-			numAbiguousContextNodes: results.numAbiguousContextNodes === 1 ? '1 node is' : results.numAbiguousContextNodes + ' nodes are',
-			numTotalNodes: results.numTotalNodes === 1 ? '1 node' : results.numTotalNodes + ' nodes',
-			numUnknownCallbacks: numUnknownCallbacks,
-			nodeCoverage: {
-				nodeList: nodeList
-			},
-			unknownCallbacks: unknownCallbacks,
-			visualization: visualizationDataLocation,
-			files: visualizationEntries,
-			defaultLink: defaultLink
-		}
+		data: renderData
 	};
 
 	return template;
+};
+
+/**
+ * Renders the results data to a log-friendly string
+ *
+ * @param {Function} arrayGen Log-friendly table generator
+ * @return {String} The rendered data
+ */
+module.exports.prototype.renderLogOutput = function (arrayGen) {
+	var resultsToLog = renderData.numUnknownNodes + ' not knowable at compile time\n' +
+		renderData.numAbiguousBlockNodes + ' in an ambiguous block\n' +
+		renderData.numAbiguousContextNodes + ' in an ambiguous context\n' +
+		renderData.numTotalNodes + ' total';
+
+	if (renderData.unknownCallbacks) {
+		resultsToLog += '\n' + renderData.unknownCallbacks.summary + '\n\nUnknown Callbacks Detected\n';
+		resultsToLog += arrayGen(['File', 'Line'], renderData.unknownCallbacks.list, ['filename', 'line']);
+	}
+	if (renderData.nodeCoverage) {
+		resultsToLog += '\n\nNode Analysis Coverage Data\n';
+		resultsToLog += arrayGen(['File', 'Unknowns', 'Ambiguous Block Nodes', 'Ambiguous Context nodeList', 'Total'],
+			renderData.nodeCoverage.list, ['filename', 'numUnknownNodes', 'numAbiguousBlockNodes', 'numAbiguousContextNodes', 'numTotalNodes']);
+	}
+
+	return resultsToLog;
 };

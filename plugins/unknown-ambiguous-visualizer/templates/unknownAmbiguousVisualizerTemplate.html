@@ -79,7 +79,7 @@ html, body {
 			<th>Ambiguous Context nodeList</th>
 			<th>Total</th>
 		</tr>
-		{{#nodeList}}
+		{{#list}}
 		<tr>
 			<td>{{filename}}</td>
 			<td>{{numUnknownNodes}}</td>
@@ -87,7 +87,7 @@ html, body {
 			<td>{{numAbiguousContextNodes}}</td>
 			<td>{{numTotalNodes}}</td>
 		</tr>
-		{{/nodeList}}
+		{{/list}}
 	</table>
 	{{/nodeCoverage}}
 	{{#visualization}}

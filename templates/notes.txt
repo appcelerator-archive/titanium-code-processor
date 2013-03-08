@@ -14,15 +14,11 @@ Values used in the bootstrap generator:
 @navbarBackgroundHighlight = @white
 @navbarLinkColor = #5a6a7f
 
-Manual tweaks to css:
+Manual tweaks to css (goes at the end of bootstrap.css):
 pre {
 	background-color: #f8faff;
 	border: 1px solid #c3d5f3;
 }
-Added "color: #5a6a7f" to ".table th" rule
-Changed "background-color: #f5f5f5;" to "background-color: #f8faff;" in "pre" rule
-Deleted "border: 1px solid rgba(0, 0, 0, 0.15);" from the "pre" rule
-Changed "border: 1px solid #ccc;" to "border: 1px solid #c3d5f3;" in "pre" rule
 
 Dark theme
 ==========
@@ -50,7 +46,7 @@ CSS:
 @navbarLinkColorHover = @grayLight
 @navbarLinkColorActive = @grayLighter
 
-Manual tweaks to css:
+Manual tweaks to css (goes at the end of bootstrap.css):
 pre {
 	background-color: #222;
 	border: 1px solid #444;

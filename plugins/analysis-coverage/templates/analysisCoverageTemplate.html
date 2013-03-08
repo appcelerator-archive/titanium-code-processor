@@ -59,14 +59,14 @@ html, body {
 			<th>Skipped</th>
 			<th>Total</th>
 		</tr>
-		{{#nodeList}}
+		{{#list}}
 		<tr>
 			<td>{{filename}}</td>
 			<td>{{numNodesVisited}}</td>
 			<td>{{numNodesSkipped}}</td>
 			<td>{{numTotalNodes}}</td>
 		</tr>
-		{{/nodeList}}
+		{{/list}}
 	</table>
 	{{/nodeCoverage}}
 	{{#filesSkipped}}
@@ -75,11 +75,11 @@ html, body {
 		<tr>
 			<th>File</th>
 		</tr>
-		{{#filesSkippedList}}
+		{{#list}}
 		<tr>
 			<td>{{filename}}</td>
 		</tr>
-		{{/filesSkippedList}}
+		{{/list}}
 	</table>
 	{{/filesSkipped}}
 	{{#visualization}}
