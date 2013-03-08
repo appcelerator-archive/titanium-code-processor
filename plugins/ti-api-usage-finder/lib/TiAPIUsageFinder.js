@@ -165,3 +165,12 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 
 	return template;
 };
+
+/**
+ * Renders the results data to a log-friendly string
+ *
+ * @return {String} The rendered data
+ */
+module.exports.prototype.renderLogOutput = function () {
+	return 'Rendered output for ' + this.displayName;
+};
