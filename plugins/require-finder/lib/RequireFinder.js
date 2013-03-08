@@ -205,7 +205,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
  * @return {String} The rendered data
  */
 module.exports.prototype.renderLogOutput = function (arrayGen) {
-	var resultsToLog = renderData.numRequiresResolved + 'resolved\n' +
+	var resultsToLog = renderData.numRequiresResolved + ' resolved\n' +
 		renderData.numRequiresUnresolved + ' unresolved\n' +
 		renderData.numRequiresMissing + ' missing\n' +
 		renderData.numRequiresSkipped + ' skipped';
