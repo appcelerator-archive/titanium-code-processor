@@ -511,7 +511,7 @@ function processAnalayzeInput(callback) {
 				abbr: 'm',
 				metavar: 'RESULTS_THEME',
 				help: 'The theme for the results page',
-				choices: ['light'],
+				choices: ['light', 'dark'],
 				type: 'string'
 			})
 			.option('all-plugins', {
@@ -539,8 +539,6 @@ function processAnalayzeInput(callback) {
 		startTime,
 		logger,
 		tiRegex = /^ti-/;
-
-	debugger;
 
 	// Check if a config file was specified
 	if (parsedOptions['config-file']) {

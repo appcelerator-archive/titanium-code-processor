@@ -8,7 +8,7 @@
 <div class="navbar">
 	<div class="navbar-inner">
 		<ul class="nav">
-			<li><a href="index.html"><i class="icon-home"></i> Summary</a></li>
+			<li><a href="index.html">Summary</a></li>
 			{{#header}}
 			<li class="divider-vertical"></li>
 			<li{{#isHighlighted}} class="active"{{/isHighlighted}}><a href="{{file}}">{{name}}</a></li>
@@ -27,6 +27,10 @@
 	{{#apiSummary}}
 	<h3>APIs Used</h3>
 	<table class="table table-striped table-bordered">
+		<colgroup>
+			<col span="1" style="width: 80%;">
+			<col span="1" style="width: 20%;">
+		</colgroup>
 		<tr>
 			<th>API</th>
 			<th>Num References</th>
@@ -44,6 +48,10 @@
 		{{#files}}
 			<h4>{{filename}}</h4>
 			<table class="table table-striped table-bordered">
+				<colgroup>
+					<col span="1" style="width: 80%;">
+					<col span="1" style="width: 20%;">
+				</colgroup>
 				<tr>
 					<th>API</th>
 					<th>Num References</th>

@@ -37,7 +37,7 @@ html, body {
 <div class="navbar">
 	<div class="navbar-inner">
 		<ul class="nav">
-			<li><a href="index.html"><i class="icon-home"></i> Summary</a></li>
+			<li><a href="index.html">Summary</a></li>
 			{{#header}}
 			<li class="divider-vertical"></li>
 			<li{{#isHighlighted}} class="active"{{/isHighlighted}}><a href="{{file}}">{{name}}</a></li>
@@ -54,17 +54,17 @@ html, body {
 {{summary}}</pre>
 	<h3>Unknown Callbacks Detected</h3>
 		<table class="table table-striped table-bordered">
-		<tr>
-		<th>File</th>
-		<th>Line</th>
-		</tr>
-		{{#list}}
-		<tr>
-		<td>{{filename}}</td>
-		<td>{{line}}</td>
-		</tr>
-		{{/list}}
-	</table>
+			<tr>
+				<th>File</th>
+				<th>Line</th>
+			</tr>
+			{{#list}}
+			<tr>
+				<td>{{filename}}</td>
+				<td>{{line}}</td>
+			</tr>
+			{{/list}}
+		</table>
 	{{/unknownCallbacks}}
 {{^unknownCallbacks}}</pre>
 {{/unknownCallbacks}}

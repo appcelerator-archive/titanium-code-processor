@@ -2,7 +2,12 @@ Light theme
 ===========
 
 Values used in the bootstrap generator:
+@sansFontFamily = 'Lucida Sans Unicode', 'Lucida Grande', sans-serif
+@baseFontSize = 11px
 @headingsColor = #5a6a7f
+@baseBorderRadius = 2px
+@borderRadiusLarge = 3px
+@borderRadiusSmall = 1px
 @tableBackgroundAccent = #f8faff
 @tableBorder = #c3d5f3
 @navbarBackground = #ecf2fc
@@ -10,7 +15,44 @@ Values used in the bootstrap generator:
 @navbarLinkColor = #5a6a7f
 
 Manual tweaks to css:
+pre {
+	background-color: #f8faff;
+	border: 1px solid #c3d5f3;
+}
 Added "color: #5a6a7f" to ".table th" rule
 Changed "background-color: #f5f5f5;" to "background-color: #f8faff;" in "pre" rule
 Deleted "border: 1px solid rgba(0, 0, 0, 0.15);" from the "pre" rule
 Changed "border: 1px solid #ccc;" to "border: 1px solid #c3d5f3;" in "pre" rule
+
+Dark theme
+==========
+
+Values used in the bootstrap generator:
+
+Components:
+All Scaffolding, Base CSS, Miscellaneous, and Responsive. Components only includes "Navs, tabs, and pills" and "Navbar"
+
+CSS:
+@bodyBackground = #111
+@textColor = @white
+@sansFontFamily = 'Lucida Sans Unicode', 'Lucida Grande', sans-serif
+@baseFontSize = 11px
+@headingsColor = @grayLight
+@baseBorderRadius = 2px
+@borderRadiusLarge = 3px
+@borderRadiusSmall = 1px
+@tableBackground = #222
+@tableBackgroundAccent = #333
+@tableBorder = #444
+@navbarBackground = #222
+@navbarBackgroundHighlight = #333
+@navbarLinkColor = @white
+@navbarLinkColorHover = @grayLight
+@navbarLinkColorActive = @grayLighter
+
+Manual tweaks to css:
+pre {
+	background-color: #222;
+	border: 1px solid #444;
+	color: #eee;
+}
