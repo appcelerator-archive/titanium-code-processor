@@ -2,6 +2,7 @@
 
 ### New Features
 * Added theme support for HTML results page
+* Switched the CLI output to use the HTML templates
 * Added runtime options and date/time finished to the results page
 * Merged unknown-ambiguous-visualizer and unknown-callback-detector plugins
 * Cleaned up the config file and output data formats. See the README for details

@@ -386,15 +386,14 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
  */
 module.exports.prototype.renderLogOutput = function (arrayGen) {
 	var resultsToLog = renderData.numFilesVisited + ' out of ' + renderData.numTotalFiles + ' files analyzed (' + renderData.filesPercentage + '%)\n' +
-		renderData.numNodesVisited + ' out of ' + renderData.numTotalNodes + ' nodes analyzed (' + renderData.nodesPercentage + '%)\n';
+		renderData.numNodesVisited + ' out of ' + renderData.numTotalNodes + ' nodes analyzed (' + renderData.nodesPercentage + '%)';
 	if (renderData.nodeCoverage) {
-		resultsToLog += '\nNode Analysis Coverage Data\n';
+		resultsToLog += '\n\nNode Analysis Coverage Data\n';
 		resultsToLog += arrayGen(['File', 'Visited', 'Skipped', 'Total'], renderData.nodeCoverage.nodeList, ['filename', 'numNodesVisited', 'numNodesSkipped', 'numTotalNodes']);
 	}
 	if (renderData.filesSkipped) {
 		resultsToLog += '\n\nFiles Not Analyzed\n';
 		resultsToLog += arrayGen(['File'], renderData.filesSkipped.filesSkippedList, ['filename']);
 	}
-
 	return resultsToLog;
 };

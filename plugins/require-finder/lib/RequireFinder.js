@@ -204,6 +204,28 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
  * @param {Function} arrayGen Log-friendly table generator
  * @return {String} The rendered data
  */
-module.exports.prototype.renderLogOutput = function () {
-	return 'Rendered output for ' + this.displayName;
+module.exports.prototype.renderLogOutput = function (arrayGen) {
+	var resultsToLog = renderData.numRequiresResolved + 'resolved\n' +
+		renderData.numRequiresUnresolved + ' unresolved\n' +
+		renderData.numRequiresMissing + ' missing\n' +
+		renderData.numRequiresSkipped + ' skipped';
+
+	if (renderData.resolved) {
+		resultsToLog += '\n\nResolved Modules\n';
+		resultsToLog += arrayGen(['File', 'Line', 'Name', 'Resolved Path'], renderData.resolved.list, ['filename', 'line', 'name', 'path']);
+	}
+	if (renderData.unresolved) {
+		resultsToLog += '\n\nUnresolved Modules\n';
+		resultsToLog += arrayGen(['File', 'Line'], renderData.unresolved.list, ['filename', 'line']);
+	}
+	if (renderData.missing) {
+		resultsToLog += '\n\nMissing Modules\n';
+		resultsToLog += arrayGen(['File', 'Line', 'Name'], renderData.missing.list, ['filename', 'line', 'name']);
+	}
+	if (renderData.skipped) {
+		resultsToLog += '\n\nSkipped Native Modules\n';
+		resultsToLog += arrayGen(['File', 'Line', 'Name'], renderData.skipped.list, ['filename', 'line', 'name']);
+	}
+
+	return resultsToLog;
 };
