@@ -183,6 +183,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 /**
  * Renders the results data to a log-friendly string
  *
+ * @param {Function} arrayGen Log-friendly table generator
  * @return {String} The rendered data
  */
 module.exports.prototype.renderLogOutput = function () {
