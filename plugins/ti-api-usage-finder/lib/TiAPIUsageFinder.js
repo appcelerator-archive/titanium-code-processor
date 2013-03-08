@@ -49,7 +49,7 @@ function generateRenderData() {
 			list: []
 		};
 		apiByFile = {
-			files: []
+			list: []
 		};
 		for (api in results.global) {
 			apiSummary.list.push({
@@ -59,7 +59,7 @@ function generateRenderData() {
 			numInstances += results.global[api];
 		}
 		for (file in results.file) {
-			apiByFile.files.push({
+			apiByFile.list.push({
 				filename: file.replace(baseDirectory, ''),
 				list: fileEntry = []
 			});

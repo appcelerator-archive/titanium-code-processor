@@ -235,7 +235,7 @@ function generateResultsData() {
 }
 
 function generateRenderData() {
-	var nodeList = [],
+	var list = [],
 		baseDirectory = path.dirname(Runtime.getEntryPointFile()) + path.sep,
 		numUnknownCallbacks = results.unknownCallbacks.length,
 		unknownCallbacks,
@@ -252,7 +252,7 @@ function generateRenderData() {
 	// Calculate the node list
 	Object.keys(results.details).forEach(function(id) {
 		var result = results.details[id];
-		nodeList.push({
+		list.push({
 			filename: id.replace(baseDirectory, ''),
 			numUnknownNodes: result.numUnknownNodes,
 			numAbiguousBlockNodes: result.numAbiguousBlockNodes,
@@ -306,7 +306,7 @@ function generateRenderData() {
 		numTotalNodes: results.numTotalNodes === 1 ? '1 node' : results.numTotalNodes + ' nodes',
 		numUnknownCallbacks: numUnknownCallbacks,
 		nodeCoverage: {
-			nodeList: nodeList
+			list: list
 		},
 		unknownCallbacks: unknownCallbacks,
 		visualization: visualizationDataLocation,

@@ -239,7 +239,7 @@ function generateResultsData() {
 }
 
 function generateRenderData() {
-	var nodeList = [],
+	var list = [],
 		filesSkipped,
 		baseDirectory = path.dirname(Runtime.getEntryPointFile()) + path.sep,
 		visualizationFiles,
@@ -255,7 +255,7 @@ function generateRenderData() {
 	// Calculate the node list
 	Object.keys(results.details).forEach(function(id) {
 		var result = results.details[id];
-		nodeList.push({
+		list.push({
 			filename: id.replace(baseDirectory, ''),
 			numNodesVisited: result.numNodesVisited,
 			numNodesSkipped: result.numNodesSkipped,
@@ -265,10 +265,10 @@ function generateRenderData() {
 
 	if (results.filesSkipped.length) {
 		filesSkipped = {
-			filesSkippedList: []
+			list: []
 		};
 		results.filesSkipped.forEach(function (file) {
-			filesSkipped.filesSkippedList.push({
+			filesSkipped.list.push({
 				filename: file.replace(baseDirectory, '')
 			});
 		});
@@ -307,7 +307,7 @@ function generateRenderData() {
 		numTotalNodes: results.numTotalNodes,
 		nodesPercentage: (100 * (results.numNodesVisited + results.numNodesSkipped) / results.numTotalNodes).toFixed(1),
 		nodeCoverage: {
-			nodeList: nodeList
+			list: list
 		},
 		filesSkipped: filesSkipped,
 		visualization: visualizationDataLocation,
@@ -389,11 +389,11 @@ module.exports.prototype.renderLogOutput = function (arrayGen) {
 		renderData.numNodesVisited + ' out of ' + renderData.numTotalNodes + ' nodes analyzed (' + renderData.nodesPercentage + '%)';
 	if (renderData.nodeCoverage) {
 		resultsToLog += '\n\nNode Analysis Coverage Data\n';
-		resultsToLog += arrayGen(['File', 'Visited', 'Skipped', 'Total'], renderData.nodeCoverage.nodeList, ['filename', 'numNodesVisited', 'numNodesSkipped', 'numTotalNodes']);
+		resultsToLog += arrayGen(['File', 'Visited', 'Skipped', 'Total'], renderData.nodeCoverage.list, ['filename', 'numNodesVisited', 'numNodesSkipped', 'numTotalNodes']);
 	}
 	if (renderData.filesSkipped) {
 		resultsToLog += '\n\nFiles Not Analyzed\n';
-		resultsToLog += arrayGen(['File'], renderData.filesSkipped.filesSkippedList, ['filename']);
+		resultsToLog += arrayGen(['File'], renderData.filesSkipped.list, ['filename']);
 	}
 	return resultsToLog;
 };

@@ -45,7 +45,7 @@
 	{{/apiSummary}}
 	{{#apiByFile}}
 		<h3>APIs Used by File</h3>
-		{{#files}}
+		{{#list}}
 			<h4>{{filename}}</h4>
 			<table class="table table-striped table-bordered">
 				<colgroup>
@@ -63,7 +63,7 @@
 				</tr>
 				{{/list}}
 			</table>
-		{{/files}}
+		{{/list}}
 	{{/apiByFile}}
 </div>
 </body>

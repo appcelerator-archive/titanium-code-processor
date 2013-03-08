@@ -149,6 +149,13 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
  * @param {Function} arrayGen Log-friendly table generator
  * @return {String} The rendered data
  */
-module.exports.prototype.renderLogOutput = function () {
-	return 'Rendered output for ' + this.displayName;
+module.exports.prototype.renderLogOutput = function (arrayGen) {
+	var resultsToLog;
+	if (renderData.deprecatedAPIs) {
+		resultsToLog = renderData.numAPIs + ' used ' + renderData.numInstances + '\n\nDeprecated APIs Used\n';
+		resultsToLog += arrayGen(['API', 'Num References'], renderData.deprecatedAPIs.list, ['api', 'numReferences']);
+	} else {
+		resultsToLog = 'No deprecated APIs are used in the project';
+	}
+	return resultsToLog;
 };
