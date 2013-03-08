@@ -226,26 +226,6 @@ function subprocess() {
 }
 
 function analyze() {
-	processAnalayzeInput(function (entryPoint, options, plugins, logger) {
-		if (!existsSync(entryPoint)) {
-			console.error('project root "' + entryPoint + '" does not exist.\n');
-			process.exit(1);
-		}
-		setTimeout(function(){
-			var startTime = (new Date()).getTime(),
-				results,
-				table,
-				i, len,
-				entry,
-				pluginResults,
-				entries;
-
-			CodeProcessor.run(entryPoint, options, plugins, logger);
-		}, 0);
-	});
-}
-
-function processAnalayzeInput(callback) {
 	var parsedOptions = nomnom
 			.option('plugin', {
 				abbr: 'p',
@@ -328,6 +308,16 @@ function processAnalayzeInput(callback) {
 		startTime,
 		logger,
 		tiRegex = /^ti-/;
+
+	function run(entryPoint, options, plugins, logger) {
+		if (!existsSync(entryPoint)) {
+			console.error('project root "' + entryPoint + '" does not exist.\n');
+			process.exit(1);
+		}
+		setTimeout(function(){
+			CodeProcessor.run(entryPoint, options, plugins, logger);
+		}, 0);
+	}
 
 	// Check if a config file was specified
 	if (parsedOptions['config-file']) {
@@ -418,7 +408,7 @@ function processAnalayzeInput(callback) {
 			process.exit(1);
 		}
 
-		callback(config.entryPoint, config.options, config.plugins, logger);
+		run(config.entryPoint, config.options, config.plugins, logger);
 	} else {
 
 		if (!parsedOptions.osname) {
@@ -555,7 +545,7 @@ function processAnalayzeInput(callback) {
 					}
 				}
 
-				callback(projectRoot, options, plugins, logger);
+				run(projectRoot, options, plugins, logger);
 			});
 		} else {
 			entryPoint = path.join(projectRoot, 'Resources', 'app.js');
@@ -754,7 +744,7 @@ function processAnalayzeInput(callback) {
 											};
 										}
 									}
-									callback(entryPoint, options, plugins, logger);
+									run(entryPoint, options, plugins, logger);
 								});
 							}
 						});
