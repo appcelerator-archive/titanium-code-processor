@@ -182,7 +182,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
 module.exports.prototype.renderLogOutput = function (arrayGen) {
 	var resultsToLog = renderData.numIncludesResolved + ' resolved\n' +
 		renderData.numIncludesUnresolved + ' unresolved\n' +
-		renderData.numIncludesMissing + ' missing\n';
+		renderData.numIncludesMissing + ' missing';
 	if (renderData.resolved) {
 		resultsToLog += '\n\nResolved Files\n';
 		resultsToLog += arrayGen(['File', 'Line', 'Name', 'Resolved Path'], renderData.resolved.list, ['filename', 'line', 'name', 'path']);

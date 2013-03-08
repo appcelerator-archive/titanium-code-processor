@@ -394,6 +394,21 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
  * @param {Function} arrayGen Log-friendly table generator
  * @return {String} The rendered data
  */
-module.exports.prototype.renderLogOutput = function () {
-	return 'Rendered output for ' + this.displayName;
+module.exports.prototype.renderLogOutput = function (arrayGen) {
+	var resultsToLog = renderData.numUnknownNodes + ' not knowable at compile time\n' +
+		renderData.numAbiguousBlockNodes + ' in an ambiguous block\n' +
+		renderData.numAbiguousContextNodes + ' in an ambiguous context\n' +
+		renderData.numTotalNodes + ' total';
+
+	if (renderData.unknownCallbacks) {
+		resultsToLog += '\n' + renderData.unknownCallbacks.summary + '\n\nUnknown Callbacks Detected\n';
+		resultsToLog += arrayGen(['File', 'Line'], renderData.unknownCallbacks.list, ['filename', 'line']);
+	}
+	if (renderData.nodeCoverage) {
+		resultsToLog += '\n\nNode Analysis Coverage Data\n';
+		resultsToLog += arrayGen(['File', 'Unknowns', 'Ambiguous Block Nodes', 'Ambiguous Context nodeList', 'Total'],
+			renderData.nodeCoverage.list, ['filename', 'numUnknownNodes', 'numAbiguousBlockNodes', 'numAbiguousContextNodes', 'numTotalNodes']);
+	}
+
+	return resultsToLog;
 };
