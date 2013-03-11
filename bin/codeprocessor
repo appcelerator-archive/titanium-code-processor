@@ -736,11 +736,11 @@ function analyze() {
 											plugins[i].options.platform = parsedOptions.osname;
 										} else if (path.basename(plugins[i].path) === 'analysis-coverage') {
 											plugins[i].options.visualization = {
-												outputDirectory: path.join(options.resultsPath, 'analysis-coverage')
+												outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'analysis-coverage') : undefined
 											};
 										} else if (path.basename(plugins[i].path) === 'unknown-ambiguous-visualizer') {
 											plugins[i].options.visualization = {
-												outputDirectory: path.join(options.resultsPath, 'unknown-ambiguous-visualizer')
+												outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'unknown-ambiguous-visualizer') : undefined
 											};
 										}
 									}
