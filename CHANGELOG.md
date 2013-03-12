@@ -8,6 +8,7 @@
 * Cleaned up the config file and output data formats. See the README for details
 
 ### Bug Fixes
+* Fixed a few small bugs uncovered by the upgrade to node 0.10.0
 * Updated the README's to contain accurate information about the Code Processor
 * Fixed a bug with sending the results message in subprocess before the HTML results were ready
 
