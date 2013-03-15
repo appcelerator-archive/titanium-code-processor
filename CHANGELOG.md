@@ -11,6 +11,7 @@
 * Fixed a few small bugs uncovered by the upgrade to node 0.10.0
 * Updated the README's to contain accurate information about the Code Processor
 * Fixed a bug with sending the results message in subprocess before the HTML results were ready
+* Reworked invokeMethods=false internally to provide more accurate results by allowing native methods to still be called (console.log, Titanium methods, etc);
 
 ## 0.3.2 (28 February 2013)
 
