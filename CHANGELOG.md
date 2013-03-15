@@ -12,6 +12,7 @@
 * Updated the README's to contain accurate information about the Code Processor
 * Fixed a bug with sending the results message in subprocess before the HTML results were ready
 * Reworked invokeMethods=false internally to provide more accurate results by allowing native methods to still be called (console.log, Titanium methods, etc);
+* Cleaned up undefined reference error messages
 
 ## 0.3.2 (28 February 2013)
 
