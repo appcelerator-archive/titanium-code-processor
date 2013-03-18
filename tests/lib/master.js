@@ -25,14 +25,14 @@ function printHelp() {
 	console.log(
 		'Usage: test [options]\n\n' +
 		'Options:\n' +
-		'   -m --multi-threaded    Enables multi-threaded testing\n' +
+		'   -s --single-threaded   Disables multi-threaded testing\n' +
 		'   -c --chapter CHAPTER   The chapter/section/file/whatever to test\n' +
 		'   -h --help              Displays this help information');
 }
 
 function processArgs() {
 	var options = {
-			'multi-threaded': false,
+			'single-threaded': false,
 			chapter: ''
 		},
 		args = process.argv,
@@ -43,9 +43,9 @@ function processArgs() {
 	while(args.length) {
 		currentArg = args.shift();
 		switch(currentArg) {
-			case '-m':
-			case '--multi-threaded':
-				options['multi-threaded'] = true;
+			case '-s':
+			case '--single-threaded':
+				options['single-threaded'] = true;
 				break;
 			case '-c':
 			case '--chapter':
@@ -72,7 +72,7 @@ function processArgs() {
 }
 
 function run(cluster, options) {
-	var multiThreaded = options['multi-threaded'],
+	var multiThreaded = !options['single-threaded'],
 		chapter = options.chapter,
 		testList = [],
 		numTests,
