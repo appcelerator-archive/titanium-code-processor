@@ -574,4 +574,26 @@ if (x) {
 }
 ```
 
+## Running the ECMA-262 Unit Tests
+
+The ECMA working group, who maintains the ECMA-262 specification (the JavaScript spec), also maintains a series of unit
+tests. To run the unit tests:
+
+* Clone the test-262 [Mercurial Repository](http://hg.ecmascript.org/tests/test262/)
+	* Note: you will need install [Mercurial](http://mercurial.selenic.com/) before you can clone the repository. Git will not work.
+* Add the following to your titanium config file at ~/.titanium/config.json:
+
+```JSON
+{
+	"code-processor": {
+		"test": {
+			"test-262-directory": "/path/to/test-262/repo"
+		}
+	}
+}
+```
+
+* Run the test script at &lt;titanium code processor dir&gt;/tests/bin/tests
+	* You can run ```tests --help``` to see options for controlling the test process
+
 #### (C) Copyright 2012-2013, [Appcelerator](http://www.appcelerator.com) Inc. All Rights Reserved.
