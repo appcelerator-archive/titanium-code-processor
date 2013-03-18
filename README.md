@@ -36,6 +36,7 @@ below the type definition. Object properties always have a name and array entrie
 * [Runtime Options](#runtime-options)
 * [Built-in Plugins](#built-in-plugins)
 * [Internal Concepts](#internal-concepts)
+* [Running the ECMA-262 Unit Tests](#running-the-ecma-262-unit-tests)
 
 ## Quick Start
 
