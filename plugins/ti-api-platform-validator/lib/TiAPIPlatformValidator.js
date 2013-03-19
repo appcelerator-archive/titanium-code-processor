@@ -11,8 +11,6 @@
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 
-	platformList = ['android', 'mobileweb', 'iphone', 'ipad', 'blackberry'],
-
 	results,
 	renderData;
 
@@ -76,21 +74,20 @@ function generateRenderData() {
  * @constructor
  * @name module:plugins/TiAPIPlatformValidator
  */
-module.exports = function (options) {
+module.exports = function (options, dependencies) {
 
-	var platform = options && options.platform;
+	var i, len,
+		platform;
+	for (i = 0, len = dependencies.length; i < len; i++) {
+		if (dependencies[i].name === 'ti-api-provider') {
+			platform = dependencies[i].platform;
+		}
+	}
+
 	results = {
 		summary: '',
 		invalidAPIs: {}
 	};
-	if (!platform) {
-		console.error('ti-api-platform-validator plugin requires the "platform" option');
-		process.exit(1);
-	}
-	if (platformList.indexOf(platform) === -1) {
-		console.error('"' + platform + '" is not a valid platform for the ti-api-platform-validator plugin');
-		process.exit(1);
-	}
 
 	Runtime.on('tiPropertyReferenced', function(e) {
 		var platformList = e.data.node.userAgents,

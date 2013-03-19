@@ -18,10 +18,9 @@ var fs = require('fs'),
 
 	jsca,
 	platform,
+	platformList,
 	values,
 	api,
-
-	platformList = ['android', 'mobileweb', 'iphone', 'ipad', 'blackberry'],
 
 	methodOverrides = [
 		require('./method-overrides/TiInclude.js'),
@@ -40,32 +39,23 @@ var fs = require('fs'),
  * @constructor
  * @name module:plugins/TiAPIProcessor
  */
-module.exports = function(options) {
-	jsca = options && options.sdkPath && path.join(options.sdkPath, 'api.jsca');
-	platform = options && options.platform;
+module.exports = function(options, dependencies) {
+	var i, len;
+	for (i = 0, len = dependencies.length; i < len; i++) {
+		if (dependencies[i].name === 'require-provider') {
+			this.platform = platform = dependencies[i].platform;
+			this.platformList = platformList = dependencies[i].platformList;
+		}
+	}
+
 	values = options && options.values || {};
+
 	api = {
 		children: {}
 	};
-};
 
-/**
- * Initializes the plugin
- *
- * @method
- * @name module:plugins/TiAPIProcessor#init
- */
-module.exports.prototype.init = function init() {
-
-	// Validate the options
-	if (!platform) {
-		console.error(this.name + ' plugin requires the "platform" option');
-		process.exit(1);
-	}
-	if (platformList.indexOf(platform) === -1) {
-		console.error('"' + platform + '" is not a valid platform for the ' + this.name + ' plugin');
-		process.exit(1);
-	}
+	// Parse and validate the JSCA file
+	jsca = options && options.sdkPath && path.join(options.sdkPath, 'api.jsca');
 	if (!jsca) {
 		console.error(this.name + ' plugin requires the "sdkPath" option');
 		process.exit(1);
@@ -75,6 +65,15 @@ module.exports.prototype.init = function init() {
 		process.exit(1);
 	}
 	jsca = JSON.parse(fs.readFileSync(jsca));
+};
+
+/**
+ * Initializes the plugin
+ *
+ * @method
+ * @name module:plugins/TiAPIProcessor#init
+ */
+module.exports.prototype.init = function init() {
 
 	// Iterate through the json object and inject all the APIs
 	var typesToInsert = {},

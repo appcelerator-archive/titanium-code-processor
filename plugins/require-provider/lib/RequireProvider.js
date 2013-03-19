@@ -48,6 +48,10 @@ module.exports = function (options) {
 		process.exit(1);
 	}
 
+	// Expose the platform and platform list
+	this.platform = platform;
+	this.platformList = platformList;
+
 	Runtime.isFileValid = function isFileValid(filename) {
 		var rootDir = filename.split(path.sep)[0];
 		return fileRegExp.test(filename) && (platformList.indexOf(rootDir) === -1 || rootDir === platform);
@@ -233,7 +237,7 @@ function processFile(filename, createExports) {
 				results = Base.type(context.thisBinding) === 'Unknown' ? new Base.UnknownType() : context.thisBinding.get('exports');
 			}
 		} else {
-			Base.handleRecoverableNativeException('SyntaxError', root.message);
+			Runtime.reportUglifyError(root);
 			results = new Base.UnknownType();
 		}
 
