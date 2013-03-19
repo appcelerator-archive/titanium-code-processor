@@ -80,7 +80,15 @@ function printHelp() {
 }
 
 function queryPlugins() {
-	CodeProcessor.queryPlugins([], function (err, results) {
+	var paths = process.argv.slice(2),
+		i, len;
+	for (i = 0, len = paths.length; i < len; i++) {
+		if (!existsSync(paths[i])) {
+			console.error('Plugin path "' + paths[i] + '" does not exist');
+			process.exit(1);
+		}
+	}
+	CodeProcessor.queryPlugins(paths, function (err, results) {
 		if (err) {
 			console.error(err);
 			process.exit(1);
