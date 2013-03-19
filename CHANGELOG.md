@@ -17,6 +17,7 @@
 * Lots of small bug fixes
 * The plugins sub-command now properly accepts paths
 * Syntax errors now have filename/line/column information
+* Syntax errors in a module required elsewhere no longer causes the code processor to crash
 
 ## 0.3.2 (28 February 2013)
 
