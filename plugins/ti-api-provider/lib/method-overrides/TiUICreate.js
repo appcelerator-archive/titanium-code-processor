@@ -25,11 +25,11 @@ exports.init = function (options) {
 				props = args && args[0] && Base.type(args[0]) === 'Object' && args[0],
 				propNames;
 			args = args || [];
-			for(i = 0, len = args.length; i < len; i++) {
+			for (i = 0, len = args.length; i < len; i++) {
 				if (Base.type(args[i]) !== 'Unknown') {
 					if (Base.isCallable(args[i])) {
 						callArgs = [];
-						for(j = 0; j < args[i].get('length').value; j++) {
+						for (j = 0; j < args[i].get('length').value; j++) {
 							callArgs[j] = new Base.UnknownType();
 						}
 						Runtime.queueFunction(args[i], new Base.UndefinedType(), callArgs, true);
@@ -41,7 +41,7 @@ exports.init = function (options) {
 			}
 			if (this._returnTypes && this._returnTypes.length === 1) {
 				returnType = this._returnTypes[0].type.split('.');
-				for(i = 0, len = returnType.length; i < len; i++) {
+				for (i = 0, len = returnType.length; i < len; i++) {
 					root = root && root.children[returnType[i]];
 				}
 				if (root && root.node) {
