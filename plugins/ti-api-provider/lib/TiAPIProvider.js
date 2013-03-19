@@ -94,7 +94,7 @@ module.exports.prototype.init = function init() {
 		type = types[i];
 		root = api;
 		name = type.name.split('.');
-		for(j = 0; j < name.length; j++) {
+		for (j = 0; j < name.length; j++) {
 			if (!root.children[name[j]]) {
 				(root.children[name[j]] = { children: {} });
 			}
@@ -103,7 +103,7 @@ module.exports.prototype.init = function init() {
 		root.node = type;
 	}
 
-	for(i = 0, len = methodOverrides.length; i < len; i++) {
+	for (i = 0, len = methodOverrides.length; i < len; i++) {
 		methodOverrides[i] = methodOverrides[i].init({
 			api: api,
 			platform: platform,
@@ -111,7 +111,7 @@ module.exports.prototype.init = function init() {
 			createObject: createObject
 		});
 	}
-	for(i = 0, len = propertyOverrides.length; i < len; i++) {
+	for (i = 0, len = propertyOverrides.length; i < len; i++) {
 		propertyOverrides[i] = propertyOverrides[i].init({
 			api: api,
 			platform: platform,
@@ -141,7 +141,7 @@ module.exports.prototype.init = function init() {
 			enumerable: true,
 			configurable: true
 		}, false, true);
-		for(i = 0, len = typesToInsert[p].length; i < len; i++) {
+		for (i = 0, len = typesToInsert[p].length; i < len; i++) {
 			globalObject.defineOwnProperty(typesToInsert[p][i], {
 				value: obj,
 				writable: false,
@@ -184,11 +184,11 @@ TiFunction.prototype.call = function call(thisVal, args) {
 		value = new Base.UnknownType(),
 		callArgs;
 	args = args || [];
-	for(i = 0, len = args.length; i < len; i++) {
+	for (i = 0, len = args.length; i < len; i++) {
 		if (Base.type(args[i]) !== 'Unknown') {
 			if (Base.isCallable(args[i])) {
 				callArgs = [];
-				for(j = 0; j < args[i].get('length').value; j++) {
+				for (j = 0; j < args[i].get('length').value; j++) {
 					callArgs[j] = new Base.UnknownType();
 				}
 				Runtime.queueFunction(args[i], new Base.UndefinedType(), callArgs, true);
@@ -200,7 +200,7 @@ TiFunction.prototype.call = function call(thisVal, args) {
 	}
 	if (this._returnTypes && this._returnTypes.length === 1) {
 		returnType = this._returnTypes[0].type.split('.');
-		for(i = 0, len = returnType.length; i < len; i++) {
+		for (i = 0, len = returnType.length; i < len; i++) {
 			root = root && root.children[returnType[i]];
 		}
 		if (root && root.node) {
@@ -363,7 +363,7 @@ function createObject(apiNode) {
 	obj._apiName = apiNode.node.name;
 
 	// Add the properties
-	for(i = 0, ilen = properties.length; i < ilen; i++) {
+	for (i = 0, ilen = properties.length; i < ilen; i++) {
 		property = properties[i];
 		name = property.name;
 		type = property.type;
@@ -434,7 +434,7 @@ function createObject(apiNode) {
 	}
 
 	// Add the children
-	for(p in children) {
+	for (p in children) {
 		obj.defineOwnProperty(p, {
 			value: createObject(children[p]),
 			writable: false,

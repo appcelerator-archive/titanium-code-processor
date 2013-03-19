@@ -91,12 +91,11 @@ module.exports = function (options, dependencies) {
 
 	Runtime.on('tiPropertyReferenced', function(e) {
 		var platformList = e.data.node.userAgents,
-			i = 0,
-			len = platformList.length,
+			i, len,
 			isSupported = false,
 			name = e.data.name;
 
-		for(; i < len; i++) {
+		for (i = 0, len = platformList.length; i < len; i++) {
 			if (platform === platformList[i].platform) {
 				isSupported = true;
 			}

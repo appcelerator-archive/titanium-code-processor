@@ -11,7 +11,7 @@ function onClick(source) {
 		i, len;
 	if (source) {
 		sourceIFrame.src = source;
-		for(i = 0, len = fileList.children.length; i < len; i++) {
+		for (i = 0, len = fileList.children.length; i < len; i++) {
 			fileList.children[i].classList.remove('active');
 		}
 		sourceLink.classList.add('active');
