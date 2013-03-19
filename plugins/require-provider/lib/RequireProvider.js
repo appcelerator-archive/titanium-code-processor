@@ -232,7 +232,7 @@ function processFile(filename, createExports) {
 			results = root.processRule();
 			Runtime.exitContext();
 		} else {
-			Base.handleRecoverableNativeException('SyntaxError', root.message);
+			Runtime.reportUglifyError(root);
 		}
 
 		// Exit the context and get the results
