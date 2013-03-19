@@ -8,22 +8,7 @@
 	"dependencies": {
 		"ti-api-provider": "*"
 	},
-	"options": {
-		"platform": {
-			"description": "The platform to use in evaluating require paths",
-			"types": [{
-				"type": "string",
-				"allowedValues": [
-					"android",
-					"mobileweb",
-					"iphone",
-					"ipad",
-					"blackberry"
-				]
-			}],
-			"required": true
-		}
-	},
+	"options": {},
 	"engines": {
 		"node": ">=0.8"
 	}

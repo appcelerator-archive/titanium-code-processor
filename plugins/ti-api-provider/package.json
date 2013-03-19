@@ -17,20 +17,6 @@
 			}],
 			"required": true
 		},
-		"platform": {
-			"description": "The platform to use in evaluating include paths",
-			"types": [{
-				"type": "string",
-				"allowedValues": [
-					"android",
-					"mobileweb",
-					"iphone",
-					"ipad",
-					"blackberry"
-				]
-			}],
-			"required": true
-		},
 		"values": {
 			"description": "Sets the value of primitive properties accessible via the global Ti/Titanium object",
 			"types": [{
