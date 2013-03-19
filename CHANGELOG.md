@@ -6,6 +6,7 @@
 * Added runtime options and date/time finished to the results page
 * Merged unknown-ambiguous-visualizer and unknown-callback-detector plugins
 * Cleaned up the config file and output data formats. See the README for details
+* Added more debug output
 
 ### Bug Fixes
 * Fixed a few small bugs uncovered by the upgrade to node 0.10.0
@@ -13,6 +14,8 @@
 * Fixed a bug with sending the results message in subprocess before the HTML results were ready
 * Reworked invokeMethods=false internally to provide more accurate results by allowing native methods to still be called (console.log, Titanium methods, etc);
 * Cleaned up undefined reference error messages
+* Lots of small bug fixes
+* The plugins sub-command now properly accepts paths
 
 ## 0.3.2 (28 February 2013)
 
