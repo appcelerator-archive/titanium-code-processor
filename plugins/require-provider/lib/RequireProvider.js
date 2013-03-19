@@ -125,7 +125,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 					});
 					result = cache[filePath];
 				} else {
-					result = processFile(filePath, true)[1];
+					result = processFile(filePath, true);
 					cache[filePath] = result;
 				}
 			} else {
@@ -159,7 +159,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 						name: name,
 						path: filePath
 					});
-					result = processFile(filePath, isModule)[1];
+					result = processFile(filePath, isModule);
 					cache[filePath] = result;
 				}
 
@@ -229,15 +229,16 @@ function processFile(filename, createExports) {
 			context = Base.createModuleContext(root, RuleProcessor.isBlockStrict(root), createExports, false);
 
 			// Process the code
-			results = root.processRule();
+			results = root.processRule()[1];
 			Runtime.exitContext();
+
+			// Exit the context and get the results
+			if (createExports) {
+				results = Base.type(context.thisBinding) === 'Unknown' ? new Base.UnknownType() : context.thisBinding.get('exports');
+			}
 		} else {
 			Runtime.reportUglifyError(root);
-		}
-
-		// Exit the context and get the results
-		if (createExports) {
-			results[1] = Base.type(context.thisBinding) === 'Unknown' ? new Base.UnknownType() : context.thisBinding.get('exports');
+			results = new Base.UnknownType();
 		}
 
 	} else {
