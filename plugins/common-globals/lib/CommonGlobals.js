@@ -48,6 +48,8 @@ module.exports.prototype.init = function init() {
 	addObject('alert', new AlertFunc(), globalObject);
 	addObject('clearInterval', new ClearIntervalFunc(), globalObject);
 	addObject('clearTimeout', new ClearTimeoutFunc(), globalObject);
+	addObject('decodeURIComponent', new DecodeURIComponentFunc(), globalObject);
+	addObject('encodeURIComponent', new EncodeURIComponentFunc(), globalObject);
 	addObject('setInterval', new SetIntervalFunc(), globalObject);
 	addObject('setTimeout', new SetTimeoutFunc(), globalObject);
 	addObject('console', new ConsoleObject(), globalObject);
@@ -193,7 +195,7 @@ SetIntervalFunc.prototype.call = function call(thisVal, args) {
 	// Make sure func is actually a function
 	if (Base.type(func) !== 'Unknown') {
 		if (func.className !== 'Function' || !Base.isCallable(func)) {
-			Base.handleRecoverableNativeException('TypeError');
+			Base.handleRecoverableNativeException('TypeError', 'A value that is not a function was passed to setInterval');
 			return new Base.UnknownType();
 		}
 
@@ -203,7 +205,7 @@ SetIntervalFunc.prototype.call = function call(thisVal, args) {
 		Runtime.fireEvent('unknownCallback', 'An unknown value was passed to setInterval. Some source code may not be analyzed.');
 	}
 
-	return new Base.UndefinedType();
+	return new Base.UnknownType();
 };
 
 /**
@@ -222,7 +224,7 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 	// Make sure func is actually a function
 	if (Base.type(func) !== 'Unknown') {
 		if (func.className !== 'Function' || !Base.isCallable(func)) {
-			Base.handleRecoverableNativeException('TypeError');
+			Base.handleRecoverableNativeException('TypeError', 'A value that is not a function was passed to setTimeout');
 			return new Base.UnknownType();
 		}
 
@@ -232,7 +234,45 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 		Runtime.fireEvent('unknownCallback', 'An unknown value was passed to setTimeout. Some source code may not be analyzed.');
 	}
 
-	return new Base.UndefinedType();
+	return new Base.UnknownType();
+};
+
+/**
+ * decodeURIComponent method
+ *
+ * @private
+ */
+function DecodeURIComponentFunc(className) {
+	Base.ObjectType.call(this, className || 'Function');
+	this.put('length', new Base.NumberType(1), false, true);
+}
+util.inherits(DecodeURIComponentFunc, Base.FunctionTypeBase);
+DecodeURIComponentFunc.prototype.call = function call(thisVal, args) {
+	var str = args[0] || new Base.UndefinedType();
+	if (str.type === 'Unknown') {
+		return new Base.UnknownType();
+	} else {
+		return new Base.StringType(decodeURIComponent(Base.toString(str).value));
+	}
+};
+
+/**
+ * decodeURIComponent method
+ *
+ * @private
+ */
+function EncodeURIComponentFunc(className) {
+	Base.ObjectType.call(this, className || 'Function');
+	this.put('length', new Base.NumberType(1), false, true);
+}
+util.inherits(EncodeURIComponentFunc, Base.FunctionTypeBase);
+EncodeURIComponentFunc.prototype.call = function call(thisVal, args) {
+	var str = args[0] || new Base.UndefinedType();
+	if (str.type === 'Unknown') {
+		return new Base.UnknownType();
+	} else {
+		return new Base.StringType(encodeURIComponent(Base.toString(str).value));
+	}
 };
 
 /**
