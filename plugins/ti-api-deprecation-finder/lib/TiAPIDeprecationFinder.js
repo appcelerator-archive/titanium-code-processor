@@ -33,6 +33,7 @@ function generateRenderData() {
 	var numDeprecatedAPIs = Object.keys(results.deprecatedAPIs).length,
 		deprecatedAPIs,
 		numDeprecatedAPIInstances = 0,
+		numDeprecatedAPIReferences = 0,
 		deprecatedAPI;
 
 	// Generate the render data
@@ -43,9 +44,11 @@ function generateRenderData() {
 		for (deprecatedAPI in results.deprecatedAPIs) {
 			deprecatedAPIs.list.push({
 				api: deprecatedAPI,
-				numReferences: results.deprecatedAPIs[deprecatedAPI]
+				numInstances: results.deprecatedAPIs[deprecatedAPI].numInstances,
+				numReferences: Object.keys(results.deprecatedAPIs[deprecatedAPI].locations).length
 			});
-			numDeprecatedAPIInstances += results.deprecatedAPIs[deprecatedAPI];
+			numDeprecatedAPIInstances += results.deprecatedAPIs[deprecatedAPI].numInstances;
+			numDeprecatedAPIReferences += Object.keys(results.deprecatedAPIs[deprecatedAPI].locations).length;
 		}
 		if (numDeprecatedAPIs === 1) {
 			numDeprecatedAPIs = '1 deprecated API is';
@@ -57,10 +60,16 @@ function generateRenderData() {
 		} else {
 			numDeprecatedAPIInstances = numDeprecatedAPIInstances + ' times';
 		}
+		if (numDeprecatedAPIReferences === 1) {
+			numDeprecatedAPIReferences = '1 place';
+		} else {
+			numDeprecatedAPIReferences = numDeprecatedAPIReferences + ' places';
+		}
 	}
 	renderData = {
 		pluginDisplayName: this.displayName,
 		numAPIs: numDeprecatedAPIs,
+		numReferences: numDeprecatedAPIReferences,
 		numInstances: numDeprecatedAPIInstances,
 		deprecatedAPIs: deprecatedAPIs
 	};
@@ -81,7 +90,9 @@ module.exports = function () {
 		deprecatedAPIs: {}
 	};
 	Runtime.on('tiPropertyReferenced', function (e) {
-		var name = e.data.name;
+		var name = e.data.name,
+			location = e.filename + ':' + e.line + ':' + e.column,
+			deprecatedAPIInfo;
 
 		if (e.data.node.deprecated) {
 			// TODO: Change deprecated message when we have the 'deprecated since' info from jsca
@@ -89,10 +100,20 @@ module.exports = function () {
 				property: name
 			});
 
-			if (results.deprecatedAPIs[name]) {
-				results.deprecatedAPIs[name] += 1;
+			deprecatedAPIInfo = results.deprecatedAPIs[name];
+			if (deprecatedAPIInfo) {
+				deprecatedAPIInfo.numInstances++;
+				if (deprecatedAPIInfo.locations.hasOwnProperty(location)) {
+					deprecatedAPIInfo.locations[location]++;
+				} else {
+					deprecatedAPIInfo.locations[location] = 1;
+				}
 			} else {
-				results.deprecatedAPIs[name] = 1;
+				results.deprecatedAPIs[name] = {
+					numInstances: 1,
+					locations: {}
+				};
+				results.deprecatedAPIs[name].locations[location] = 1;
 			}
 		}
 	});
@@ -153,7 +174,7 @@ module.exports.prototype.renderLogOutput = function (arrayGen) {
 	var resultsToLog;
 	if (renderData.deprecatedAPIs) {
 		resultsToLog = renderData.numAPIs + ' used ' + renderData.numInstances + '\n\nDeprecated APIs Used\n';
-		resultsToLog += arrayGen(['API', 'Num References'], renderData.deprecatedAPIs.list, ['api', 'numReferences']);
+		resultsToLog += arrayGen(['API', 'Num References', 'Num Instances'], renderData.deprecatedAPIs.list, ['api', 'numReferences', 'numInstances']);
 	} else {
 		resultsToLog = 'No deprecated APIs are used in the project';
 	}
