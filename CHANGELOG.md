@@ -1,4 +1,4 @@
-## 0.3.3
+## 1.0.0
 
 ### New Features
 * Added theme support for HTML results page
