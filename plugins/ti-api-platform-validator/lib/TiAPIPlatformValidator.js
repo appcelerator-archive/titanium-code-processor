@@ -10,6 +10,9 @@
 
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+	CodeProcessorUtils = require(path.join(global.titaniumCodeProcessorLibDir, 'CodeProcessorUtils')),
+
+	pluralize = CodeProcessorUtils.pluralize,
 
 	results,
 	renderData;
@@ -22,7 +25,7 @@ function generateResultsData() {
 
 	// Generate the results data
 	if (numInvalidAPIs) {
-		summary = (numInvalidAPIs === 1 ? '1 platform API is' : numInvalidAPIs + ' platform APIs are') + ' used incorrectly';
+		summary = pluralize('%s platform API is', '%s platform APIs are', numInvalidAPIs) + ' used incorrectly';
 	} else {
 		summary = 'No platform specific APIs are used incorrectly';
 	}

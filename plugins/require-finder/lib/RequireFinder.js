@@ -9,6 +9,9 @@
 
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+	CodeProcessorUtils = require(path.join(global.titaniumCodeProcessorLibDir, 'CodeProcessorUtils')),
+
+	pluralize = CodeProcessorUtils.pluralize,
 
 	results,
 	renderData;
@@ -22,16 +25,16 @@ function generateResultsData() {
 		skipped = results.skipped.length,
 		summary = [];
 	if (resolved) {
-		summary.push(resolved + ' module' + (resolved === 1 ? '' : 's') + ' resolved');
+		summary.push(pluralize('%s module', '%s modules', resolved) + ' resolved');
 	}
 	if (unresolved) {
-		summary.push(unresolved + ' module' + (unresolved === 1 ? '' : 's') + ' not resolved');
+		summary.push(pluralize('%s module', '%s modules', unresolved) + ' not resolved');
 	}
 	if (missing) {
-		summary.push(missing + ' module' + (missing === 1 ? '' : 's') + ' missing');
+		summary.push(pluralize('%s module', '%s modules', missing) + ' missing');
 	}
 	if (skipped) {
-		summary.push(skipped + ' native module' + (skipped === 1 ? '' : 's') + ' skipped');
+		summary.push(pluralize('%s module', '%s modules', skipped) + ' skipped');
 	}
 	if (summary.length) {
 		if (summary.length > 1) {
@@ -108,10 +111,10 @@ function generateRenderData() {
 
 	renderData = {
 		pluginDisplayName: this.displayName,
-		numRequiresResolved: numRequiresResolved === 1 ? '1 module' : numRequiresResolved + ' modules',
-		numRequiresUnresolved: numRequiresUnresolved === 1 ? '1 module' : numRequiresUnresolved + ' modules',
-		numRequiresMissing: numRequiresMissing === 1 ? '1 module' : numRequiresMissing + ' modules',
-		numRequiresSkipped: numRequiresSkipped + ' native module' + (numRequiresSkipped === 1 ? '' : 's'),
+		numRequiresResolved: pluralize('%s module', '%s modules', numRequiresResolved),
+		numRequiresUnresolved: pluralize('%s module', '%s modules', numRequiresUnresolved),
+		numRequiresMissing: pluralize('%s module', '%s modules', numRequiresMissing),
+		numRequiresSkipped: pluralize('%s native module', '%s native modules', numRequiresSkipped),
 		resolved: resolved,
 		unresolved: unresolved,
 		missing: missing,

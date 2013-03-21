@@ -10,6 +10,9 @@
 
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+	CodeProcessorUtils = require(path.join(global.titaniumCodeProcessorLibDir, 'CodeProcessorUtils')),
+
+	pluralize = CodeProcessorUtils.pluralize,
 
 	results,
 	renderData;
@@ -22,7 +25,7 @@ function generateResultsData() {
 
 	// Generate the results data
 	if (numDeprecatedAPIs) {
-		summary = (numDeprecatedAPIs === 1 ? '1 deprecated API is' : numDeprecatedAPIs + ' deprecated APIs are') + ' used';
+		summary = pluralize('%s deprecated API is', '%s deprecated APIs are', numDeprecatedAPIs) + ' used';
 	} else {
 		summary = 'No deprecated APIs are used';
 	}
