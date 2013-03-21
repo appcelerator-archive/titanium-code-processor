@@ -19,6 +19,8 @@ var path = require('path'),
 function generateResultsData() {
 	var summary,
 		numInvalidAPIs = Object.keys(results.invalidAPIs).length;
+
+	// Generate the results data
 	if (numInvalidAPIs) {
 		summary = (numInvalidAPIs === 1 ? '1 platform API is' : numInvalidAPIs + ' platform APIs are') + ' used incorrectly';
 	} else {
@@ -28,11 +30,13 @@ function generateResultsData() {
 }
 
 function generateRenderData() {
-	var invalidAPIs,
-		numInvalidAPIs = Object.keys(results.invalidAPIs).length,
+	var numInvalidAPIs = Object.keys(results.invalidAPIs).length,
+		invalidAPIs,
+		numInvalidAPIReferences = 0,
 		numInvalidAPIInstances = 0,
 		invalidAPI;
 
+	// Generate the render data
 	if (numInvalidAPIs) {
 		invalidAPIs = {
 			list: []
@@ -40,14 +44,21 @@ function generateRenderData() {
 		for (invalidAPI in results.invalidAPIs) {
 			invalidAPIs.list.push({
 				api: invalidAPI,
-				numReferences: results.invalidAPIs[invalidAPI]
+				numReferences: Object.keys(results.invalidAPIs[invalidAPI].locations).length,
+				numInstances: results.invalidAPIs[invalidAPI].numInstances
 			});
-			numInvalidAPIInstances += results.invalidAPIs[invalidAPI];
+			numInvalidAPIInstances += results.invalidAPIs[invalidAPI].numInstances;
+			numInvalidAPIReferences += Object.keys(results.invalidAPIs[invalidAPI].locations).length;
 		}
 		if (numInvalidAPIs === 1) {
 			numInvalidAPIs = '1 platform-specific API is';
 		} else {
 			numInvalidAPIs = numInvalidAPIs + ' platform-specific APIs are';
+		}
+		if (numInvalidAPIReferences === 1) {
+			numInvalidAPIReferences = '1 place';
+		} else {
+			numInvalidAPIReferences = numInvalidAPIReferences + ' places';
 		}
 		if (numInvalidAPIInstances === 1) {
 			numInvalidAPIInstances = '1 time';
@@ -55,10 +66,10 @@ function generateRenderData() {
 			numInvalidAPIInstances = numInvalidAPIInstances + ' times';
 		}
 	}
-
 	renderData = {
 		pluginDisplayName: this.displayName,
 		numAPIs: numInvalidAPIs,
+		numReferences: numInvalidAPIReferences,
 		numInstances: numInvalidAPIInstances,
 		invalidAPIs: invalidAPIs
 	};
@@ -91,9 +102,11 @@ module.exports = function (options, dependencies) {
 
 	Runtime.on('tiPropertyReferenced', function(e) {
 		var platformList = e.data.node.userAgents,
+			location = e.filename + ':' + e.line + ':' + e.column,
 			i, len,
 			isSupported = false,
-			name = e.data.name;
+			name = e.data.name,
+			invalidAPI;
 
 		for (i = 0, len = platformList.length; i < len; i++) {
 			if (platform === platformList[i].platform) {
@@ -107,10 +120,20 @@ module.exports = function (options, dependencies) {
 					platform: platform
 				});
 
-			if (results.invalidAPIs[name]) {
-				results.invalidAPIs[name] += 1;
+			invalidAPI = results.invalidAPIs[name];
+			if (invalidAPI) {
+				invalidAPI.numInstances++;
+				if (invalidAPI.locations.hasOwnProperty(location)) {
+					invalidAPI.locations[location]++;
+				} else {
+					invalidAPI.locations[location] = 1;
+				}
 			} else {
-				results.invalidAPIs[name] = 1;
+				results.invalidAPIs[name] = {
+					numInstances: 1,
+					locations: {}
+				};
+				results.invalidAPIs[name].locations[location] = 1;
 			}
 		}
 	});
@@ -169,13 +192,11 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
  */
 module.exports.prototype.renderLogOutput = function (arrayGen) {
 	var resultsToLog;
-
 	if (renderData.invalidAPIs) {
 		resultsToLog = renderData.numAPIs + ' used ' + renderData.numInstances + '\n\nInvalid Platform-Specific API References\n';
-		resultsToLog += arrayGen(['API', 'Num References'], renderData.invalidAPIs.list, ['api', 'numReferences']);
+		resultsToLog += arrayGen(['API', 'Num References', 'Num Instances'], renderData.invalidAPIs.list, ['api', 'numReferences', 'numInstances']);
 	} else {
 		resultsToLog = 'No platform specific APIs are used incorrectly in the project';
 	}
-
 	return resultsToLog;
 };

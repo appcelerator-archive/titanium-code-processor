@@ -32,8 +32,8 @@ function generateResultsData() {
 function generateRenderData() {
 	var numDeprecatedAPIs = Object.keys(results.deprecatedAPIs).length,
 		deprecatedAPIs,
-		numDeprecatedAPIInstances = 0,
 		numDeprecatedAPIReferences = 0,
+		numDeprecatedAPIInstances = 0,
 		deprecatedAPI;
 
 	// Generate the render data
@@ -44,8 +44,8 @@ function generateRenderData() {
 		for (deprecatedAPI in results.deprecatedAPIs) {
 			deprecatedAPIs.list.push({
 				api: deprecatedAPI,
-				numInstances: results.deprecatedAPIs[deprecatedAPI].numInstances,
-				numReferences: Object.keys(results.deprecatedAPIs[deprecatedAPI].locations).length
+				numReferences: Object.keys(results.deprecatedAPIs[deprecatedAPI].locations).length,
+				numInstances: results.deprecatedAPIs[deprecatedAPI].numInstances
 			});
 			numDeprecatedAPIInstances += results.deprecatedAPIs[deprecatedAPI].numInstances;
 			numDeprecatedAPIReferences += Object.keys(results.deprecatedAPIs[deprecatedAPI].locations).length;
@@ -55,15 +55,15 @@ function generateRenderData() {
 		} else {
 			numDeprecatedAPIs = numDeprecatedAPIs + ' deprecated APIs are';
 		}
-		if (numDeprecatedAPIInstances === 1) {
-			numDeprecatedAPIInstances = '1 time';
-		} else {
-			numDeprecatedAPIInstances = numDeprecatedAPIInstances + ' times';
-		}
 		if (numDeprecatedAPIReferences === 1) {
 			numDeprecatedAPIReferences = '1 place';
 		} else {
 			numDeprecatedAPIReferences = numDeprecatedAPIReferences + ' places';
+		}
+		if (numDeprecatedAPIInstances === 1) {
+			numDeprecatedAPIInstances = '1 time';
+		} else {
+			numDeprecatedAPIInstances = numDeprecatedAPIInstances + ' times';
 		}
 	}
 	renderData = {
