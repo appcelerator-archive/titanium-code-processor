@@ -1,4 +1,4 @@
-## 0.3.3
+## 1.0.0
 
 ### New Features
 * Added theme support for HTML results page
@@ -18,6 +18,7 @@
 * The plugins sub-command now properly accepts paths
 * Syntax errors now have filename/line/column information
 * Syntax errors in a module required elsewhere no longer causes the code processor to crash
+* Callbacks assigned to properties, such as Ti.Network.HTTPClient.onload, are now processed property
 
 ## 0.3.2 (28 February 2013)
 

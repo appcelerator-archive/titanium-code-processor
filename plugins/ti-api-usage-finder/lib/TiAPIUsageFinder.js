@@ -10,6 +10,9 @@
 
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+	CodeProcessorUtils = require(path.join(global.titaniumCodeProcessorLibDir, 'CodeProcessorUtils')),
+
+	pluralize = CodeProcessorUtils.pluralize,
 
 	results,
 	renderData;
@@ -25,8 +28,8 @@ function generateResultsData() {
 		for (api in results.global) {
 			numInstances += results.global[api];
 		}
-		summary = (numAPIs === 1 ? '1 distinct API is' : numAPIs + ' distinct APIs are') + ' used ' +
-			(numInstances === 1 ? '1 time' : numInstances + ' times');
+		summary = pluralize('%s distinct API is', '%s distinct APIs are', numAPIs) + ' used ' +
+			pluralize('%s time', '%s times', numInstances);
 	} else {
 		summary = 'No Titanium APIs are used';
 	}
