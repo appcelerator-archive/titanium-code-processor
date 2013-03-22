@@ -320,7 +320,6 @@ TiObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, t
 					callArgs[i] = new Base.UnknownType();
 				}
 				Runtime.queueFunction(v, new Base.UndefinedType(), callArgs, true);
-				console.log('Queueing prop function');
 			}
 		} else {
 			Runtime.fireEvent('nonTiPropertySet', 'Property "' + p + '" was set but is not part of the API', {
