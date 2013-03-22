@@ -180,15 +180,15 @@ util.inherits(TiFunction, Base.FunctionType);
 TiFunction.prototype.call = function call(thisVal, args) {
 	var returnType,
 		root = api,
-		i, j, len,
+		i, ilen, j, jlen,
 		value = new Base.UnknownType(),
 		callArgs;
 	args = args || [];
-	for (i = 0, len = args.length; i < len; i++) {
+	for (i = 0, ilen = args.length; i < ilen; i++) {
 		if (Base.type(args[i]) !== 'Unknown') {
 			if (Base.isCallable(args[i])) {
 				callArgs = [];
-				for (j = 0; j < args[i].get('length').value; j++) {
+				for (j = 0, jlen = args[i].get('length').value; j < jlen; j++) {
 					callArgs[j] = new Base.UnknownType();
 				}
 				Runtime.queueFunction(args[i], new Base.UndefinedType(), callArgs, true);
@@ -200,7 +200,7 @@ TiFunction.prototype.call = function call(thisVal, args) {
 	}
 	if (this._returnTypes && this._returnTypes.length === 1) {
 		returnType = this._returnTypes[0].type.split('.');
-		for (i = 0, len = returnType.length; i < len; i++) {
+		for (i = 0, ilen = returnType.length; i < ilen; i++) {
 			root = root && root.children[returnType[i]];
 		}
 		if (root && root.node) {
@@ -296,15 +296,32 @@ TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, suppressEvent
  * @see ECMA-262 Spec Chapter 8.12.5
  */
 TiObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, throwFlag, suppressEvent) {
-	var v;
+	var v,
+		callArgs,
+		i, len,
+		props = this._api.properties,
+		api;
 	Base.ObjectType.prototype.defineOwnProperty.apply(this, arguments);
 	if (!suppressEvent && Base.isDataDescriptor(desc)) {
 		v = desc.value;
-		if (v._api) {
+		for (i = 0, len = props.length; i < len; i++) {
+			if (props[i].name === p) {
+				api = props[i];
+			}
+		}
+		if (api) {
 			Runtime.fireEvent('tiPropertySet', 'Property "' + p + '" was set', {
-				name: v._apiName,
+				name: this._apiName + '.' + api.name,
 				node: v._api
 			});
+			if (Base.isCallable(v)) {
+				callArgs = [];
+				for (i = 0, len = v.get('length').value; i < len; i++) {
+					callArgs[i] = new Base.UnknownType();
+				}
+				Runtime.queueFunction(v, new Base.UndefinedType(), callArgs, true);
+				console.log('Queueing prop function');
+			}
 		} else {
 			Runtime.fireEvent('nonTiPropertySet', 'Property "' + p + '" was set but is not part of the API', {
 				name: p

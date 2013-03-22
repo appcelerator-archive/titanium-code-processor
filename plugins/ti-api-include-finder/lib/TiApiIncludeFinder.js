@@ -9,6 +9,9 @@
 
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+	CodeProcessorUtils = require(path.join(global.titaniumCodeProcessorLibDir, 'CodeProcessorUtils')),
+
+	pluralize = CodeProcessorUtils.pluralize,
 
 	results,
 	renderData;
@@ -21,13 +24,13 @@ function generateResultsData() {
 		missing = results.missing.length,
 		summary = [];
 	if (resolved) {
-		summary.push(resolved + ' file' + (resolved === 1 ? '' : 's') + ' resolved');
+		summary.push(pluralize('%s file', '%s files', resolved) + ' resolved');
 	}
 	if (unresolved) {
-		summary.push(unresolved + ' file' + (unresolved === 1 ? '' : 's') + ' not resolved');
+		summary.push(pluralize('%s file', '%s files', unresolved) + ' not resolved');
 	}
 	if (missing) {
-		summary.push(missing + ' file' + (missing === 1 ? '' : 's') + ' missing');
+		summary.push(pluralize('%s file', '%s files', missing) + ' missing');
 	}
 	if (summary.length) {
 		if (summary.length > 1) {
@@ -89,9 +92,9 @@ function generateRenderData() {
 
 	renderData = {
 		pluginDisplayName: this.displayName,
-		numIncludesResolved: numIncludesResolved === 1 ? '1 file' : numIncludesResolved + ' files',
-		numIncludesUnresolved: numIncludesUnresolved === 1 ? '1 file' : numIncludesUnresolved + ' files',
-		numIncludesMissing: numIncludesMissing === 1 ? '1 file' : numIncludesMissing + ' files',
+		numIncludesResolved: pluralize('%s file', '%s files', numIncludesResolved),
+		numIncludesUnresolved: pluralize('%s file', '%s files', numIncludesUnresolved),
+		numIncludesMissing: pluralize('%s file', '%s files', numIncludesMissing),
 		resolved: resolved,
 		unresolved: unresolved,
 		missing: missing

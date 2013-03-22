@@ -15,6 +15,9 @@ var path = require('path'),
 
 	AST = require(path.join(global.titaniumCodeProcessorLibDir, 'AST')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+	CodeProcessorUtils = require(path.join(global.titaniumCodeProcessorLibDir, 'CodeProcessorUtils')),
+
+	pluralize = CodeProcessorUtils.pluralize,
 
 	options,
 	results,
@@ -84,7 +87,7 @@ function generateResultsData() {
 	summary = (100 * results.numUnknownNodes / results.numTotalNodes).toFixed(1) +
 		'% of the project\'s source code is not knowable at compile time';
 	if (numUnknownCallbacks) {
-		summary += (numUnknownCallbacks === 1 ? '. 1 unknown callback was' : '\n' + numUnknownCallbacks + ' unknown callbacks were') + ' detected';
+		summary += pluralize('.\n%s unknown callback was', '.\n%s unknown callbacks were', numUnknownCallbacks) + ' detected';
 	}
 	results.summary = summary;
 
@@ -263,7 +266,7 @@ function generateRenderData() {
 
 	if (numUnknownCallbacks) {
 		unknownCallbacks = {
-			summary: (numUnknownCallbacks === 1 ? '1 unknown callback was' : numUnknownCallbacks + ' unknown callbacks were') + ' detected',
+			summary: pluralize('%s unknown callback was', '%s unknown callbacks were', numUnknownCallbacks) + ' detected',
 			list: []
 		};
 		for (i = 0, len = results.unknownCallbacks.length; i < len; i++) {
@@ -300,10 +303,10 @@ function generateRenderData() {
 
 	renderData = {
 		pluginDisplayName: this.displayName,
-		numUnknownNodes: results.numUnknownNodes === 1 ? '1 node is' : results.numUnknownNodes + ' nodes are',
-		numAbiguousBlockNodes: results.numAbiguousBlockNodes === 1 ? '1 node is' : results.numAbiguousBlockNodes + ' nodes are',
-		numAbiguousContextNodes: results.numAbiguousContextNodes === 1 ? '1 node is' : results.numAbiguousContextNodes + ' nodes are',
-		numTotalNodes: results.numTotalNodes === 1 ? '1 node' : results.numTotalNodes + ' nodes',
+		numUnknownNodes: pluralize('%s node is', '%s nodes are', results.numUnknownNodes),
+		numAbiguousBlockNodes: pluralize('%s node is', '%s nodes are', results.numAbiguousBlockNodes),
+		numAbiguousContextNodes: pluralize('%s node is', '%s nodes are', results.numAbiguousContextNodes),
+		numTotalNodes: pluralize('%s node is', '%s nodes are', results.numTotalNodes),
 		numUnknownCallbacks: numUnknownCallbacks,
 		nodeCoverage: {
 			list: list

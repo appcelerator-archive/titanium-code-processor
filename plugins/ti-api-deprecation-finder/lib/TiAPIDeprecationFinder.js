@@ -10,6 +10,9 @@
 
 var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+	CodeProcessorUtils = require(path.join(global.titaniumCodeProcessorLibDir, 'CodeProcessorUtils')),
+
+	pluralize = CodeProcessorUtils.pluralize,
 
 	results,
 	renderData;
@@ -22,7 +25,7 @@ function generateResultsData() {
 
 	// Generate the results data
 	if (numDeprecatedAPIs) {
-		summary = (numDeprecatedAPIs === 1 ? '1 deprecated API is' : numDeprecatedAPIs + ' deprecated APIs are') + ' used';
+		summary = pluralize('%s deprecated API is', '%s deprecated APIs are', numDeprecatedAPIs) + ' used';
 	} else {
 		summary = 'No deprecated APIs are used';
 	}
@@ -32,6 +35,7 @@ function generateResultsData() {
 function generateRenderData() {
 	var numDeprecatedAPIs = Object.keys(results.deprecatedAPIs).length,
 		deprecatedAPIs,
+		numDeprecatedAPIReferences = 0,
 		numDeprecatedAPIInstances = 0,
 		deprecatedAPI;
 
@@ -43,14 +47,21 @@ function generateRenderData() {
 		for (deprecatedAPI in results.deprecatedAPIs) {
 			deprecatedAPIs.list.push({
 				api: deprecatedAPI,
-				numReferences: results.deprecatedAPIs[deprecatedAPI]
+				numReferences: Object.keys(results.deprecatedAPIs[deprecatedAPI].locations).length,
+				numInstances: results.deprecatedAPIs[deprecatedAPI].numInstances
 			});
-			numDeprecatedAPIInstances += results.deprecatedAPIs[deprecatedAPI];
+			numDeprecatedAPIInstances += results.deprecatedAPIs[deprecatedAPI].numInstances;
+			numDeprecatedAPIReferences += Object.keys(results.deprecatedAPIs[deprecatedAPI].locations).length;
 		}
 		if (numDeprecatedAPIs === 1) {
 			numDeprecatedAPIs = '1 deprecated API is';
 		} else {
 			numDeprecatedAPIs = numDeprecatedAPIs + ' deprecated APIs are';
+		}
+		if (numDeprecatedAPIReferences === 1) {
+			numDeprecatedAPIReferences = '1 place';
+		} else {
+			numDeprecatedAPIReferences = numDeprecatedAPIReferences + ' places';
 		}
 		if (numDeprecatedAPIInstances === 1) {
 			numDeprecatedAPIInstances = '1 time';
@@ -61,6 +72,7 @@ function generateRenderData() {
 	renderData = {
 		pluginDisplayName: this.displayName,
 		numAPIs: numDeprecatedAPIs,
+		numReferences: numDeprecatedAPIReferences,
 		numInstances: numDeprecatedAPIInstances,
 		deprecatedAPIs: deprecatedAPIs
 	};
@@ -81,7 +93,9 @@ module.exports = function () {
 		deprecatedAPIs: {}
 	};
 	Runtime.on('tiPropertyReferenced', function (e) {
-		var name = e.data.name;
+		var name = e.data.name,
+			location = e.filename + ':' + e.line + ':' + e.column,
+			deprecatedAPIInfo;
 
 		if (e.data.node.deprecated) {
 			// TODO: Change deprecated message when we have the 'deprecated since' info from jsca
@@ -89,10 +103,20 @@ module.exports = function () {
 				property: name
 			});
 
-			if (results.deprecatedAPIs[name]) {
-				results.deprecatedAPIs[name] += 1;
+			deprecatedAPIInfo = results.deprecatedAPIs[name];
+			if (deprecatedAPIInfo) {
+				deprecatedAPIInfo.numInstances++;
+				if (deprecatedAPIInfo.locations.hasOwnProperty(location)) {
+					deprecatedAPIInfo.locations[location]++;
+				} else {
+					deprecatedAPIInfo.locations[location] = 1;
+				}
 			} else {
-				results.deprecatedAPIs[name] = 1;
+				results.deprecatedAPIs[name] = {
+					numInstances: 1,
+					locations: {}
+				};
+				results.deprecatedAPIs[name].locations[location] = 1;
 			}
 		}
 	});
@@ -153,7 +177,7 @@ module.exports.prototype.renderLogOutput = function (arrayGen) {
 	var resultsToLog;
 	if (renderData.deprecatedAPIs) {
 		resultsToLog = renderData.numAPIs + ' used ' + renderData.numInstances + '\n\nDeprecated APIs Used\n';
-		resultsToLog += arrayGen(['API', 'Num References'], renderData.deprecatedAPIs.list, ['api', 'numReferences']);
+		resultsToLog += arrayGen(['API', 'Num References', 'Num Instances'], renderData.deprecatedAPIs.list, ['api', 'numReferences', 'numInstances']);
 	} else {
 		resultsToLog = 'No deprecated APIs are used in the project';
 	}
