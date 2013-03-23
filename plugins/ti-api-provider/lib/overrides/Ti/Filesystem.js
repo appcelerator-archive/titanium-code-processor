@@ -8,9 +8,13 @@
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
+var path = require('path'),
+
+	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base'));
+
 exports.getOverrides = function () {
 	return [{
 		regex: /^Titanium\.Filesystem\.resourcesDirectory$/,
-		value: '/'
+		value: new Base.StringType('/')
 	}];
 };
