@@ -2,7 +2,7 @@
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
- * Ti.UI.Window.open implementation
+ * Ti.UI.Window implementation
  *
  * @module plugins/TiAPIProcessor
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;

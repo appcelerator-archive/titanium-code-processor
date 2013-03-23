@@ -387,8 +387,17 @@ function createObject(apiNode) {
 		name = property.name;
 		type = property.type;
 		fullName = apiNode.node.name + '.' + name;
+		value = undefined;
+		for (j = 0, jlen = propertyOverrides.length; j < jlen; j++) {
+			if (propertyOverrides[j].regex.test(fullName) && propertyOverrides[j].value) {
+				value = propertyOverrides[j].value;
+				break;
+			}
+		}
 		if (name === 'osname' && apiNode.node.name === 'Titanium.Platform') {
 			value = new Base.StringType(platform);
+		} else if (value) {
+			// Do nothing
 		} else if (fullName in values) {
 			if (values[fullName] === null) {
 				value = new Base.NullType();
@@ -408,7 +417,7 @@ function createObject(apiNode) {
 						process.exit(1);
 				}
 			}
-		}else if (type in api.children) {
+		} else if (type in api.children) {
 			value = createObject(api.children[type]);
 		} else {
 			value = new Base.UnknownType();
