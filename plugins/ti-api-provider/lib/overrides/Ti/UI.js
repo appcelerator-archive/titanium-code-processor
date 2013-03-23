@@ -13,8 +13,8 @@ var path = require('path'),
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime'));
 
-exports.init = function (options) {
-	return {
+exports.getOverrides = function (options) {
+	return [{
 		regex: /^Titanium\.UI\.create([a-zA-Z0-9_]*)$/,
 		call: function call(thisVal, args) {
 			var returnType,
@@ -66,5 +66,5 @@ exports.init = function (options) {
 				return new Base.UnknownType();
 			}
 		}
-	};
+	}];
 };

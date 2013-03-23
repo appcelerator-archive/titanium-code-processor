@@ -13,9 +13,9 @@ var path = require('path'),
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime'));
 
-exports.init = function () {
-	return {
-		regex: /^Titanium\.UI.Window.open$/,
+exports.getOverrides = function () {
+	return [{
+		regex: /^Titanium\.UI\.Window\.open$/,
 		call: function call(thisVal) {
 			var requireFunction = Runtime.getGlobalObject().get('require'),
 				urlValue = thisVal.get('url');
@@ -24,5 +24,5 @@ exports.init = function () {
 			}
 			return new Base.UndefinedType();
 		}
-	};
+	}];
 };
