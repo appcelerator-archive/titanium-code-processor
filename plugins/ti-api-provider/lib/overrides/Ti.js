@@ -15,8 +15,8 @@ var fs = require('fs'),
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime'));
 
-exports.init = function (options) {
-	return {
+exports.getOverrides = function (options) {
+	return [{
 		regex: /^Titanium\.include$/,
 		call: function call(thisVal, args) {
 			var files = [],
@@ -77,5 +77,5 @@ exports.init = function (options) {
 			});
 			return new Base.UndefinedType();
 		}
-	};
+	}];
 };

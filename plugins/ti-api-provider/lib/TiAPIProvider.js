@@ -13,6 +13,8 @@ var fs = require('fs'),
 	existsSync = fs.existsSync || path.existsSync,
 	util = require('util'),
 
+	wrench = require('wrench'),
+
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 
@@ -22,11 +24,7 @@ var fs = require('fs'),
 	values,
 	api,
 
-	methodOverrides = [
-		require('./method-overrides/TiInclude.js'),
-		require('./method-overrides/TiUICreate.js'),
-		require('./method-overrides/TiUIWindowOpen.js')
-	],
+	methodOverrides = [],
 	propertyOverrides = [];
 
 // ******** Plugin API Methods ********
@@ -82,15 +80,17 @@ module.exports.prototype.init = function init() {
 		type,
 		aliases = jsca.aliases,
 		alias,
-		i, j,
-		len,
+		i, ilen, j, jlen,
 		name,
 		root,
 		obj,
-		p;
+		p,
+		jsRegex = /\.js$/,
+		overrideFiles = wrench.readdirSyncRecursive(path.join(__dirname, 'overrides')),
+		overrideDefs;
 
 	// Create the API tree
-	for (i = 0, len = types.length; i < len; i++) {
+	for (i = 0, ilen = types.length; i < ilen; i++) {
 		type = types[i];
 		root = api;
 		name = type.name.split('.');
@@ -103,25 +103,28 @@ module.exports.prototype.init = function init() {
 		root.node = type;
 	}
 
-	for (i = 0, len = methodOverrides.length; i < len; i++) {
-		methodOverrides[i] = methodOverrides[i].init({
-			api: api,
-			platform: platform,
-			values: values,
-			createObject: createObject
-		});
-	}
-	for (i = 0, len = propertyOverrides.length; i < len; i++) {
-		propertyOverrides[i] = propertyOverrides[i].init({
-			api: api,
-			platform: platform,
-			values: values,
-			createObject: createObject
-		});
+	for (i = 0, ilen = overrideFiles.length; i < ilen; i++) {
+		if (jsRegex.test(overrideFiles[i])) {
+			overrideDefs = require(path.join(__dirname, 'overrides', overrideFiles[i])).getOverrides({
+					api: api,
+					platform: platform,
+					values: values,
+					createObject: createObject
+				});
+			for(j = 0, jlen = overrideDefs.length; j < jlen; j++) {
+				if (overrideDefs[j].call) {
+					methodOverrides.push(overrideDefs[j]);
+				} else if (overrideDefs[j].value) {
+					propertyOverrides.push(overrideDefs[j]);
+				} else {
+					throw new Error('Invalid override in ' + overrideFiles[i]);
+				}
+			}
+		}
 	}
 
 	// Create the list of aliases and global objects
-	for (i = 0, len = aliases.length; i < len; i++) {
+	for (i = 0, ilen = aliases.length; i < ilen; i++) {
 		alias = aliases[i];
 		if (alias) {
 			type = alias.type;
@@ -384,8 +387,17 @@ function createObject(apiNode) {
 		name = property.name;
 		type = property.type;
 		fullName = apiNode.node.name + '.' + name;
+		value = undefined;
+		for (j = 0, jlen = propertyOverrides.length; j < jlen; j++) {
+			if (propertyOverrides[j].regex.test(fullName) && propertyOverrides[j].value) {
+				value = propertyOverrides[j].value;
+				break;
+			}
+		}
 		if (name === 'osname' && apiNode.node.name === 'Titanium.Platform') {
 			value = new Base.StringType(platform);
+		} else if (value) {
+			// Do nothing
 		} else if (fullName in values) {
 			if (values[fullName] === null) {
 				value = new Base.NullType();
@@ -405,7 +417,7 @@ function createObject(apiNode) {
 						process.exit(1);
 				}
 			}
-		}else if (type in api.children) {
+		} else if (type in api.children) {
 			value = createObject(api.children[type]);
 		} else {
 			value = new Base.UnknownType();
