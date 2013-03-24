@@ -19,6 +19,7 @@
 * Syntax errors now have filename/line/column information
 * Syntax errors in a module required elsewhere no longer causes the code processor to crash
 * Callbacks assigned to properties, such as Ti.Network.HTTPClient.onload, are now processed property
+* Ti.Filesystem.ResourcesDirectory now returns something sensible
 
 ## 0.3.2 (28 February 2013)
 
