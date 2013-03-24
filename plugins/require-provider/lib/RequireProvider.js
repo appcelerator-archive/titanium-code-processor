@@ -52,6 +52,37 @@ module.exports = function (options) {
 	this.platform = platform;
 	this.platformList = platformList;
 
+	Runtime.on('fileListSet', function(e) {
+		var platformSpecificFiles = {},
+			genericFiles = {},
+			fileList = e.data.fileList,
+			file,
+			leadSegment,
+			i, len;
+		for (i = 0, len = fileList.length; i < len; i++) {
+			file = fileList[i].split(path.sep);
+			leadSegment = file[0];
+			if (platformList.indexOf(leadSegment) !== -1) {
+				file.splice(0, 1);
+				if (leadSegment === platform) {
+					platformSpecificFiles[file.join(path.sep)] = 1;
+				}
+			} else {
+				genericFiles[file.join(path.sep)] = 1;
+			}
+		}
+		for (i in platformSpecificFiles) {
+			if (i in genericFiles) {
+				delete genericFiles[i];
+			}
+		}
+		fileList = Object.keys(genericFiles);
+		for (i in platformSpecificFiles) {
+			fileList.push(path.join(platform, i));
+		}
+		Runtime.fileList = fileList;
+	});
+
 	Runtime.isFileValid = function isFileValid(filename) {
 		var rootDir = filename.split(path.sep)[0];
 		return fileRegExp.test(filename) && (platformList.indexOf(rootDir) === -1 || rootDir === platform);
@@ -151,7 +182,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 			}
 
 			// Make sure that the file exists and then process it
-			if (existsSync(filePath)) {
+			if (Runtime.fileList.indexOf(filePath) !== -1) {
 				if (cache[filePath]) {
 					result = cache[filePath];
 				} else {
