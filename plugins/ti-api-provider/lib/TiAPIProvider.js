@@ -25,7 +25,10 @@ var fs = require('fs'),
 	api,
 
 	methodOverrides = [],
-	propertyOverrides = [];
+	propertyOverrides = [],
+
+	getterRegex = /^get([A-Z])(.*)$/,
+	setterRegex = /^set([A-Z])(.*)$/;
 
 // ******** Plugin API Methods ********
 
@@ -305,7 +308,7 @@ TiObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, t
 		props = this._api.properties,
 		api;
 	Base.ObjectType.prototype.defineOwnProperty.apply(this, arguments);
-	if (!suppressEvent && Base.isDataDescriptor(desc)) {
+	if (Base.isDataDescriptor(desc)) {
 		v = desc.value;
 		for (i = 0, len = props.length; i < len; i++) {
 			if (props[i].name === p) {
@@ -313,10 +316,12 @@ TiObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, t
 			}
 		}
 		if (api) {
-			Runtime.fireEvent('tiPropertySet', 'Property "' + p + '" was set', {
-				name: this._apiName + '.' + api.name,
-				node: v._api
-			});
+			if (!suppressEvent) {
+				Runtime.fireEvent('tiPropertySet', 'Property "' + p + '" was set', {
+					name: this._apiName + '.' + api.name,
+					node: v._api
+				});
+			}
 			if (Base.isCallable(v)) {
 				callArgs = [];
 				for (i = 0, len = v.get('length').value; i < len; i++) {
@@ -324,7 +329,7 @@ TiObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, t
 				}
 				Runtime.queueFunction(v, new Base.UndefinedType(), callArgs, true);
 			}
-		} else {
+		} else if (!suppressEvent) {
 			Runtime.fireEvent('nonTiPropertySet', 'Property "' + p + '" was set but is not part of the API', {
 				name: p
 			});
@@ -360,6 +365,66 @@ TiObjectType.prototype.delete = function objDelete(p) {
 // ******** Helper Methods ********
 
 /**
+ * Creates a setter function
+ *
+ * @private
+ * @method
+ */
+function TiSetterFunction(obj, name, className) {
+	Base.ObjectType.call(this, className || 'Function');
+	this._obj = obj;
+	this._name = name;
+	this._isTiSetter = true;
+}
+util.inherits(TiSetterFunction, Base.FunctionType);
+
+/**
+ * @private
+ */
+TiSetterFunction.prototype.call = function call(thisVal, args) {
+	var oldValue;
+	if (thisVal !== this._obj) {
+		Base.handleRecoverableNativeException('TypeError', 'Cannot invoke setters on objects that are not the original owner of the setter');
+		return new Base.UnknownType();
+	}
+	if (args[0]) {
+		oldValue = thisVal.getOwnProperty(this._name);
+		thisVal.defineOwnProperty(this._name, {
+			value: args[0],
+			writable: oldValue.writable,
+			enumerable: oldValue.enumerable,
+			configurable: oldValue.configurable
+		}, false, true);
+	}
+	return new Base.UndefinedType();
+};
+
+/**
+ * Creates a getter function
+ *
+ * @private
+ * @method
+ */
+function TiGetterFunction(obj, name, className) {
+	Base.ObjectType.call(this, className || 'Function');
+	this._obj = obj;
+	this._name = name;
+	this._isTiGetter = true;
+}
+util.inherits(TiGetterFunction, Base.FunctionType);
+
+/**
+ * @private
+ */
+TiGetterFunction.prototype.call = function call(thisVal) {
+	if (thisVal !== this._obj) {
+		Base.handleRecoverableNativeException('TypeError', 'Cannot invoke getters on objects that are not the original owner of the getter');
+		return new Base.UnknownType();
+	}
+	return thisVal.getOwnProperty(this._name, true).value;
+};
+
+/**
  * Creates a titanium object from an API node
  *
  * @private
@@ -368,6 +433,7 @@ TiObjectType.prototype.delete = function objDelete(p) {
 function createObject(apiNode) {
 	var obj = new TiObjectType(apiNode),
 		properties = apiNode.node.properties,
+		propertyList = {},
 		property,
 		functions = apiNode.node.functions,
 		func,
@@ -381,11 +447,38 @@ function createObject(apiNode) {
 	obj._api = apiNode.node;
 	obj._apiName = apiNode.node.name;
 
+	// Figure out which methods are getters/setters and which are just regular methods
+	for (i = 0, ilen = properties.length; i < ilen; i++) {
+		property = properties[i];
+		propertyList[property.name] = property;
+	}
+	for (i = 0; i < functions.length; i++) {
+		func = functions[i];
+		value = getterRegex.exec(func.name);
+		if (value) {
+			value = value[1].toLowerCase() + value[2];
+			if (propertyList[value]) {
+				propertyList[value]._getter = func;
+				functions.splice(i--, 1);
+			}
+		} else {
+			value = setterRegex.exec(func.name);
+			if (value) {
+				value = value[1].toLowerCase() + value[2];
+				if (propertyList[value]) {
+					propertyList[value]._setter = func;
+					functions.splice(i--, 1);
+				}
+			}
+		}
+	}
+
 	// Add the properties
 	for (i = 0, ilen = properties.length; i < ilen; i++) {
 		property = properties[i];
 		name = property.name;
 		type = property.type;
+		property.readonly = !property._setter;
 		fullName = apiNode.node.name + '.' + name;
 		value = undefined;
 		for (j = 0, jlen = propertyOverrides.length; j < jlen; j++) {
@@ -407,10 +500,10 @@ function createObject(apiNode) {
 						value = new Base.NumberType(values[fullName]);
 						break;
 					case 'string':
-						value = new Base.NumberType(values[fullName]);
+						value = new Base.StringType(values[fullName]);
 						break;
 					case 'boolean':
-						value = new Base.NumberType(values[fullName]);
+						value = new Base.BooleanType(values[fullName]);
 						break;
 					default:
 						console.error('Invalid value specified in ' + this.name + ' options: ' + values[fullName]);
@@ -426,11 +519,29 @@ function createObject(apiNode) {
 		value._apiName = name;
 		obj.defineOwnProperty(name, {
 			value: value,
-			// TODO: Need to read the 'permission' property from the JSCA, only it doesn't exist yet
-			writable: !(name === 'osname' && apiNode.node.name === 'Titanium.Platform') && !property.isClassProperty,
+			writable:
+				!(name === 'osname' && apiNode.node.name === 'Titanium.Platform') &&
+				!property.isClassProperty &&
+				!property.readonly,
 			enumerable: true,
 			configurable: true
 		}, false, true);
+		if (property._setter) {
+			obj.defineOwnProperty('set' + name[0].toUpperCase() + name.substr(1), {
+				value: new TiSetterFunction(obj, name),
+				writable: false,
+				enumerable: false,
+				configurable: true,
+			});
+		}
+		if (property._getter) {
+			obj.defineOwnProperty('get' + name[0].toUpperCase() + name.substr(1), {
+				value: new TiGetterFunction(obj, name),
+				writable: false,
+				enumerable: false,
+				configurable: true,
+			});
+		}
 	}
 
 	// Add the methods
