@@ -87,7 +87,7 @@ function generateResultsData() {
 	summary = (100 * results.numUnknownNodes / results.numTotalNodes).toFixed(1) +
 		'% of the project\'s source code is not knowable at compile time';
 	if (numUnknownCallbacks) {
-		summary += pluralize('.\n%s unknown callback was', '.\n%s unknown callbacks were', numUnknownCallbacks) + ' detected';
+		summary += pluralize('. %s unknown callback was', '. %s unknown callbacks were', numUnknownCallbacks) + ' detected';
 	}
 	results.summary = summary;
 
