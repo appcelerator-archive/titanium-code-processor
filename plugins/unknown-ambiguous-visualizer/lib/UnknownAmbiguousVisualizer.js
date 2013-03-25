@@ -193,7 +193,7 @@ function generateResultsData() {
 					fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
 					fs.writeFileSync(outputFilePath + '.html',
 						AST.generateAnnotatedHTML(inputSource, annotationData,
-							'/*\nLegend:\nUnknown Value Generated\nAmbiguous Context\nAmbiguous Block\nAmbiguous Block and Context\n*/\n', [{
+							'/*\nLegend:\nUnknown Value Generated\nAmbiguous Block\nAmbiguous Context\nAmbiguous Block and Context\n*/\n', [{
 								start: 0,
 								bold: false,
 								italic: false,
@@ -212,7 +212,7 @@ function generateResultsData() {
 								fontColor: annotationStyle[1].fontColor,
 								backgroundColor: annotationStyle[1].backgroundColor
 							}, {
-								start: 52,
+								start: 51,
 								bold: annotationStyle[2].bold,
 								italic: annotationStyle[2].italic,
 								fontColor: annotationStyle[2].fontColor,

@@ -200,7 +200,7 @@ function generateResultsData() {
 					fs.writeFileSync(outputFilePath + '.json', JSON.stringify(annotationData, false, '\t'));
 					fs.writeFileSync(outputFilePath + '.html',
 						AST.generateAnnotatedHTML(inputSource, annotationData,
-							'/*\nLegend:\nVisited Node\nSkipped Node\nUnvisited Node\n*/\n', [{
+							'/*\nLegend:\nVisited Node\nSkipped Node\nUnvisited Node\n*/\n\n', [{
 								start: 0,
 								bold: false,
 								italic: false,
