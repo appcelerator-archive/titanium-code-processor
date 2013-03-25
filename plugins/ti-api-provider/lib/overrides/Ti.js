@@ -17,6 +17,9 @@ var fs = require('fs'),
 
 exports.getOverrides = function (options) {
 	return [{
+		regex: /^Titanium\.version$/,
+		value: new Base.StringType(options.manifest.version)
+	},{
 		regex: /^Titanium\.include$/,
 		call: function call(thisVal, args) {
 			var files = [],

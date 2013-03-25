@@ -19,6 +19,7 @@ var fs = require('fs'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 
 	jsca,
+	manifest,
 	platform,
 	platformList,
 	values,
@@ -41,7 +42,8 @@ var fs = require('fs'),
  * @name module:plugins/TiAPIProcessor
  */
 module.exports = function(options, dependencies) {
-	var i, len;
+	var i, len,
+		rawManifest;
 	for (i = 0, len = dependencies.length; i < len; i++) {
 		if (dependencies[i].name === 'require-provider') {
 			this.platform = platform = dependencies[i].platform;
@@ -55,17 +57,39 @@ module.exports = function(options, dependencies) {
 		children: {}
 	};
 
-	// Parse and validate the JSCA file
-	jsca = options && options.sdkPath && path.join(options.sdkPath, 'api.jsca');
-	if (!jsca) {
-		console.error(this.name + ' plugin requires the "sdkPath" option');
+	if (!options || !existsSync(options.sdkPath)) {
+		console.error(this.name + ' plugin requires a valid "sdkPath" option');
 		process.exit(1);
 	}
+
+	// Parse and validate the JSCA file
+	jsca = path.join(options.sdkPath, 'api.jsca');
 	if (!existsSync(jsca)) {
 		console.error(this.name + ' plugin could not find a valid JSCA file at "' + jsca + '"');
 		process.exit(1);
 	}
 	jsca = JSON.parse(fs.readFileSync(jsca));
+
+	// Parse and validate the manifest file
+	manifest = path.join(options.sdkPath, 'manifest.json');
+	if (existsSync(manifest)) {
+		manifest = JSON.parse(fs.readFileSync(manifest));
+	} else {
+		manifest = path.join(options.sdkPath, 'version.txt');
+		if (existsSync(manifest)) {
+			rawManifest = fs.readFileSync(manifest).toString().split('\n');
+			manifest = {};
+			for (i = 0, len = rawManifest.length; i < len; i++) {
+				if (rawManifest[i]) {
+					rawManifest[i] = rawManifest[i].split('=');
+					manifest[rawManifest[i][0]] = rawManifest[i][1];
+				}
+			}
+		} else {
+			console.error(this.name + ' plugin could not find a valid manifest file at "' + manifest + '"');
+			process.exit(1);
+		}
+	}
 };
 
 /**
@@ -106,10 +130,12 @@ module.exports.prototype.init = function init() {
 		root.node = type;
 	}
 
+	// Load the overrides
 	for (i = 0, ilen = overrideFiles.length; i < ilen; i++) {
 		if (jsRegex.test(overrideFiles[i])) {
 			overrideDefs = require(path.join(__dirname, 'overrides', overrideFiles[i])).getOverrides({
 					api: api,
+					manifest: manifest,
 					platform: platform,
 					values: values,
 					createObject: createObject
