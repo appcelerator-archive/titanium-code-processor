@@ -230,7 +230,8 @@ function generateResultsData() {
 								italic: false,
 								fontColor: [0, 0, 0],
 								backgroundColor: [1, 1, 1]
-							}]
+							}],
+							id
 						));
 				}
 			}

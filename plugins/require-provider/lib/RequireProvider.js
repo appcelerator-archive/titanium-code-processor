@@ -132,6 +132,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 		return result;
 	}
 	name = name.value;
+	this._location = undefined;
 	if (pluginRegExp.test(name) || name.indexOf(':') !== -1) {
 		Runtime.fireEvent('requireUnresolved',
 			'Plugins and URLS can not be evaluated at compile-time and will be deferred until runtime.', {
@@ -193,7 +194,11 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 					result = processFile(filePath, isModule);
 					cache[filePath] = result;
 				}
-
+				this._location = {
+					filename: filePath,
+					line: 1,
+					column: 1
+				};
 			} else {
 				eventDescription = 'The module "' + name + '" could not be found';
 				Runtime.fireEvent('requireMissing', eventDescription, {
