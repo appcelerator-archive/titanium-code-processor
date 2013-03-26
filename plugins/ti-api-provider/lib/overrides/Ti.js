@@ -86,6 +86,7 @@ exports.getOverrides = function (options) {
 				files.push(Base.getValue(args[i]));
 			}
 
+			this._location = undefined;
 			files.forEach(function (filename) {
 				filename = Base.toString(filename);
 				if (Base.type(filename) !== 'String') {
@@ -122,6 +123,12 @@ exports.getOverrides = function (options) {
 					evalFunc = Runtime.getGlobalObject().get('eval');
 					evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())], false, filePath);
 
+					this._location = {
+						filename: filePath,
+						line: 1,
+						column: 1
+					};
+
 				} else {
 					eventDescription = 'The Ti.include path "' + filename + '" could not be found';
 					Runtime.fireEvent('tiIncludeMissing', eventDescription, {
@@ -129,7 +136,7 @@ exports.getOverrides = function (options) {
 					});
 					Runtime.reportError('tiIncludeMissing', eventDescription);
 				}
-			});
+			}.bind(this));
 			return new Base.UndefinedType();
 		}
 	}];
