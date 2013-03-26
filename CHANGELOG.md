@@ -7,6 +7,8 @@
 * Merged unknown-ambiguous-visualizer and unknown-callback-detector plugins
 * Cleaned up the config file and output data formats. See the README for details
 * Added more debug output
+* Changed the default value of executionTimeLimit to 5 minutes
+* Added generic cycle detection, of which infinite loops and infinite recursion are sub-classes of
 
 ### Bug Fixes
 * Fixed a few small bugs uncovered by the upgrade to node 0.10.0
@@ -20,6 +22,7 @@
 * Syntax errors in a module required elsewhere no longer causes the code processor to crash
 * Callbacks assigned to properties, such as Ti.Network.HTTPClient.onload, are now processed property
 * Ti.Filesystem.ResourcesDirectory now returns something sensible
+* Returns inside ambiguous blocks now behave properly
 
 ## 0.3.2 (28 February 2013)
 
