@@ -166,14 +166,12 @@ exports.initCodeProcessor = function (logger) {
 	var testLib = exports.getLibrary(),
 		testLibAST = AST.parseString(testLib);
 	Runtime.setLogger(logger);
-	CodeProcessor.init({
+	CodeProcessor.init(undefined, {
 		exactMode: true
-	}, {
-		'common-globals': {
-			path: path.resolve(path.join('..', '..', 'plugins', 'common-globals')),
-			options: {}
-		}
-	}, testLibAST);
+	}, [{
+		path: path.resolve(path.join('..', '..', 'plugins', 'common-globals')),
+		options: {}
+	}], testLibAST);
 	Runtime._unknown = false;
 	testLibAST.processRule();
 };
