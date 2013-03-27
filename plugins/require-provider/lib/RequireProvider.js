@@ -133,6 +133,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 	}
 	name = name.value;
 	this._location = undefined;
+	this._ast = undefined;
 	if (pluginRegExp.test(name) || name.indexOf(':') !== -1) {
 		Runtime.fireEvent('requireUnresolved',
 			'Plugins and URLS can not be evaluated at compile-time and will be deferred until runtime.', {
@@ -157,7 +158,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 					});
 					result = cache[filePath];
 				} else {
-					result = processFile(filePath, true);
+					result = processFile.call(this, filePath, true);
 					cache[filePath] = result;
 				}
 			} else {
@@ -191,7 +192,7 @@ RequireFunction.prototype.call = function call(thisVal, args) {
 						name: name,
 						path: filePath
 					});
-					result = processFile(filePath, isModule);
+					result = processFile.call(this, filePath, isModule);
 					cache[filePath] = result;
 				}
 				this._location = {
@@ -276,6 +277,7 @@ function processFile(filename, createExports) {
 			Runtime.reportUglifyError(root);
 			results = new Base.UnknownType();
 		}
+		this._ast = root;
 
 	} else {
 		throw new Error('Internal Error: could not find file "' + filename + '"');

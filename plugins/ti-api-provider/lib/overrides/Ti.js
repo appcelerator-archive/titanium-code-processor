@@ -87,6 +87,7 @@ exports.getOverrides = function (options) {
 			}
 
 			this._location = undefined;
+			this._ast = undefined;
 			files.forEach(function (filename) {
 				filename = Base.toString(filename);
 				if (Base.type(filename) !== 'String') {
