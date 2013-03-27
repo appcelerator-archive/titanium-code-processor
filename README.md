@@ -438,14 +438,6 @@ Note: all paths are relative to the CWD. ```~``` is not supported, and it is rec
 			"options": {
 				"platform": "iphone"
 			}
-		},
-		{
-			"name": "unknown-ambiguous-visualizer",
-			"path": "path/to/unknown-ambiguous-visualizer",
-			"options": {
-				"outputDirectory": "path/to/output/dir",
-				"timestampOutputDirectory": false
-			}
 		}
 	]
 }
@@ -472,7 +464,6 @@ example shows:
 		<invokeMethods>false</invokeMethods>
 	</options>
 	<plugins>
-		<plugin>analysis-coverage</plugin>
 		<plugin>require-provider</plugin>
 	</plugins>
 </code-processor>
@@ -507,7 +498,6 @@ dependencies
 
 name | type | dependencies | description
 -----|------|--------------|------------
-[analysis-coverage](plugins/analysis-coverage) | analyzer | &lt;none&gt; | Reports the number of AST nodes that were analyzed on a global and per-file/eval basis. Optionally creates a visualization map of all the code that was analyzed
 [common-globals](plugins/common-globals) | provider | &lt;none&gt; | Provides implementations for common globals that aren't part of the JavaScript spec but are provided on all Titanium Mobile platforms (setTimeout, console, etc).
 [require-provider](plugins/require-provider) | provider | &lt;none&gt; | Provides an implementation of ```require()``` that matches the Titanium Mobile implementation, including its inconsistencies with CommonJS.
 [require-finder](plugins/require-finder) | analyzer | require-provider | Reports all files that are ```require()```'d in a project.
@@ -516,8 +506,6 @@ name | type | dependencies | description
 [ti-api-platform-validator](plugins/ti-api-platform-validator) | analyer | ti-api-processor | Reports all instances where a platform specific feature is used on the wrong platform, e.g. calling ```Ti.Android.createIntent``` on iOS.
 [ti-api-usage-finder](plugins/ti-api-usage-finder) | analyzer | ti-api-processor | Reports all Titanium Mobile APIs used by the project.
 [ti-api-include-finder](plugins/ti-api-include-finder) | analyzer | ti-api-processor | Reports all files that are ```Ti.include()```'d by the project.
-[unknown-ambiguous-visualizer](plugins/unknown-ambiguous-visualizer) | analyzer | &lt;none&gt; | Creates a visualization map of unknown values and ambiguous contexts/blocks
-[unknown-callback-detector](plugins/unknown-callback-detector) | analyzer | &lt;none&gt; | Detects when an unknown value is supplied to a method when a callback is expected
 
 ## Internal Concepts
 

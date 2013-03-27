@@ -10,6 +10,7 @@
 * Changed the default value of executionTimeLimit to 5 minutes
 * Added generic cycle detection, of which infinite loops and infinite recursion are sub-classes of
 * Added call tracing to visualization plugins
+* Moved visualization plugins to enterprise-only
 
 ### Bug Fixes
 * Fixed a few small bugs uncovered by the upgrade to node 0.10.0
