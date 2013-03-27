@@ -17,6 +17,7 @@ var fs = require('fs'),
 
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+	CodeProcessorUtils = require(path.join(global.titaniumCodeProcessorLibDir, 'CodeProcessorUtils')),
 
 	jsca,
 	manifest,
@@ -113,7 +114,7 @@ module.exports.prototype.init = function init() {
 		obj,
 		p,
 		jsRegex = /\.js$/,
-		overrideFiles = wrench.readdirSyncRecursive(path.join(__dirname, 'overrides')),
+		overrideFiles = CodeProcessorUtils.findJavaScriptFiles(path.join(__dirname, 'overrides')),
 		overrideDefs;
 
 	// Create the API tree
@@ -133,7 +134,7 @@ module.exports.prototype.init = function init() {
 	// Load the overrides
 	for (i = 0, ilen = overrideFiles.length; i < ilen; i++) {
 		if (jsRegex.test(overrideFiles[i])) {
-			overrideDefs = require(path.join(__dirname, 'overrides', overrideFiles[i])).getOverrides({
+			overrideDefs = require(overrideFiles[i]).getOverrides({
 					api: api,
 					manifest: manifest,
 					platform: platform,

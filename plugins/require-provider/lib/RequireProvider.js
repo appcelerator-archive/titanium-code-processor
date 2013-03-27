@@ -58,9 +58,10 @@ module.exports = function (options) {
 			fileList = e.data.fileList,
 			file,
 			leadSegment,
-			i, len;
+			i, len,
+			baseDir = path.dirname(Runtime.getEntryPointFile());
 		for (i = 0, len = fileList.length; i < len; i++) {
-			file = fileList[i].split(path.sep);
+			file = path.relative(baseDir, fileList[i]).split(path.sep);
 			leadSegment = file[0];
 			if (platformList.indexOf(leadSegment) !== -1) {
 				file.splice(0, 1);
