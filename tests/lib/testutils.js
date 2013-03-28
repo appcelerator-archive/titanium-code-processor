@@ -74,7 +74,7 @@ exports.getTests = function (test) {
 		}
 		segments = test.match(/(^[0-9\.]*)/)[1].split('.');
 		testPath.push('ch' + (parseInt(segments[0], 10) < 10 ? '0' + segments[0] : segments[0]));
-		for(i = 1; i < segments.length ; i++) {
+		for(i = 1; i < segments.length; i++) {
 			testPath.push(segments.slice(0, i).join('.') + '.' + segments[i]);
 		}
 		testPath = path.join.apply(path, testPath);
