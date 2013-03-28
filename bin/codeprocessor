@@ -464,6 +464,12 @@ function analyze() {
 					case 'maxRecursionLimit':
 						options.maxRecursionLimit = parseInt(configOption[1], 10);
 						break;
+					case 'cycleDetectionStackSize':
+						options.cycleDetectionStackSize = parseInt(configOption[1], 10);
+						break;
+					case 'maxCycles':
+						options.maxCycles = parseInt(configOption[1], 10);
+						break;
 					case 'logConsoleCalls':
 						options.logConsoleCalls = configOption[1] === 'true';
 						break;
