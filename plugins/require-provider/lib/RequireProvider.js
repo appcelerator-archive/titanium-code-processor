@@ -81,6 +81,9 @@ module.exports = function (options) {
 		for (i in platformSpecificFiles) {
 			fileList.push(path.join(platform, i));
 		}
+		for (i = 0, len = fileList.length; i < len; i++) {
+			fileList[i] = path.join(baseDir, fileList[i]);
+		}
 		Runtime.fileList = fileList;
 	});
 
