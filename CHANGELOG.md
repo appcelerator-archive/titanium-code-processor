@@ -25,6 +25,7 @@
 * Callbacks assigned to properties, such as Ti.Network.HTTPClient.onload, are now processed property
 * Ti.Filesystem.ResourcesDirectory now returns something sensible
 * Returns inside ambiguous blocks now behave properly
+* Fixed a bug with node states being both skipped and visited
 
 ## 0.3.2 (28 February 2013)
 
