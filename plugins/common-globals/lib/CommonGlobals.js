@@ -48,8 +48,6 @@ module.exports.prototype.init = function init() {
 	addObject('alert', new AlertFunc(), globalObject);
 	addObject('clearInterval', new ClearIntervalFunc(), globalObject);
 	addObject('clearTimeout', new ClearTimeoutFunc(), globalObject);
-	addObject('decodeURIComponent', new DecodeURIComponentFunc(), globalObject);
-	addObject('encodeURIComponent', new EncodeURIComponentFunc(), globalObject);
 	addObject('setInterval', new SetIntervalFunc(), globalObject);
 	addObject('setTimeout', new SetTimeoutFunc(), globalObject);
 	addObject('console', new ConsoleObject(), globalObject);
@@ -235,44 +233,6 @@ SetTimeoutFunc.prototype.call = function call(thisVal, args) {
 	}
 
 	return new Base.UnknownType();
-};
-
-/**
- * decodeURIComponent method
- *
- * @private
- */
-function DecodeURIComponentFunc(className) {
-	Base.ObjectType.call(this, className || 'Function');
-	this.put('length', new Base.NumberType(1), false, true);
-}
-util.inherits(DecodeURIComponentFunc, Base.FunctionTypeBase);
-DecodeURIComponentFunc.prototype.call = function call(thisVal, args) {
-	var str = args[0] || new Base.UndefinedType();
-	if (str.type === 'Unknown') {
-		return new Base.UnknownType();
-	} else {
-		return new Base.StringType(decodeURIComponent(Base.toString(str).value));
-	}
-};
-
-/**
- * decodeURIComponent method
- *
- * @private
- */
-function EncodeURIComponentFunc(className) {
-	Base.ObjectType.call(this, className || 'Function');
-	this.put('length', new Base.NumberType(1), false, true);
-}
-util.inherits(EncodeURIComponentFunc, Base.FunctionTypeBase);
-EncodeURIComponentFunc.prototype.call = function call(thisVal, args) {
-	var str = args[0] || new Base.UndefinedType();
-	if (str.type === 'Unknown') {
-		return new Base.UnknownType();
-	} else {
-		return new Base.StringType(encodeURIComponent(Base.toString(str).value));
-	}
 };
 
 /**
