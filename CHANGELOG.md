@@ -26,6 +26,8 @@
 * Ti.Filesystem.ResourcesDirectory now returns something sensible
 * Returns inside ambiguous blocks now behave properly
 * Fixed a bug with node states being both skipped and visited
+* Fixed unknown values short-circuiting expressions
+* Fixed setting up the context properly for Ti.include calls
 
 ## 0.3.2 (28 February 2013)
 
