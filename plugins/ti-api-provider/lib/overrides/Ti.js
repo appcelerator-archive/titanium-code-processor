@@ -122,7 +122,10 @@ exports.getOverrides = function (options) {
 
 					// Eval the code
 					evalFunc = Runtime.getGlobalObject().get('eval');
-					evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())], false, filePath);
+					if (filename === './application.js') {
+						debugger;
+					}
+					evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())], true, filePath);
 
 					this._location = {
 						filename: filePath,
