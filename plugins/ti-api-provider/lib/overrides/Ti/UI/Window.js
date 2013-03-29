@@ -19,10 +19,13 @@ exports.getOverrides = function () {
 		call: function call(thisVal) {
 			var requireFunction = Runtime.getGlobalObject().get('require'),
 				urlValue = thisVal.get('url');
-			if (requireFunction && urlValue) {
+			if (requireFunction && urlValue && Base.type(urlValue) !== 'Undefined' && Base.type(urlValue) !== 'Null') {
 				requireFunction.call(new Base.UndefinedType(), [urlValue]);
 			}
 			return new Base.UndefinedType();
 		}
+	},{
+		regex: /^Titanium\.UI\.Window\.url$/,
+		value: new Base.UndefinedType()
 	}];
 };
