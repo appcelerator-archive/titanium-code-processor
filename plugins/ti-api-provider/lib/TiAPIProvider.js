@@ -13,8 +13,6 @@ var fs = require('fs'),
 	existsSync = fs.existsSync || path.existsSync,
 	util = require('util'),
 
-	wrench = require('wrench'),
-
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	CodeProcessorUtils = require(path.join(global.titaniumCodeProcessorLibDir, 'CodeProcessorUtils')),
@@ -30,7 +28,8 @@ var fs = require('fs'),
 	propertyOverrides = [],
 
 	getterRegex = /^get([A-Z])(.*)$/,
-	setterRegex = /^set([A-Z])(.*)$/;
+	setterRegex = /^set([A-Z])(.*)$/,
+	underscoreRegex = /\._/g;
 
 // ******** Plugin API Methods ********
 
@@ -472,7 +471,7 @@ function createObject(apiNode) {
 		p, i, ilen, j, jlen;
 
 	obj._api = apiNode.node;
-	obj._apiName = apiNode.node.name;
+	obj._apiName = apiNode.node.name.replace(underscoreRegex, '.');
 
 	// Figure out which methods are getters/setters and which are just regular methods
 	for (i = 0, ilen = properties.length; i < ilen; i++) {
@@ -543,7 +542,7 @@ function createObject(apiNode) {
 			value = new Base.UnknownType();
 		}
 		value._api = property;
-		value._apiName = name;
+		value._apiName = name.replace(underscoreRegex, '.');
 		obj.defineOwnProperty(name, {
 			value: value,
 			writable:
@@ -590,7 +589,7 @@ function createObject(apiNode) {
 			}, false, true);
 		}
 		value._api = func;
-		value._apiName = name;
+		value._apiName = name.replace(underscoreRegex, '.');
 		obj.defineOwnProperty(func.name, {
 			value: value,
 			writable: false,
