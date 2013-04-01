@@ -223,7 +223,7 @@ TiFunction.prototype.call = function call(thisVal, args) {
 				for (j = 0, jlen = args[i].get('length').value; j < jlen; j++) {
 					callArgs[j] = new Base.UnknownType();
 				}
-				Runtime.queueFunction(args[i], new Base.UndefinedType(), callArgs, true);
+				Runtime.queueFunction(args[i], thisVal, callArgs, true);
 			}
 		} else if (this._api.parameters[i] && this._api.parameters[i].type === 'Function') {
 			Runtime.fireEvent('unknownCallback', 'An unknown value was passed to ' + this._apiName +
@@ -353,7 +353,7 @@ TiObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, t
 				for (i = 0, len = v.get('length').value; i < len; i++) {
 					callArgs[i] = new Base.UnknownType();
 				}
-				Runtime.queueFunction(v, new Base.UndefinedType(), callArgs, true);
+				Runtime.queueFunction(v, this, callArgs, true);
 			}
 		} else if (!suppressEvent) {
 			Runtime.fireEvent('nonTiPropertySet', 'Property "' + p + '" was set but is not part of the API', {
