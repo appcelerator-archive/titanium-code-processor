@@ -26,6 +26,7 @@ var fs = require('fs'),
 
 	methodOverrides = [],
 	propertyOverrides = [],
+	objectOverrides = [],
 
 	getterRegex = /^get([A-Z])(.*)$/,
 	setterRegex = /^set([A-Z])(.*)$/,
@@ -145,6 +146,8 @@ module.exports.prototype.init = function init() {
 					methodOverrides.push(overrideDefs[j]);
 				} else if (overrideDefs[j].value) {
 					propertyOverrides.push(overrideDefs[j]);
+				} else if (overrideDefs[j].obj) {
+					objectOverrides.push(overrideDefs[j]);
 				} else {
 					throw new Error('Invalid override in ' + overrideFiles[i]);
 				}
@@ -173,7 +176,7 @@ module.exports.prototype.init = function init() {
 			enumerable: true,
 			configurable: true
 		}, false, true);
-		for (i = 0, len = typesToInsert[p].length; i < len; i++) {
+		for (i = 0, ilen = typesToInsert[p].length; i < ilen; i++) {
 			globalObject.defineOwnProperty(typesToInsert[p][i], {
 				value: obj,
 				writable: false,
@@ -472,6 +475,13 @@ function createObject(apiNode) {
 
 	obj._api = apiNode.node;
 	obj._apiName = apiNode.node.name.replace(underscoreRegex, '.');
+
+	// Check if this object is being overridden
+	for (i = 0, ilen = objectOverrides.length; i < ilen; i++) {
+		if (objectOverrides[i].regex.test(obj._apiName) && objectOverrides[i].obj) {
+			return objectOverrides[i].obj;
+		}
+	}
 
 	// Figure out which methods are getters/setters and which are just regular methods
 	for (i = 0, ilen = properties.length; i < ilen; i++) {
