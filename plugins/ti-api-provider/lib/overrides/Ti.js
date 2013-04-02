@@ -21,7 +21,7 @@ exports.getOverrides = function (options) {
 		value: new Base.StringType(options.manifest.version)
 	},{
 		regex: /^Titanium.*\.create([a-zA-Z0-9_]*)$/,
-		call: function call(thisVal, args) {
+		call: Base.wrapNativeCall(function call(thisVal, args) {
 			var returnType,
 				root = options.api,
 				i, j, len,
@@ -70,7 +70,7 @@ exports.getOverrides = function (options) {
 			} else {
 				return new Base.UnknownType();
 			}
-		}
+		})
 	},{
 		regex: /^Titanium\.include$/,
 		call: function call(thisVal, args) {

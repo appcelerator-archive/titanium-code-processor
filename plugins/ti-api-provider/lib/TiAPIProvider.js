@@ -212,7 +212,7 @@ util.inherits(TiFunction, Base.FunctionType);
 /**
  * @private
  */
-TiFunction.prototype.call = function call(thisVal, args) {
+TiFunction.prototype.call = Base.wrapNativeCall(function call(thisVal, args) {
 	var returnType,
 		root = api,
 		i, ilen, j, jlen,
@@ -253,7 +253,7 @@ TiFunction.prototype.call = function call(thisVal, args) {
 	} else {
 		return new Base.UnknownType();
 	}
-};
+});
 
 // ******** Object Type ********
 
@@ -410,7 +410,7 @@ util.inherits(TiSetterFunction, Base.FunctionType);
 /**
  * @private
  */
-TiSetterFunction.prototype.call = function call(thisVal, args) {
+TiSetterFunction.prototype.call = Base.wrapNativeCall(function call(thisVal, args) {
 	var oldValue;
 	if (thisVal !== this._obj) {
 		Base.handleRecoverableNativeException('TypeError', 'Cannot invoke setters on objects that are not the original owner of the setter');
@@ -426,7 +426,7 @@ TiSetterFunction.prototype.call = function call(thisVal, args) {
 		}, false, true);
 	}
 	return new Base.UndefinedType();
-};
+});
 
 /**
  * Creates a getter function
@@ -445,13 +445,13 @@ util.inherits(TiGetterFunction, Base.FunctionType);
 /**
  * @private
  */
-TiGetterFunction.prototype.call = function call(thisVal) {
+TiGetterFunction.prototype.call = Base.wrapNativeCall(function call(thisVal) {
 	if (thisVal !== this._obj) {
 		Base.handleRecoverableNativeException('TypeError', 'Cannot invoke getters on objects that are not the original owner of the getter');
 		return new Base.UnknownType();
 	}
 	return thisVal.getOwnProperty(this._name, true).value;
-};
+});
 
 /**
  * Creates a titanium object from an API node
