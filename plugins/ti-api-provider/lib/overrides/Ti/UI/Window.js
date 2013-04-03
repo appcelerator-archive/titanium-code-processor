@@ -16,11 +16,11 @@ var path = require('path'),
 exports.getOverrides = function () {
 	return [{
 		regex: /^Titanium\.UI\.Window\.open$/,
-		call: Base.wrapNativeCall(function call(thisVal) {
+		callFunction: Base.wrapNativeCall(function callFunction(thisVal) {
 			var requireFunction = Runtime.getGlobalObject().get('require'),
 				urlValue = thisVal.get('url');
 			if (requireFunction && urlValue && Base.type(urlValue) !== 'Undefined' && Base.type(urlValue) !== 'Null') {
-				requireFunction.call(new Base.UndefinedType(), [urlValue]);
+				requireFunction.callFunction(new Base.UndefinedType(), [urlValue]);
 			}
 			return new Base.UndefinedType();
 		})

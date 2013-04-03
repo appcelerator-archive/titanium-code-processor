@@ -21,28 +21,28 @@ exports.getOverrides = function () {
 		warn = consoleObject.get('warn');
 	return [{
 		regex: /^Titanium\.API\.debug$/,
-		call: Base.wrapNativeCall(function call(thisVal, args) {
-			return debug.call(thisVal, args);
+		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
+			return debug.callFunction(thisVal, args);
 		})
 	},{
 		regex: /^Titanium\.API\.error$/,
-		call: Base.wrapNativeCall(function call(thisVal, args) {
-			return error.call(thisVal, args);
+		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
+			return error.callFunction(thisVal, args);
 		})
 	},{
 		regex: /^Titanium\.API\.info$/,
-		call: Base.wrapNativeCall(function call(thisVal, args) {
-			return info.call(thisVal, args);
+		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
+			return info.callFunction(thisVal, args);
 		})
 	},{
 		regex: /^Titanium\.API\.log$/,
-		call: Base.wrapNativeCall(function call(thisVal, args) {
-			return log.call(thisVal, args);
+		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
+			return log.callFunction(thisVal, args);
 		})
 	},{
 		regex: /^Titanium\.API\.warn$/,
-		call: Base.wrapNativeCall(function call(thisVal, args) {
-			return warn.call(thisVal, args);
+		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
+			return warn.callFunction(thisVal, args);
 		})
 	}];
 };
