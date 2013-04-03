@@ -83,7 +83,7 @@ function ConsoleFunc(type, className) {
 	this._type = type;
 }
 util.inherits(ConsoleFunc, Base.FunctionTypeBase);
-ConsoleFunc.prototype.call = Base.wrapNativeCall(function call(thisVal, args) {
+ConsoleFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction(thisVal, args) {
 	var level = this._type,
 		message = [];
 	args.forEach(function (arg) {
@@ -130,7 +130,7 @@ function LFunc(className) {
 	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(LFunc, Base.FunctionTypeBase);
-LFunc.prototype.call = Base.wrapNativeCall(function call() {
+LFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction() {
 	return new Base.UnknownType();
 });
 
@@ -144,7 +144,7 @@ function AlertFunc(className) {
 	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(AlertFunc, Base.FunctionTypeBase);
-AlertFunc.prototype.call = Base.wrapNativeCall(function call() {
+AlertFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction() {
 	return new Base.UndefinedType();
 });
 
@@ -158,7 +158,7 @@ function ClearIntervalFunc(className) {
 	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(ClearIntervalFunc, Base.FunctionTypeBase);
-ClearIntervalFunc.prototype.call = Base.wrapNativeCall(function call() {
+ClearIntervalFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction() {
 	return new Base.UndefinedType();
 });
 
@@ -172,7 +172,7 @@ function ClearTimeoutFunc(className) {
 	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(ClearTimeoutFunc, Base.FunctionTypeBase);
-ClearTimeoutFunc.prototype.call = Base.wrapNativeCall(function call() {
+ClearTimeoutFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction() {
 	return new Base.UndefinedType();
 });
 
@@ -186,7 +186,7 @@ function SetIntervalFunc(className) {
 	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(SetIntervalFunc, Base.FunctionTypeBase);
-SetIntervalFunc.prototype.call = Base.wrapNativeCall(function call(thisVal, args) {
+SetIntervalFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction(thisVal, args) {
 
 	var func = args[0];
 
@@ -216,7 +216,7 @@ function SetTimeoutFunc(className) {
 	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(SetTimeoutFunc, Base.FunctionTypeBase);
-SetTimeoutFunc.prototype.call = Base.wrapNativeCall(function call(thisVal, args) {
+SetTimeoutFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction(thisVal, args) {
 	var func = args[0];
 
 	// Make sure func is actually a function
@@ -245,6 +245,6 @@ function StringFunc(className) {
 	this.put('length', new Base.NumberType(1), false, true);
 }
 util.inherits(StringFunc, Base.FunctionTypeBase);
-StringFunc.prototype.call = Base.wrapNativeCall(function call() {
+StringFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction() {
 	return new Base.UndefinedType();
 });
