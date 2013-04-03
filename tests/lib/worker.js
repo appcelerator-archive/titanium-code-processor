@@ -30,6 +30,7 @@ module.exports.run = function () {
 		process.send({
 			success: results.success,
 			error: results.error,
+			isInternalError: results.isInternalError,
 			file: testFile
 		});
 	}

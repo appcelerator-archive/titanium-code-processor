@@ -103,9 +103,17 @@ function run(cluster, options) {
 				Math.floor(100 * successes / total) + '% pass rate so far): ' +
 				message.file + (!message.success ? '\n   ' + message.error : ''));
 
-			setTimeout(function () {
-				processFile(worker);
-			}, 0);
+			if (message.isInternalError) {
+				worker.destroy();
+				setTimeout(function () {
+					processFile(createWorker());
+				}, 0);
+			} else {
+
+				setTimeout(function () {
+					processFile(worker);
+				}, 0);
+			}
 		});
 		return worker;
 	}
