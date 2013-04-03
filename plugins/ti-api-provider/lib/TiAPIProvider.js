@@ -142,7 +142,7 @@ module.exports.prototype.init = function init() {
 					createObject: createObject
 				});
 			for(j = 0, jlen = overrideDefs.length; j < jlen; j++) {
-				if (overrideDefs[j].call) {
+				if (overrideDefs[j].callFunction) {
 					methodOverrides.push(overrideDefs[j]);
 				} else if (overrideDefs[j].value) {
 					propertyOverrides.push(overrideDefs[j]);
@@ -212,7 +212,7 @@ util.inherits(TiFunction, Base.FunctionType);
 /**
  * @private
  */
-TiFunction.prototype.call = Base.wrapNativeCall(function call(thisVal, args) {
+TiFunction.prototype.callFunction = Base.wrapNativeCall(function callFunction(thisVal, args) {
 	var returnType,
 		root = api,
 		i, ilen, j, jlen,
@@ -410,7 +410,7 @@ util.inherits(TiSetterFunction, Base.FunctionType);
 /**
  * @private
  */
-TiSetterFunction.prototype.call = Base.wrapNativeCall(function call(thisVal, args) {
+TiSetterFunction.prototype.callFunction = Base.wrapNativeCall(function callFunction(thisVal, args) {
 	var oldValue;
 	if (thisVal !== this._obj) {
 		Base.handleRecoverableNativeException('TypeError', 'Cannot invoke setters on objects that are not the original owner of the setter');
@@ -445,7 +445,7 @@ util.inherits(TiGetterFunction, Base.FunctionType);
 /**
  * @private
  */
-TiGetterFunction.prototype.call = Base.wrapNativeCall(function call(thisVal) {
+TiGetterFunction.prototype.callFunction = Base.wrapNativeCall(function callFunction(thisVal) {
 	if (thisVal !== this._obj) {
 		Base.handleRecoverableNativeException('TypeError', 'Cannot invoke getters on objects that are not the original owner of the getter');
 		return new Base.UnknownType();
@@ -586,8 +586,8 @@ function createObject(apiNode) {
 		name = apiNode.node.name + '.' + func.name;
 		value = new TiFunction(func.returnTypes);
 		for (j = 0, jlen = methodOverrides.length; j < jlen; j++) {
-			if (methodOverrides[j].regex.test(name) && methodOverrides[j].call) {
-				value.call = methodOverrides[j].call;
+			if (methodOverrides[j].regex.test(name) && methodOverrides[j].callFunction) {
+				value.callFunction = methodOverrides[j].callFunction;
 			}
 		}
 		if (func.parameters) {

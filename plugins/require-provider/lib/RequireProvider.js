@@ -115,7 +115,7 @@ util.inherits(RequireFunction, Base.FunctionType);
  * @returns {module:Base.BaseType} The return value from the function
  * @see ECMA-262 Spec Chapter 13.2.1
  */
-RequireFunction.prototype.call = function call(thisVal, args) {
+RequireFunction.prototype.callFunction = function callFunction(thisVal, args) {
 
 	// Validate and parse the args
 	var name = args && Base.getValue(args[0]),
