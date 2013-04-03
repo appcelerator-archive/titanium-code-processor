@@ -183,7 +183,8 @@ exports.evaluateTest = function(testFilePath) {
 		test262Dir = exports.getTest262Dir(),
 		results,
 		errorMessage,
-		success;
+		success,
+		isInternalError = false;
 
 	function parseException(exception) {
 		if (Base.type(exception) === 'String') {
@@ -208,8 +209,14 @@ exports.evaluateTest = function(testFilePath) {
 		if (!ast.syntaxError) {
 			Runtime._unknown = false;
 			Base.createModuleContext(ast, RuleProcessor.isBlockStrict(ast), false, false);
-			results = ast.processRule();
-			Runtime.exitContext();
+
+			try {
+				results = ast.processRule();
+			} catch (e) {
+				throw e;
+			} finally {
+				Runtime.exitContext();
+			}
 
 			// Check if an exception was thrown but not caught
 			if (results && results[0] === 'throw') {
@@ -253,11 +260,13 @@ exports.evaluateTest = function(testFilePath) {
 		} else {
 			success = false;
 			errorMessage = '**** Internal error: ' + e.message + '\n' + e.stack;
+			isInternalError = true;
 		}
 	}
 	return {
 		success: success,
-		error: errorMessage
+		error: errorMessage,
+		isInternalError: isInternalError
 	};
 };
 
