@@ -1,0 +1,1 @@
+var one = 'I am 1';
