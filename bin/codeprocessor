@@ -232,10 +232,10 @@ function subprocess() {
 
 	// Run the code processor
 	CodeProcessor.run(path.resolve(config.entryPoint), config.options, config.plugins, logger, function () {
-		var results = {
+		var results = JSON.stringify({
 			messageType: 'results',
-			data: JSON.stringify(CodeProcessor.getResults())
-		};
+			data: CodeProcessor.getResults()
+		});
 		console.log('REQ,01000001,' + ('00000000' + results.length.toString(16)).slice(-8) + ',' + results);
 	});
 }
