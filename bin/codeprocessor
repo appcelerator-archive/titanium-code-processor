@@ -18,8 +18,6 @@ var path = require('path'),
 	async = require('async'),
 	xml2js = require('xml2js'),
 
-	appc = require('node-appc'),
-
 	CodeProcessor = require(path.resolve(path.join(__dirname, '..'))),
 	Runtime = require(path.resolve(path.join(__dirname, '..', 'lib', 'Runtime'))),
 
@@ -111,7 +109,6 @@ function queryOptions() {
 
 function subprocess() {
 	var config = process.argv[2],
-		studioInterface,
 		filename,
 		logger;
 
@@ -172,8 +169,8 @@ function subprocess() {
 		});
 	}
 
+	/* The old Messaging interface, graveyarded for now in hopes that it can be resurrected
 	// Create the interface
-	studioInterface = appc.messaging.create('stdio');
 	studioInterface.open();
 
 	function callback(error) {
@@ -230,6 +227,13 @@ function subprocess() {
 			studioInterface.close();
 			process.exit(0);
 		});
+	});
+	*/
+
+	// Run the code processor
+	CodeProcessor.run(path.resolve(config.entryPoint), config.options, config.plugins, logger, function () {
+		var results = JSON.stringify(CodeProcessor.getResults());
+		console.log('REQ,01000001,' + ('00000000' + results.length.toString(16)).slice(-8) + ',' + results);
 	});
 }
 
