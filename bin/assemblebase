@@ -2,16 +2,16 @@
 /**
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
- * 
+ *
  * Assembles the base components into a single file
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
- 
+
 var fs = require('fs'),
 	path = require('path'),
 	files = [
 		'base.js',
-		
+
 		'types/unknown.js',
 		'types/undefined.js',
 		'types/null.js',
@@ -23,7 +23,7 @@ var fs = require('fs'),
 		'types/regexp.js',
 		'types/function.js',
 		'types/reference.js',
-		
+
 		'prototypes/number.js',
 		'prototypes/boolean.js',
 		'prototypes/string.js',
@@ -33,7 +33,7 @@ var fs = require('fs'),
 		'prototypes/function.js',
 		'prototypes/error.js',
 		'prototypes/date.js',
-		
+
 		'constructors/number.js',
 		'constructors/boolean.js',
 		'constructors/string.js',
@@ -43,7 +43,7 @@ var fs = require('fs'),
 		'constructors/function.js',
 		'constructors/error.js',
 		'constructors/date.js',
-		
+
 		'conversion.js',
 		'context.js',
 		'globals.js',
