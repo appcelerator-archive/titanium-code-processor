@@ -72,6 +72,10 @@ exports.init = function init(logger, config, cli, appc) {
 							options: {}
 						},
 						{
+							path: path.join(codeProcessorPluginDir, 'ti-api-usage-finder'),
+							options: {}
+						},
+						{
 							path: path.join(codeProcessorPluginDir, 'ti-api-deprecation-finder'),
 							options: {}
 						}
