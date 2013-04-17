@@ -21,7 +21,7 @@ exports.getOverrides = function (options) {
 		value: new Base.StringType(options.manifest.version)
 	},{
 		regex: /^Titanium.*\.create([a-zA-Z0-9_]*)$/,
-		call: Base.wrapNativeCall(function call(thisVal, args) {
+		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
 			var returnType,
 				root = options.api,
 				i, j, len,
@@ -73,7 +73,7 @@ exports.getOverrides = function (options) {
 		})
 	},{
 		regex: /^Titanium\.include$/,
-		call: function call(thisVal, args) {
+		callFunction: function callFunction(thisVal, args) {
 			var files = [],
 				filePath,
 				evalFunc,
@@ -122,7 +122,7 @@ exports.getOverrides = function (options) {
 
 					// Eval the code
 					evalFunc = Runtime.getGlobalObject().get('eval');
-					evalFunc.call(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())], true, filePath);
+					evalFunc.callFunction(thisVal, [new Base.StringType(fs.readFileSync(filePath).toString())], true, filePath);
 
 					this._location = {
 						filename: filePath,
