@@ -552,7 +552,7 @@ function createObject(apiNode) {
 			value = new Base.UnknownType();
 		}
 		value._api = property;
-		value._apiName = name.replace(underscoreRegex, '.');
+		value._apiName = fullName.replace(underscoreRegex, '.');
 		obj.defineOwnProperty(name, {
 			value: value,
 			writable:
