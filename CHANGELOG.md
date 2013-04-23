@@ -1,3 +1,13 @@
+## 1.1.0
+
+## New Features
+* Implemented a proper CLI hook
+
+## 1.0.1
+
+### Bug Fixes
+* Fixed the case when a titanium object has an object property (typically a pseduo-type) from getting it's api listed twice in the API usage finder
+
 ## 1.0.0
 
 ### New Features
