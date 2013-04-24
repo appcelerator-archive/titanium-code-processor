@@ -35,20 +35,36 @@ var fs = require('fs'),
 // ******** Plugin API Methods ********
 
 /**
- * Creates an instance of the ti api processor plugin
+ * Initializes the plugin
  *
- * @classdesc Injects a stub of the Titanium Mobile API into the global namespace
- *
- * @constructor
- * @name module:plugins/TiAPIProcessor
+ * @method
+ * @name module:plugins/TiAPIProcessor#init
+ * @param {Object} options The plugin options
+ * @param {Array[Dependency Instance]} dependencies The dependant plugins of this plugin
  */
-module.exports = function(options, dependencies) {
-	var i, len,
+exports.init = function init(options, dependencies) {
+
+	// Iterate through the json object and inject all the APIs
+	var typesToInsert = {},
+		globalObject = Runtime.getGlobalObject(),
+		types,
+		type,
+		aliases,
+		alias,
+		i, ilen, j, jlen,
+		name,
+		root,
+		obj,
+		p,
+		jsRegex = /\.js$/,
+		overrideFiles = CodeProcessorUtils.findJavaScriptFiles(path.join(__dirname, 'overrides')),
+		overrideDefs,
 		rawManifest;
-	for (i = 0, len = dependencies.length; i < len; i++) {
+
+	for (i = 0, ilen = dependencies.length; i < ilen; i++) {
 		if (dependencies[i].name === 'require-provider') {
-			this.platform = platform = dependencies[i].platform;
-			this.platformList = platformList = dependencies[i].platformList;
+			exports.platform = platform = dependencies[i].platform;
+			exports.platformList = platformList = dependencies[i].platformList;
 		}
 	}
 
@@ -59,17 +75,19 @@ module.exports = function(options, dependencies) {
 	};
 
 	if (!options || !existsSync(options.sdkPath)) {
-		console.error(this.name + ' plugin requires a valid "sdkPath" option');
+		console.error('The ' + exports.displayName + ' plugin requires a valid "sdkPath" option');
 		process.exit(1);
 	}
 
 	// Parse and validate the JSCA file
 	jsca = path.join(options.sdkPath, 'api.jsca');
 	if (!existsSync(jsca)) {
-		console.error(this.name + ' plugin could not find a valid JSCA file at "' + jsca + '"');
+		console.error('The ' + exports.displayName + ' plugin could not find a valid JSCA file at "' + jsca + '"');
 		process.exit(1);
 	}
 	jsca = JSON.parse(fs.readFileSync(jsca));
+	types = jsca.types;
+	aliases = jsca.aliases;
 
 	// Parse and validate the manifest file
 	manifest = path.join(options.sdkPath, 'manifest.json');
@@ -80,42 +98,17 @@ module.exports = function(options, dependencies) {
 		if (existsSync(manifest)) {
 			rawManifest = fs.readFileSync(manifest).toString().split('\n');
 			manifest = {};
-			for (i = 0, len = rawManifest.length; i < len; i++) {
+			for (i = 0, ilen = rawManifest.length; i < ilen; i++) {
 				if (rawManifest[i]) {
 					rawManifest[i] = rawManifest[i].split('=');
 					manifest[rawManifest[i][0]] = rawManifest[i][1];
 				}
 			}
 		} else {
-			console.error(this.name + ' plugin could not find a valid manifest file at "' + manifest + '"');
+			console.error('The ' + exports.displayName + ' plugin could not find a valid manifest file at "' + manifest + '"');
 			process.exit(1);
 		}
 	}
-};
-
-/**
- * Initializes the plugin
- *
- * @method
- * @name module:plugins/TiAPIProcessor#init
- */
-module.exports.prototype.init = function init() {
-
-	// Iterate through the json object and inject all the APIs
-	var typesToInsert = {},
-		globalObject = Runtime.getGlobalObject(),
-		types = jsca.types,
-		type,
-		aliases = jsca.aliases,
-		alias,
-		i, ilen, j, jlen,
-		name,
-		root,
-		obj,
-		p,
-		jsRegex = /\.js$/,
-		overrideFiles = CodeProcessorUtils.findJavaScriptFiles(path.join(__dirname, 'overrides')),
-		overrideDefs;
 
 	// Create the API tree
 	for (i = 0, ilen = types.length; i < ilen; i++) {
@@ -185,17 +178,6 @@ module.exports.prototype.init = function init() {
 			}, false, true);
 		}
 	}
-};
-
-/**
- * Gets the results of the plugin
- *
- * @method
- * @name module:plugins/TiAPIProcessor#getResults
- * @returns {Object} An empty object.
- */
-module.exports.prototype.getResults = function getResults() {
-	return {};
 };
 
 // ******** Function Type ********
