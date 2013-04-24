@@ -110,7 +110,7 @@ function generateRenderData() {
 	}
 
 	renderData = {
-		pluginDisplayName: this.displayName,
+		pluginDisplayName: exports.displayName,
 		numRequiresResolved: pluralize('%s module', '%s modules', numRequiresResolved),
 		numRequiresUnresolved: pluralize('%s module', '%s modules', numRequiresUnresolved),
 		numRequiresMissing: pluralize('%s module', '%s modules', numRequiresMissing),
@@ -122,17 +122,15 @@ function generateRenderData() {
 	};
 }
 
-// ******** Plugin API Methods ********
-
 /**
- * Creates an instance of the require provider plugin
+ * Initializes the plugin
  *
- * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
- *
- * @constructor
- * @name module:plugins/RequireFinder
+ * @method
+ * @name module:plugins/RequireFinder#init
+ * @param {Object} options The plugin options
+ * @param {Array[Dependency Instance]} dependencies The dependant plugins of this plugin
  */
-module.exports = function () {
+exports.init = function init() {
 	results = {
 		resolved: [],
 		unresolved: [],
@@ -158,14 +156,6 @@ module.exports = function () {
 };
 
 /**
- * Initializes the plugin
- *
- * @method
- * @name module:plugins/RequireFinder#init
- */
-module.exports.prototype.init = function init() {};
-
-/**
 * Gets the results of the plugin
 *
 * @method
@@ -175,7 +165,7 @@ module.exports.prototype.init = function init() {};
 *		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
 *		method.
 */
-module.exports.prototype.getResults = function getResults() {
+exports.getResults = function getResults() {
 	return results;
 };
 
@@ -190,7 +180,7 @@ module.exports.prototype.getResults = function getResults() {
  *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
  *		information to dump into the template
  */
-module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile) {
+exports.getResultsPageData = function getResultsPageData(entryFile) {
 	var template = {};
 
 	template[entryFile] = {
@@ -207,7 +197,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
  * @param {Function} arrayGen Log-friendly table generator
  * @return {String} The rendered data
  */
-module.exports.prototype.renderLogOutput = function (arrayGen) {
+exports.renderLogOutput = function (arrayGen) {
 	var resultsToLog = renderData.numRequiresResolved + ' resolved\n' +
 		renderData.numRequiresUnresolved + ' unresolved\n' +
 		renderData.numRequiresMissing + ' missing\n' +
