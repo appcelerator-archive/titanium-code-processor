@@ -15,22 +15,14 @@ var path = require('path'),
 // ******** Plugin API Methods ********
 
 /**
- * Creates an instance of the require provider plugin
- *
- * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
- *
- * @constructor
- * @name module:plugins/CommonGlobals
- */
-module.exports = function () {};
-
-/**
  * Initializes the plugin
  *
  * @method
  * @name module:plugins/CommonGlobals#init
+ * @param {Object} options The plugin options
+ * @param {Array[Dependency Instance]} dependencies The dependant plugins of this plugin
  */
-module.exports.prototype.init = function init() {
+exports.init = function init() {
 
 	var globalObject = Runtime.getGlobalObject(),
 		stringObject = globalObject.get('String');
@@ -57,17 +49,6 @@ module.exports.prototype.init = function init() {
 	addObject('formatDate', new StringFunc(), stringObject);
 	addObject('formatDecimal', new StringFunc(), stringObject);
 	addObject('formatTime', new StringFunc(), stringObject);
-};
-
-/**
-* Gets the results of the plugin
-*
-* @method
- * @name module:plugins/CommonGlobals#getResults
-* @returns {Object} An empty object
-*/
-module.exports.prototype.getResults = function getResults() {
-	return {};
 };
 
 // ******** Console Object ********

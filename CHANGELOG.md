@@ -7,6 +7,7 @@
 
 ### Bug Fixes
 * Fixed the case when a titanium object has an object property (typically a pseduo-type) from getting it's api listed twice in the API usage finder
+* Reworked how plugins are initialized so that plugin names are available at initialization time
 
 ## 1.0.0
 

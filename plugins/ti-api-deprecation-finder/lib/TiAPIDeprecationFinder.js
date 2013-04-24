@@ -70,7 +70,7 @@ function generateRenderData() {
 		}
 	}
 	renderData = {
-		pluginDisplayName: this.displayName,
+		pluginDisplayName: exports.displayName,
 		numAPIs: numDeprecatedAPIs,
 		numReferences: numDeprecatedAPIReferences,
 		numInstances: numDeprecatedAPIInstances,
@@ -81,14 +81,14 @@ function generateRenderData() {
 // ******** Plugin API Methods ********
 
 /**
- * Creates an instance of the Ti Deprecation Finder plugin
+ * Initializes the plugin
  *
- * @classdesc Finds all of the deprecated Titanium APIs that are used.
- *
- * @constructor
- * @name module:plugins/TiAPIDeprecationFinder
+ * @method
+ * @name module:plugins/TiAPIDeprecationFinder#init
+ * @param {Object} options The plugin options
+ * @param {Array[Dependency Instance]} dependencies The dependant plugins of this plugin
  */
-module.exports = function () {
+exports.init = function init() {
 	results = {
 		deprecatedAPIs: {}
 	};
@@ -127,21 +127,13 @@ module.exports = function () {
 };
 
 /**
- * Initializes the plugin
- *
- * @method
- * @name module:plugins/TiAPIDeprecationFinder#init
- */
-module.exports.prototype.init = function init() {};
-
-/**
 * Gets the results of the plugin
 *
 * @method
  * @name module:plugins/TiAPIDeprecationFinder#getResults
 * @returns {Object} A dictionary of the deprecated Titanium APIs that were used along with a count of how many times they were used.
 */
-module.exports.prototype.getResults = function getResults() {
+exports.getResults = function getResults() {
 	return results;
 };
 
@@ -156,7 +148,7 @@ module.exports.prototype.getResults = function getResults() {
  *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
  *		information to dump into the template
  */
-module.exports.prototype.getResultsPageData = function getResultsPageData(entryFile) {
+exports.getResultsPageData = function getResultsPageData(entryFile) {
 	var template = {};
 
 	template[entryFile] = {
@@ -173,7 +165,7 @@ module.exports.prototype.getResultsPageData = function getResultsPageData(entryF
  * @param {Function} arrayGen Log-friendly table generator
  * @return {String} The rendered data
  */
-module.exports.prototype.renderLogOutput = function (arrayGen) {
+exports.renderLogOutput = function renderLogOutput(arrayGen) {
 	var resultsToLog;
 	if (renderData.deprecatedAPIs) {
 		resultsToLog = renderData.numAPIs + ' used ' + renderData.numInstances + '\n\nDeprecated APIs Used\n';

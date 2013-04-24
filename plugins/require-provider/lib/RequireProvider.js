@@ -25,32 +25,28 @@ var util = require('util'),
 
 	platformList = ['android', 'mobileweb', 'iphone', 'ipad', 'blackberry'];
 
-
 /**
- * Creates an instance of the require provider plugin
+ * Initializes the plugin
  *
- * @classdesc Provides a CommonJS compliant require() implementation, based on Titanium Mobile's implementations
- *
- * @constructor
- * @name module:plugins/RequireProvider
+ * @method
+ * @name module:plugins/RequireProvider#init
+ * @param {Object} options The plugin options
+ * @param {Array[Dependency Instance]} dependencies The dependant plugins of this plugin
  */
-module.exports = function (options) {
-	platform = options && options.platform;
-	modules = options && options.modules || {};
+exports.init = function init(options) {
+
+	platform = exports.platform = options && options.platform;
+	modules = exports.modules = options && options.modules || {};
 	cache = {};
 
 	if (!platform) {
-		console.error('require-provider plugin requires the "platform" option');
+		console.error('The ' + exports.displayName + ' plugin requires the "platform" option');
 		process.exit(1);
 	}
 	if (platformList.indexOf(platform) === -1) {
-		console.error('"' + platform + '" is not a valid platform for the require-provider plugin');
+		console.error('"' + platform + '" is not a valid platform for the ' + exports.displayName + ' plugin');
 		process.exit(1);
 	}
-
-	// Expose the platform and platform list
-	this.platform = platform;
-	this.platformList = platformList;
 
 	Runtime.on('fileListSet', function(e) {
 		var platformSpecificFiles = {},
@@ -91,6 +87,13 @@ module.exports = function (options) {
 		var rootDir = filename.split(path.sep)[0];
 		return fileRegExp.test(filename) && (platformList.indexOf(rootDir) === -1 || rootDir === platform);
 	};
+
+	Runtime.getGlobalObject().defineOwnProperty('require', {
+		value: new RequireFunction(),
+		writable: false,
+		enumerable: true,
+		configurable: true
+	}, false, true);
 };
 
 /**
@@ -215,32 +218,6 @@ RequireFunction.prototype.callFunction = function callFunction(thisVal, args) {
 		}
 	}
 	return result;
-};
-
-/**
- * Initializes the plugin
- *
- * @method
- * @name module:plugins/RequireProvider#init
- */
-module.exports.prototype.init = function init() {
-	Runtime.getGlobalObject().defineOwnProperty('require', {
-		value: new RequireFunction(),
-		writable: false,
-		enumerable: true,
-		configurable: true
-	}, false, true);
-};
-
-/**
-* Gets the results of the plugin
-*
-* @method
- * @name module:plugins/RequireProvider#getResults
-* @returns {Object} An empty object.
-*/
-module.exports.prototype.getResults = function getResults() {
-	return {};
 };
 
 // ******** Helper Methods ********
