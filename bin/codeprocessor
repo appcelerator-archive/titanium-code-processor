@@ -710,27 +710,22 @@ function analyze() {
 													if (!modules[platform]) {
 														modules[platform] = {};
 													}
-													if (platform === 'commonjs') {
-														if (projectModules && projectModules.commonjs && projectModules.commonjs[name]) {
-															moduleEntry = projectModules.commonjs[name];
-														} else if (globalModules && globalModules.commonjs && globalModules.commonjs[name]) {
-															moduleEntry = globalModules.commonjs[name];
-														}
-														if (moduleEntry) {
-															if (version) {
-																moduleEntry = moduleEntry[version];
-																if (!moduleEntry) {
-																	logger.error('Version ' + version + ' of ' + name + ' does not exist');
-																	process.exit(1);
-																}
-															} else {
-																moduleEntry = moduleEntry[Object.keys(moduleEntry).sort().pop()];
+													if (projectModules && projectModules[platform] && projectModules[platform][name]) {
+														moduleEntry = projectModules[platform][name];
+													} else if (globalModules && globalModules[platform] && globalModules[platform][name]) {
+														moduleEntry = globalModules[platform][name];
+													}
+													if (moduleEntry) {
+														if (version) {
+															moduleEntry = moduleEntry[version];
+															if (!moduleEntry) {
+																logger.error('Version ' + version + ' of ' + name + ' does not exist');
+																process.exit(1);
 															}
-															modules[platform][name] = path.join(moduleEntry.modulePath, JSON.parse(
-																fs.readFileSync(path.join(moduleEntry.modulePath, 'package.json'))).main + '.js');
+														} else {
+															moduleEntry = moduleEntry[Object.keys(moduleEntry).sort().pop()];
 														}
-													} else {
-														modules[platform][name] = '';
+														modules[platform][name] = moduleEntry.modulePath;
 													}
 												} else {
 													if (!modules[parsedOptions.osname]) {
