@@ -123,6 +123,7 @@ RequireFunction.prototype.callFunction = function callFunction(thisVal, args) {
 	// Validate and parse the args
 	var name = args && Base.getValue(args[0]),
 		filePath,
+		moduleInfo,
 		result = new Base.UnknownType(),
 		isModule,
 		eventDescription;
@@ -152,17 +153,19 @@ RequireFunction.prototype.callFunction = function callFunction(thisVal, args) {
 		if (modules.commonjs && modules.commonjs.hasOwnProperty(name)) {
 			isModule = true;
 			filePath = modules.commonjs[name];
+			moduleInfo = require(path.join(filePath, 'package.json'));
+			filePath = path.join(filePath, moduleInfo.main + '.js');
 		} else if (modules[platform] && modules[platform] && modules[platform].hasOwnProperty(name)) {
 			isModule = true;
 		}
 
 		if (isModule) {
 			if (filePath) {
+				Runtime.fireEvent('requireResolved', 'Module "' + name + '" was resolved to "' + filePath + '"', {
+					name: name,
+					path: filePath
+				});
 				if (cache[filePath]) {
-					Runtime.fireEvent('requireResolved', 'Module "' + name + '" was resolved to "' + filePath + '"', {
-						name: name,
-						path: filePath
-					});
 					result = cache[filePath];
 				} else {
 					result = processFile.call(this, filePath, true);
