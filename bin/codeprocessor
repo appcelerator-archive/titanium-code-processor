@@ -19,7 +19,6 @@ var path = require('path'),
 	xml2js = require('xml2js'),
 
 	CodeProcessor = require(path.resolve(path.join(__dirname, '..'))),
-	Runtime = require(path.resolve(path.join(__dirname, '..', 'lib', 'Runtime'))),
 
 	subcommand = process.argv.splice(2, 1)[0];
 
@@ -138,6 +137,22 @@ function subprocess() {
 	}
 	if (!existsSync(config.sourceInformation.entryPoint)) {
 		console.error('Could not find entry point "' + config.sourceInformation.entryPoint + '"');
+		process.exit(1);
+	}
+	if (!config.sourceInformation.projectDir) {
+		console.error('Missing project directory in config file');
+		process.exit(1);
+	}
+	if (!existsSync(config.sourceInformation.projectDir)) {
+		console.error('Could not find project directory "' + config.sourceInformation.projectDir + '"');
+		process.exit(1);
+	}
+	if (!config.sourceInformation.sourceDir) {
+		console.error('Missing source directory in config file');
+		process.exit(1);
+	}
+	if (!existsSync(config.sourceInformation.sourceDir)) {
+		console.error('Could not find source directory "' + config.sourceInformation.sourceDir + '"');
 		process.exit(1);
 	}
 
@@ -329,7 +344,6 @@ function analyze() {
 		options = {},
 		projectRoot = '.',
 		entryPoint,
-		startTime,
 		sourceMapDir,
 		sourceMapsFiles,
 		sourceMaps,
@@ -368,6 +382,22 @@ function analyze() {
 		}
 		if (!existsSync(config.sourceInformation.entryPoint)) {
 			console.error('Could not find entry point "' + config.sourceInformation.entryPoint + '"');
+			process.exit(1);
+		}
+		if (!config.sourceInformation.projectDir) {
+			console.error('Missing project directory in config file');
+			process.exit(1);
+		}
+		if (!existsSync(config.sourceInformation.projectDir)) {
+			console.error('Could not find project directory "' + config.sourceInformation.projectDir + '"');
+			process.exit(1);
+		}
+		if (!config.sourceInformation.sourceDir) {
+			console.error('Missing source directory in config file');
+			process.exit(1);
+		}
+		if (!existsSync(config.sourceInformation.sourceDir)) {
+			console.error('Could not find source directory "' + config.sourceInformation.sourceDir + '"');
 			process.exit(1);
 		}
 
@@ -735,7 +765,6 @@ function analyze() {
 									sourceInformation.sourceMaps = sourceMaps;
 								}
 
-								debugger;
 								setTimeout(function(){
 									CodeProcessor.run(sourceInformation, options, plugins, logger);
 								}, 0);
