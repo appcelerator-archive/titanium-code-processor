@@ -38,7 +38,7 @@ function generateResultsData() {
 
 function generateRenderData() {
 	var numAPIs = Object.keys(results.global).length,
-		baseDirectory = path.dirname(Runtime.getEntryPointFile()) + path.sep,
+		baseDirectory = Runtime.sourceInformation.projectDir + path.sep,
 		numInstances = 0,
 		api,
 		file,
