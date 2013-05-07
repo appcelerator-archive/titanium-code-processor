@@ -5,6 +5,10 @@
 
 ## 1.0.1
 
+### New Features
+* Added support for source maps and, by extension, Alloy
+* Reworked how source code information is specified in configuration files to allow for better flexibility
+
 ### Bug Fixes
 * Fixed the case when a titanium object has an object property (typically a pseduo-type) from getting it's api listed twice in the API usage finder
 * Reworked how plugins are initialized so that plugin names are available at initialization time
