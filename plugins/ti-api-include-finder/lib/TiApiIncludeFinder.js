@@ -49,7 +49,7 @@ function generateRenderData() {
 		resolved,
 		unresolved,
 		missing,
-		baseDirectory = path.dirname(Runtime.getEntryPointFile()) + path.sep;
+		baseDirectory = Runtime.sourceInformation.projectDir + path.sep;
 
 	if (numIncludesResolved) {
 		resolved = {
