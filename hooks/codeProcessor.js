@@ -106,6 +106,8 @@ exports.init = function init(logger, config, cli, appc) {
 						finished();
 					});
 			});
+		} else {
+			finished();
 		}
 	});
 };
