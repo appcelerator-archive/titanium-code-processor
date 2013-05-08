@@ -326,12 +326,6 @@ function analyze() {
 				help: 'Loads all non-titanium specific plugins in the default search path',
 				flag: true
 			})
-			.option('results-dir', {
-				abbr: 'r',
-				metavar: 'RESULTS_DIR',
-				help: 'The path to the directory that will contain the results',
-				type: 'string'
-			})
 			.script('titanium-code-processor analyze')
 			.help('Processes the supplied project using the given plugins.')
 			.nom(),
