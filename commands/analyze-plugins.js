@@ -21,12 +21,12 @@ exports.config = function () {
 
 exports.run = function (logger, config) {
 	var paths = config.paths && config.paths.codeProcessorPlugins || [];
-	CodeProcessor.queryPlugins(paths, function (err, results) {
+	CodeProcessor.queryPlugins(paths, logger, function (err, results) {
 		if (err) {
-			console.error(err);
+			logger.error(err);
 			process.exit(1);
 		} else {
-			console.log(JSON.stringify(results, false, '\t'));
+			logger.log(JSON.stringify(results, false, '\t'));
 		}
 	});
 };

@@ -12,11 +12,18 @@ var path = require('path'),
 	existsSync = fs.existsSync || path.existsSync,
 	exec = require('child_process').exec,
 
+	wrench = require('wrench'),
+	winston = require('winston'),
+
 	appc = require('node-appc'),
 	i18n = appc.i18n(__dirname),
 	__ = i18n.__,
 
-	CodeProcessor = require('../');
+	CodeProcessor = require('../'),
+
+	sourceInformation,
+	options,
+	plugins;
 
 exports.desc = exports.extendedDesc = __('analyses a project using the Titanium Code Processor');
 
@@ -80,7 +87,8 @@ exports.config = function (logger, config) {
 exports.validate = function (logger, config, cli) {
 
 	var argv = cli.argv,
-		configFile;
+		configFile,
+		filename;
 
 	// Check if a config file was specified
 	configFile = argv['config-file'];
@@ -128,6 +136,34 @@ exports.validate = function (logger, config, cli) {
 			process.exit(1);
 		}
 
+		// Validate the logging and finagle things around for outputs other than report
+		if (configFile.logging && configFile.logging.file) {
+			if (['trace', 'debug', 'info', 'notice', 'warn', 'error'].indexOf(configFile.logging.file.level) === -1) {
+				logger.error(__('Unknown log level "%s"', configFile.logging.file.level));
+				process.exit(1);
+			}
+			filename = configFile.logging.file.path;
+			if (!existsSync(path.dirname(filename))) {
+				wrench.mkdirSyncRecursive(path.dirname(filename));
+			}
+			logger.add(winston.transports.File, {
+				filename: path.resolve(filename),
+				level: configFile.logging.file.level
+			});
+		}
+		if (argv.output !== 'report') {
+			logger.remove(winston.transports.Console);
+			if (configFile.logging.console) {
+				logger.warn(__('Console logging settings will be ignored because the output type is not report'));
+			}
+		} else if (configFile.logging.console) {
+			if (['trace', 'debug', 'info', 'notice', 'warn', 'error'].indexOf(configFile.logging.console.level) === -1) {
+				logger.error(__('Unknown log level "%s"', configFile.logging.console.level));
+				process.exit(1);
+			}
+			logger.setLevel(configFile.logging.console.level);
+		}
+
 		if (!configFile.options) {
 			configFile.options = {};
 		}
@@ -144,9 +180,9 @@ exports.validate = function (logger, config, cli) {
 			process.exit(1);
 		}
 
-		setTimeout(function(){
-			CodeProcessor.run(configFile.sourceInformation, configFile.options, configFile.plugins, logger);
-		}, 0);
+		sourceInformation = configFile.sourceInformation;
+		options = configFile.options;
+		plugins = configFile.plugins;
 	}/* else {
 
 		if (!parsedOptions.osname) {
@@ -458,11 +494,12 @@ exports.validate = function (logger, config, cli) {
 			});
 		}
 	}
-	 */
+	*/
 };
 
 exports.run = function (logger, config, cli) {
 	if (cli.argv.output === 'report') {
 		logger.banner();
 	}
+	CodeProcessor.run(sourceInformation, options, plugins, logger);
 };
