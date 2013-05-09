@@ -7,9 +7,7 @@
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
-var appc = require('node-appc'),
-	i18n = appc.i18n(__dirname),
-	__ = i18n.__;
+var __ = require('../lib/i18n')(__dirname).__;
 
 exports.desc = exports.extendedDesc = __('analyses a project using the Titanium Code Processor');
 
@@ -17,12 +15,6 @@ exports.config = function (logger, config) {
 	var conf = {
 		skipBanner: true,
 		flags: {
-			'query-plugins': {
-				desc: __('queries the plugins in available plugin search paths and prints information about them')
-			},
-			'query-options': {
-				desc: __('queries the plugins in available plugin search paths and prints information about them')
-			},
 			'all-plugins': {
 				abbr: 'A',
 				desc: __('loads all plugins in the default search path')
