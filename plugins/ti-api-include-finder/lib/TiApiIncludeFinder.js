@@ -56,11 +56,12 @@ function generateRenderData() {
 			list: []
 		};
 		results.resolved.forEach(function (file) {
+			var mappedLocation = Runtime.mapLocation(file);
 			resolved.list.push({
 				name: file.data.name,
 				path: file.data.path.replace(baseDirectory, ''),
-				filename: file.filename.replace(baseDirectory, ''),
-				line: file.line
+				filename: mappedLocation.filename.replace(baseDirectory, ''),
+				line: mappedLocation.line
 			});
 		});
 	}
@@ -70,9 +71,10 @@ function generateRenderData() {
 			list: []
 		};
 		results.unresolved.forEach(function (file) {
+			var mappedLocation = Runtime.mapLocation(file);
 			unresolved.list.push({
-				filename: file.filename.replace(baseDirectory, ''),
-				line: file.line
+				filename: mappedLocation.filename.replace(baseDirectory, ''),
+				line: mappedLocation.line
 			});
 		});
 	}
@@ -82,10 +84,11 @@ function generateRenderData() {
 			list: []
 		};
 		results.missing.forEach(function (file) {
+			var mappedLocation = Runtime.mapLocation(file);
 			missing.list.push({
 				name: file.data.name,
-				filename: file.filename.replace(baseDirectory, ''),
-				line: file.line
+				filename: mappedLocation.filename.replace(baseDirectory, ''),
+				line: mappedLocation.line
 			});
 		});
 	}
