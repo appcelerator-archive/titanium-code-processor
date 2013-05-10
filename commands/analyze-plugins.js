@@ -20,8 +20,7 @@ exports.config = function () {
 };
 
 exports.run = function (logger, config) {
-	var paths = config.paths && config.paths.codeProcessorPlugins || [];
-	CodeProcessor.queryPlugins(paths, logger, function (err, results) {
+	CodeProcessor.queryPlugins(config.paths && config.paths.codeProcessorPlugins || [], logger, function (err, results) {
 		if (err) {
 			logger.error(err);
 			process.exit(1);

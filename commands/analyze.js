@@ -342,7 +342,8 @@ exports.run = function (logger, config, cli) {
 						} else {
 
 							// Create the plugin info
-							CodeProcessor.queryPlugins([], logger, function(err, results) {
+							CodeProcessor.queryPlugins(config.paths && config.paths.codeProcessorPlugins || [],
+									logger, function(err, results) {
 								var sdkVersion,
 									sdkInfo,
 									projectModules,
