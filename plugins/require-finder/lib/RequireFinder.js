@@ -62,11 +62,12 @@ function generateRenderData() {
 			list: []
 		};
 		results.resolved.forEach(function (module) {
+			var mappedLocation = Runtime.mapLocation(module);
 			resolved.list.push({
 				name: module.data.name,
 				path: module.data.path.replace(baseDirectory, ''),
-				filename: module.filename.replace(baseDirectory, ''),
-				line: module.line
+				filename: mappedLocation.filename.replace(baseDirectory, ''),
+				line: mappedLocation.line
 			});
 		});
 	}
@@ -76,9 +77,10 @@ function generateRenderData() {
 			list: []
 		};
 		results.unresolved.forEach(function (module) {
+			var mappedLocation = Runtime.mapLocation(module);
 			unresolved.list.push({
-				filename: module.filename.replace(baseDirectory, ''),
-				line: module.line
+				filename: mappedLocation.filename.replace(baseDirectory, ''),
+				line: mappedLocation.line
 			});
 		});
 	}
@@ -88,10 +90,11 @@ function generateRenderData() {
 			list: []
 		};
 		results.missing.forEach(function (module) {
+			var mappedLocation = Runtime.mapLocation(module);
 			missing.list.push({
 				name: module.data.name,
-				filename: module.filename.replace(baseDirectory, ''),
-				line: module.line
+				filename: mappedLocation.filename.replace(baseDirectory, ''),
+				line: mappedLocation.line
 			});
 		});
 	}
@@ -101,10 +104,11 @@ function generateRenderData() {
 			list: []
 		};
 		results.skipped.forEach(function (module) {
+			var mappedLocation = Runtime.mapLocation(module);
 			skipped.list.push({
 				name: module.data.name,
-				filename: module.filename.replace(baseDirectory, ''),
-				line: module.line
+				filename: mappedLocation.filename.replace(baseDirectory, ''),
+				line: mappedLocation.line
 			});
 		});
 	}
