@@ -110,7 +110,7 @@ function generateRenderData() {
 exports.init = function init() {
 	function processReference(e) {
 		var name = e.data.name,
-			filename = e.filename;
+			filename = Runtime.mapLocation(e).filename;
 		if (results.global[name]) {
 			results.global[name]++;
 		} else {
