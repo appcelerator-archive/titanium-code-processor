@@ -14,16 +14,15 @@ var path = require('path'),
 
 	wrench = require('wrench'),
 	winston = require('winston'),
+	async = require('async'),
+	xml2js = require('xml2js'),
 
 	appc = require('node-appc'),
 	i18n = appc.i18n(__dirname),
 	__ = i18n.__,
 
 	CodeProcessor = require('../'),
-
-	sourceInformation,
-	options,
-	plugins;
+	Runtime = require('../lib/Runtime');
 
 exports.desc = exports.extendedDesc = __('analyses a project using the Titanium Code Processor');
 
@@ -34,61 +33,130 @@ exports.config = function (logger, config) {
 			'all-plugins': {
 				abbr: 'A',
 				desc: __('loads all plugins in the default search path')
+			},
+			'no-method-invokation': {
+				desc: __('prevents methods from being invoked (ignored if --config-file is specified)'),
+				default: !Runtime.options.invokeMethods
+			},
+			'no-loop-evaluation': {
+				desc: __('Whether or not to evaluate loops (ignored if --config-file is specified)'),
+				default: !Runtime.options.evaluateLoops
+			},
+			'no-console-passthrough': {
+				desc: __('Prevents console.* calls in a project from being logged to the console (ignored if' +
+					' --config-file is specified)'),
+				default: !Runtime.options.logConsoleCalls
+			},
+			'exact-mode': {
+				desc: __('enables exact mode evaluation. Exact mode does not use ambiguous' +
+					' modes and throws an exception if an Unknown type is encountered (ignored if --config-file is specified)'),
+				default: Runtime.options.exactMode
+			},
+			'no-native-exception-recovery': {
+				desc: __('disables recovering from native exceptions when not in try/catch statements (ignored ' +
+					'if --config-file is specified)'),
+				default: !Runtime.options.nativeExceptionRecovery
+			},
+			'process-unvisited-code': {
+				desc: __('when set to true, all nodes and files that are not visited/skipped will be processed in ambiguous' +
+					' mode after all other code has been processed. While this will cause more of a project to be analyzed,' +
+					' this will decrease accuracy and can generate a lot of false positives (ignored if --config-file is specified)'),
+				default: Runtime.options.processUnvisitedCode
 			}
 		},
 		options: {
-			'config-file': {
-				abbr: 'F',
-				desc: __('the path to the config file, note: all other options are ignored when this options is specified'),
-				callback: function() {
-					conf.options.platform.required = false;
-				}
-			},
-			plugins: {
-				abbr: 'L',
-				desc: __('a comma separated list of plugin names to load'),
-				hint: __('plugins')
-			},
-			platform: {
-				abbr: 'p',
-				desc: __('the name of the OS being built-for, reflected in code via Ti.Platform.osname'),
-				hint: __('platform'),
-				required: true
-			},
-			'project-dir': {
-				abbr: 'd',
-				desc: __('the directory containing the project, otherwise the current working directory')
-			},
-			'results-dir': {
-				abbr: 'R',
-				desc: __('the path to the directory that will contain the generated results pages')
-			},
-			'log-level': {
-				callback: function (value) {
-					logger.levels.hasOwnProperty(value) && logger.setLevel(value);
-				},
-				desc: __('minimum logging level'),
-				default: config.cli.logLevel || 'debug',
-				hint: __('level'),
-				values: logger.getLevels()
-			},
 			output: {
 				abbr: 'o',
 				desc: __('output format'),
 				hint: __('format'),
 				default: 'report',
 				values: ['report', 'json', 'stream']
+			},
+			'config-file': {
+				abbr: 'F',
+				desc: __('the path to the config file, note: most options and flags are ignored with this option'),
+				callback: function() {
+					conf.options.platform.required = false;
+				}
+			},
+			plugins: {
+				desc: __('a comma separated list of plugin names to load (ignored if --config-file is specified)'),
+				hint: __('plugins')
+			},
+			platform: {
+				abbr: 'p',
+				desc: __('the name of the OS being built-for, reflected in code via Ti.Platform.osname (ignored if --config-file is specified)'),
+				hint: __('platform'),
+				required: true
+			},
+			'project-dir': {
+				abbr: 'd',
+				desc: __('the directory containing the project, otherwise the current working directory (ignored if --config-file is specified)')
+			},
+			'results-dir': {
+				abbr: 'R',
+				desc: __('the path to the directory that will contain the generated results pages (ignored if --config-file is specified)')
+			},
+			'log-level': {
+				callback: function (value) {
+					logger.levels.hasOwnProperty(value) && logger.setLevel(value);
+				},
+				desc: __('minimum logging level (ignored if --config-file is specified)'),
+				default: config.cli.logLevel || 'debug',
+				hint: __('level'),
+				values: logger.getLevels()
+			},
+			'max-loop-iterations': {
+				desc: __('the maximum number of iterations a loop can iterate before falling back to an unknown evaluation (ignored if --config-file is specified)'),
+				hint: __('iterations'),
+				default: Runtime.options.maxLoopIterations
+			},
+			'max-recursion-limit': {
+				desc: __('the maximum recursion depth to evaluate before throwing a RangeError exception (ignored if --config-file is specified)'),
+				hint: __('recursion limit'),
+				default: Runtime.options.maxRecursionLimit
+			},
+			'execution-time-limit': {
+				desc: __('the maximum time the app is allowed to run before erroring. 0 means no time limit (ignored if --config-file is specified)'),
+				hint: __('time limit'),
+				default: Runtime.options.executionTimeLimit
+			},
+			'cycle-detection-stack-size': {
+				desc: __('the size of the cycle detection stack. Cycles that are larger than this size will not be caught'),
+				hint: __('size'),
+				default: Runtime.options.cycleDetectionStackSize
+			},
+			'max-cycles': {
+				desc: __('The maximum number of cycles to allow before throwing an exception'),
+				hint: __('size'),
+				default: Runtime.options.maxCycles
 			}
 		}
 	};
 	return conf;
 };
 
-exports.validate = function (logger, config, cli) {
-
+exports.run = function (logger, config, cli) {
 	var argv = cli.argv,
 		configFile,
-		filename;
+		filename,
+		projectRoot,
+		entryPoint,
+		options,
+		sourceInformation;
+
+	function run(sourceInformation, options, plugins) {
+		options.outputFormat = argv.output;
+		cli.fireHook('codeprocessor.pre.run', function () {
+			setTimeout(function () {
+				CodeProcessor.run(sourceInformation, options, plugins, logger, function () {});
+			}, 0);
+		});
+	}
+
+	if (argv.output === 'report') {
+		logger.banner();
+	}
 
 	// Check if a config file was specified
 	configFile = argv['config-file'];
@@ -180,96 +248,37 @@ exports.validate = function (logger, config, cli) {
 			process.exit(1);
 		}
 
-		sourceInformation = configFile.sourceInformation;
-		options = configFile.options;
-		plugins = configFile.plugins;
-	}/* else {
+		run(configFile.sourceInformation, configFile.options, configFile.plugins);
 
-		if (!parsedOptions.osname) {
-			console.error('\n"osname" argument is required when not using a config file\n');
-			process.exit(1);
-		}
-
-		// Create the logger
-		if (['trace', 'debug', 'info', 'notice', 'warn', 'error'].indexOf(parsedOptions['log-level']) === -1) {
-			console.error('Unknown log level "' + parsedOptions['log-level'] + '"');
-			process.exit(1);
-		}
-		logger = new (winston.Logger)({
-			transports: [
-				new (winston.transports.Console)({ level: parsedOptions['log-level'] })
-			],
-			levels: {
-				trace: 0,
-				debug: 1,
-				info: 2,
-				notice: 3,
-				warn: 4,
-				error: 5
-			}
-		});
+	} else {
 
 		// Parse the config options
-		if (parsedOptions.config) {
-			for(i = 0, len = parsedOptions.config.length; i < len; i++) {
-				configOption = parsedOptions.config[i].split('=');
-				if (configOption.length !== 2) {
-					console.error('Invalid option "' + parsedOptions.config[i] + '"\n');
-					process.exit(1);
-				}
-				switch(configOption[0]) {
-					case 'invokeMethods':
-						options.invokeMethods = configOption[1] === 'true';
-						break;
-					case 'evaluateLoops':
-						options.evaluateLoops = configOption[1] === 'true';
-						break;
-					case 'maxLoopIterations':
-						options.maxLoopIterations = parseInt(configOption[1], 10);
-						break;
-					case 'maxRecursionLimit':
-						options.maxRecursionLimit = parseInt(configOption[1], 10);
-						break;
-					case 'cycleDetectionStackSize':
-						options.cycleDetectionStackSize = parseInt(configOption[1], 10);
-						break;
-					case 'maxCycles':
-						options.maxCycles = parseInt(configOption[1], 10);
-						break;
-					case 'logConsoleCalls':
-						options.logConsoleCalls = configOption[1] === 'true';
-						break;
-					case 'executionTimeLimit':
-						options.executionTimeLimit = parseInt(configOption[1], 10);
-						break;
-					case 'exactMode':
-						options.exactMode = configOption[1] === 'true';
-						break;
-					case 'nativeExceptionRecovery':
-						options.nativeExceptionRecovery = configOption[1] === 'true';
-						break;
-					case 'processUnvisitedCode':
-						options.processUnvisitedCode = configOption[1] === 'true';
-						break;
-					default:
-						console.error('Invalid option "' + parsedOptions.config[i] + '"\n');
-						process.exit(1);
-				}
-			}
+		options = {};
+		options.invokeMethods = !argv['no-method-invokation'];
+		options.evaluateLoops = !argv['no-loop-evaluation'];
+		options.maxLoopIterations = parseInt(argv['max-loop-iterations'], 10);
+		options.maxRecursionLimit = parseInt(argv['max-recursion-limit'], 10);
+		options.cycleDetectionStackSize = parseInt(argv['cycle-detection-stack-size'], 10);
+		options.maxCycles = parseInt(argv['max-cycles'], 10);
+		options.logConsoleCalls = !argv['no-console-passthrough'];
+		options.executionTimeLimit = parseInt(argv['execution-time-limit'], 10);
+		options.exactMode = argv['exact-mode'];
+		options.nativeExceptionRecovery = !argv['no-native-exception-recovery'];
+		options.processUnvisitedCode = argv['process-unvisited-code'];
+		options.resultsPath = argv['results-dir'];
+
+		if (argv.output !== 'report') {
+			logger.remove(winston.transports.Console);
 		}
 
 		// Calculate the project root
-		if (parsedOptions['project-dir']) {
-			projectRoot = parsedOptions['project-dir'];
+		if (argv['project-dir']) {
+			projectRoot = argv['project-dir'];
 		}
+		sourceInformation = {};
 		projectRoot = sourceInformation.projectDir = path.resolve(projectRoot);
 
-		// Store the results dir
-		options.resultsPath = parsedOptions['results-dir'];
-		options.resultsTheme = parsedOptions['results-theme'];
-		options.suppressResults = parsedOptions['suppress-results'];
-
-		// Check if we are processing a project or a single file
+		// Set the source information
 		sourceInformation.sourceDir = path.join(projectRoot, 'Resources');
 		entryPoint = sourceInformation.entryPoint = path.join(projectRoot, 'Resources', 'app.js');
 		if (!existsSync(entryPoint)) {
@@ -333,7 +342,7 @@ exports.validate = function (logger, config, cli) {
 						} else {
 
 							// Create the plugin info
-							CodeProcessor.queryPlugins([], function(err, results) {
+							CodeProcessor.queryPlugins([], logger, function(err, results) {
 								var sdkVersion,
 									sdkInfo,
 									projectModules,
@@ -341,27 +350,19 @@ exports.validate = function (logger, config, cli) {
 									moduleList,
 									modules = {},
 									i, len,
-									pluginList = parsedOptions.plugin,
+									pluginList = argv.plugins,
 									plugins = [],
 									plugin;
 
-								if (parsedOptions['all-plugins']) {
+								if (argv['all-plugins']) {
 									for(plugin in results) {
 										plugins.push({
 											path: results[plugin].path,
 											options: {}
 										});
 									}
-								} else if (parsedOptions['non-ti-plugins']) {
-									for(plugin in results) {
-										if (!tiRegex.test(plugin)) {
-											plugins.push({
-												path: results[plugin].path,
-												options: {}
-											});
-										}
-									}
-								} else if (pluginList) {
+								} else {
+									pluginList = pluginList ? pluginList.split(',') : [];
 									for(i = 0, len = pluginList.length; i < len; i++) {
 										plugin = pluginList[i];
 										if (plugin in results) {
@@ -370,7 +371,7 @@ exports.validate = function (logger, config, cli) {
 												options: {}
 											});
 										} else if (logger) {
-											logger.warn('Plugin "' + pluginList[i] + '" is unknown');
+											logger.warn(__('Plugin "%s" is unknown', pluginList[i]));
 										}
 									}
 								}
@@ -430,10 +431,10 @@ exports.validate = function (logger, config, cli) {
 													modules[platform][name] = moduleEntry.modulePath;
 												}
 											} else {
-												if (!modules[parsedOptions.osname]) {
-													modules[parsedOptions.osname] = {};
+												if (!modules[argv.platform]) {
+													modules[argv.platform] = {};
 												}
-												modules[parsedOptions.osname][name] = ''; // Kinda hacky, but good enough for this script
+												modules[argv.platform][name] = ''; // Kinda hacky, but good enough for this script
 											}
 										});
 									}
@@ -447,11 +448,11 @@ exports.validate = function (logger, config, cli) {
 								}
 								for(i = 0, len = plugins.length; i < len; i++) {
 									if (path.basename(plugins[i].path) === 'require-provider') {
-										plugins[i].options.platform = parsedOptions.osname;
+										plugins[i].options.platform = argv.platform;
 									} else if (path.basename(plugins[i].path) === 'ti-api-platform-validator') {
-										plugins[i].options.platform = parsedOptions.osname;
+										plugins[i].options.platform = argv.platform;
 									} else if (path.basename(plugins[i].path) === 'ti-api-provider') {
-										plugins[i].options.platform = parsedOptions.osname;
+										plugins[i].options.platform = argv.platform;
 									} else if (path.basename(plugins[i].path) === 'analysis-coverage') {
 										plugins[i].options.visualization = {
 											outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'analysis-coverage') : undefined
@@ -464,7 +465,7 @@ exports.validate = function (logger, config, cli) {
 								}
 
 								// Check if this is an alloy app
-								if (existsSync(path.join(projectRoot, 'app'))) {
+								/*if (existsSync(path.join(projectRoot, 'app'))) {
 									sourceMapDir = path.join(projectRoot, 'build', 'map', 'Resources');
 									sourceInformation.originalSourceDir = path.join(projectRoot, 'app');
 									if (!existsSync(sourceMapDir)) {
@@ -482,11 +483,9 @@ exports.validate = function (logger, config, cli) {
 										}
 									}
 									sourceInformation.sourceMaps = sourceMaps;
-								}
+								}*/
 
-								setTimeout(function(){
-									CodeProcessor.run(sourceInformation, options, plugins, logger);
-								}, 0);
+								run(sourceInformation, options, plugins);
 							});
 						}
 					});
@@ -494,12 +493,4 @@ exports.validate = function (logger, config, cli) {
 			});
 		}
 	}
-	*/
-};
-
-exports.run = function (logger, config, cli) {
-	if (cli.argv.output === 'report') {
-		logger.banner();
-	}
-	CodeProcessor.run(sourceInformation, options, plugins, logger);
 };
