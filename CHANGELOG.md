@@ -8,6 +8,7 @@
 ### New Features
 * Added support for source maps and, by extension, Alloy
 * Reworked how source code information is specified in configuration files to allow for better flexibility
+* The code processor is now a CLI command! Run "titanium analyze --help" for more information
 
 ### Bug Fixes
 * Fixed the case when a titanium object has an object property (typically a pseduo-type) from getting it's api listed twice in the API usage finder
