@@ -143,7 +143,9 @@ exports.run = function (logger, config, cli) {
 		projectRoot,
 		entryPoint,
 		options,
-		sourceInformation;
+		sourceInformation,
+		pkg,
+		i, len;
 
 	function run(sourceInformation, options, plugins) {
 		options.outputFormat = argv.output;
@@ -243,6 +245,23 @@ exports.run = function (logger, config, cli) {
 		if (!configFile.plugins) {
 			configFile.plugins = [];
 		}
+
+		// Set the CLI platform arg
+		for (i = 0, len = configFile.plugins.length; i < len; i++) {
+			try {
+				pkg = JSON.parse(fs.readFileSync(path.join(configFile.plugins[i].path, 'package.json')));
+				if (pkg.name === 'require-provider') {
+					argv.platform = configFile.plugins[i].options.platform;
+				}
+			} catch(e) {
+				logger.log('error', 'Could not parse "' + path.join(configFile.plugins[i].path, 'package.json') + '": ' + e);
+				process.exit(1);
+			}
+		}
+		if (!cli.argv.platform) {
+			argv.platform = 'iphone';
+		}
+
 		if (typeof configFile.plugins !== 'object' || !Array.isArray(configFile.plugins)) {
 			logger.error(__('Config "plugins" entry must be an array'));
 			process.exit(1);
@@ -350,7 +369,6 @@ exports.run = function (logger, config, cli) {
 									globalModules,
 									moduleList,
 									modules = {},
-									i, len,
 									pluginList = argv.plugins,
 									plugins = [],
 									plugin,
@@ -454,10 +472,6 @@ exports.run = function (logger, config, cli) {
 								}
 								for(i = 0, len = plugins.length; i < len; i++) {
 									if (path.basename(plugins[i].path) === 'require-provider') {
-										plugins[i].options.platform = argv.platform;
-									} else if (path.basename(plugins[i].path) === 'ti-api-platform-validator') {
-										plugins[i].options.platform = argv.platform;
-									} else if (path.basename(plugins[i].path) === 'ti-api-provider') {
 										plugins[i].options.platform = argv.platform;
 									} else if (path.basename(plugins[i].path) === 'analysis-coverage') {
 										plugins[i].options.visualization = {
