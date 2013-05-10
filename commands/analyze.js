@@ -352,7 +352,12 @@ exports.run = function (logger, config, cli) {
 									i, len,
 									pluginList = argv.plugins,
 									plugins = [],
-									plugin;
+									plugin,
+									sourceMapDir,
+									sourceMapsFiles,
+									sourceMaps,
+									sourceMap,
+									sourceMapRegex = /\.map$/;
 
 								if (argv['all-plugins']) {
 									for(plugin in results) {
@@ -465,7 +470,7 @@ exports.run = function (logger, config, cli) {
 								}
 
 								// Check if this is an alloy app
-								/*if (existsSync(path.join(projectRoot, 'app'))) {
+								if (existsSync(path.join(projectRoot, 'app'))) {
 									sourceMapDir = path.join(projectRoot, 'build', 'map', 'Resources');
 									sourceInformation.originalSourceDir = path.join(projectRoot, 'app');
 									if (!existsSync(sourceMapDir)) {
@@ -483,7 +488,7 @@ exports.run = function (logger, config, cli) {
 										}
 									}
 									sourceInformation.sourceMaps = sourceMaps;
-								}*/
+								}
 
 								run(sourceInformation, options, plugins);
 							});
