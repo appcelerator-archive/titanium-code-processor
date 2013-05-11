@@ -8,7 +8,9 @@
  */
 
 var CodeProcessor = require('..'),
-	__ = require('../lib/i18n')(__dirname).__;
+	appc = require('node-appc'),
+	i18n = appc.i18n(__dirname),
+	__ = i18n.__;
 
 exports.desc = exports.extendedDesc = __('analyses a project using the Titanium Code Processor');
 
