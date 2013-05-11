@@ -24,7 +24,7 @@ var path = require('path'),
 	CodeProcessor = require('../'),
 	Runtime = require('../lib/Runtime');
 
-exports.desc = exports.extendedDesc = __('analyses a project using the Titanium Code Processor');
+exports.desc = exports.extendedDesc = __('analyzes a project using the Titanium Code Processor');
 
 exports.config = function (logger, config) {
 	var conf = {
