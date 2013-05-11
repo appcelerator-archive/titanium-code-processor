@@ -101,9 +101,9 @@ exports.getOverrides = function (options) {
 				if (filename[0] === '.') {
 					filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentLocation().filename), filename));
 				} else {
-					filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), options.platform, filename));
+					filePath = path.resolve(path.join(Runtime.sourceInformation.sourceDir, options.platform, filename));
 					if (!existsSync(filePath)) {
-						filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), filename));
+						filePath = path.resolve(path.join(Runtime.sourceInformation.sourceDir, filename));
 					}
 				}
 
