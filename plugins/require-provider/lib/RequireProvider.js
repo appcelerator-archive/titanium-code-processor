@@ -55,7 +55,7 @@ exports.init = function init(options) {
 			file,
 			leadSegment,
 			i, len,
-			baseDir = path.dirname(Runtime.getEntryPointFile());
+			baseDir = Runtime.sourceInformation.sourceDir;
 		for (i = 0, len = fileList.length; i < len; i++) {
 			file = path.relative(baseDir, fileList[i]).split(path.sep);
 			leadSegment = file[0];
@@ -185,10 +185,10 @@ RequireFunction.prototype.callFunction = function callFunction(thisVal, args) {
 				filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentLocation().filename), name));
 				filePath += isModule ? '.js' : '';
 			} else {
-				filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), platform, name));
+				filePath = path.resolve(path.join(Runtime.sourceInformation.sourceDir, platform, name));
 				filePath += isModule ? '.js' : '';
 				if (!existsSync(filePath)) {
-					filePath = path.resolve(path.join(path.dirname(Runtime.getEntryPointFile()), name));
+					filePath = path.resolve(path.join(Runtime.sourceInformation.sourceDir, name));
 					filePath += isModule ? '.js' : '';
 				}
 			}

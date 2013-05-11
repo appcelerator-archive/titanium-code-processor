@@ -86,6 +86,8 @@ Option | Description
 --project-dir, -d | The directory of the project to load. If not specified, defaults to the current directory
 --config-file, -f | The path to the config file. Note: when this flag is specified, all other flags are ignored and tiapp.xml is not parsed
 --results-dir, -r | The path to the directory that will contain the results
+--results-theme, -m | The theme for the results page. One of 'light' or 'dark'
+--suppress-results, -s | Don't generate results files, just log them to the screen
 --all-plugins, -a | Loads all plugins in the default search path
 --non-ti-plugins, -t | Loads all non-titanium specific plugins in the default search path
 
@@ -370,7 +372,12 @@ will return an error stating as much. Eventually there are plans for sending mes
 
 The config file contains everything necessary for processing a project. Below is it's definition
 
-* **entryPoint** _string_ The path to the entry point
+* **sourceInformation** _object_ The path to the entry point
+	 * **sourceDir** The directory containing the source code to be analyzed
+	 * **entryPoint** The entry point for the project
+	 * **projectDir** The project directory
+	 * **originalSourceDir** &lt;optional&gt; The original directory that contained source code. Source maps map from here to sourceDir
+	 * **sourceMaps** &lt;optional&gt; The source maps in key-value form. The key is a relative path to the file with sourceDir as the base, i.e. an absolute path to a file is at sourceDir + '/' + sourceMapKey
 * **logging** _object_ Logging configuration
 	* **console** &lt;optional&gt; _object_ The configuration for logging to the console
 		* **level** _string_ The log level, e.g. "debug"
