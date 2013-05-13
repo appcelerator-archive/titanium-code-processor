@@ -38,7 +38,7 @@ function generateResultsData() {
 
 function generateRenderData() {
 	var numAPIs = Object.keys(results.global).length,
-		baseDirectory = path.dirname(Runtime.getEntryPointFile()) + path.sep,
+		baseDirectory = Runtime.sourceInformation.projectDir + path.sep,
 		numInstances = 0,
 		api,
 		file,
@@ -110,7 +110,7 @@ function generateRenderData() {
 exports.init = function init() {
 	function processReference(e) {
 		var name = e.data.name,
-			filename = e.filename;
+			filename = Runtime.mapLocation(e).filename;
 		if (results.global[name]) {
 			results.global[name]++;
 		} else {
