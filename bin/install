@@ -13,8 +13,6 @@ var async = require('async'),
 	exec = require('child_process').exec;
 exec('titanium config paths -o json', function (error, stdout, stderr) {
 	var paths,
-		commandDirectories,
-		hookDirectories,
 		tasks = [],
 		commandPath = path.resolve(path.join(__dirname, '..', 'commands')),
 		hookPath = path.resolve(path.join(__dirname, '..', 'hooks')),
@@ -75,21 +73,20 @@ exec('titanium config paths -o json', function (error, stdout, stderr) {
 	}
 
 	if (error || stderr) {
-		console.warn('Warning: Could not query the titanium paths: ' + stderr + '\nThe Titanium Code Processor will not be available in the CLI or during builds');
+		console.warn('Warning: Could not query the Titanium paths: ' + stderr + '\nThe Titanium Code Processor will not be available in the CLI or during builds');
 		process.exit();
 	}
 
 	try {
 		paths = JSON.parse(stdout);
 	} catch(e) {
-		console.warn('Warning: Could not parse the path query output from the Titanium CLI: ' + e + '\nThe Titanium Code Processor will not be available in the CLI or during builds');
+		console.warn('Warning: Could not parse the path query output from the Titanium CLI: ' + e +
+			'\nThe Titanium Code Processor will not be available in the CLI or during builds');
 		process.exit();
 	}
-	commandDirectories = paths['paths.commands'];
-	hookDirectories = paths['paths.hooks'];
 
 	// Check if there is are existing hooks and commands to replace, and if this is an overwrite or a separate install
-	commandDirectories.forEach(function (commandDirectory) {
+	(paths['paths.commands'] || []).forEach(function (commandDirectory) {
 		tasks.push(function (next) {
 			commandDirectory = path.resolve(commandDirectory);
 			comparePaths(commandDirectory, commandPath, function (err, result) {
@@ -106,7 +103,7 @@ exec('titanium config paths -o json', function (error, stdout, stderr) {
 			});
 		});
 	});
-	hookDirectories.forEach(function (hookDirectory) {
+	(paths['paths.hooks'] || []).forEach(function (hookDirectory) {
 		tasks.push(function (next) {
 			hookDirectory = path.resolve(hookDirectory);
 			comparePaths(hookDirectory, hookPath, function (err, result) {
@@ -136,7 +133,7 @@ exec('titanium config paths -o json', function (error, stdout, stderr) {
 				tasks.push(function (next) {
 					exec('titanium config paths.commands --append ' + commandPath, function (error, stdout, stderr) {
 						if (error) {
-							console.warn('Warning: Could not modify the titanium paths: ' + stderr + 'The Titanium Code Processor will not be available in the CLI');
+							console.warn('Warning: Could not modify the Titanium paths: ' + stderr + 'The Titanium Code Processor will not be available in the CLI');
 						}
 						next(error);
 					});
@@ -146,7 +143,7 @@ exec('titanium config paths -o json', function (error, stdout, stderr) {
 				tasks.push(function (next) {
 					exec('titanium config paths.hooks --append ' + hookPath, function (error, stdout, stderr) {
 						if (error) {
-							console.warn('Warning: Could not modify the titanium paths: ' + stderr + 'The Titanium Code Processor will not be available during builds');
+							console.warn('Warning: Could not modify the Titanium paths: ' + stderr + 'The Titanium Code Processor will not be available during builds');
 						}
 						next(error);
 					});
