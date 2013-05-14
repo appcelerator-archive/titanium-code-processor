@@ -1,0 +1,160 @@
+#!/usr/bin/env node
+/**
+ * <p>Copyright (c) 2013 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.</p>
+ *
+ * Assembles the base components into a single file
+ * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
+ */
+
+var async = require('async'),
+	fs = require('fs'),
+	path = require('path'),
+	exec = require('child_process').exec;
+exec('titanium config paths -o json', function (error, stdout, stderr) {
+	var paths,
+		commandDirectories,
+		hookDirectories,
+		tasks = [],
+		commandPath = path.resolve(path.join(__dirname, '..', 'commands')),
+		hookPath = path.resolve(path.join(__dirname, '..', 'hooks')),
+		addCommands = true,
+		addHooks = true,
+		otherInstallationFound = false;
+
+	function comparePaths(pathToCheck, comparisonPath, callback) {
+		async.series([
+			function (next) {
+				fs.exists(pathToCheck, function (exists) {
+					if (!exists) {
+						console.warn('Notice: configured CLI path "' + pathToCheck + '" does not exist.' +
+							' Please check your Titanium configuration by running "titanium config". Installation will continue.');
+					}
+					next(!exists);
+				});
+			},
+			function (next) {
+				fs.exists(pathToCheck, function (exists) {
+					if (!exists) {
+						console.warn('Notice: configured CLI path "' + pathToCheck + '" does not exist.' +
+							' Please check your Titanium configuration by running "titanium config". Installation will continue.');
+					}
+					next(!exists);
+				});
+			},
+			function (next) {
+				var pkgPath = path.resolve(path.join(pathToCheck, '..', 'package.json'));
+				fs.readFile(pkgPath, {
+					encoding: 'utf8'
+				}, function (err, data) {
+					var error = !!err,
+						pkg,
+						result;
+					if (!error) {
+						try {
+							pkg = JSON.parse(data);
+							if (pkg.name === 'titanium-code-processor') {
+								if (comparisonPath === pathToCheck) {
+									result = 'same';
+								} else {
+									result = 'different';
+								}
+							}
+						} catch(e) {
+							console.log('Notice: Could not parse the package.json file at "' + pkgPath + ': ' + e +
+								'". Please check your Titanium configuration by running "titanium config". Installation will continue.');
+							error = true;
+						}
+					}
+					next(!!error, result || 'none');
+				});
+			}
+		], function (err, result) {
+			callback(err, result);
+		});
+	}
+
+	if (error || stderr) {
+		console.warn('Warning: Could not query the titanium paths: ' + stderr + '\nThe Titanium Code Processor will not be available in the CLI or during builds');
+		process.exit();
+	}
+
+	try {
+		paths = JSON.parse(stdout);
+	} catch(e) {
+		console.warn('Warning: Could not parse the path query output from the Titanium CLI: ' + e + '\nThe Titanium Code Processor will not be available in the CLI or during builds');
+		process.exit();
+	}
+	commandDirectories = paths['paths.commands'];
+	hookDirectories = paths['paths.hooks'];
+
+	// Check if there is are existing hooks and commands to replace, and if this is an overwrite or a separate install
+	commandDirectories.forEach(function (commandDirectory) {
+		tasks.push(function (next) {
+			commandDirectory = path.resolve(commandDirectory);
+			comparePaths(commandDirectory, commandPath, function (err, result) {
+				if (!err) {
+					result = result.pop();
+					if (result === 'same') {
+						addCommands = false;
+					} else if (result === 'different') {
+						addCommands = false;
+						otherInstallationFound = true;
+					}
+				}
+				next();
+			});
+		});
+	});
+	hookDirectories.forEach(function (hookDirectory) {
+		tasks.push(function (next) {
+			hookDirectory = path.resolve(hookDirectory);
+			comparePaths(hookDirectory, hookPath, function (err, result) {
+				if (!err) {
+					result = result.pop();
+					if (result === 'same') {
+						addHooks = false;
+					} else if (result === 'different') {
+						addHooks = false;
+						otherInstallationFound = true;
+					}
+				}
+				next();
+			});
+		});
+	});
+
+	async.parallel(tasks, function () {
+		var tasks = [];
+		if (otherInstallationFound) {
+			console.warn('Warning: More than one installation of the Titanium Code Processor appears to be present.' +
+				' You will need to manage the Titanium CLI paths manually via "titanium config"');
+		} else if (addCommands || addHooks) {
+			console.log('Notice: Modifying your Titanium Mobile configuration to include commands and hooks for the Titanium Code Processor.' +
+				' Run "titanium config" for more information');
+			if (addCommands) {
+				tasks.push(function (next) {
+					exec('titanium config paths.commands --append ' + commandPath, function (error, stdout, stderr) {
+						if (error) {
+							console.warn('Warning: Could not modify the titanium paths: ' + stderr + 'The Titanium Code Processor will not be available in the CLI');
+						}
+						next(error);
+					});
+				});
+			}
+			if (addHooks) {
+				tasks.push(function (next) {
+					exec('titanium config paths.hooks --append ' + hookPath, function (error, stdout, stderr) {
+						if (error) {
+							console.warn('Warning: Could not modify the titanium paths: ' + stderr + 'The Titanium Code Processor will not be available during builds');
+						}
+						next(error);
+					});
+				});
+			}
+			if (tasks.length) {
+				async.series(tasks);
+			}
+		}
+	});
+});
