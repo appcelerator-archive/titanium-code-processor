@@ -55,62 +55,76 @@ function generateRenderData() {
 		unresolved,
 		missing,
 		skipped,
-		baseDirectory = Runtime.sourceInformation.projectDir + path.sep;
+		baseDirectory = Runtime.sourceInformation.projectDir + path.sep,
+		list;
+
+	function locationComparator(a, b) {
+		var fileCompare = a.filename.localeCompare(b.filename);
+		return fileCompare === 0 ? a.line - b.line : fileCompare;
+	}
 
 	if (numRequiresResolved) {
 		resolved = {
 			list: []
 		};
+		list = resolved.list;
 		results.resolved.forEach(function (module) {
 			var mappedLocation = Runtime.mapLocation(module);
-			resolved.list.push({
+			list.push({
 				name: module.data.name,
 				path: module.data.path.replace(baseDirectory, ''),
 				filename: mappedLocation.filename.replace(baseDirectory, ''),
 				line: mappedLocation.line
 			});
 		});
+		list.sort(locationComparator);
 	}
 
 	if (numRequiresUnresolved) {
 		unresolved = {
 			list: []
 		};
+		list = unresolved.list;
 		results.unresolved.forEach(function (module) {
 			var mappedLocation = Runtime.mapLocation(module);
-			unresolved.list.push({
+			list.push({
 				filename: mappedLocation.filename.replace(baseDirectory, ''),
 				line: mappedLocation.line
 			});
 		});
+		list.sort(locationComparator);
 	}
 
 	if (numRequiresMissing) {
 		missing = {
 			list: []
 		};
+		list = missing.list;
 		results.missing.forEach(function (module) {
 			var mappedLocation = Runtime.mapLocation(module);
-			missing.list.push({
+			list.push({
 				name: module.data.name,
 				filename: mappedLocation.filename.replace(baseDirectory, ''),
 				line: mappedLocation.line
 			});
 		});
+		list.sort(locationComparator);
 	}
 
 	if (numRequiresSkipped) {
 		skipped = {
 			list: []
 		};
+		list = skipped.list;
 		results.skipped.forEach(function (module) {
 			var mappedLocation = Runtime.mapLocation(module);
-			skipped.list.push({
+			list.push({
 				name: module.data.name,
 				filename: mappedLocation.filename.replace(baseDirectory, ''),
 				line: mappedLocation.line
 			});
 		});
+		list.sort(locationComparator);
 	}
 
 	renderData = {
