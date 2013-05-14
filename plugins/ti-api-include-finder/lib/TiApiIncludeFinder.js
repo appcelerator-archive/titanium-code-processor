@@ -49,48 +49,60 @@ function generateRenderData() {
 		resolved,
 		unresolved,
 		missing,
-		baseDirectory = Runtime.sourceInformation.projectDir + path.sep;
+		baseDirectory = Runtime.sourceInformation.projectDir + path.sep,
+		list;
+
+	function locationComparator(a, b) {
+		var fileCompare = a.filename.localeCompare(b.filename);
+		return fileCompare === 0 ? a.line - b.line : fileCompare;
+	}
 
 	if (numIncludesResolved) {
 		resolved = {
 			list: []
 		};
+		list = resolved.list;
 		results.resolved.forEach(function (file) {
 			var mappedLocation = Runtime.mapLocation(file);
-			resolved.list.push({
+			list.push({
 				name: file.data.name,
 				path: file.data.path.replace(baseDirectory, ''),
 				filename: mappedLocation.filename.replace(baseDirectory, ''),
 				line: mappedLocation.line
 			});
 		});
+		list.sort(locationComparator);
 	}
 
 	if (numIncludesUnresolved) {
 		unresolved = {
 			list: []
 		};
+		list = unresolved.list;
 		results.unresolved.forEach(function (file) {
 			var mappedLocation = Runtime.mapLocation(file);
-			unresolved.list.push({
+			list.push({
 				filename: mappedLocation.filename.replace(baseDirectory, ''),
 				line: mappedLocation.line
 			});
 		});
+		list.sort(locationComparator);
 	}
 
 	if (numIncludesMissing) {
 		missing = {
 			list: []
 		};
+		list = missing.list;
 		results.missing.forEach(function (file) {
 			var mappedLocation = Runtime.mapLocation(file);
-			missing.list.push({
+			list.push({
 				name: file.data.name,
 				filename: mappedLocation.filename.replace(baseDirectory, ''),
 				line: mappedLocation.line
 			});
 		});
+		list.sort(locationComparator);
 	}
 
 	renderData = {
