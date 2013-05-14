@@ -145,7 +145,9 @@ exports.run = function (logger, config, cli) {
 		options,
 		sourceInformation,
 		pkg,
-		i, len;
+		i, len,
+		sdkPath,
+		ti;
 
 	function run(sourceInformation, options, plugins) {
 		options.outputFormat = argv.output;
@@ -252,6 +254,19 @@ exports.run = function (logger, config, cli) {
 				pkg = JSON.parse(fs.readFileSync(path.join(configFile.plugins[i].path, 'package.json')));
 				if (pkg.name === 'require-provider') {
 					argv.platform = configFile.plugins[i].options.platform;
+				}
+				if (pkg.name === 'ti-api-provider') {
+					sdkPath = configFile.plugins[i].options.sdkPath;
+					if (!existsSync(sdkPath)) {
+						logger.log('error', 'Could not find the specified SDK path "' + sdkPath + '"');
+						process.exit(1);
+					}
+					try {
+						ti = require(path.join(sdkPath, 'node_modules', 'titanium-sdk'));
+						ti.validateProjectDir(logger, cli, cli.argv, 'project-dir');
+						ti.validateTiappXml(logger, cli.tiapp);
+						ti.loadPlugins(logger, cli, config, cli.argv['project-dir']);
+					} catch(e) {} // squash
 				}
 			} catch(e) {
 				logger.log('error', 'Could not parse "' + path.join(configFile.plugins[i].path, 'package.json') + '": ' + e);
@@ -376,7 +391,9 @@ exports.run = function (logger, config, cli) {
 									sourceMapsFiles,
 									sourceMaps,
 									sourceMap,
-									sourceMapRegex = /\.map$/;
+									sourceMapRegex = /\.map$/,
+									ti,
+									sdkPath;
 
 								if (argv['all-plugins']) {
 									for(plugin in results) {
@@ -423,6 +440,19 @@ exports.run = function (logger, config, cli) {
 										}
 									}
 
+									// Load the ti module and CLI plugins
+									sdkPath = sdkInfo.path;
+									if (!existsSync(sdkPath)) {
+										logger.log('error', 'Could not find the specified SDK path "' + sdkPath + '"');
+										process.exit(1);
+									}
+									try {
+										ti = require(path.join(sdkPath, 'node_modules', 'titanium-sdk'));
+										ti.validateProjectDir(logger, cli, cli.argv, 'project-dir');
+										ti.validateTiappXml(logger, cli.tiapp);
+										ti.loadPlugins(logger, cli, config, cli.argv['project-dir']);
+									} catch(e) {} //squash
+
 									// Get the list of modules from the tiapp.xml
 									projectModules = result.modules.project;
 									globalModules = result.modules.global;
@@ -466,7 +496,7 @@ exports.run = function (logger, config, cli) {
 										if (path.basename(plugins[i].path) === 'require-provider') {
 											plugins[i].options.modules = modules;
 										} else if (path.basename(plugins[i].path) === 'ti-api-provider') {
-											plugins[i].options.sdkPath = sdkInfo.path;
+											plugins[i].options.sdkPath = sdkPath;
 										}
 									}
 								}
