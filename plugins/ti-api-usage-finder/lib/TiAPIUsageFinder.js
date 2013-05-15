@@ -49,7 +49,7 @@ function generateRenderData() {
 		apiByFile;
 
 	function apiComparator(a, b) {
-		return a.api.localeCompare(b.api);
+		return a.api.toUpperCase().localeCompare(b.api.toUpperCase());
 	}
 
 	if (numAPIs) {
