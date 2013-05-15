@@ -248,6 +248,8 @@ exports.run = function (logger, config, cli) {
 			configFile.plugins = [];
 		}
 
+		argv['project-dir'] = configFile.sourceInformation.projectDir;
+
 		// Set the CLI platform arg
 		for (i = 0, len = configFile.plugins.length; i < len; i++) {
 			try {
