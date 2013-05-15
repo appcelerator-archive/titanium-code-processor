@@ -37,15 +37,21 @@ function generateRenderData() {
 		invalidAPIs,
 		numInvalidAPIReferences = 0,
 		numInvalidAPIInstances = 0,
-		invalidAPI;
+		invalidAPI,
+		list;
+
+	function apiComparator(a, b) {
+		return a.api.toUpperCase().localeCompare(b.api.toUpperCase());
+	}
 
 	// Generate the render data
 	if (numInvalidAPIs) {
 		invalidAPIs = {
 			list: []
 		};
+		list = invalidAPIs.list;
 		for (invalidAPI in results.invalidAPIs) {
-			invalidAPIs.list.push({
+			list.push({
 				api: invalidAPI,
 				numReferences: Object.keys(results.invalidAPIs[invalidAPI].locations).length,
 				numInstances: results.invalidAPIs[invalidAPI].numInstances
@@ -53,6 +59,7 @@ function generateRenderData() {
 			numInvalidAPIInstances += results.invalidAPIs[invalidAPI].numInstances;
 			numInvalidAPIReferences += Object.keys(results.invalidAPIs[invalidAPI].locations).length;
 		}
+		list.sort(apiComparator);
 		if (numInvalidAPIs === 1) {
 			numInvalidAPIs = '1 platform-specific API is';
 		} else {
