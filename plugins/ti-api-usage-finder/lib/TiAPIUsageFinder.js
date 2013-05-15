@@ -45,7 +45,12 @@ function generateRenderData() {
 		fileEntry,
 		summary,
 		apiSummary,
+		list,
 		apiByFile;
+
+	function apiComparator(a, b) {
+		return a.api.toUpperCase().localeCompare(b.api.toUpperCase());
+	}
 
 	if (numAPIs) {
 		apiSummary = {
@@ -54,15 +59,19 @@ function generateRenderData() {
 		apiByFile = {
 			list: []
 		};
+		list = apiSummary.list;
 		for (api in results.global) {
-			apiSummary.list.push({
+			list.push({
 				api: api,
 				numReferences: results.global[api]
 			});
 			numInstances += results.global[api];
 		}
+		list.sort(apiComparator);
+
+		list = apiByFile.list;
 		for (file in results.file) {
-			apiByFile.list.push({
+			list.push({
 				filename: file.replace(baseDirectory, ''),
 				list: fileEntry = []
 			});
@@ -72,6 +81,7 @@ function generateRenderData() {
 					numReferences: results.file[file][api]
 				});
 			}
+			fileEntry.sort(apiComparator);
 		}
 		if (numAPIs === 1) {
 			numAPIs = '1 distinct API is';
