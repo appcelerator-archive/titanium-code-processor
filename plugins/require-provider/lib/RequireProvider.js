@@ -23,7 +23,7 @@ var util = require('util'),
 	modules,
 	cache,
 
-	platformList = ['android', 'mobileweb', 'iphone', 'ipad', 'blackberry'];
+	platformList = ['android', 'mobileweb', 'iphone', 'ipad', 'blackberry', 'tizen'];
 
 /**
  * Initializes the plugin
