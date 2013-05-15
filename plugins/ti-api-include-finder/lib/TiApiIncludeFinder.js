@@ -53,7 +53,7 @@ function generateRenderData() {
 		list;
 
 	function locationComparator(a, b) {
-		var fileCompare = a.filename.localeCompare(b.filename);
+		var fileCompare = a.filename.toUpperCase().localeCompare(b.filename.toUpperCase());
 		return fileCompare === 0 ? a.line - b.line : fileCompare;
 	}
 

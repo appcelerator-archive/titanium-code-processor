@@ -41,7 +41,7 @@ function generateRenderData() {
 		list;
 
 	function apiComparator(a, b) {
-		return a.api.localeCompare(b.api);
+		return a.api.toUpperCase().localeCompare(b.api.toUpperCase());
 	}
 
 	// Generate the render data
