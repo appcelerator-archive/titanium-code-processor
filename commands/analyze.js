@@ -527,6 +527,7 @@ function runFromCLIParameters(logger, config, cli) {
 									sourceInformation.sourceMaps = sourceMaps;
 								}
 
+								options.outputFormat = argv.output;
 								setTimeout(function () {
 									CodeProcessor.run(sourceInformation, options, plugins, logger, function () {});
 								}, 0);
