@@ -19,7 +19,8 @@
 <div class="container-fluid">
 	<h3>Overview</h3>
 	<pre>Analysis completed in {{elapsedTime}} seconds at {{time}} on {{date}}
-{{errorsAndWarnings}}</pre>
+{{errorsAndWarnings}}{{#elevatedPlugins}}
+{{name}}: {{overview}}{{/elevatedPlugins}}</pre>
 <h3>Options</h3>
 	<table class="table table-striped table-bordered">
 		<colgroup>
