@@ -136,6 +136,15 @@ exports.config = function (logger, config) {
 	return conf;
 };
 
+function run(sourceInformation, options, plugins, logger, cli) {
+	cli.fireHook('codeprocessor.pre.run', function () {
+		options.outputFormat = cli.argv.output;
+		setTimeout(function () {
+			CodeProcessor.run(sourceInformation, options, plugins, logger, function () {});
+		}, 0);
+	});
+}
+
 function runFromConfigFile(logger, config, cli) {
 
 	var argv = cli.argv,
@@ -264,12 +273,7 @@ function runFromConfigFile(logger, config, cli) {
 		process.exit(1);
 	}
 
-	cli.fireHook('codeprocessor.pre.run', function () {
-		configFile.options.outputFormat = argv.output;
-		setTimeout(function () {
-			CodeProcessor.run(configFile.sourceInformation, configFile.options, configFile.plugins, logger, function () {});
-		}, 0);
-	});
+	run(configFile.sourceInformation, configFile.options, configFile.plugins, logger, cli);
 }
 
 function runFromCLIParameters(logger, config, cli) {
@@ -380,11 +384,6 @@ function runFromCLIParameters(logger, config, cli) {
 								pluginList = argv.plugins,
 								plugins = [],
 								plugin,
-								sourceMapDir,
-								sourceMapsFiles,
-								sourceMaps,
-								sourceMap,
-								sourceMapRegex = /\.map$/,
 								ti,
 								sdkPath;
 
@@ -506,33 +505,12 @@ function runFromCLIParameters(logger, config, cli) {
 							}
 
 							// Check if this is an alloy app
-							cli.fireHook('codeprocessor.pre.run', function () {
-								if (existsSync(path.join(projectRoot, 'app'))) {
-									sourceMapDir = path.join(projectRoot, 'build', 'map', 'Resources');
-									sourceInformation.originalSourceDir = path.join(projectRoot, 'app');
-									if (!existsSync(sourceMapDir)) {
-										console.error('Alloy projects must be compiled to analyze with the Titanium Code Processor');
-										process.exit(1);
-									}
+							if (existsSync(path.join(projectRoot, 'app'))) {
+								sourceInformation.sourceMapDir = path.join(projectRoot, 'build', 'map', 'Resources');
+								sourceInformation.originalSourceDir = path.join(projectRoot, 'app');
+							}
 
-									// Load the source maps
-									sourceMapsFiles = wrench.readdirSyncRecursive(sourceMapDir);
-									sourceMaps = {};
-									for (i = 0, len = sourceMapsFiles.length; i < len; i++) {
-										sourceMap = path.join(sourceMapDir, sourceMapsFiles[i]);
-										if (sourceMapRegex.test(sourceMap)) {
-											sourceMaps[sourceMapsFiles[i].replace(sourceMapRegex, '')] = sourceMap;
-										}
-									}
-									sourceInformation.sourceMaps = sourceMaps;
-								}
-
-								options.outputFormat = argv.output;
-								setTimeout(function () {
-									CodeProcessor.run(sourceInformation, options, plugins, logger, function () {});
-								}, 0);
-							});
-
+							run(sourceInformation, options, plugins, logger, cli);
 						});
 					}
 				});
