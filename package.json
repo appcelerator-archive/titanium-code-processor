@@ -9,11 +9,9 @@
 		"url": "https://github.com/appcelerator/titanium-code-processor.git"
 	},
 	"scripts": {
-		"test": "node tests/bin/tests",
-		"install": "bin/install"
+		"test": "node tests/bin/tests"
 	},
 	"main": "lib/CodeProcessor.js",
-	"bin": "bin/codeprocessor",
 	"dependencies": {
 		"uglify-js": "2.x.x",
 		"wrench": "1.x.x",
