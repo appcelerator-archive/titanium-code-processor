@@ -80,9 +80,9 @@ Analyzes a project.
 
 ### Command Options
 <table>
-	<th>
-		<td>Option</td><td>Description</td>
-	</th>
+	<tr>
+		<th>Option</th><th>Description</th>
+	</tr>
 	<tr>
 		<td>-A, --all-plugins</td><td>loads all plugins in the default search path</td>
 	</tr>
@@ -158,9 +158,9 @@ The low level packet consists of four comma separated fields that forms a messag
 Note: the packet header at this level is ASCII formatted, although the data can theoretically be in any format
 
 <table>
-	<th>
-		<td>Name</td><td>Description</td>
-	</th>
+	<tr>
+		<th>Name</th><th>Description</th>
+	</tr>
 	<tr>
 		<td>MessageType</td><td>A three character sequence that currently is always 'REQ' (request)</td>
 	</tr>
@@ -378,9 +378,9 @@ processor command, or by setting the option in the tiapp.xml file if using the
 Titanium CLI.
 
 <table>
-	<th>
-		<td>name</td><td>type</td><td>default</td><td>description</td>
-	</th>
+	<tr>
+		<th>name</th><th>type</th><th>default</th><th>description</th>
+	</tr>
 	<tr>
 		<td>invokeMethods</td><td>boolean</td><td>true</td><td>Indicates whether or not to invoke methods. If set to false, the method is evaluated once in ambiguous context mode.</td>
 	</tr>
@@ -417,9 +417,9 @@ current plugins are listed below, along with their type and if they have any oth
 dependencies
 
 <table>
-	<th>
-		<td>name</td><td>type</td><td>dependencies</td><td>description</td>
-	</th>
+	<tr>
+		<th>name</th><th>type</th><th>dependencies</th><th>description</th>
+	</tr>
 	<tr>
 		<td>[common-globals](plugins/common-globals)</td><td>provider</td><td>&lt;none&gt;</td><td>Provides implementations for common globals that aren't part of the JavaScript spec but are provided on all Titanium Mobile platforms (setTimeout, console, etc).</td>
 	</tr>
