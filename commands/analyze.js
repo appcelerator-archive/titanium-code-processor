@@ -136,6 +136,23 @@ exports.config = function (logger, config) {
 	return conf;
 };
 
+function validateAlloyHook(projectDir, logger, callback) {
+	var projectHook;
+	if (existsSync(path.join(projectDir, 'app'))) {
+		projectHook = fs.readFileSync(path.join(projectDir, 'plugins', 'ti.alloy', 'hooks', 'alloy.js')).toString();
+		if (projectHook.indexOf('codeprocessor.pre.run') === -1) {
+			logger.warn(__('The Alloy hook is out of date and must be updated to work with the Titanium Code Processor. Updating now.'));
+			exec('alloy install plugin', {
+				cwd: projectDir
+			}, callback);
+		} else {
+			callback();
+		}
+	} else {
+		callback();
+	}
+}
+
 function run(sourceInformation, options, plugins, logger, cli) {
 	cli.fireHook('codeprocessor.pre.run', function () {
 		options.outputFormat = cli.argv.output;
@@ -197,83 +214,87 @@ function runFromConfigFile(logger, config, cli) {
 		process.exit(1);
 	}
 
-	// Validate the logging and finagle things around for outputs other than report
-	if (configFile.logging && configFile.logging.file) {
-		if (['trace', 'debug', 'info', 'notice', 'warn', 'error'].indexOf(configFile.logging.file.level) === -1) {
-			console.error(__('Unknown log level "%s"', configFile.logging.file.level));
-			process.exit(1);
-		}
-		filename = configFile.logging.file.path;
-		if (!existsSync(path.dirname(filename))) {
-			wrench.mkdirSyncRecursive(path.dirname(filename));
-		}
-		logger.add(winston.transports.File, {
-			filename: path.resolve(filename),
-			level: configFile.logging.file.level
-		});
-	}
-	if (argv.output !== 'report') {
-		logger.remove(winston.transports.Console);
-		if (configFile.logging.console) {
-			logger.warn(__('Console logging settings will be ignored because the output type is not report'));
-		}
-	} else if (configFile.logging.console) {
-		if (['trace', 'debug', 'info', 'notice', 'warn', 'error'].indexOf(configFile.logging.console.level) === -1) {
-			console.error(__('Unknown log level "%s"', configFile.logging.console.level));
-			process.exit(1);
-		}
-		logger.setLevel(configFile.logging.console.level);
-	}
+	// Validate the Alloy hook
+	validateAlloyHook(configFile.sourceInformation.projectDir, logger, function () {
 
-	if (!configFile.options) {
-		configFile.options = {};
-	}
-	if (typeof configFile.options !== 'object' || Array.isArray(configFile.options)) {
-		console.error(__('Config "options" entry must be an object'));
-		process.exit(1);
-	}
-
-	if (!configFile.plugins) {
-		configFile.plugins = [];
-	}
-
-	argv['project-dir'] = configFile.sourceInformation.projectDir;
-
-	// Set the CLI platform arg
-	for (i = 0, len = configFile.plugins.length; i < len; i++) {
-		try {
-			pkg = JSON.parse(fs.readFileSync(path.join(configFile.plugins[i].path, 'package.json')));
-			if (pkg.name === 'require-provider') {
-				argv.platform = configFile.plugins[i].options.platform;
+		// Validate the logging and finagle things around for outputs other than report
+		if (configFile.logging && configFile.logging.file) {
+			if (['trace', 'debug', 'info', 'notice', 'warn', 'error'].indexOf(configFile.logging.file.level) === -1) {
+				console.error(__('Unknown log level "%s"', configFile.logging.file.level));
+				process.exit(1);
 			}
-			if (pkg.name === 'ti-api-provider') {
-				sdkPath = configFile.plugins[i].options.sdkPath;
-				if (!existsSync(sdkPath)) {
-					console.log('error', 'Could not find the specified SDK path "' + sdkPath + '"');
-					process.exit(1);
+			filename = configFile.logging.file.path;
+			if (!existsSync(path.dirname(filename))) {
+				wrench.mkdirSyncRecursive(path.dirname(filename));
+			}
+			logger.add(winston.transports.File, {
+				filename: path.resolve(filename),
+				level: configFile.logging.file.level
+			});
+		}
+		if (argv.output !== 'report') {
+			logger.remove(winston.transports.Console);
+			if (configFile.logging.console) {
+				logger.warn(__('Console logging settings will be ignored because the output type is not report'));
+			}
+		} else if (configFile.logging.console) {
+			if (['trace', 'debug', 'info', 'notice', 'warn', 'error'].indexOf(configFile.logging.console.level) === -1) {
+				console.error(__('Unknown log level "%s"', configFile.logging.console.level));
+				process.exit(1);
+			}
+			logger.setLevel(configFile.logging.console.level);
+		}
+
+		if (!configFile.options) {
+			configFile.options = {};
+		}
+		if (typeof configFile.options !== 'object' || Array.isArray(configFile.options)) {
+			console.error(__('Config "options" entry must be an object'));
+			process.exit(1);
+		}
+
+		if (!configFile.plugins) {
+			configFile.plugins = [];
+		}
+
+		argv['project-dir'] = configFile.sourceInformation.projectDir;
+
+		// Set the CLI platform arg
+		for (i = 0, len = configFile.plugins.length; i < len; i++) {
+			try {
+				pkg = JSON.parse(fs.readFileSync(path.join(configFile.plugins[i].path, 'package.json')));
+				if (pkg.name === 'require-provider') {
+					argv.platform = configFile.plugins[i].options.platform;
 				}
-				try {
-					ti = require(path.join(sdkPath, 'node_modules', 'titanium-sdk'));
-					ti.validateProjectDir(logger, cli, cli.argv, 'project-dir');
-					ti.validateTiappXml(logger, cli.tiapp);
-					ti.loadPlugins(logger, cli, config, cli.argv['project-dir']);
-				} catch(e) {} // squash
+				if (pkg.name === 'ti-api-provider') {
+					sdkPath = configFile.plugins[i].options.sdkPath;
+					if (!existsSync(sdkPath)) {
+						console.log('error', 'Could not find the specified SDK path "' + sdkPath + '"');
+						process.exit(1);
+					}
+					try {
+						ti = require(path.join(sdkPath, 'node_modules', 'titanium-sdk'));
+						ti.validateProjectDir(logger, cli, cli.argv, 'project-dir');
+						ti.validateTiappXml(logger, cli.tiapp);
+						ti.loadPlugins(logger, cli, config, cli.argv['project-dir']);
+					} catch(e) {} // squash
+				}
+			} catch(e) {
+				console.log('error', 'Could not parse "' + path.join(configFile.plugins[i].path, 'package.json') + '": ' + e);
+				process.exit(1);
 			}
-		} catch(e) {
-			console.log('error', 'Could not parse "' + path.join(configFile.plugins[i].path, 'package.json') + '": ' + e);
+		}
+		if (!cli.argv.platform) {
+			argv.platform = 'iphone';
+		}
+
+		if (typeof configFile.plugins !== 'object' || !Array.isArray(configFile.plugins)) {
+			console.error(__('Config "plugins" entry must be an array'));
 			process.exit(1);
 		}
-	}
-	if (!cli.argv.platform) {
-		argv.platform = 'iphone';
-	}
 
-	if (typeof configFile.plugins !== 'object' || !Array.isArray(configFile.plugins)) {
-		console.error(__('Config "plugins" entry must be an array'));
-		process.exit(1);
-	}
-
-	run(configFile.sourceInformation, configFile.options, configFile.plugins, logger, cli);
+		run(configFile.sourceInformation, configFile.options, configFile.plugins, logger, cli);
+	});
 }
 
 function runFromCLIParameters(logger, config, cli) {
@@ -321,200 +342,202 @@ function runFromCLIParameters(logger, config, cli) {
 		if (logger) {
 			logger.info('Analyzing project at "' + projectRoot + '"');
 		}
-		exec('titanium project --no-prompt --project-dir "' + projectRoot + '"', { stdio: 'inherit'}, function (err) {
-			var tasks = {
-				tiappxml: function (next) {
-					(new xml2js.Parser()).parseString(fs.readFileSync(path.join(projectRoot, 'tiapp.xml')), function (err, data) {
-						if (err) {
-							next(err);
-						} else {
-							next(null, data);
-						}
-					});
-				},
-				modules: function (next) {
-					exec('titanium module --no-prompt -o json --project-dir "' + projectRoot + '"', function (err, stdout) {
-						if (err) {
-							next(err);
-						} else {
-							next(null, JSON.parse(stdout));
-						}
-					});
-				},
-				project: function (next) {
-					exec('titanium project --no-prompt -o json --project-dir "' + projectRoot + '"', function (err, stdout) {
-						if (err) {
-							next(err);
-						} else {
-							next(null, JSON.parse(stdout));
-						}
-					});
-				},
-				info: function (next) {
-					exec('titanium info --no-prompt -t titanium -o json', function (err, stdout) {
-						if (err) {
-							next(err);
-						} else {
-							next(null, JSON.parse(stdout));
-						}
-					});
-				}
-			};
-
-			if (err) {
-				console.error('Could not run the "titanium project" command: ' + err +
-					'Make sure that the Titanium CLI is installed and a 3.0 or newer SDK is installed.\n');
-				process.exit(1);
-			} else {
-				async.parallel(tasks, function (err, result) {
-					if (err) {
-						console.error(err);
-						process.exit(1);
-					} else {
-
-						// Create the plugin info
-						CodeProcessor.queryPlugins(config.paths && config.paths.codeProcessorPlugins || [],
-								logger, function(err, results) {
-							var sdkVersion,
-								sdkInfo,
-								projectModules,
-								globalModules,
-								moduleList,
-								modules = {},
-								pluginList = argv.plugins,
-								plugins = [],
-								plugin,
-								ti,
-								sdkPath;
-
-							if (argv['all-plugins']) {
-								for(plugin in results) {
-									plugins.push({
-										path: results[plugin].path,
-										options: {}
-									});
-								}
+		validateAlloyHook(projectRoot, logger, function () {
+			exec('titanium project --no-prompt --project-dir "' + projectRoot + '"', { stdio: 'inherit'}, function (err) {
+				var tasks = {
+					tiappxml: function (next) {
+						(new xml2js.Parser()).parseString(fs.readFileSync(path.join(projectRoot, 'tiapp.xml')), function (err, data) {
+							if (err) {
+								next(err);
 							} else {
-								pluginList = pluginList ? pluginList.split(',') : [];
-								for(i = 0, len = pluginList.length; i < len; i++) {
-									plugin = pluginList[i];
-									if (plugin in results) {
+								next(null, data);
+							}
+						});
+					},
+					modules: function (next) {
+						exec('titanium module --no-prompt -o json --project-dir "' + projectRoot + '"', function (err, stdout) {
+							if (err) {
+								next(err);
+							} else {
+								next(null, JSON.parse(stdout));
+							}
+						});
+					},
+					project: function (next) {
+						exec('titanium project --no-prompt -o json --project-dir "' + projectRoot + '"', function (err, stdout) {
+							if (err) {
+								next(err);
+							} else {
+								next(null, JSON.parse(stdout));
+							}
+						});
+					},
+					info: function (next) {
+						exec('titanium info --no-prompt -t titanium -o json', function (err, stdout) {
+							if (err) {
+								next(err);
+							} else {
+								next(null, JSON.parse(stdout));
+							}
+						});
+					}
+				};
+
+				if (err) {
+					console.error('Could not run the "titanium project" command: ' + err +
+						'Make sure that the Titanium CLI is installed and a 3.0 or newer SDK is installed.\n');
+					process.exit(1);
+				} else {
+					async.parallel(tasks, function (err, result) {
+						if (err) {
+							console.error(err);
+							process.exit(1);
+						} else {
+
+							// Create the plugin info
+							CodeProcessor.queryPlugins(config.paths && config.paths.codeProcessorPlugins || [],
+									logger, function(err, results) {
+								var sdkVersion,
+									sdkInfo,
+									projectModules,
+									globalModules,
+									moduleList,
+									modules = {},
+									pluginList = argv.plugins,
+									plugins = [],
+									plugin,
+									ti,
+									sdkPath;
+
+								if (argv['all-plugins']) {
+									for(plugin in results) {
 										plugins.push({
 											path: results[plugin].path,
 											options: {}
 										});
-									} else if (logger) {
-										logger.warn(__('Plugin "%s" is unknown', pluginList[i]));
+									}
+								} else {
+									pluginList = pluginList ? pluginList.split(',') : [];
+									for(i = 0, len = pluginList.length; i < len; i++) {
+										plugin = pluginList[i];
+										if (plugin in results) {
+											plugins.push({
+												path: results[plugin].path,
+												options: {}
+											});
+										} else if (logger) {
+											logger.warn(__('Plugin "%s" is unknown', pluginList[i]));
+										}
 									}
 								}
-							}
 
-							// Parse the CLI queries
-							if (result.info && result.modules && result.project) {
+								// Parse the CLI queries
+								if (result.info && result.modules && result.project) {
 
-								// Get the SDK path
-								sdkVersion = result.tiappxml['ti:app']['sdk-version'];
-								if (sdkVersion) {
-									sdkVersion = sdkVersion[0].match(/^([0-9]\.[0-9]\.[0-9]).*$/)[1];
-								} else {
-									sdkVersion = Object.keys(result.info.titanium).sort().pop();
-								}
-								sdkInfo = result.info.titanium[sdkVersion];
-								if (!sdkInfo) {
-									if (result.info.titanium[sdkVersion + '.GA']) {
-										sdkVersion = sdkVersion + '.GA';
-										sdkInfo = result.info.titanium[sdkVersion];
+									// Get the SDK path
+									sdkVersion = result.tiappxml['ti:app']['sdk-version'];
+									if (sdkVersion) {
+										sdkVersion = sdkVersion[0].match(/^([0-9]\.[0-9]\.[0-9]).*$/)[1];
 									} else {
-										console.error('SDK version ' + sdkVersion + ' is not available\n');
+										sdkVersion = Object.keys(result.info.titanium).sort().pop();
+									}
+									sdkInfo = result.info.titanium[sdkVersion];
+									if (!sdkInfo) {
+										if (result.info.titanium[sdkVersion + '.GA']) {
+											sdkVersion = sdkVersion + '.GA';
+											sdkInfo = result.info.titanium[sdkVersion];
+										} else {
+											console.error('SDK version ' + sdkVersion + ' is not available\n');
+											process.exit(1);
+										}
+									}
+
+									// Load the ti module and CLI plugins
+									sdkPath = sdkInfo.path;
+									if (!existsSync(sdkPath)) {
+										console.log('error', 'Could not find the specified SDK path "' + sdkPath + '"');
 										process.exit(1);
 									}
-								}
+									try {
+										ti = require(path.join(sdkPath, 'node_modules', 'titanium-sdk'));
+										ti.validateProjectDir(logger, cli, cli.argv, 'project-dir');
+										ti.validateTiappXml(logger, cli.tiapp);
+										ti.loadPlugins(logger, cli, config, cli.argv['project-dir']);
+									} catch(e) {} //squash
 
-								// Load the ti module and CLI plugins
-								sdkPath = sdkInfo.path;
-								if (!existsSync(sdkPath)) {
-									console.log('error', 'Could not find the specified SDK path "' + sdkPath + '"');
-									process.exit(1);
-								}
-								try {
-									ti = require(path.join(sdkPath, 'node_modules', 'titanium-sdk'));
-									ti.validateProjectDir(logger, cli, cli.argv, 'project-dir');
-									ti.validateTiappXml(logger, cli.tiapp);
-									ti.loadPlugins(logger, cli, config, cli.argv['project-dir']);
-								} catch(e) {} //squash
-
-								// Get the list of modules from the tiapp.xml
-								projectModules = result.modules.project;
-								globalModules = result.modules.global;
-								moduleList = result.tiappxml['ti:app'].modules && result.tiappxml['ti:app'].modules[0].module;
-								if (moduleList) {
-									moduleList.forEach(function (module) {
-										var platform = module.$.platform,
-											name = module._,
-											version = module.$.version,
-											moduleEntry;
-										if (platform) {
-											if (!modules[platform]) {
-												modules[platform] = {};
-											}
-											if (projectModules && projectModules[platform] && projectModules[platform][name]) {
-												moduleEntry = projectModules[platform][name];
-											} else if (globalModules && globalModules[platform] && globalModules[platform][name]) {
-												moduleEntry = globalModules[platform][name];
-											}
-											if (moduleEntry) {
-												if (version) {
-													moduleEntry = moduleEntry[version];
-													if (!moduleEntry) {
-														console.error('Version ' + version + ' of ' + name + ' does not exist');
-														process.exit(1);
-													}
-												} else {
-													moduleEntry = moduleEntry[Object.keys(moduleEntry).sort().pop()];
+									// Get the list of modules from the tiapp.xml
+									projectModules = result.modules.project;
+									globalModules = result.modules.global;
+									moduleList = result.tiappxml['ti:app'].modules && result.tiappxml['ti:app'].modules[0].module;
+									if (moduleList) {
+										moduleList.forEach(function (module) {
+											var platform = module.$.platform,
+												name = module._,
+												version = module.$.version,
+												moduleEntry;
+											if (platform) {
+												if (!modules[platform]) {
+													modules[platform] = {};
 												}
-												modules[platform][name] = moduleEntry.modulePath;
+												if (projectModules && projectModules[platform] && projectModules[platform][name]) {
+													moduleEntry = projectModules[platform][name];
+												} else if (globalModules && globalModules[platform] && globalModules[platform][name]) {
+													moduleEntry = globalModules[platform][name];
+												}
+												if (moduleEntry) {
+													if (version) {
+														moduleEntry = moduleEntry[version];
+														if (!moduleEntry) {
+															console.error('Version ' + version + ' of ' + name + ' does not exist');
+															process.exit(1);
+														}
+													} else {
+														moduleEntry = moduleEntry[Object.keys(moduleEntry).sort().pop()];
+													}
+													modules[platform][name] = moduleEntry.modulePath;
+												}
+											} else {
+												if (!modules[argv.platform]) {
+													modules[argv.platform] = {};
+												}
+												modules[argv.platform][name] = ''; // Kinda hacky, but good enough for this script
 											}
-										} else {
-											if (!modules[argv.platform]) {
-												modules[argv.platform] = {};
-											}
-											modules[argv.platform][name] = ''; // Kinda hacky, but good enough for this script
+										});
+									}
+									for(i = 0, len = plugins.length; i < len; i++) {
+										if (path.basename(plugins[i].path) === 'require-provider') {
+											plugins[i].options.modules = modules;
+										} else if (path.basename(plugins[i].path) === 'ti-api-provider') {
+											plugins[i].options.sdkPath = sdkPath;
 										}
-									});
+									}
 								}
 								for(i = 0, len = plugins.length; i < len; i++) {
 									if (path.basename(plugins[i].path) === 'require-provider') {
-										plugins[i].options.modules = modules;
-									} else if (path.basename(plugins[i].path) === 'ti-api-provider') {
-										plugins[i].options.sdkPath = sdkPath;
+										plugins[i].options.platform = argv.platform;
+									} else if (path.basename(plugins[i].path) === 'analysis-coverage') {
+										plugins[i].options.visualization = {
+											outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'analysis-coverage') : undefined
+										};
+									} else if (path.basename(plugins[i].path) === 'unknown-ambiguous-visualizer') {
+										plugins[i].options.visualization = {
+											outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'unknown-ambiguous-visualizer') : undefined
+										};
 									}
 								}
-							}
-							for(i = 0, len = plugins.length; i < len; i++) {
-								if (path.basename(plugins[i].path) === 'require-provider') {
-									plugins[i].options.platform = argv.platform;
-								} else if (path.basename(plugins[i].path) === 'analysis-coverage') {
-									plugins[i].options.visualization = {
-										outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'analysis-coverage') : undefined
-									};
-								} else if (path.basename(plugins[i].path) === 'unknown-ambiguous-visualizer') {
-									plugins[i].options.visualization = {
-										outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'unknown-ambiguous-visualizer') : undefined
-									};
+
+								// Check if this is an alloy app
+								if (existsSync(path.join(projectRoot, 'app'))) {
+									sourceInformation.sourceMapDir = path.join(projectRoot, 'build', 'map', 'Resources');
+									sourceInformation.originalSourceDir = path.join(projectRoot, 'app');
 								}
-							}
 
-							// Check if this is an alloy app
-							if (existsSync(path.join(projectRoot, 'app'))) {
-								sourceInformation.sourceMapDir = path.join(projectRoot, 'build', 'map', 'Resources');
-								sourceInformation.originalSourceDir = path.join(projectRoot, 'app');
-							}
-
-							run(sourceInformation, options, plugins, logger, cli);
-						});
-					}
-				});
-			}
+								run(sourceInformation, options, plugins, logger, cli);
+							});
+						}
+					});
+				}
+			});
 		});
 	}
 }
