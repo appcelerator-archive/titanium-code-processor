@@ -141,7 +141,7 @@ function validateAlloyHook(projectDir, logger, callback) {
 	if (existsSync(path.join(projectDir, 'app'))) {
 		projectHook = fs.readFileSync(path.join(projectDir, 'plugins', 'ti.alloy', 'hooks', 'alloy.js')).toString();
 		if (projectHook.indexOf('codeprocessor.pre.run') === -1) {
-			logger.warn(__('The Alloy hook is out of date and will be updated'));
+			logger.warn(__('The Alloy hook is out of date and must be updated to work with the Titanium Code Processor. Updating now.'));
 			exec('alloy install plugin', {
 				cwd: projectDir
 			}, callback);
