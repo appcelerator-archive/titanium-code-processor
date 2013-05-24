@@ -11,6 +11,7 @@
 	"scripts": {
 		"test": "node tests/bin/tests"
 	},
+	"bin": "bin/codeprocessor",
 	"main": "lib/CodeProcessor.js",
 	"dependencies": {
 		"uglify-js": "2.x.x",
