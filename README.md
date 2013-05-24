@@ -289,9 +289,9 @@ Example config file for an Alloy application:
 ```JSON
 {
 	"sourceInformation": {
-		"projectDir": "/path/to/project"
+		"projectDir": "/path/to/project",
 		"entryPoint": "path/to/project/Resources/app.js",
-		"sourceDir": "/path/to/project/Resources"
+		"sourceDir": "/path/to/project/Resources",
 		"sourceMaps": "/path/to/project/build/map/Resources",
 		"originalSourceDir": "/path/to/project/app"
 	},
@@ -421,28 +421,28 @@ dependencies
 		<th>name</th><th>type</th><th>dependencies</th><th>description</th>
 	</tr>
 	<tr>
-		<td>[common-globals](plugins/common-globals)</td><td>provider</td><td>&lt;none&gt;</td><td>Provides implementations for common globals that aren't part of the JavaScript spec but are provided on all Titanium Mobile platforms (setTimeout, console, etc).</td>
+		<td><a href="plugins/common-globals">common-globals</a></td><td>provider</td><td>&lt;none&gt;</td><td>Provides implementations for common globals that aren't part of the JavaScript spec but are provided on all Titanium Mobile platforms (setTimeout, console, etc).</td>
 	</tr>
 	<tr>
-		<td>[require-provider](plugins/require-provider)</td><td>provider</td><td>&lt;none&gt;</td><td>Provides an implementation of ```require()``` that matches the Titanium Mobile implementation, including its inconsistencies with CommonJS.</td>
+		<td><a href="plugins/require-provider">require-provider</a></td><td>provider</td><td>&lt;none&gt;</td><td>Provides an implementation of ```require()``` that matches the Titanium Mobile implementation, including its inconsistencies with CommonJS.</td>
 	</tr>
 	<tr>
-		<td>[require-finder](plugins/require-finder)</td><td>analyzer</td><td>require-provider</td><td>Reports all files that are ```require()```'d in a project.</td>
+		<td><a href="plugins/require-finder">require-finder</a></td><td>analyzer</td><td>require-provider</td><td>Reports all files that are ```require()```'d in a project.</td>
 	</tr>
 	<tr>
-		<td>[ti-api-provider](plugins/ti-api-provider)</td><td>provider</td><td>require-provider, common-globals</td><td>Provides an implementation of the Titanium Mobile API. This implementation reads the API documentation for the SDK used by the project to create the API implementation. As such, the SDK specified in the project's tiapp.xml file *must* be installed.</td>
+		<td><a href="plugins/ti-api-provider">ti-api-provider</a></td><td>provider</td><td>require-provider, common-globals</td><td>Provides an implementation of the Titanium Mobile API. This implementation reads the API documentation for the SDK used by the project to create the API implementation. As such, the SDK specified in the project's tiapp.xml file *must* be installed.</td>
 	</tr>
 	<tr>
-		<td>[ti-api-deprecation-finder](plugins/ti-api-deprecation-finder)</td><td>analyzer</td><td>ti-api-provider</td><td>Reports all deprecated APIs used by the project.</td>
+		<td><a href="plugins/ti-api-deprecation-finder">ti-api-deprecation-finder</a></td><td>analyzer</td><td>ti-api-provider</td><td>Reports all deprecated APIs used by the project.</td>
 	</tr>
 	<tr>
-		<td>[ti-api-platform-validator](plugins/ti-api-platform-validator)</td><td>analyer</td><td>ti-api-provider</td><td>Reports all instances where a platform specific feature is used on the wrong platform, e.g. calling ```Ti.Android.createIntent``` on iOS.</td>
+		<td><a href="plugins/ti-api-platform-validator">ti-api-platform-validator</a></td><td>analyer</td><td>ti-api-provider</td><td>Reports all instances where a platform specific feature is used on the wrong platform, e.g. calling ```Ti.Android.createIntent``` on iOS.</td>
 	</tr>
 	<tr>
-		<td>[ti-api-usage-finder](plugins/ti-api-usage-finder)</td><td>analyzer</td><td>ti-api-provider</td><td>Reports all Titanium Mobile APIs used by the project.</td>
+		<td><a href="plugins/ti-api-usage-finder">ti-api-usage-finder</a></td><td>analyzer</td><td>ti-api-provider</td><td>Reports all Titanium Mobile APIs used by the project.</td>
 	</tr>
 	<tr>
-		<td>[ti-api-include-finder](plugins/ti-api-include-finder)</td><td>analyzer</td><td>ti-api-provider</td><td>Reports all files that are ```Ti.include()```'d by the project.</td>
+		<td><a href="plugins/ti-api-include-finder">ti-api-include-finder</a></td><td>analyzer</td><td>ti-api-provider</td><td>Reports all files that are ```Ti.include()```'d by the project.</td>
 	</tr>
 </table>
 
