@@ -6,16 +6,17 @@
 ## 1.0.1
 
 ### New Features
-* Added support for source maps and, by extension, Alloy
+* The code processor is now a CLI command! Run "titanium analyze --help" for more information
+* Added support for Alloy projects
 * Added support for the Tizen platform
 * Lists of things in the results are now sorted alphabetically to more easily digets
 * Reworked how source code information is specified in configuration files to allow for better flexibility
-* The code processor is now a CLI command! Run "titanium analyze --help" for more information
 * Added the ability for plugins to elevate their summary into the main summary section
 
 ### Bug Fixes
 * Fixed the case when a titanium object has an object property (typically a pseduo-type) from getting it's api listed twice in the API usage finder
 * Reworked how plugins are initialized so that plugin names are available at initialization time
+* Fixed a bug with native methods not creating their contexts properly
 
 ## 1.0.0
 
