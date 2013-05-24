@@ -214,36 +214,36 @@ function runFromConfigFile(logger, config, cli) {
 		process.exit(1);
 	}
 
+	// Validate the logging and finagle things around for outputs other than report
+	if (configFile.logging && configFile.logging.file) {
+		if (['trace', 'debug', 'info', 'notice', 'warn', 'error'].indexOf(configFile.logging.file.level) === -1) {
+			console.error(__('Unknown log level "%s"', configFile.logging.file.level));
+			process.exit(1);
+		}
+		filename = configFile.logging.file.path;
+		if (!existsSync(path.dirname(filename))) {
+			wrench.mkdirSyncRecursive(path.dirname(filename));
+		}
+		logger.add(winston.transports.File, {
+			filename: path.resolve(filename),
+			level: configFile.logging.file.level
+		});
+	}
+	if (argv.output !== 'report') {
+		logger.remove(winston.transports.Console);
+		if (configFile.logging.console) {
+			logger.warn(__('Console logging settings will be ignored because the output type is not report'));
+		}
+	} else if (configFile.logging.console) {
+		if (['trace', 'debug', 'info', 'notice', 'warn', 'error'].indexOf(configFile.logging.console.level) === -1) {
+			console.error(__('Unknown log level "%s"', configFile.logging.console.level));
+			process.exit(1);
+		}
+		logger.setLevel(configFile.logging.console.level);
+	}
+
 	// Validate the Alloy hook
 	validateAlloyHook(configFile.sourceInformation.projectDir, logger, function () {
-
-		// Validate the logging and finagle things around for outputs other than report
-		if (configFile.logging && configFile.logging.file) {
-			if (['trace', 'debug', 'info', 'notice', 'warn', 'error'].indexOf(configFile.logging.file.level) === -1) {
-				console.error(__('Unknown log level "%s"', configFile.logging.file.level));
-				process.exit(1);
-			}
-			filename = configFile.logging.file.path;
-			if (!existsSync(path.dirname(filename))) {
-				wrench.mkdirSyncRecursive(path.dirname(filename));
-			}
-			logger.add(winston.transports.File, {
-				filename: path.resolve(filename),
-				level: configFile.logging.file.level
-			});
-		}
-		if (argv.output !== 'report') {
-			logger.remove(winston.transports.Console);
-			if (configFile.logging.console) {
-				logger.warn(__('Console logging settings will be ignored because the output type is not report'));
-			}
-		} else if (configFile.logging.console) {
-			if (['trace', 'debug', 'info', 'notice', 'warn', 'error'].indexOf(configFile.logging.console.level) === -1) {
-				console.error(__('Unknown log level "%s"', configFile.logging.console.level));
-				process.exit(1);
-			}
-			logger.setLevel(configFile.logging.console.level);
-		}
 
 		if (!configFile.options) {
 			configFile.options = {};
