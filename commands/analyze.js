@@ -326,9 +326,7 @@ function runFromCLIParameters(logger, config, cli) {
 	}
 
 	// Calculate the project root
-	if (argv['project-dir']) {
-		projectRoot = argv['project-dir'];
-	}
+	projectRoot = argv['project-dir'] || '.';
 	sourceInformation = {};
 	projectRoot = sourceInformation.projectDir = path.resolve(projectRoot);
 
