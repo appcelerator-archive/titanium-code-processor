@@ -12,7 +12,7 @@ var CodeProcessor = require('..'),
 	i18n = appc.i18n(__dirname),
 	__ = i18n.__;
 
-exports.desc = exports.extendedDesc = __('analyses a project using the Titanium Code Processor');
+exports.desc = exports.extendedDesc = __('returns JSON formatted information about the Titanium Code Processor plugins');
 
 exports.config = function () {
 	var conf = {
