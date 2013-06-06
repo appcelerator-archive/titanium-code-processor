@@ -308,16 +308,16 @@ function runFromCLIParameters(logger, config, cli) {
 
 	// Parse the config options
 	options = {};
-	options.invokeMethods = !argv['no-method-invokation'];
-	options.evaluateLoops = !argv['no-loop-evaluation'];
+	options.invokeMethods = argv['method-invokation'] !== false;
+	options.evaluateLoops = argv['loop-evaluation'] !== false;
 	options.maxLoopIterations = parseInt(argv['max-loop-iterations'], 10);
 	options.maxRecursionLimit = parseInt(argv['max-recursion-limit'], 10);
 	options.cycleDetectionStackSize = parseInt(argv['cycle-detection-stack-size'], 10);
 	options.maxCycles = parseInt(argv['max-cycles'], 10);
-	options.logConsoleCalls = !argv['no-console-passthrough'];
+	options.logConsoleCalls = argv['console-passthrough'] !== false;
 	options.executionTimeLimit = parseInt(argv['execution-time-limit'], 10);
 	options.exactMode = argv['exact-mode'];
-	options.nativeExceptionRecovery = !argv['no-native-exception-recovery'];
+	options.nativeExceptionRecovery = argv['native-exception-recovery'] !== false;
 	options.processUnvisitedCode = argv['process-unvisited-code'];
 	options.resultsPath = argv['results-dir'];
 
