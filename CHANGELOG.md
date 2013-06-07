@@ -19,6 +19,7 @@
 * Fixed a bug with native methods not creating their contexts properly
 * Fixed a crash when calling Function.apply with an unknown value for arguments
 * Fixed a crash when calling Array.indexOf and Array.unshift with an unknown this value
+* Fixed a bug where running against the iPad platform didn't load iPhone modules
 
 ## 1.0.0
 
