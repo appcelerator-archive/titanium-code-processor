@@ -155,7 +155,10 @@ RequireFunction.prototype.callFunction = function callFunction(thisVal, args) {
 			filePath = modules.commonjs[name];
 			moduleInfo = require(path.join(filePath, 'package.json'));
 			filePath = path.join(filePath, moduleInfo.main + '.js');
-		} else if (modules[platform] && modules[platform] && modules[platform].hasOwnProperty(name)) {
+		} else if (['ios', 'iphone', 'ipad'].indexOf(platform) !== -1) { // iOS requires special handling
+			isModule = (modules.iphone && modules.iphone.hasOwnProperty(name)) ||
+				(modules.ipad && modules.ipad.hasOwnProperty(name));
+		} else if (modules[platform] && modules[platform].hasOwnProperty(name)) {
 			isModule = true;
 		}
 
