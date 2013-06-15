@@ -2,11 +2,12 @@
 
 var fs = require('fs'),
 	spawn = require('child_process').spawn,
+	path = require('path'),
 
 	program = require('commander'),
 	async = require('async'),
 
-	pkgPath = 'package.json',
+	pkgPath = path.join(__dirname, '..', 'package.json'),
 	pkg = JSON.parse(fs.readFileSync(pkgPath)),
 
 	APPCELERATOR_REMOTE_NAME = 'appcelerator',
@@ -139,7 +140,8 @@ function publish(packageVersion, nodeAppcVersion) {
 		function (next) {
 			console.log('\n* Publishing to NPM ' + getStep());
 			spawn('npm', ['publish', '--tag', packageVersion], {
-				stdio: 'inherit'
+				stdio: 'inherit',
+				cwd: path.join(__dirname, '..')
 			}).on('exit', function (code) {
 				if (code) {
 					next(code);
