@@ -1,4 +1,4 @@
-node_modules
+/node_modules
 ._*
 .DS_Store
-tests/test-262
+/tests/test-262

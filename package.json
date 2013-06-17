@@ -16,7 +16,6 @@
 	"dependencies": {
 		"uglify-js": "2.x.x",
 		"wrench": "1.x.x",
-		"nomnom": "1.x.x",
 		"winston": "0.6.x",
 		"async": "0.1.x",
 		"xml2js": "0.2.x",
@@ -24,6 +23,9 @@
 		"colors": "0.6.x",
 		"source-map": "0.1.x",
 		"node-appc": "git://github.com/appcelerator/node-appc.git#3_1_X"
+	},
+	"devDependencies": {
+		"commander": "1.2.x"
 	},
 	"engine": {
 		"node": ">=0.8"
