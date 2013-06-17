@@ -24,7 +24,7 @@ program.version('0.0.1')
 
 // Validate a version string
 function validateVersion(version, type, callback) {
-	if (!/[0-9]+\.[0-9]+\.[0-9]+-(alpha|beta|cr)[0-9]*$/.test(version)) {
+	if (!/^\d+\.\d+\.\d+-(?:alpha|beta|cr)\d*$/.test(version)) {
 		if (!program.silent) {
 			console.error('\n  error: "' + version + '" is not a valid development ' + type + ' version number\n');
 		}
@@ -62,15 +62,20 @@ async.series({
 		}
 	}
 }, function (err, results) {
-	program.confirm('\nPublish version ' + results.packageVersion + ' of ' + pkg.name +
-			(results.nodeAppcVersion ? ' against node-appc version ' + results.nodeAppcVersion : '') +
-			' [y/n]? ', function(ok){
-		if (ok) {
-			publish(results.packageVersion, results.nodeAppcVersion);
-		} else {
-			console.log('');
-		}
-	});
+	if (!program.silent && !program.nonInteractive) {
+		program.confirm('\nPublish version ' + results.packageVersion + ' of ' + pkg.name +
+				(results.nodeAppcVersion ? ' against node-appc version ' + results.nodeAppcVersion : '') +
+				' [y/n]? ', function(ok){
+			if (ok) {
+				publish(results.packageVersion, results.nodeAppcVersion);
+			} else {
+				console.log('');
+				process.exit(1);
+			}
+		});
+	} else {
+		publish(results.packageVersion, results.nodeAppcVersion);
+	}
 });
 
 // Publish the package
