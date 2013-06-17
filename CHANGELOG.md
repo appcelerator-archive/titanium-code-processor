@@ -1,8 +1,3 @@
-## 1.1.0
-
-## New Features
-* Implemented a proper CLI hook
-
 ## 1.0.1
 
 ### New Features
