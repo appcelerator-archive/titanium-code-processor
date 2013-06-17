@@ -1,0 +1,208 @@
+#!/usr/bin/env node
+
+var fs = require('fs'),
+	spawn = require('child_process').spawn,
+	path = require('path'),
+
+	program = require('commander'),
+	async = require('async'),
+
+	pkgPath = path.join(__dirname, '..', 'package.json'),
+	pkg = JSON.parse(fs.readFileSync(pkgPath)),
+
+	APPCELERATOR_REMOTE_NAME = 'appcelerator',
+
+	startTime = Date.now();
+
+// Validate the arguments
+program.version('0.0.1')
+	.option('-p, --package-version [value]', 'the version to publish')
+	.option('-n, --node-appc-version [value]', 'the node-appc version to publish against')
+	.option('--non-interactive', 'disables prompting for values')
+	.option('-s, --silent', 'does not print anything to the console and disables prompting')
+	.parse(process.argv);
+
+// Validate a version string
+function validateVersion(version, type, callback) {
+	if (!/^\d+\.\d+\.\d+-(?:alpha|beta|cr)\d*$/.test(version)) {
+		if (!program.silent) {
+			console.error('\n  error: "' + version + '" is not a valid development ' + type + ' version number\n');
+		}
+		process.exit(1);
+	}
+	callback(undefined, version);
+}
+
+// Process the version string, prompting for it if necessary
+function processVersion(version, type, callback) {
+	if (version) {
+		validateVersion(version, type, callback);
+	} else if (!program.nonInteractive) {
+		program.prompt(type + ' version: ', function(promptedVersion){
+			validateVersion(promptedVersion, type, callback);
+		});
+	} else {
+		if (!program.silent) {
+			console.error('\n  error: ' + type + ' version must be supplied\n');
+		}
+		process.exit(1);
+	}
+}
+
+// Determine the package version and, if appropriate, the node-appc version
+async.series({
+	packageVersion: function (next) {
+		processVersion(program.packageVersion, 'package', next);
+	},
+	nodeAppcVersion: function (next) {
+		if (pkg.dependencies && pkg.dependencies['node-appc']) {
+			processVersion(program.nodeAppcVersion, 'node-appc', next);
+		} else {
+			next();
+		}
+	}
+}, function (err, results) {
+	if (!program.silent && !program.nonInteractive) {
+		program.confirm('\nPublish version ' + results.packageVersion + ' of ' + pkg.name +
+				(results.nodeAppcVersion ? ' against node-appc version ' + results.nodeAppcVersion : '') +
+				' [y/n]? ', function(ok){
+			if (ok) {
+				publish(results.packageVersion, results.nodeAppcVersion);
+			} else {
+				console.log('');
+				process.exit(1);
+			}
+		});
+	} else {
+		publish(results.packageVersion, results.nodeAppcVersion);
+	}
+});
+
+// Publish the package
+function publish(packageVersion, nodeAppcVersion) {
+
+	var newPkg = JSON.parse(fs.readFileSync(pkgPath)),
+		STATE_NONE = 0,
+		STATE_PACKAGE_UPDATED = 1,
+		STATE_REPO_TAGGED = 2,
+		STATE_REPO_PUSHED = 3,
+		STATE_NPM_PUBLISHED = 4,
+		STATE_NPM_VERIFIED = 5,
+		state = STATE_NONE,
+		step = 1,
+		tasks;
+
+	function getStep() {
+		return '(' + (step++) + '/' + tasks.length + ')';
+	}
+
+	// Create the tasks
+	tasks = [
+
+		// Update the package.json with the new version number and, if applicable, the new node-appc version
+		function (next) {
+			console.log('\n* Updating package.json ' + getStep());
+			newPkg.version = packageVersion;
+			if (nodeAppcVersion) {
+				newPkg.dependencies['node-appc'] = nodeAppcVersion;
+			}
+			fs.writeFileSync(pkgPath, JSON.stringify(newPkg, false, '\t'));
+			state = STATE_PACKAGE_UPDATED;
+			next();
+		},
+
+		// Tag the release in git with an annotated tag
+		function (next) {
+			console.log('\n* Tagging release in git ' + getStep());
+			spawn('git', ['tag', '-a', packageVersion, '-m', 'Tagged the ' + packageVersion + ' release'], {
+				stdio: 'inherit'
+			}).on('exit', function (code) {
+				if (code) {
+					next(code);
+				} else {
+					state = STATE_REPO_TAGGED;
+					next();
+				}
+			});
+		},
+
+		// Push the tag to github
+		function (next) {
+			console.log('\n* Pushing tag to GitHub ' + getStep());
+			spawn('git', ['push', APPCELERATOR_REMOTE_NAME, packageVersion], {
+				stdio: 'inherit'
+			}).on('exit', function (code) {
+				if (code) {
+					next(code);
+				} else {
+					state = STATE_REPO_PUSHED;
+					next();
+				}
+			});
+		},
+
+		// Publish the npm package
+		function (next) {
+			console.log('\n* Publishing to NPM ' + getStep());
+			spawn('npm', ['publish', '--tag', packageVersion], {
+				stdio: 'inherit',
+				cwd: path.join(__dirname, '..')
+			}).on('exit', function (code) {
+				if (code) {
+					next(code);
+				} else {
+					state = STATE_NPM_PUBLISHED;
+					next();
+				}
+			});
+		},
+
+		// Verify that the package was published correctly
+		function (next) {
+			console.log('\n* Verifying published package ' + getStep());
+			var info = spawn('npm', ['info', pkg.name, '--json']),
+				stderrData = '',
+				stdoutData = '';
+			info.stdout.on('data', function (data) {
+				stdoutData += data.toString();
+			});
+			info.stderr.on('data', function (data) {
+				stderrData += data.toString();
+			});
+			info.on('exit', function (code) {
+				if (code) {
+					console.warn('\n  warning: could not verify that the package was published properly.\n' +
+						'             You should verify manually by calling "npm info ' + pkg.name + '".\n');
+					next();
+				} else {
+					var infoResult = JSON.parse(stdoutData);
+					if (infoResult['dist-tags'].latest === packageVersion) {
+						console.error('\n  error: The latest version in NPM is pointing to the just published version. YOUR PACKAGE IS LIVE BUT SHOULD NOT BE!');
+						next(1);
+					} else if (infoResult['dist-tags'][packageVersion] !== packageVersion) {
+						console.error('\n  error: Something has gone wrong, the published version isn\'t showing up in NPM\n');
+						next(1);
+					} else {
+						next();
+					}
+				}
+			});
+			state = STATE_NPM_VERIFIED;
+		}
+	];
+	async.series(tasks, function (err) {
+
+		// Cleanup after publishing
+		console.log('\n* Cleaning up');
+		if (state >= STATE_PACKAGE_UPDATED) {
+			fs.writeFileSync(pkgPath, JSON.stringify(pkg, false, '\t'));
+		}
+
+		// Time to exit
+		if (err) {
+			console.error('\n' + pkg.name + ' WAS NOT properly published!');
+		}
+		console.log('\nProcessing completed in ' + ((Date.now() - startTime) / 1000).toFixed(1) + ' seconds\n');
+		process.exit(err ? 1 : 0);
+	});
+}
