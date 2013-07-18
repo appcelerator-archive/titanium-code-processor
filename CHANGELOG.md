@@ -1,3 +1,8 @@
+## 1.1.1
+
+### Bug Fixes
+* Combined the require-provider and common-globals plugins with the ti-api-provider
+
 ## 1.1.0
 
 ## New Features
