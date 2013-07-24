@@ -62,6 +62,11 @@ exports.config = function (logger, config) {
 					' mode after all other code has been processed. While this will cause more of a project to be analyzed,' +
 					' this will decrease accuracy and can generate a lot of false positives (ignored if --config-file is specified)'),
 				default: Runtime.options.processUnvisitedCode
+			},
+			'wait': {
+				abbr: 'W',
+				desc: __('Process waits on standard input after processing the results'),
+				default: false
 			}
 		},
 		options: {
@@ -130,11 +135,6 @@ exports.config = function (logger, config) {
 				desc: __('The maximum number of cycles to allow before throwing an exception'),
 				hint: __('size'),
 				default: Runtime.options.maxCycles
-			},
-			'wait': {
-				abbr: 'W',
-				desc: __('Process waits on standard input after processing the results'),
-				default: false
 			}
 		}
 	};
@@ -180,7 +180,7 @@ function run(sourceInformation, options, plugins, logger, cli) {
 			CodeProcessor.run(sourceInformation, options, plugins, logger, function () {});
 		}, 0);
 
-		if (true) //TODO: cli.argv['wait']
+		if (cli.argv['wait'])
 		{
 			var stdin = process.stdin;
 			stdin.setRawMode && stdin.setRawMode( true );
