@@ -9,40 +9,57 @@
  */
 
 var path = require('path'),
+	util = require('util'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base'));
 
 exports.getOverrides = function () {
-	var consoleObject = Runtime.getGlobalObject().get('console'),
-		debug = consoleObject.get('debug'),
-		error = consoleObject.get('error'),
-		info = consoleObject.get('info'),
-		log = consoleObject.get('log'),
-		warn = consoleObject.get('warn');
 	return [{
 		regex: /^Titanium\.API\.debug$/,
-		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
-			return debug.callFunction(thisVal, args);
-		})
+		callFunction: new ConsoleFunc('debug').callFunction
 	},{
 		regex: /^Titanium\.API\.error$/,
-		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
-			return error.callFunction(thisVal, args);
-		})
+		callFunction: new ConsoleFunc('error').callFunction
 	},{
 		regex: /^Titanium\.API\.info$/,
-		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
-			return info.callFunction(thisVal, args);
-		})
+		callFunction: new ConsoleFunc('info').callFunction
 	},{
 		regex: /^Titanium\.API\.log$/,
-		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
-			return log.callFunction(thisVal, args);
-		})
+		callFunction: new ConsoleFunc('log').callFunction
 	},{
 		regex: /^Titanium\.API\.warn$/,
-		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
-			return warn.callFunction(thisVal, args);
-		})
+		callFunction: new ConsoleFunc('warn').callFunction
 	}];
 };
+
+/**
+ * console.*() prototype method
+ *
+ * @private
+ */
+function ConsoleFunc(type, className) {
+	Base.ObjectType.call(this, className || 'Function');
+	this.put('length', new Base.NumberType(1), false, true);
+	this._type = type;
+}
+util.inherits(ConsoleFunc, Base.FunctionTypeBase);
+ConsoleFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction(thisVal, args) {
+	var level = this._type,
+		message = [];
+	args.forEach(function (arg) {
+		if (Base.type(arg) === 'Unknown') {
+			message.push('<Unknown value>');
+		} else {
+			message.push(Base.toString(arg).value);
+		}
+	});
+	message = message.join(' ');
+	Runtime.fireEvent('consoleOutput', message, {
+		level: level,
+		message: message
+	});
+	if (Runtime.options.logConsoleCalls) {
+		Runtime.log('info', 'program output [' + this._type + ']: ' + message);
+	}
+	return new Base.UndefinedType();
+});

@@ -17,13 +17,11 @@ var fs = require('fs'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	CodeProcessorUtils = require(path.join(global.titaniumCodeProcessorLibDir, 'CodeProcessorUtils')),
 	AST = require(path.join(global.titaniumCodeProcessorLibDir, 'AST')),
-	RuleProcessor = require(path.join(global.titaniumCodeProcessorLibDir, 'RuleProcessor')),
 
 	jsca,
 	manifest,
 	platform,
 	modules,
-	cache,
 	platformList = ['android', 'mobileweb', 'iphone', 'ipad', 'blackberry', 'tizen'],
 	values,
 	api,
@@ -34,8 +32,6 @@ var fs = require('fs'),
 
 	getterRegex = /^get([A-Z])(.*)$/,
 	setterRegex = /^set([A-Z])(.*)$/,
-	pluginRegExp = /^(.+?)\!(.*)$/,
-	fileRegExp = /\.js$/,
 	underscoreRegex = /\._/g;
 
 // ******** Plugin API Methods ********
@@ -53,7 +49,6 @@ exports.init = function init(options, dependencies) {
 	// Iterate through the json object and inject all the APIs
 	var typesToInsert = {},
 		globalObject = Runtime.getGlobalObject(),
-		stringObject = globalObject.get('String'),
 		types,
 		type,
 		aliases,
@@ -70,7 +65,6 @@ exports.init = function init(options, dependencies) {
 	
 	platform = exports.platform = options && options.platform;
 	modules = exports.modules = options && options.modules || {};
-	cache = {};
 	values = options && options.values || {};
 	test = options && options.test;
 
@@ -92,81 +86,6 @@ exports.init = function init(options, dependencies) {
 			console.error('"' + platform + '" is not a valid platform for the ' + exports.displayName + ' plugin');
 			process.exit(1);
 		}
-	}
-
-	// Add common globals
-	function addObject(name, value, obj) {
-		obj.defineOwnProperty(name, {
-			value: value,
-			writable: false,
-			enumerable: true,
-			configurable: true
-		}, false, true);
-	}
-
-	addObject('L', new LFunc(), globalObject);
-	addObject('alert', new AlertFunc(), globalObject);
-	addObject('clearInterval', new ClearIntervalFunc(), globalObject);
-	addObject('clearTimeout', new ClearTimeoutFunc(), globalObject);
-	addObject('setInterval', new SetIntervalFunc(), globalObject);
-	addObject('setTimeout', new SetTimeoutFunc(), globalObject);
-	addObject('console', new ConsoleObject(), globalObject);
-
-	addObject('format', new StringFunc(), stringObject);
-	addObject('formatCurrency', new StringFunc(), stringObject);
-	addObject('formatDate', new StringFunc(), stringObject);
-	addObject('formatDecimal', new StringFunc(), stringObject);
-	addObject('formatTime', new StringFunc(), stringObject);
-
-	// Require provider
-	// Require provider
-	if (!test) {
-		Runtime.on('fileListSet', function(e) {
-			var platformSpecificFiles = {},
-				genericFiles = {},
-				fileList = e.data.fileList,
-				file,
-				leadSegment,
-				i, len,
-				baseDir = Runtime.sourceInformation.sourceDir;
-			for (i = 0, len = fileList.length; i < len; i++) {
-				file = path.relative(baseDir, fileList[i]).split(path.sep);
-				leadSegment = file[0];
-				if (platformList.indexOf(leadSegment) !== -1) {
-					file.splice(0, 1);
-					if (leadSegment === platform) {
-						platformSpecificFiles[file.join(path.sep)] = 1;
-					}
-				} else {
-					genericFiles[file.join(path.sep)] = 1;
-				}
-			}
-			for (i in platformSpecificFiles) {
-				if (i in genericFiles) {
-					delete genericFiles[i];
-				}
-			}
-			fileList = Object.keys(genericFiles);
-			for (i in platformSpecificFiles) {
-				fileList.push(path.join(platform, i));
-			}
-			for (i = 0, len = fileList.length; i < len; i++) {
-				fileList[i] = path.join(baseDir, fileList[i]);
-			}
-			Runtime.fileList = fileList;
-		});
-	
-		Runtime.isFileValid = function isFileValid(filename) {
-			var rootDir = filename.split(path.sep)[0];
-			return fileRegExp.test(filename) && (platformList.indexOf(rootDir) === -1 || rootDir === platform);
-		};
-	
-		globalObject.defineOwnProperty('require', {
-			value: new RequireFunction(),
-			writable: false,
-			enumerable: true,
-			configurable: true
-		}, false, true);
 	}
 
 	if (!test) {
@@ -222,6 +141,7 @@ exports.init = function init(options, dependencies) {
 						api: api,
 						manifest: manifest,
 						platform: platform,
+						platformList: platformList,
 						values: values,
 						createObject: createObject
 					});
@@ -694,360 +614,4 @@ function createObject(apiNode) {
 
 	// Return the newly created object
 	return obj;
-}
-
-
-// ******** Console Object ********
-
-/**
- * console.*() prototype method
- *
- * @private
- */
-function ConsoleFunc(type, className) {
-	Base.ObjectType.call(this, className || 'Function');
-	this.put('length', new Base.NumberType(1), false, true);
-	this._type = type;
-}
-util.inherits(ConsoleFunc, Base.FunctionTypeBase);
-ConsoleFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction(thisVal, args) {
-	var level = this._type,
-		message = [];
-	args.forEach(function (arg) {
-		if (Base.type(arg) === 'Unknown') {
-			message.push('<Unknown value>');
-		} else {
-			message.push(Base.toString(arg).value);
-		}
-	});
-	message = message.join(' ');
-	Runtime.fireEvent('consoleOutput', message, {
-		level: level,
-		message: message
-	});
-	if (Runtime.options.logConsoleCalls) {
-		Runtime.log('info', 'program output [' + this._type + ']: ' + message);
-	}
-	return new Base.UndefinedType();
-});
-
-/**
- * Console Object
- *
- * @private
- */
-function ConsoleObject(className) {
-	Base.ObjectType.call(this, className);
-
-	this.put('debug', new ConsoleFunc('debug'), false, true);
-	this.put('error', new ConsoleFunc('error'), false, true);
-	this.put('info', new ConsoleFunc('info'), false, true);
-	this.put('log', new ConsoleFunc('log'), false, true);
-	this.put('warn', new ConsoleFunc('warn'), false, true);
-}
-util.inherits(ConsoleObject, Base.ObjectType);
-
-/**
- * L method
- *
- * @private
- */
-function LFunc(className) {
-	Base.ObjectType.call(this, className || 'Function');
-	this.put('length', new Base.NumberType(1), false, true);
-}
-util.inherits(LFunc, Base.FunctionTypeBase);
-LFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction() {
-	return new Base.UnknownType();
-});
-
-/**
- * alert method
- *
- * @private
- */
-function AlertFunc(className) {
-	Base.ObjectType.call(this, className || 'Function');
-	this.put('length', new Base.NumberType(1), false, true);
-}
-util.inherits(AlertFunc, Base.FunctionTypeBase);
-AlertFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction() {
-	return new Base.UndefinedType();
-});
-
-/**
- * clearInterval method
- *
- * @private
- */
-function ClearIntervalFunc(className) {
-	Base.ObjectType.call(this, className || 'Function');
-	this.put('length', new Base.NumberType(1), false, true);
-}
-util.inherits(ClearIntervalFunc, Base.FunctionTypeBase);
-ClearIntervalFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction() {
-	return new Base.UndefinedType();
-});
-
-/**
- * clearTimeout method
- *
- * @private
- */
-function ClearTimeoutFunc(className) {
-	Base.ObjectType.call(this, className || 'Function');
-	this.put('length', new Base.NumberType(1), false, true);
-}
-util.inherits(ClearTimeoutFunc, Base.FunctionTypeBase);
-ClearTimeoutFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction() {
-	return new Base.UndefinedType();
-});
-
-/**
- * setInterval method
- *
- * @private
- */
-function SetIntervalFunc(className) {
-	Base.ObjectType.call(this, className || 'Function');
-	this.put('length', new Base.NumberType(1), false, true);
-}
-util.inherits(SetIntervalFunc, Base.FunctionTypeBase);
-SetIntervalFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction(thisVal, args) {
-
-	var func = args[0];
-
-	// Make sure func is actually a function
-	if (Base.type(func) !== 'Unknown') {
-		if (func.className !== 'Function' || !Base.isCallable(func)) {
-			Base.handleRecoverableNativeException('TypeError', 'A value that is not a function was passed to setInterval');
-			return new Base.UnknownType();
-		}
-
-		// Call the function, discarding the result
-		Runtime.queueFunction(func, new Base.UndefinedType(), [], true);
-	} else {
-		Runtime.fireEvent('unknownCallback', 'An unknown value was passed to setInterval. Some source code may not be analyzed.');
-	}
-
-	return new Base.UnknownType();
-});
-
-/**
- * setTimeout method
- *
- * @private
- */
-function SetTimeoutFunc(className) {
-	Base.ObjectType.call(this, className || 'Function');
-	this.put('length', new Base.NumberType(1), false, true);
-}
-util.inherits(SetTimeoutFunc, Base.FunctionTypeBase);
-SetTimeoutFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction(thisVal, args) {
-	var func = args[0];
-
-	// Make sure func is actually a function
-	if (Base.type(func) !== 'Unknown') {
-		if (func.className !== 'Function' || !Base.isCallable(func)) {
-			Base.handleRecoverableNativeException('TypeError', 'A value that is not a function was passed to setTimeout');
-			return new Base.UnknownType();
-		}
-
-		// Call the function, discarding the result
-		Runtime.queueFunction(func, new Base.UndefinedType(), [], true);
-	} else {
-		Runtime.fireEvent('unknownCallback', 'An unknown value was passed to setTimeout. Some source code may not be analyzed.');
-	}
-
-	return new Base.UnknownType();
-});
-
-/**
- * Non-standard string extension function
- *
- * @private
- */
-function StringFunc(className) {
-	Base.ObjectType.call(this, className || 'Function');
-	this.put('length', new Base.NumberType(1), false, true);
-}
-util.inherits(StringFunc, Base.FunctionTypeBase);
-StringFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction() {
-	return new Base.UndefinedType();
-});
-
-/**
- * @classdesc Customized require() function that doesn't actually execute code in the interpreter, but rather does it here.
- *
- * @constructor
- * @private
- * @param {String} [className] The name of the class, defaults to 'Function.' This parameter should only be used by a
- *		constructor for an object extending this one.
- */
-function RequireFunction(className) {
-	Base.ObjectType.call(this, className || 'Function');
-}
-util.inherits(RequireFunction, Base.FunctionType);
-
-/**
- * Calls the require function
- *
- * @method
- * @param {module:Base.BaseType} thisVal The value of <code>this</code> of the function
- * @param {Array[{@link module:Base.BaseType}]} args The set of arguments passed in to the function call
- * @returns {module:Base.BaseType} The return value from the function
- * @see ECMA-262 Spec Chapter 13.2.1
- */
-RequireFunction.prototype.callFunction = function callFunction(thisVal, args) {
-
-	// Validate and parse the args
-	var name = args && Base.getValue(args[0]),
-		filePath,
-		moduleInfo,
-		result = new Base.UnknownType(),
-		isModule,
-		eventDescription;
-
-	if (!name) {
-		name = new Base.UndefinedType();
-	}
-
-	name = Base.toString(name);
-	if (Base.type(name) !== 'String') {
-		eventDescription = 'A value that could not be evaluated was passed to require';
-		Runtime.fireEvent('requireUnresolved', eventDescription);
-		Runtime.reportWarning('requireUnresolved', eventDescription);
-		return result;
-	}
-	name = name.value;
-	this._location = undefined;
-	this._ast = undefined;
-	if (pluginRegExp.test(name) || name.indexOf(':') !== -1) {
-		Runtime.fireEvent('requireUnresolved',
-			'Plugins and URLS can not be evaluated at compile-time and will be deferred until runtime.', {
-				name: name
-		});
-	} else {
-
-		// Determine if this is a Titanium module
-		if (modules.commonjs && modules.commonjs.hasOwnProperty(name)) {
-			isModule = true;
-			filePath = modules.commonjs[name];
-			moduleInfo = require(path.join(filePath, 'package.json'));
-			filePath = path.join(filePath, moduleInfo.main + '.js');
-		} else if (['ios', 'iphone', 'ipad'].indexOf(platform) !== -1) { // iOS requires special handling
-			isModule = (modules.iphone && modules.iphone.hasOwnProperty(name)) ||
-				(modules.ipad && modules.ipad.hasOwnProperty(name));
-		} else if (modules[platform] && modules[platform].hasOwnProperty(name)) {
-			isModule = true;
-		}
-
-		if (isModule) {
-			if (filePath) {
-				Runtime.fireEvent('requireResolved', 'Module "' + name + '" was resolved to "' + filePath + '"', {
-					name: name,
-					path: filePath
-				});
-				if (cache[filePath]) {
-					result = cache[filePath];
-				} else {
-					result = processFile.call(this, filePath, true);
-					cache[filePath] = result;
-				}
-			} else {
-				Runtime.fireEvent('requireSkipped',
-					'Native modules cannot be evaluated by the Titanium Code Processor', {
-						name: name
-				});
-			}
-		} else {
-
-			// Resolve the path
-			isModule = !name.match(fileRegExp); // I kinda hate this, but there are too many incorrect usages of require in the wild to implement the spec correctly
-			if (name[0] === '.') {
-				filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentLocation().filename), name));
-				filePath += isModule ? '.js' : '';
-			} else {
-				filePath = path.resolve(path.join(Runtime.sourceInformation.sourceDir, platform, name));
-				filePath += isModule ? '.js' : '';
-				if (!existsSync(filePath)) {
-					filePath = path.resolve(path.join(Runtime.sourceInformation.sourceDir, name));
-					filePath += isModule ? '.js' : '';
-				}
-			}
-
-			// Make sure that the file exists and then process it
-			if (Runtime.fileList.indexOf(filePath) !== -1) {
-				if (cache[filePath]) {
-					result = cache[filePath];
-				} else {
-					Runtime.fireEvent('requireResolved', 'Module "' + name + '" was resolved to "' + filePath + '"', {
-						name: name,
-						path: filePath
-					});
-					result = processFile.call(this, filePath, isModule);
-					cache[filePath] = result;
-				}
-				this._location = {
-					filename: filePath,
-					line: 1,
-					column: 1
-				};
-			} else {
-				eventDescription = 'The module "' + name + '" could not be found';
-				Runtime.fireEvent('requireMissing', eventDescription, {
-					name: name,
-					path: filePath
-				});
-				Runtime.reportError('RequireMissing', eventDescription);
-			}
-		}
-	}
-	return result;
-};
-
-// ******** Helper Methods ********
-
-/**
- * @private
- */
-function processFile(filename, createExports) {
-
-	var root,
-		results,
-		context;
-
-	// Make sure the file exists
-	if (existsSync(filename)) {
-
-		// Fire the parsing begin event
-		Runtime.fireEvent('enteredFile', 'Entering file "' + filename + '"', {
-			filename: filename
-		});
-
-		// Read in the file and generate the AST
-		root = AST.parse(filename);
-		if (!root.syntaxError) {
-
-			// Create the context, checking for strict mode
-			context = Base.createModuleContext(root, RuleProcessor.isBlockStrict(root), createExports, false);
-
-			// Process the code
-			results = root.processRule()[1];
-			Runtime.exitContext();
-
-			// Exit the context and get the results
-			if (createExports) {
-				results = Base.type(context.thisBinding) === 'Unknown' ? new Base.UnknownType() : context.thisBinding.get('exports');
-			}
-		} else {
-			Runtime.reportUglifyError(root);
-			results = new Base.UnknownType();
-		}
-		this._ast = root;
-
-	} else {
-		throw new Error('Internal Error: could not find file "' + filename + '"');
-	}
-	return results;
 }
