@@ -183,7 +183,7 @@ function run(sourceInformation, options, plugins, logger, cli) {
 		if (true) //TODO: cli.argv['wait']
 		{
 			var stdin = process.stdin;
-			stdin.setRawMode( true );
+			stdin.setRawMode && stdin.setRawMode( true );
 			stdin.resume();
 			stdin.setEncoding( 'utf8' );
 
