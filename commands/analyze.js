@@ -130,6 +130,11 @@ exports.config = function (logger, config) {
 				desc: __('The maximum number of cycles to allow before throwing an exception'),
 				hint: __('size'),
 				default: Runtime.options.maxCycles
+			},
+			'wait': {
+				abbr: 'W',
+				desc: __('Process waits on standard input after processing the results'),
+				default: false
 			}
 		}
 	};
@@ -174,6 +179,19 @@ function run(sourceInformation, options, plugins, logger, cli) {
 		setTimeout(function () {
 			CodeProcessor.run(sourceInformation, options, plugins, logger, function () {});
 		}, 0);
+
+		if (true) //TODO: cli.argv['wait']
+		{
+			var stdin = process.stdin;
+			stdin.setRawMode( true );
+			stdin.resume();
+			stdin.setEncoding( 'utf8' );
+
+			// on any data into stdin
+			stdin.on( 'data', function( key ){
+				process.exit();
+			});
+		}
 	});
 }
 
