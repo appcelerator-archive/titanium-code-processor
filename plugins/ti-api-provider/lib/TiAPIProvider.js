@@ -66,128 +66,123 @@ exports.init = function init(options, dependencies) {
 	platform = exports.platform = options && options.platform;
 	modules = exports.modules = options && options.modules || {};
 	values = options && options.values || {};
-	test = options && options.test;
 
 	api = {
 		children: {}
 	};
 
-	if (!test) {
-		if (!options || !existsSync(options.sdkPath)) {
-			console.error('The ' + exports.displayName + ' plugin requires a valid "sdkPath" option');
-			process.exit(1);
-		}
-		
-		if (!platform) {
-			console.error('The ' + exports.displayName + ' plugin requires the "platform" option');
-			process.exit(1);
-		}
-		if (platformList.indexOf(platform) === -1) {
-			console.error('"' + platform + '" is not a valid platform for the ' + exports.displayName + ' plugin');
+	if (!options || !existsSync(options.sdkPath)) {
+		console.error('The ' + exports.displayName + ' plugin requires a valid "sdkPath" option');
+		process.exit(1);
+	}
+	
+	if (!platform) {
+		console.error('The ' + exports.displayName + ' plugin requires the "platform" option');
+		process.exit(1);
+	}
+	if (platformList.indexOf(platform) === -1) {
+		console.error('"' + platform + '" is not a valid platform for the ' + exports.displayName + ' plugin');
+		process.exit(1);
+	}
+
+	// Parse and validate the JSCA file
+	jsca = path.join(options.sdkPath, 'api.jsca');
+	if (!existsSync(jsca)) {
+		console.error('The ' + exports.displayName + ' plugin could not find a valid JSCA file at "' + jsca + '"');
+		process.exit(1);
+	}
+	jsca = JSON.parse(fs.readFileSync(jsca));
+	types = jsca.types;
+	aliases = jsca.aliases;
+
+	// Parse and validate the manifest file
+	manifest = path.join(options.sdkPath, 'manifest.json');
+	if (existsSync(manifest)) {
+		manifest = JSON.parse(fs.readFileSync(manifest));
+	} else {
+		manifest = path.join(options.sdkPath, 'version.txt');
+		if (existsSync(manifest)) {
+			rawManifest = fs.readFileSync(manifest).toString().split('\n');
+			manifest = {};
+			for (i = 0, ilen = rawManifest.length; i < ilen; i++) {
+				if (rawManifest[i]) {
+					rawManifest[i] = rawManifest[i].split('=');
+					manifest[rawManifest[i][0]] = rawManifest[i][1];
+				}
+			}
+		} else {
+			console.error('The ' + exports.displayName + ' plugin could not find a valid manifest file at "' + manifest + '"');
 			process.exit(1);
 		}
 	}
 
-	if (!test) {
-		// Parse and validate the JSCA file
-		jsca = path.join(options.sdkPath, 'api.jsca');
-		if (!existsSync(jsca)) {
-			console.error('The ' + exports.displayName + ' plugin could not find a valid JSCA file at "' + jsca + '"');
-			process.exit(1);
-		}
-		jsca = JSON.parse(fs.readFileSync(jsca));
-		types = jsca.types;
-		aliases = jsca.aliases;
-	
-		// Parse and validate the manifest file
-		manifest = path.join(options.sdkPath, 'manifest.json');
-		if (existsSync(manifest)) {
-			manifest = JSON.parse(fs.readFileSync(manifest));
-		} else {
-			manifest = path.join(options.sdkPath, 'version.txt');
-			if (existsSync(manifest)) {
-				rawManifest = fs.readFileSync(manifest).toString().split('\n');
-				manifest = {};
-				for (i = 0, ilen = rawManifest.length; i < ilen; i++) {
-					if (rawManifest[i]) {
-						rawManifest[i] = rawManifest[i].split('=');
-						manifest[rawManifest[i][0]] = rawManifest[i][1];
-					}
-				}
-			} else {
-				console.error('The ' + exports.displayName + ' plugin could not find a valid manifest file at "' + manifest + '"');
-				process.exit(1);
+	// Create the API tree
+	for (i = 0, ilen = types.length; i < ilen; i++) {
+		type = types[i];
+		root = api;
+		name = type.name.split('.');
+		for (j = 0; j < name.length; j++) {
+			if (!root.children[name[j]]) {
+				(root.children[name[j]] = { children: {} });
 			}
+			root = root.children[name[j]];
 		}
-	
-		// Create the API tree
-		for (i = 0, ilen = types.length; i < ilen; i++) {
-			type = types[i];
-			root = api;
-			name = type.name.split('.');
-			for (j = 0; j < name.length; j++) {
-				if (!root.children[name[j]]) {
-					(root.children[name[j]] = { children: {} });
-				}
-				root = root.children[name[j]];
-			}
-			root.node = type;
-		}
-	
-		// Load the overrides
-		for (i = 0, ilen = overrideFiles.length; i < ilen; i++) {
-			if (jsRegex.test(overrideFiles[i])) {
-				overrideDefs = require(overrideFiles[i]).getOverrides({
-						api: api,
-						manifest: manifest,
-						platform: platform,
-						platformList: platformList,
-						values: values,
-						createObject: createObject
-					});
-				for(j = 0, jlen = overrideDefs.length; j < jlen; j++) {
-					if (overrideDefs[j].callFunction) {
-						methodOverrides.push(overrideDefs[j]);
-					} else if (overrideDefs[j].value) {
-						propertyOverrides.push(overrideDefs[j]);
-					} else if (overrideDefs[j].obj) {
-						objectOverrides.push(overrideDefs[j]);
-					} else {
-						throw new Error('Invalid override in ' + overrideFiles[i]);
-					}
+		root.node = type;
+	}
+
+	// Load the overrides
+	for (i = 0, ilen = overrideFiles.length; i < ilen; i++) {
+		if (jsRegex.test(overrideFiles[i])) {
+			overrideDefs = require(overrideFiles[i]).getOverrides({
+					api: api,
+					manifest: manifest,
+					platform: platform,
+					platformList: platformList,
+					values: values,
+					createObject: createObject
+				});
+			for(j = 0, jlen = overrideDefs.length; j < jlen; j++) {
+				if (overrideDefs[j].callFunction) {
+					methodOverrides.push(overrideDefs[j]);
+				} else if (overrideDefs[j].value) {
+					propertyOverrides.push(overrideDefs[j]);
+				} else if (overrideDefs[j].obj) {
+					objectOverrides.push(overrideDefs[j]);
+				} else {
+					throw new Error('Invalid override in ' + overrideFiles[i]);
 				}
 			}
 		}
-	
-		// Create the list of aliases and global objects
-		for (i = 0, ilen = aliases.length; i < ilen; i++) {
-			alias = aliases[i];
-			if (alias) {
-				type = alias.type;
-				if (!typesToInsert[type]) {
-					(typesToInsert[type] = []);
-				}
-				typesToInsert[type].push(alias.name);
+	}
+
+	// Create the list of aliases and global objects
+	for (i = 0, ilen = aliases.length; i < ilen; i++) {
+		alias = aliases[i];
+		if (alias) {
+			type = alias.type;
+			if (!typesToInsert[type]) {
+				(typesToInsert[type] = []);
 			}
+			typesToInsert[type].push(alias.name);
 		}
-	
-		// Inject the global objects
-		for (p in typesToInsert) {
-			obj = createObject(api.children[p]);
-			globalObject.defineOwnProperty(p, {
+	}
+
+	// Inject the global objects
+	for (p in typesToInsert) {
+		obj = createObject(api.children[p]);
+		globalObject.defineOwnProperty(p, {
+			value: obj,
+			writable: false,
+			enumerable: true,
+			configurable: true
+		}, false, true);
+		for (i = 0, ilen = typesToInsert[p].length; i < ilen; i++) {
+			globalObject.defineOwnProperty(typesToInsert[p][i], {
 				value: obj,
 				writable: false,
 				enumerable: true,
 				configurable: true
 			}, false, true);
-			for (i = 0, ilen = typesToInsert[p].length; i < ilen; i++) {
-				globalObject.defineOwnProperty(typesToInsert[p][i], {
-					value: obj,
-					writable: false,
-					enumerable: true,
-					configurable: true
-				}, false, true);
-			}
 		}
 	}
 };

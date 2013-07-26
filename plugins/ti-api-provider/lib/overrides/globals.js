@@ -5,7 +5,7 @@
  * common globals implementations
  *
  * @module plugins/TiAPIProcessor
- * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
+ * @author Chris Williams &lt;<a href='mailto:cwilliams@appcelerator.com'>cwilliams@appcelerator.com</a>&gt;
  */
 
 var path = require('path'),
@@ -77,23 +77,20 @@ exports.getOverrides = function (options) {
 			return new Base.UnknownType();
 		})
 	},{
-		regex: /^Global\.console$/,
-		obj: new ConsoleObject()
-	},{
 		regex: /^Global\.console\.debug$/,
-		callFunction: new ConsoleFunc('debug').callFunction
+		callFunction: consoleFunc('debug')
 	},{
 		regex: /^Global\.console\.error$/,
-		callFunction: new ConsoleFunc('error').callFunction
+		callFunction: consoleFunc('error')
 	},{
 		regex: /^Global\.console\.info$/,
-		callFunction: new ConsoleFunc('info').callFunction
+		callFunction: consoleFunc('info')
 	},{
 		regex: /^Global\.console\.log$/,
-		callFunction: new ConsoleFunc('log').callFunction
+		callFunction: consoleFunc('log')
 	},{
 		regex: /^Global\.console\.warn$/,
-		callFunction: new ConsoleFunc('warn')
+		callFunction: consoleFunc('warn')
 	},{
 		regex: /^Global\.String\.format$/,
 		callFunction: Base.wrapNativeCall(function callFunction() {
@@ -122,52 +119,30 @@ exports.getOverrides = function (options) {
 	}];
 };
 
-// ******** Console Object ********
-
 /**
- * console.*() prototype method
+ * console.*() method
  *
  * @private
  */
-function ConsoleFunc(type, className) {
-	Base.ObjectType.call(this, className || 'Function');
-	this.put('length', new Base.NumberType(1), false, true);
-	this._type = type;
-}
-util.inherits(ConsoleFunc, Base.FunctionTypeBase);
-ConsoleFunc.prototype.callFunction = Base.wrapNativeCall(function callFunction(thisVal, args) {
-	var level = this._type,
-		message = [];
-	args.forEach(function (arg) {
-		if (Base.type(arg) === 'Unknown') {
-			message.push('<Unknown value>');
-		} else {
-			message.push(Base.toString(arg).value);
+function consoleFunc(type) {
+	var _type = type;
+	return Base.wrapNativeCall(function callFunction(thisVal, args) {
+		var level = this._type, message = [];
+		args.forEach(function(arg) {
+			if (Base.type(arg) === 'Unknown') {
+				message.push('<Unknown value>');
+			} else {
+				message.push(Base.toString(arg).value);
+			}
+		});
+		message = message.join(' ');
+		Runtime.fireEvent('consoleOutput', message, {
+			level : level,
+			message : message
+		});
+		if (Runtime.options.logConsoleCalls) {
+			Runtime.log('info', 'program output [' + this._type + ']: ' + message);
 		}
+		return new Base.UndefinedType();
 	});
-	message = message.join(' ');
-	Runtime.fireEvent('consoleOutput', message, {
-		level: level,
-		message: message
-	});
-	if (Runtime.options.logConsoleCalls) {
-		Runtime.log('info', 'program output [' + this._type + ']: ' + message);
-	}
-	return new Base.UndefinedType();
-});
-
-/**
- * Console Object
- *
- * @private
- */
-function ConsoleObject(className) {
-	Base.ObjectType.call(this, className);
-
-	this.put('debug', new ConsoleFunc('debug'), false, true);
-	this.put('error', new ConsoleFunc('error'), false, true);
-	this.put('info', new ConsoleFunc('info'), false, true);
-	this.put('log', new ConsoleFunc('log'), false, true);
-	this.put('warn', new ConsoleFunc('warn'), false, true);
 }
-util.inherits(ConsoleObject, Base.ObjectType);
