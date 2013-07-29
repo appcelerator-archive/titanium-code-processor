@@ -16,26 +16,6 @@ var path = require('path'),
 
 exports.getOverrides = function (options) {
 	return [{
-		regex: /^Global\.L$/,
-		callFunction: Base.wrapNativeCall(function callFunction() {
-			return new Base.UnknownType();
-		})
-	},{
-		regex: /^Global\.alert$/,
-		callFunction: Base.wrapNativeCall(function callFunction() {
-			return new Base.UndefinedType();
-		})
-	},{
-		regex: /^Global\.clearInterval$/,
-		callFunction: Base.wrapNativeCall(function callFunction() {
-			return new Base.UndefinedType();
-		})
-	},{
-		regex: /^Global\.clearTimeout$/,
-		callFunction: Base.wrapNativeCall(function callFunction() {
-			return new Base.UndefinedType();
-		})
-	},{
 		regex: /^Global\.setInterval$/,
 		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
 		
@@ -93,28 +73,8 @@ exports.getOverrides = function (options) {
 		callFunction: consoleFunc('warn')
 	},{
 		regex: /^Global\.String\.format$/,
-		callFunction: Base.wrapNativeCall(function callFunction() {
-			return new Base.UndefinedType();
-		})
-	},{
-		regex: /^Global\.String\.formatCurrency$/,
-		callFunction: Base.wrapNativeCall(function callFunction() {
-			return new Base.UndefinedType();
-		})
-	},{
-		regex: /^Global\.String\.formatDate$/,
-		callFunction: Base.wrapNativeCall(function callFunction() {
-			return new Base.UndefinedType();
-		})
-	},{
-		regex: /^Global\.String\.formatDecimal$/,
-		callFunction: Base.wrapNativeCall(function callFunction() {
-			return new Base.UndefinedType();
-		})
-	},{
-		regex: /^Global\.String\.formatTime$/,
-		callFunction: Base.wrapNativeCall(function callFunction() {
-			return new Base.UndefinedType();
+		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
+			return new Base.UnknownType();
 		})
 	}];
 };
