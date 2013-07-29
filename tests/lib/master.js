@@ -13,7 +13,7 @@ var path = require('path'),
 	testutiles = require('./testutils');
 
 module.exports.run = function (cluster) {
-	require('child_process').spawn('node', [path.resolve(path.join('..', '..', 'bin', 'assemblebase'))], {
+	require('child_process').spawn('node', [path.resolve(path.join(__dirname, '..', '..', 'tools', 'assemblebase'))], {
 		stdio: 'inherit'
 	}).on('exit', function() {
 		cluster.fork();
