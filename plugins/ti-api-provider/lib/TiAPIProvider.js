@@ -16,11 +16,13 @@ var fs = require('fs'),
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	CodeProcessorUtils = require(path.join(global.titaniumCodeProcessorLibDir, 'CodeProcessorUtils')),
+	AST = require(path.join(global.titaniumCodeProcessorLibDir, 'AST')),
 
 	jsca,
 	manifest,
 	platform,
-	platformList,
+	modules,
+	platformList = ['android', 'mobileweb', 'iphone', 'ipad', 'blackberry', 'tizen'],
 	values,
 	api,
 
@@ -60,14 +62,9 @@ exports.init = function init(options, dependencies) {
 		overrideFiles = CodeProcessorUtils.findJavaScriptFiles(path.join(__dirname, 'overrides')),
 		overrideDefs,
 		rawManifest;
-
-	for (i = 0, ilen = dependencies.length; i < ilen; i++) {
-		if (dependencies[i].name === 'require-provider') {
-			exports.platform = platform = dependencies[i].platform;
-			exports.platformList = platformList = dependencies[i].platformList;
-		}
-	}
-
+	
+	platform = exports.platform = options && options.platform;
+	modules = exports.modules = options && options.modules || {};
 	values = options && options.values || {};
 
 	api = {
@@ -76,6 +73,15 @@ exports.init = function init(options, dependencies) {
 
 	if (!options || !existsSync(options.sdkPath)) {
 		console.error('The ' + exports.displayName + ' plugin requires a valid "sdkPath" option');
+		process.exit(1);
+	}
+	
+	if (!platform) {
+		console.error('The ' + exports.displayName + ' plugin requires the "platform" option');
+		process.exit(1);
+	}
+	if (platformList.indexOf(platform) === -1) {
+		console.error('"' + platform + '" is not a valid platform for the ' + exports.displayName + ' plugin');
 		process.exit(1);
 	}
 
@@ -131,6 +137,7 @@ exports.init = function init(options, dependencies) {
 					api: api,
 					manifest: manifest,
 					platform: platform,
+					platformList: platformList,
 					values: values,
 					createObject: createObject
 				});

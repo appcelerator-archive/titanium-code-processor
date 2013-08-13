@@ -169,8 +169,10 @@ exports.initCodeProcessor = function (logger) {
 	CodeProcessor.init(undefined, {
 		exactMode: true
 	}, [{
-		path: path.resolve(path.join('..', '..', 'plugins', 'common-globals')),
-		options: {}
+		path: path.resolve(path.join(__dirname, '..', '..', 'plugins', 'ti-api-provider')),
+		options: {
+			"test": true
+		}
 	}], testLibAST);
 	Runtime._unknown = false;
 	testLibAST.processRule();

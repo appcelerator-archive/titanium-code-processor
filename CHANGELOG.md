@@ -3,6 +3,9 @@
 ## New Features
 * Implemented a proper CLI hook
 
+### Bug Fixes
+* Combined the require-provider and common-globals plugins with the ti-api-provider
+
 ## 1.0.1
 
 ### New Features
