@@ -1,9 +1,9 @@
-Require Finder Plugin
+Ti API Require Finder Plugin
 =====================
 
 ## Overview
 
-The Require Finder plugin finds all files/modules that were required by the project. It depends on the Require Provider plugin.
+The Require Finder plugin finds all files/modules that were required by the project. It depends on the Ti API provider plugin.
 
 ## Options
 
