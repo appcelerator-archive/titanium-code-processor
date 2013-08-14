@@ -18,127 +18,232 @@ var path = require('path'),
 	xml2js = require('xml2js'),
 
 	appc = require('node-appc'),
+	ti, // Will be loaded in the config method
+	afs = appc.fs,
 	i18n = appc.i18n(__dirname),
 	__ = i18n.__,
 
 	CodeProcessor = require('../'),
-	Runtime = require('../lib/Runtime');
+	Runtime = require('../lib/Runtime'),
 
+	sourceInformation,
+	options,
+	plugins;
+
+exports.cliVersion = '>=3.2.X';
+exports.title = __('Analyze');
 exports.desc = exports.extendedDesc = __('analyzes a project using the Titanium Code Processor');
 
-exports.config = function (logger, config) {
-	var conf = {
-		skipBanner: true,
-		flags: {
-			'all-plugins': {
-				abbr: 'A',
-				desc: __('loads all plugins in the default search path')
-			},
-			'no-method-invokation': {
-				desc: __('prevents methods from being invoked (ignored if --config-file is specified)'),
-				default: !Runtime.options.invokeMethods
-			},
-			'no-loop-evaluation': {
-				desc: __('Whether or not to evaluate loops (ignored if --config-file is specified)'),
-				default: !Runtime.options.evaluateLoops
-			},
-			'no-console-passthrough': {
-				desc: __('Prevents console.* calls in a project from being logged to the console (ignored if' +
-					' --config-file is specified)'),
-				default: !Runtime.options.logConsoleCalls
-			},
-			'exact-mode': {
-				desc: __('enables exact mode evaluation. Exact mode does not use ambiguous' +
-					' modes and throws an exception if an Unknown type is encountered (ignored if --config-file is specified)'),
-				default: Runtime.options.exactMode
-			},
-			'no-native-exception-recovery': {
-				desc: __('disables recovering from native exceptions when not in try/catch statements (ignored ' +
-					'if --config-file is specified)'),
-				default: !Runtime.options.nativeExceptionRecovery
-			},
-			'process-unvisited-code': {
-				desc: __('when set to true, all nodes and files that are not visited/skipped will be processed in ambiguous' +
-					' mode after all other code has been processed. While this will cause more of a project to be analyzed,' +
-					' this will decrease accuracy and can generate a lot of false positives (ignored if --config-file is specified)'),
-				default: Runtime.options.processUnvisitedCode
-			},
-			'wait': {
-				abbr: 'W',
-				desc: __('Process waits on standard input after processing the results'),
-				default: false
-			}
-		},
-		options: {
-			output: {
-				abbr: 'o',
-				desc: __('output format'),
-				hint: __('format'),
-				default: 'report',
-				values: ['report', 'json', 'stream']
-			},
-			'config-file': {
-				abbr: 'F',
-				desc: __('the path to the config file, note: most options and flags are ignored with this option'),
-				callback: function() {
-					conf.options.platform.required = false;
-				}
-			},
-			plugins: {
-				desc: __('a comma separated list of plugin names to load (ignored if --config-file is specified)'),
-				hint: __('plugins')
-			},
-			platform: {
-				abbr: 'p',
-				desc: __('the name of the OS being built-for, reflected in code via Ti.Platform.osname (ignored if --config-file is specified)'),
-				hint: __('platform'),
-				required: true
-			},
-			'project-dir': {
-				abbr: 'd',
-				desc: __('the directory containing the project, otherwise the current working directory (ignored if --config-file is specified)')
-			},
-			'results-dir': {
-				abbr: 'R',
-				desc: __('the path to the directory that will contain the generated results pages (ignored if --config-file is specified)')
-			},
-			'log-level': {
-				callback: function (value) {
-					logger.levels.hasOwnProperty(value) && logger.setLevel(value);
+exports.config = function (logger, config, cli) {
+
+	// Load the titanium-sdk module from the active SDK
+	var activeSDK = config.get('sdk.selected', config.get('app.sdk')),
+		defaultInstallLocation = cli.env.installPath,
+		locations = cli.env.os.sdkPaths.map(function (p) { return afs.resolvePath(p); }),
+		sdks = cli.env.sdks,
+		vers = Object.keys(sdks).sort().reverse();
+	locations.indexOf(defaultInstallLocation) == -1 && locations.push(defaultInstallLocation);
+	if ((!activeSDK || activeSDK == 'latest') && vers.length) {
+		activeSDK = vers[0];
+	}
+	ti = require(path.join(sdks[activeSDK].path, 'node_modules', 'titanium-sdk'));
+
+	// Create the config
+	return function (finished) {
+		ti.platformOptions(logger, config, cli, 'build', function (platformConf) {
+			var conf = {
+				skipBanner: true,
+				flags: {
+					'all-plugins': {
+						abbr: 'A',
+						desc: __('loads all plugins in the default search path')
+					},
+					'no-method-invokation': {
+						desc: __('prevents methods from being invoked (ignored if --config-file is specified)'),
+						default: !Runtime.options.invokeMethods
+					},
+					'no-loop-evaluation': {
+						desc: __('Whether or not to evaluate loops (ignored if --config-file is specified)'),
+						default: !Runtime.options.evaluateLoops
+					},
+					'no-console-passthrough': {
+						desc: __('Prevents console.* calls in a project from being logged to the console (ignored if' +
+							' --config-file is specified)'),
+						default: !Runtime.options.logConsoleCalls
+					},
+					'exact-mode': {
+						desc: __('enables exact mode evaluation. Exact mode does not use ambiguous' +
+							' modes and throws an exception if an Unknown type is encountered (ignored if --config-file is specified)'),
+						default: Runtime.options.exactMode
+					},
+					'no-native-exception-recovery': {
+						desc: __('disables recovering from native exceptions when not in try/catch statements (ignored ' +
+							'if --config-file is specified)'),
+						default: !Runtime.options.nativeExceptionRecovery
+					},
+					'process-unvisited-code': {
+						desc: __('when set to true, all nodes and files that are not visited/skipped will be processed in ambiguous' +
+							' mode after all other code has been processed. While this will cause more of a project to be analyzed,' +
+							' this will decrease accuracy and can generate a lot of false positives (ignored if --config-file is specified)'),
+						default: Runtime.options.processUnvisitedCode
+					},
+					'wait': {
+						abbr: 'W',
+						desc: __('Process waits on standard input after processing the results'),
+						default: false
+					}
 				},
-				desc: __('minimum logging level (ignored if --config-file is specified)'),
-				default: config.cli.logLevel || 'debug',
-				hint: __('level'),
-				values: logger.getLevels()
-			},
-			'max-loop-iterations': {
-				desc: __('the maximum number of iterations a loop can iterate before falling back to an unknown evaluation (ignored if --config-file is specified)'),
-				hint: __('iterations'),
-				default: Runtime.options.maxLoopIterations
-			},
-			'max-recursion-limit': {
-				desc: __('the maximum recursion depth to evaluate before throwing a RangeError exception (ignored if --config-file is specified)'),
-				hint: __('recursion limit'),
-				default: Runtime.options.maxRecursionLimit
-			},
-			'execution-time-limit': {
-				desc: __('the maximum time the app is allowed to run before erroring. 0 means no time limit (ignored if --config-file is specified)'),
-				hint: __('time limit'),
-				default: Runtime.options.executionTimeLimit
-			},
-			'cycle-detection-stack-size': {
-				desc: __('the size of the cycle detection stack. Cycles that are larger than this size will not be caught'),
-				hint: __('size'),
-				default: Runtime.options.cycleDetectionStackSize
-			},
-			'max-cycles': {
-				desc: __('The maximum number of cycles to allow before throwing an exception'),
-				hint: __('size'),
-				default: Runtime.options.maxCycles
-			}
+				options: appc.util.mix({
+					output: {
+						abbr: 'o',
+						desc: __('output format'),
+						hint: __('format'),
+						default: 'report',
+						values: ['report', 'json', 'stream']
+					},
+					'config-file': {
+						abbr: 'F',
+						desc: __('the path to the config file, note: most options and flags are ignored with this option')
+					},
+					plugins: {
+						desc: __('a comma separated list of plugin names to load (ignored if --config-file is specified)'),
+						hint: __('plugins')
+					},
+					platform: {
+						abbr: 'p',
+						callback: function (platform) {
+							cli.argv.$originalPlatform = platform;
+							return ti.resolvePlatform(platform);
+						},
+						desc: __('the name of the OS being built-for, reflected in code via Ti.Platform.osname (ignored if --config-file is specified)'),
+						hint: __('platform'),
+						prompt: {
+							label: __('Target platform [%s]', ti.targetPlatforms.join(',')),
+							error: __('Invalid platform'),
+							validator: function (platform) {
+								if (!platform) {
+									throw new appc.exception(__('Invalid platform'));
+								}
+
+								platform = platform.trim();
+
+								// temp: ti.availablePlatforms contains "iphone" and "ipad" which aren't going to be valid supported platforms
+								if (ti.availablePlatforms.indexOf(platform) == -1) {
+									throw new appc.exception(__('Invalid platform: %s', platform));
+								}
+
+								// now that we've passed the validation, transform and continue
+								platform = ti.resolvePlatform(platform);
+
+								// it's possible that platform was not specified at the command line in which case the it would
+								// be prompted for. that means that validate() was unable to apply default values for platform-
+								// specific options and scan for platform-specific hooks, so we must do it here.
+
+								var p = platformConf[platform];
+								p && p.options && Object.keys(p.options).forEach(function (name) {
+									if (p.options[name].default && cli.argv[name] === undefined) {
+										cli.argv[name] = p.options[name].default;
+									}
+								});
+
+								cli.scanHooks(afs.resolvePath(path.dirname(module.filename), '..', '..', platform, 'cli', 'hooks'));
+
+								return true;
+							}
+						},
+						required: true,
+						skipValueCheck: true,
+						values: ti.targetPlatforms
+					},
+					'project-dir': {
+						abbr: 'd',
+						desc: __('the directory containing the project, otherwise the current working directory (ignored if --config-file is specified)')
+					},
+					'results-dir': {
+						abbr: 'R',
+						desc: __('the path to the directory that will contain the generated results pages (ignored if --config-file is specified)')
+					},
+					'max-loop-iterations': {
+						desc: __('the maximum number of iterations a loop can iterate before falling back to an unknown evaluation (ignored if --config-file is specified)'),
+						hint: __('iterations'),
+						default: Runtime.options.maxLoopIterations
+					},
+					'max-recursion-limit': {
+						desc: __('the maximum recursion depth to evaluate before throwing a RangeError exception (ignored if --config-file is specified)'),
+						hint: __('recursion limit'),
+						default: Runtime.options.maxRecursionLimit
+					},
+					'execution-time-limit': {
+						desc: __('the maximum time the app is allowed to run before erroring. 0 means no time limit (ignored if --config-file is specified)'),
+						hint: __('time limit'),
+						default: Runtime.options.executionTimeLimit
+					},
+					'cycle-detection-stack-size': {
+						desc: __('the size of the cycle detection stack. Cycles that are larger than this size will not be caught'),
+						hint: __('size'),
+						default: Runtime.options.cycleDetectionStackSize
+					},
+					'max-cycles': {
+						desc: __('The maximum number of cycles to allow before throwing an exception'),
+						hint: __('size'),
+						default: Runtime.options.maxCycles
+					}
+				}, ti.commonOptions(logger, config)),
+				platforms: platformConf
+			};
+			finished(conf);
+		});
+	};
+};
+
+exports.validate = function (logger, config, cli) {
+	return function (callback) {
+		if (cli.argv.output === 'report') {
+			logger.banner();
+		}
+		if (cli.argv['config-file']) {
+			validateConfigFile(logger, config, cli, callback);
+		} else {
+			validateCLIParameters(logger, config, cli, callback);
 		}
 	};
-	return conf;
+};
+
+exports.run = function (logger, config, cli) {
+	cli.fireHook('codeprocessor.pre.run', function () {
+
+		// Validate the source information, now that alloy has been compiled
+		if (!existsSync(sourceInformation.projectDir)) {
+			console.error(__('Could not find project directory "%s"', sourceInformation.projectDir));
+			process.exit(1);
+		}
+		if (!existsSync(sourceInformation.sourceDir)) {
+			console.error(__('Could not find source directory "%s"', sourceInformation.sourceDir));
+			process.exit(1);
+		}
+		if (!existsSync(sourceInformation.entryPoint)) {
+			console.error(__('Could not find entry point "%s"', sourceInformation.entryPoint));
+			process.exit(1);
+		}
+
+		options.outputFormat = cli.argv.output;
+		setTimeout(function () {
+			CodeProcessor.run(sourceInformation, options, plugins, logger, function () {
+				if (cli.argv.wait)
+				{
+					var stdin = process.stdin;
+					stdin.setRawMode && stdin.setRawMode(true);
+					stdin.resume();
+					stdin.setEncoding('utf8');
+
+					// Exit on any data passed to stdin
+					stdin.on('data', function(){
+						process.exit();
+					});
+				}
+			});
+		}, 0);
+	});
 };
 
 function validateAlloyHook(projectDir, logger, callback) {
@@ -158,45 +263,7 @@ function validateAlloyHook(projectDir, logger, callback) {
 	}
 }
 
-function run(sourceInformation, options, plugins, logger, cli) {
-	cli.fireHook('codeprocessor.pre.run', function () {
-
-		// Validate the source information, now that alloy has been compiled
-		if (!existsSync(sourceInformation.projectDir)) {
-			console.error(__('Could not find project directory "%s"', sourceInformation.projectDir));
-			process.exit(1);
-		}
-		if (!existsSync(sourceInformation.sourceDir)) {
-			console.error(__('Could not find source directory "%s"', sourceInformation.sourceDir));
-			process.exit(1);
-		}
-		if (!existsSync(sourceInformation.entryPoint)) {
-			console.error(__('Could not find entry point "%s"', sourceInformation.entryPoint));
-			process.exit(1);
-		}
-
-		options.outputFormat = cli.argv.output;
-		setTimeout(function () {
-			CodeProcessor.run(sourceInformation, options, plugins, logger, function () {});
-		}, 0);
-
-		if (cli.argv['wait'])
-		{
-			var stdin = process.stdin;
-			stdin.setRawMode && stdin.setRawMode( true );
-			stdin.resume();
-			stdin.setEncoding( 'utf8' );
-
-			// on any data into stdin
-			stdin.on( 'data', function( key ){
-				process.exit();
-			});
-		}
-	});
-}
-
-function runFromConfigFile(logger, config, cli) {
-
+function validateConfigFile(logger, config, cli, callback) {
 	var argv = cli.argv,
 		configFile = cli.argv['config-file'],
 		filename,
@@ -314,18 +381,59 @@ function runFromConfigFile(logger, config, cli) {
 			process.exit(1);
 		}
 
-		run(configFile.sourceInformation, configFile.options, configFile.plugins, logger, cli);
+		sourceInformation = configFile.sourceInformation;
+		options = configFile.options;
+		plugins = configFile.plugins;
+		callback(true);
 	});
 }
 
-function runFromCLIParameters(logger, config, cli) {
+function validateCLIParameters(logger, config, cli, callback) {
 
 	var argv = cli.argv,
 		projectRoot,
 		entryPoint,
-		options,
-		sourceInformation,
 		i, len;
+
+	// If the output isn't report, we want to suppress all output to the console. However, we want to keep the logger
+	// around because we may be logging to a file
+	if (argv.output !== 'report') {
+		logger.remove(winston.transports.Console);
+	}
+
+	// Validate the project information
+	ti.validateProjectDir(logger, cli, cli.argv, 'project-dir');
+	ti.validateTiappXml(logger, cli.tiapp);
+
+	// Note: we do custom SDK validation because the validateCorrectSDK method does a lot more than we need
+	var sdk = cli.tiapp['sdk-version'];
+	if (cli.argv.legacy !== true && (!sdk || appc.version.eq(sdk, appc.pkginfo.manifest(module).version))) {
+		return true;
+	}
+
+	// check the project's preferred sdk is even installed
+	if (sdk == '__global__' || !cli.env.sdks[sdk]) {
+		logger.banner();
+		logger.error(__('Unable to compile project because the "sdk-version" in the tiapp.xml is not installed') + '\n');
+		logger.log(__('The project\'s %s is currently set to %s, which is not installed.', 'sdk-version'.cyan, sdk.cyan) + '\n');
+		logger.log(__('Update the %s in the tiapp.xml to one of the installed Titaniums SDKs:', 'sdk-version'.cyan));
+		Object.keys(cli.env.sdks).sort().forEach(function (ver) {
+			if (ver != '__global__') {
+				logger.log('    ' + ver.cyan);
+			}
+		});
+		logger.log(__('or run "%s" to download and install Titanium SDK %s', ('titanium sdk install ' + sdk).cyan, sdk) + '\n');
+		process.exit(1);
+	}
+
+	// Validate the platform
+	ti.validatePlatform(logger, cli.argv, 'platform');
+	if (ti.validatePlatformOptions(logger, config, cli, 'analyze') === false) {
+		return false;
+	}
+
+	// Load the project specific plugins
+	ti.loadPlugins(logger, cli, config, cli.argv['project-dir']);
 
 	// Parse the config options
 	options = {};
@@ -342,10 +450,6 @@ function runFromCLIParameters(logger, config, cli) {
 	options.processUnvisitedCode = argv['process-unvisited-code'];
 	options.resultsPath = argv['results-dir'];
 
-	if (argv.output !== 'report') {
-		logger.remove(winston.transports.Console);
-	}
-
 	// Calculate the project root
 	projectRoot = argv['project-dir'] || '.';
 	sourceInformation = {};
@@ -356,9 +460,7 @@ function runFromCLIParameters(logger, config, cli) {
 	entryPoint = sourceInformation.entryPoint = path.join(projectRoot, 'Resources', 'app.js');
 
 	// Analyze the project
-	if (logger) {
-		logger.info('Analyzing project at "' + projectRoot + '"');
-	}
+	logger.info('Analyzing project at "' + projectRoot + '"');
 	validateAlloyHook(projectRoot, logger, function () {
 		exec('titanium project --no-prompt --project-dir "' + projectRoot + '"', { stdio: 'inherit'}, function (err) {
 			var tasks = {
@@ -421,11 +523,11 @@ function runFromCLIParameters(logger, config, cli) {
 								moduleList,
 								modules = {},
 								pluginList = argv.plugins,
-								plugins = [],
 								plugin,
 								ti,
 								sdkPath;
 
+							plugins = [];
 							if (argv['all-plugins']) {
 								for(plugin in results) {
 									plugins.push({
@@ -549,7 +651,8 @@ function runFromCLIParameters(logger, config, cli) {
 								sourceInformation.originalSourceDir = path.join(projectRoot, 'app');
 							}
 
-							run(sourceInformation, options, plugins, logger, cli);
+							// Tell the CLI we are done
+							callback(true);
 						});
 					}
 				});
@@ -557,14 +660,3 @@ function runFromCLIParameters(logger, config, cli) {
 		});
 	});
 }
-
-exports.run = function (logger, config, cli) {
-	if (cli.argv.output === 'report') {
-		logger.banner();
-	}
-	if (cli.argv['config-file']) {
-		runFromConfigFile(logger, config, cli);
-	} else {
-		runFromCLIParameters(logger, config, cli);
-	}
-};
