@@ -13,6 +13,8 @@ var fs = require('fs'),
 	existsSync = fs.existsSync || path.existsSync,
 	util = require('util'),
 
+	appc = require('node-appc'),
+
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	CodeProcessorUtils = require(path.join(global.titaniumCodeProcessorLibDir, 'CodeProcessorUtils')),
@@ -114,6 +116,12 @@ exports.init = function init(options) {
 			console.error('The ' + exports.displayName + ' plugin could not find a valid manifest file at "' + manifest + '"');
 			process.exit(1);
 		}
+	}
+
+	// Validate the SDK version
+	if (appc.version.lt(manifest.version, '2.1.0')) {
+		console.error('The ' + exports.displayName + ' plugin only works with SDK 2.1.0 or newer');
+		process.exit(1);
 	}
 
 	// Create the API tree

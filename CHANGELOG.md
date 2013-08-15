@@ -8,6 +8,7 @@
 
 ### Miscellany
 * Merged the require-provider and common-globals plugins into the ti-api-provider
+	* As a result, the code processor now only works with SDK 2.1.0 and newer
 
 ## 1.0.2
 
