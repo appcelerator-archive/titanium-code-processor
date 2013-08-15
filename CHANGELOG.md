@@ -4,7 +4,10 @@
 * Implemented a proper CLI hook
 
 ### Bug Fixes
-* Combined the require-provider and common-globals plugins with the ti-api-provider
+* Fixed regressions introduced when the CLI was overhauled for 3.2.0
+
+### Miscellany
+* Merged the require-provider and common-globals plugins into the ti-api-provider
 
 ## 1.0.2
 
