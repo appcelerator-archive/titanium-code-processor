@@ -6,6 +6,11 @@
 ### Bug Fixes
 * Combined the require-provider and common-globals plugins with the ti-api-provider
 
+## 1.0.2
+
+### Bug Fixes
+* Created a work-around for the code processor exiting before it has printed all of the results to stdout
+
 ## 1.0.1
 
 ### New Features
