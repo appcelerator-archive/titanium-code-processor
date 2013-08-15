@@ -8,8 +8,7 @@
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
-var util = require('util'),
-	path = require('path'),
+var path = require('path'),
 	fs = require('fs'),
 	existsSync = fs.existsSync || path.existsSync,
 
@@ -31,9 +30,9 @@ exports.getOverrides = function (options) {
 	platformList = options && options.platformList;
 	modules = options && options.modules || {};
 	cache = {};
-	
+
 	return [{
-		regex: /^Global\.require$/,
+		regex: /^require$/,
 		callFunction: function callFunction(thisVal, args) {
 			// Validate and parse the args
 			var name = args && Base.getValue(args[0]),
@@ -42,11 +41,11 @@ exports.getOverrides = function (options) {
 				result = new Base.UnknownType(),
 				isModule,
 				eventDescription;
-		
+
 			if (!name) {
 				name = new Base.UndefinedType();
 			}
-		
+
 			name = Base.toString(name);
 			if (Base.type(name) !== 'String') {
 				eventDescription = 'A value that could not be evaluated was passed to require';
@@ -63,7 +62,7 @@ exports.getOverrides = function (options) {
 						name: name
 				});
 			} else {
-		
+
 				// Determine if this is a Titanium module
 				if (modules.commonjs && modules.commonjs.hasOwnProperty(name)) {
 					isModule = true;
@@ -76,7 +75,7 @@ exports.getOverrides = function (options) {
 				} else if (modules[platform] && modules[platform].hasOwnProperty(name)) {
 					isModule = true;
 				}
-		
+
 				if (isModule) {
 					if (filePath) {
 						Runtime.fireEvent('requireResolved', 'Module "' + name + '" was resolved to "' + filePath + '"', {
@@ -96,7 +95,7 @@ exports.getOverrides = function (options) {
 						});
 					}
 				} else {
-		
+
 					// Resolve the path
 					isModule = !name.match(fileRegExp); // I kinda hate this, but there are too many incorrect usages of require in the wild to implement the spec correctly
 					if (name[0] === '.') {
@@ -110,7 +109,7 @@ exports.getOverrides = function (options) {
 							filePath += isModule ? '.js' : '';
 						}
 					}
-		
+
 					// Make sure that the file exists and then process it
 					if (Runtime.fileList.indexOf(filePath) !== -1) {
 						if (cache[filePath]) {

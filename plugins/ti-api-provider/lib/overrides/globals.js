@@ -15,6 +15,11 @@ var path = require('path'),
 
 exports.getOverrides = function () {
 	return [{
+		regex: /^clearInterval$/,
+		callFunction: Base.wrapNativeCall(function callFunction() {
+			return new Base.UndefinedType();
+		})
+	},{
 		regex: /^setInterval$/,
 		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
 
@@ -34,6 +39,11 @@ exports.getOverrides = function () {
 			}
 
 			return new Base.UnknownType();
+		})
+	},{
+		regex: /^clearTimeout$/,
+		callFunction: Base.wrapNativeCall(function callFunction() {
+			return new Base.UndefinedType();
 		})
 	},{
 		regex: /^setTimeout$/,
