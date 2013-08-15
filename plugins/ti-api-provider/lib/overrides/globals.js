@@ -9,73 +9,67 @@
  */
 
 var path = require('path'),
-	util = require('util'),
 
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime'));
 
-exports.getOverrides = function (options) {
+exports.getOverrides = function () {
 	return [{
-		regex: /^Global\.setInterval$/,
+		regex: /^setInterval$/,
 		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
-		
+
 			var func = args[0];
-		
+
 			// Make sure func is actually a function
 			if (Base.type(func) !== 'Unknown') {
 				if (func.className !== 'Function' || !Base.isCallable(func)) {
 					Base.handleRecoverableNativeException('TypeError', 'A value that is not a function was passed to setInterval');
 					return new Base.UnknownType();
 				}
-		
+
 				// Call the function, discarding the result
 				Runtime.queueFunction(func, new Base.UndefinedType(), [], true);
 			} else {
 				Runtime.fireEvent('unknownCallback', 'An unknown value was passed to setInterval. Some source code may not be analyzed.');
 			}
-		
+
 			return new Base.UnknownType();
 		})
 	},{
-		regex: /^Global\.setTimeout$/,
+		regex: /^setTimeout$/,
 		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
 			var func = args[0];
-		
+
 			// Make sure func is actually a function
 			if (Base.type(func) !== 'Unknown') {
 				if (func.className !== 'Function' || !Base.isCallable(func)) {
 					Base.handleRecoverableNativeException('TypeError', 'A value that is not a function was passed to setTimeout');
 					return new Base.UnknownType();
 				}
-		
+
 				// Call the function, discarding the result
 				Runtime.queueFunction(func, new Base.UndefinedType(), [], true);
 			} else {
 				Runtime.fireEvent('unknownCallback', 'An unknown value was passed to setTimeout. Some source code may not be analyzed.');
 			}
-		
+
 			return new Base.UnknownType();
 		})
 	},{
-		regex: /^Global\.console\.debug$/,
+		regex: /^console\.debug$/,
 		callFunction: consoleFunc('debug')
 	},{
-		regex: /^Global\.console\.error$/,
+		regex: /^console\.error$/,
 		callFunction: consoleFunc('error')
 	},{
-		regex: /^Global\.console\.info$/,
+		regex: /^console\.info$/,
 		callFunction: consoleFunc('info')
 	},{
-		regex: /^Global\.console\.log$/,
+		regex: /^console\.log$/,
 		callFunction: consoleFunc('log')
 	},{
-		regex: /^Global\.console\.warn$/,
+		regex: /^console\.warn$/,
 		callFunction: consoleFunc('warn')
-	},{
-		regex: /^Global\.String\.format$/,
-		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
-			return new Base.UnknownType();
-		})
 	}];
 };
 
@@ -84,10 +78,9 @@ exports.getOverrides = function (options) {
  *
  * @private
  */
-function consoleFunc(type) {
-	var _type = type;
+function consoleFunc(level) {
 	return Base.wrapNativeCall(function callFunction(thisVal, args) {
-		var level = this._type, message = [];
+		var message = [];
 		args.forEach(function(arg) {
 			if (Base.type(arg) === 'Unknown') {
 				message.push('<Unknown value>');
@@ -101,7 +94,7 @@ function consoleFunc(type) {
 			message : message
 		});
 		if (Runtime.options.logConsoleCalls) {
-			Runtime.log('info', 'program output [' + this._type + ']: ' + message);
+			Runtime.log('info', 'program output [' + level + ']: ' + message);
 		}
 		return new Base.UndefinedType();
 	});
