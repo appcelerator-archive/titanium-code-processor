@@ -9,16 +9,29 @@
 module.exports.run = function () {
 
 	var options,
-		testutils = require('./testutils');
+		testutils = require('./testutils'),
+		queuedMessage,
+		initializing;
 
 	process.on('message', function (message) {
 		switch(message.type) {
 			case 'init':
 				options = message.options;
-				testutils.initCodeProcessor();
+				initializing = true;
+				testutils.initCodeProcessor(undefined, function () {
+					initializing = false;
+					if (queuedMessage) {
+						processFile(queuedMessage);
+						queuedMessage = undefined;
+					}
+				});
 				break;
 			case 'processFile':
-				processFile(message);
+				if (initializing) {
+					queuedMessage = message;
+				} else {
+					processFile(message);
+				}
 				break;
 		}
 	});

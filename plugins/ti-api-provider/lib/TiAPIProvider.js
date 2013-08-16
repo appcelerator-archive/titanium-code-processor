@@ -147,7 +147,8 @@ exports.init = function init(options) {
 					platform: platform,
 					platformList: platformList,
 					values: values,
-					createObject: createObject
+					createObject: createObject,
+					globalsOnly: options.globalsOnly
 				});
 			for(j = 0, jlen = overrideDefs.length; j < jlen; j++) {
 				if (overrideDefs[j].callFunction) {
@@ -185,34 +186,37 @@ exports.init = function init(options) {
 		}
 	}
 
-	// Create the list of aliases (The 'Titanium' object currently)
-	for (i = 0, ilen = aliases.length; i < ilen; i++) {
-		alias = aliases[i];
-		if (alias) {
-			type = alias.type;
-			if (!typesToInsert[type]) {
-				(typesToInsert[type] = []);
-			}
-			typesToInsert[type].push(alias.name);
-		}
-	}
+	if (!options.globalsOnly) {
 
-	// Inject the Titanium object
-	for (p in typesToInsert) {
-		obj = createObject(api.children[p]);
-		globalObject.defineOwnProperty(p, {
-			value: obj,
-			writable: false,
-			enumerable: true,
-			configurable: true
-		}, false, true);
-		for (i = 0, ilen = typesToInsert[p].length; i < ilen; i++) {
-			globalObject.defineOwnProperty(typesToInsert[p][i], {
+		// Create the list of aliases (The 'Titanium' object currently)
+		for (i = 0, ilen = aliases.length; i < ilen; i++) {
+			alias = aliases[i];
+			if (alias) {
+				type = alias.type;
+				if (!typesToInsert[type]) {
+					(typesToInsert[type] = []);
+				}
+				typesToInsert[type].push(alias.name);
+			}
+		}
+
+		// Inject the Titanium object
+		for (p in typesToInsert) {
+			obj = createObject(api.children[p]);
+			globalObject.defineOwnProperty(p, {
 				value: obj,
 				writable: false,
 				enumerable: true,
 				configurable: true
 			}, false, true);
+			for (i = 0, ilen = typesToInsert[p].length; i < ilen; i++) {
+				globalObject.defineOwnProperty(typesToInsert[p][i], {
+					value: obj,
+					writable: false,
+					enumerable: true,
+					configurable: true
+				}, false, true);
+			}
 		}
 	}
 };

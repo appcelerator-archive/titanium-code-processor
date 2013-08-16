@@ -9,6 +9,7 @@
 var fs = require('fs'),
 	path = require('path'),
 	existsSync = fs.existsSync || path.existsSync,
+	exec = require('child_process').exec,
 
 	wrench = require('wrench'),
 
@@ -162,17 +163,32 @@ exports.getLibrary = function() {
 	return testLib;
 };
 
-exports.initCodeProcessor = function (logger) {
-	var testLib = exports.getLibrary(),
-		testLibAST = AST.parseString(testLib);
-	Runtime.setLogger(logger);
-	CodeProcessor.init(undefined, {
-		exactMode: true
-	}, [{
-		path: path.resolve(path.join(__dirname, '..', '..', 'plugins', 'ti-api-provider'))
-	}], testLibAST);
-	Runtime._unknown = false;
-	testLibAST.processRule();
+exports.initCodeProcessor = function (logger, callback) {
+	exec('titanium sdk list -o json', function (error, stdout, stderr) {
+		if (error) {
+			throw new Error('Could not query the SDK information: ' + stderr);
+		} else {
+			var sdkInfo = JSON.parse(stdout),
+				testLib = exports.getLibrary(),
+				testLibAST = AST.parseString(testLib);
+			Runtime.setLogger(logger);
+			CodeProcessor.init(undefined, {
+				exactMode: true
+			}, [{
+				path: path.resolve(path.join(__dirname, '..', '..', 'plugins', 'ti-api-provider')),
+				options: {
+					globalsOnly: true,
+					sdkPath: sdkInfo.installed[sdkInfo.activeSDK],
+					platform: 'mobileweb',
+					modules: []
+				}
+			}], testLibAST);
+			Runtime._unknown = false;
+			testLibAST.processRule();
+			callback();
+		}
+	});
+
 };
 
 exports.evaluateTest = function(testFilePath) {

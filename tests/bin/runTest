@@ -40,10 +40,11 @@ testutils.initCodeProcessor(new (winston.Logger)({
 		error: 5,
 		critical: 6
 	}
-}));
-results = testutils.evaluateTest(testFile);
-if (results.success) {
-	console.log('\nTest finished successfully\n');
-} else {
-	console.log('\nTest failed:\n' + results.error + '\n');
-}
+}), function () {
+	results = testutils.evaluateTest(testFile);
+	if (results.success) {
+		console.log('\nTest finished successfully\n');
+	} else {
+		console.log('\nTest failed:\n' + results.error + '\n');
+	}
+});
