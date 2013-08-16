@@ -5,6 +5,8 @@
 
 ### Bug Fixes
 * Fixed regressions introduced when the CLI was overhauled for 3.2.0
+* Fixed a bug where explicitly setting an object's prototype to null caused the code processor to crash
+* Fixed a bug where the this pointer was being set to module scope, not global scope, in certain situations
 
 ### Miscellany
 * Merged the require-provider and common-globals plugins into the ti-api-provider
