@@ -15,7 +15,6 @@ exports.getOverrides = function (options) {
 	if (options.globalsOnly) {
 		return [];
 	}
-
 	return [{
 		regex: /^Titanium\.App\.Properties$/,
 		obj: new Base.UnknownType() // Force to unknown, even though it has a type in the docs
