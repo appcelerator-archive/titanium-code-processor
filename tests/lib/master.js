@@ -27,7 +27,8 @@ function printHelp() {
 		'Options:\n' +
 		'   -s --single-threaded   Disables multi-threaded testing\n' +
 		'   -c --chapter CHAPTER   The chapter/section/file/whatever to test\n' +
-		'   -h --help              Displays this help information');
+		'   -h --help              Displays this help information\n' +
+		'   -f --fast              Enables fast mode that reuses the library setup (not always accurate)');
 }
 
 function processArgs() {
@@ -60,6 +61,10 @@ function processArgs() {
 			case '--help':
 				printHelp();
 				process.exit(1);
+				break;
+			case '-f':
+			case '--fast':
+				options.fastMode = true;
 				break;
 			default:
 				console.error('Invalid argument "' + currentArg + '"');
@@ -103,7 +108,7 @@ function run(cluster, options) {
 				Math.floor(100 * successes / total) + '% pass rate so far): ' +
 				message.file + (!message.success ? '\n   ' + message.error : ''));
 
-			if (message.isInternalError) {
+			if (message.isInternalError || !options.fastMode) {
 				worker.destroy();
 				setTimeout(function () {
 					processFile(createWorker());
@@ -163,7 +168,7 @@ function run(cluster, options) {
 
 	// Run the tests
 	console.log('Running ' + numTests + ' tests from ' + (options.chapter ? 'Chapter ' + options.chapter.toString().replace(/\//g, '.') : 'all chapters') +
-		' using ' + (numThreads > 1 ? numThreads + ' threads' : '1 thread') + '\n');
+		' using ' + (numThreads > 1 ? numThreads + ' threads' : '1 thread') + (options.fastMode ? ' in fast mode' : '') + '\n');
 	for(i = 0; i < numThreads; i++) {
 		processFile(createWorker());
 	}

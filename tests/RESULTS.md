@@ -24,6 +24,20 @@ All tests passed
 #### Section 4
 * ch10/10.4/10.4.1/S10.4.1_A1_T2.js
 	* Not exactly a bug, more something to consider. The Code Processor uses module scope, not global, but the test assumes global scope. Node.js fails this test too for the same reason
+* ch10/10.4/10.4.3/10.4.3-1-17gs.js
+	* Same bug as S10.4.1_A1_T2
+* ch10/10.4/10.4.3/10.4.3-1-18gs.js
+	* Same bug as S10.4.1_A1_T2
+* ch10/10.4/10.4.3/10.4.3-1-19-s.js
+	* Same bug as S10.4.1_A1_T2
+* ch10/10.4/10.4.3/10.4.3-1-19gs.js
+	* Same bug as S10.4.1_A1_T2
+* ch10/10.4/10.4.3/10.4.3-1-20-s.js
+	* Same bug as S10.4.1_A1_T2
+* ch10/10.4/10.4.3/10.4.3-1-20gs.js
+	* Same bug as S10.4.1_A1_T2
+* ch10/10.4/10.4.3/10.4.3-1-56gs.js
+	* Same bug as S10.4.1_A1_T2
 
 #### Section 5
 All tests passed
@@ -34,6 +48,10 @@ All tests passed
 ### Chapter 11
 
 #### Section 1
+* ch11/11.1/11.1.1/S11.1.1_A3.1.js
+	* Same bug as S10.4.1_A1_T2
+* ch11/11.1/11.1.1/S11.1.1_A4.1.js
+	* Same bug as S10.4.1_A1_T2
 * ch11/11.1/11.1.5/11.1.5_6-2-1-s.js
 	* I think the test is wrong. The test references a variable instantiated inside the eval outside of the eval. From the spec: "10.4.2.1 Strict Mode Restrictions: The eval code cannot instantiate variable or function bindings in the variable environment of the calling context that invoked the eval if either the code of the calling context or the eval code is strict code. Instead such bindings are instantiated in a new VariableEnvironment that is only accessible to the eval code."
 * ch11/11.1/11.1.5/11.1.5_6-2-2-s.js
@@ -46,8 +64,6 @@ All tests passed
 #### Section 2
 * ch11/11.2/11.2.1/S11.2.1_A4_T1.js
 	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
-* ch11/11.2/11.2.1/S11.2.1_A4_T9.js
-	* The failures in this test are from the compatibility (with ECMAScript 3) section of the spec (appendix B)
 
 #### Section 3
 All tests passed
@@ -55,8 +71,6 @@ All tests passed
 #### Section 4
 * ch11/11.4/11.4.1/11.4.1-3-a-1-s.js
 	* Same issue as ch11/11.1/11.1.5/11.1.5_6-2-1-s.js
-* ch11/11.4/11.4.1/11.4.1-4.a-8-s.js
-	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js (I think)
 
 #### Section 5
 All tests passed
@@ -85,16 +99,7 @@ All tests passed
 All tests passed
 
 #### Section 13
-* ch11/11.13/11.13.1/11.13.1-4-1.js
-	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
-* ch11/11.13/11.13.1/11.13.1-4-27-s.js
-	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
-* ch11/11.13/11.13.1/11.13.1-4-28-s.js
-	* I have no idea what this test is doing. It starts by throwing an error, even though the code it wants to test is after the throw
-* ch11/11.13/11.13.1/11.13.1-4-29-s.js
-	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
-* ch11/11.13/11.13.1/11.13.1-4-3-s.js
-	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
+All tests passed
 
 #### Section 14
 All tests passed

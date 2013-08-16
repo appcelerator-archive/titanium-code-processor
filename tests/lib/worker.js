@@ -28,6 +28,9 @@ module.exports.run = function () {
 				break;
 			case 'processFile':
 				if (initializing) {
+					if (queuedMessage) {
+						throw new Error('Invalid state');
+					}
 					queuedMessage = message;
 				} else {
 					processFile(message);
@@ -39,7 +42,6 @@ module.exports.run = function () {
 	function processFile(message) {
 		var testFile = message.testSuiteFile,
 			results = testutils.evaluateTest(testFile);
-
 		process.send({
 			success: results.success,
 			error: results.error,
