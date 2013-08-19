@@ -9,6 +9,7 @@
 * Fixed a bug where explicitly setting an object's prototype to null caused the code processor to crash
 * Fixed a bug where the this pointer was being set to module scope, not global scope, in certain situations
 * Updated the unit test harness so that all tests run in global scope, fixing a bunch of unit tests
+* Fixed a bug where eval, parseInt, etc had a prototype when they weren't supposed to.
 
 ### Miscellany
 * Merged the require-provider and common-globals plugins into the ti-api-provider

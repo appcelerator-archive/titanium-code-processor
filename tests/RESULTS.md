@@ -220,6 +220,11 @@ All tests passed
 	* Two issues: the test assumes global scope, and if there is a bug, it's in uglify
 
 ### Chapter 15
+
+#### Section 1
+
+ch15/15.1/15.1.2/15.1.2.2/S15.1.2.2_A5.2_T2.js
+
 Preliminary (1 hour 1 minute 56 seconds. 6564 out of 8074 tests (81%) passed)
 
 * ch15/15.1/15.1.1/15.1.1.1/15.1.1.1-0.js
