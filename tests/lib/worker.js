@@ -8,45 +8,24 @@
 
 module.exports.run = function () {
 
-	var options,
-		testutils = require('./testutils'),
-		queuedMessage,
-		initializing;
+	var testutils = require('./testutils');
 
 	process.on('message', function (message) {
 		switch(message.type) {
-			case 'init':
-				options = message.options;
-				initializing = true;
-				testutils.initCodeProcessor(undefined, function () {
-					initializing = false;
-					if (queuedMessage) {
-						processFile(queuedMessage);
-						queuedMessage = undefined;
-					}
-				});
-				break;
 			case 'processFile':
-				if (initializing) {
-					if (queuedMessage) {
-						throw new Error('Invalid state');
-					}
-					queuedMessage = message;
-				} else {
-					processFile(message);
-				}
+				processFile(message);
 				break;
 		}
 	});
 
 	function processFile(message) {
-		var testFile = message.testSuiteFile,
-			results = testutils.evaluateTest(testFile);
-		process.send({
-			success: results.success,
-			error: results.error,
-			isInternalError: results.isInternalError,
-			file: testFile
+		testutils.evaluateTest(message.testSuiteFile, undefined, function (results) {
+			process.send({
+				success: results.success,
+				error: results.error,
+				isInternalError: results.isInternalError,
+				file: message.testSuiteFile
+			});
 		});
 	}
 };

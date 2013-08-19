@@ -22,22 +22,7 @@ All tests passed
 All tests passed
 
 #### Section 4
-* ch10/10.4/10.4.1/S10.4.1_A1_T2.js
-	* Not exactly a bug, more something to consider. The Code Processor uses module scope, not global, but the test assumes global scope. Node.js fails this test too for the same reason
-* ch10/10.4/10.4.3/10.4.3-1-17gs.js
-	* Same bug as S10.4.1_A1_T2
-* ch10/10.4/10.4.3/10.4.3-1-18gs.js
-	* Same bug as S10.4.1_A1_T2
-* ch10/10.4/10.4.3/10.4.3-1-19-s.js
-	* Same bug as S10.4.1_A1_T2
-* ch10/10.4/10.4.3/10.4.3-1-19gs.js
-	* Same bug as S10.4.1_A1_T2
-* ch10/10.4/10.4.3/10.4.3-1-20-s.js
-	* Same bug as S10.4.1_A1_T2
-* ch10/10.4/10.4.3/10.4.3-1-20gs.js
-	* Same bug as S10.4.1_A1_T2
-* ch10/10.4/10.4.3/10.4.3-1-56gs.js
-	* Same bug as S10.4.1_A1_T2
+All tests passed
 
 #### Section 5
 All tests passed
@@ -116,6 +101,8 @@ All tests passed
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-14-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
+* ch12/12.2/12.2.1/12.2.1-21-s.js
+	* A bug in Uglify is causing it to crash
 * ch12/12.2/12.2.1/12.2.1-23-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-24-s.js
@@ -141,6 +128,20 @@ All tests passed
 * ch12/12.2/12.2.1/12.2.1-33-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 
+/Users/bhughes/Work/test-262/test/suite/ch12/12.2/12.2.1/12.2.1-3-s.js
+/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.11_T1.js
+/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.11_T2.js
+/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.11_T4.js
+/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.12_T1.js
+/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.12_T2.js
+/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.12_T4.js
+/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.2_T1.js
+/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.2_T2.js
+/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.2_T4.js
+/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.7_T1.js
+/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.7_T2.js
+/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.7_T4.js
+
 #### Section 3
 All tests passed
 
@@ -165,12 +166,10 @@ All tests passed
 	* Same issue as ch12/12.6/12.6.1/S12.6.1_A5.js
 
 #### Section 7
-* ch12/12.7/S12.7_A6.js
-	* This is technically a bug in uglify. continue/break statements throw a syntax error if not inside a loop. Uglify normally catches these, but missed this edge case
+All tests passed
 
 #### Section 8
-* ch12/12.8/S12.8_A6.js
-	* Same issue as ch12/12.7/S12.7_A6.js
+All tests passed
 
 #### Section 9
 All tests passed
@@ -196,6 +195,8 @@ All tests passed
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.10/12.10.1/12.10.1-9-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
+* ch12/12.10/S12.10_A1.11_T1.js
+	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
 
 #### Section 11
 All tests passed

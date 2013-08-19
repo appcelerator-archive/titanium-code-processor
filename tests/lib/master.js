@@ -62,10 +62,6 @@ function processArgs() {
 				printHelp();
 				process.exit(1);
 				break;
-			case '-f':
-			case '--fast':
-				options.fastMode = true;
-				break;
 			default:
 				console.error('Invalid argument "' + currentArg + '"');
 				printHelp();
@@ -90,10 +86,6 @@ function run(cluster, options) {
 
 	function createWorker() {
 		var worker = cluster.fork();
-		worker.send({
-			type: 'init',
-			options: options
-		});
 		worker.on('message', function(message) {
 			clearTimeout(worker.timeout);
 			total++;
@@ -108,17 +100,10 @@ function run(cluster, options) {
 				Math.floor(100 * successes / total) + '% pass rate so far): ' +
 				message.file + (!message.success ? '\n   ' + message.error : ''));
 
-			if (message.isInternalError || !options.fastMode) {
-				worker.destroy();
-				setTimeout(function () {
-					processFile(createWorker());
-				}, 0);
-			} else {
-
-				setTimeout(function () {
-					processFile(worker);
-				}, 0);
-			}
+			worker.destroy();
+			setTimeout(function () {
+				processFile(createWorker());
+			}, 0);
 		});
 		return worker;
 	}
@@ -168,7 +153,7 @@ function run(cluster, options) {
 
 	// Run the tests
 	console.log('Running ' + numTests + ' tests from ' + (options.chapter ? 'Chapter ' + options.chapter.toString().replace(/\//g, '.') : 'all chapters') +
-		' using ' + (numThreads > 1 ? numThreads + ' threads' : '1 thread') + (options.fastMode ? ' in fast mode' : '') + '\n');
+		' using ' + (numThreads > 1 ? numThreads + ' threads' : '1 thread') + '\n');
 	for(i = 0; i < numThreads; i++) {
 		processFile(createWorker());
 	}

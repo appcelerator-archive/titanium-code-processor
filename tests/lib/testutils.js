@@ -15,9 +15,11 @@ var fs = require('fs'),
 
 	CodeProcessor = require('../../lib/CodeProcessor'),
 	Runtime = require('../../lib/Runtime'),
-	Base = require('../../lib/Base'),
 	RuleProcessor = require('../../lib/RuleProcessor'),
-	AST = require('../../lib/AST');
+	Base = require('../../lib/Base'),
+	AST = require('../../lib/AST'),
+
+	sdkPath;
 
 exports.getCodeProcessorConfig = function() {
 	var config;
@@ -118,7 +120,8 @@ exports.parseHeader = function (testCase) {
 		body,
 		testProperties = {},
 		i, len,
-		propMatch;
+		propMatch,
+		ast;
 
 	match = testFileRegex.exec(testCase);
 	if (!match) {
@@ -142,6 +145,10 @@ exports.parseHeader = function (testCase) {
 				testProperties[propMatch[1]] = properties[i].replace(propMatch[1], '').replace(starsRegex, '\n').trim();
 			}
 		}
+		ast = AST.parseString(testCase);
+		if (!ast.syntaxError) {
+			testProperties.isStrictModeTest = RuleProcessor.isBlockStrict(ast);
+		}
 		return testProperties;
 	}
 };
@@ -163,126 +170,122 @@ exports.getLibrary = function() {
 	return testLib;
 };
 
-exports.initCodeProcessor = function (logger, callback) {
+exports.evaluateTest = function(testFilePath, logger, callback) {
 	exec('titanium sdk list -o json', function (error, stdout, stderr) {
 		if (error) {
 			throw new Error('Could not query the SDK information: ' + stderr);
 		} else {
 			var sdkInfo = JSON.parse(stdout),
 				testLib = exports.getLibrary(),
-				testLibAST = AST.parseString(testLib);
+				testFileContents = fs.readFileSync(testFilePath).toString(),
+				testProperties = exports.parseHeader(testFileContents),
+				ast,
+				test262Dir = exports.getTest262Dir(),
+				results,
+				errorMessage,
+				success,
+				isInternalError = false;
+
 			Runtime.setLogger(logger);
-			CodeProcessor.init(undefined, {
-				exactMode: true
-			}, [{
-				path: path.resolve(path.join(__dirname, '..', '..', 'plugins', 'ti-api-provider')),
-				options: {
-					globalsOnly: true,
-					sdkPath: sdkInfo.installed[sdkInfo.activeSDK],
-					platform: 'mobileweb',
-					modules: []
+			sdkPath = sdkInfo.installed[sdkInfo.activeSDK];
+
+			function parseException(exception) {
+				if (Base.type(exception) === 'String') {
+					exception = exception.value;
+				} else if (Base.type(exception) === 'Unknown') {
+					exception = '<unknown>';
+				} else {
+					console.log(!!exception._lookupProperty, exception.className);
+					exception = exception.className + ': ' + exception._lookupProperty('message').value.value;
 				}
-			}], testLibAST);
-			Runtime._unknown = false;
-			testLibAST.processRule();
-			callback();
-		}
-	});
+				return exception;
+			}
 
-};
-
-exports.evaluateTest = function(testFilePath) {
-	var testFileContents = fs.readFileSync(testFilePath),
-		testProperties = exports.parseHeader(testFileContents),
-		ast,
-		test262Dir = exports.getTest262Dir(),
-		results,
-		errorMessage,
-		success,
-		isInternalError = false;
-
-	function parseException(exception) {
-		if (Base.type(exception) === 'String') {
-			exception = exception.value;
-		} else if (Base.type(exception) === 'Unknown') {
-			exception = '<unknown>';
-		} else {
-			console.log(!!exception._lookupProperty, exception.className);
-			exception = exception.className + ': ' + exception._lookupProperty('message').value.value;
-		}
-		return exception;
-	}
-
-	if (!test262Dir) {
-		return;
-	}
-
-	try {
-		/*jshint debug: true*/
-		debugger;
-		ast = AST.parse(testFilePath);
-		if (!ast.syntaxError) {
-			Runtime._unknown = false;
-			Base.createModuleContext(ast, RuleProcessor.isBlockStrict(ast), false, false);
+			if (!test262Dir) {
+				return;
+			}
 
 			try {
-				results = ast.processRule();
-			} catch (e) {
-				throw e;
-			} finally {
-				Runtime.exitContext();
-			}
+				/*jshint debug: true*/
+				debugger;
+				ast = AST.parseString((testProperties.isStrictModeTest ? '"use strict";\n' : '') + testLib +
+					'\n\n/****************************************\n' +
+					' * ' + testFilePath + '\n' +
+					' ****************************************/\n\n' +
+					testFileContents);
+				if (!ast.syntaxError) {
+					Runtime._unknown = false;
+					CodeProcessor.init(undefined, {
+						exactMode: true
+					}, [{
+						path: path.resolve(path.join(__dirname, '..', '..', 'plugins', 'ti-api-provider')),
+						options: {
+							globalsOnly: true,
+							sdkPath: sdkPath,
+							platform: 'mobileweb',
+							modules: []
+						}
+					}], ast);
+					Runtime._unknown = false;
 
-			// Check if an exception was thrown but not caught
-			if (results && results[0] === 'throw') {
-				errorMessage = 'Error: ' + parseException(results[1]._exception);
-				success = testProperties.hasOwnProperty('negative');
-			} else {
-				// Parse caught exceptions
-				results = CodeProcessor.getResults();
-
-				if (results.errors.length) {
-					errorMessage = ['Errors: '];
-					results.errors.forEach(function (err) {
-						errorMessage.push(parseException(err));
-					});
-					success = testProperties.hasOwnProperty('negative');
-				} else {
-					success = !testProperties.hasOwnProperty('negative');
-					if (!success) {
-						errorMessage = 'The test was expected to fail but didn\'t';
+					try {
+						results = ast.processRule();
+					} catch (e) {
+						throw e;
 					}
+
+					// Check if an exception was thrown but not caught
+					if (results && results[0] === 'throw') {
+						errorMessage = 'Error: ' + parseException(results[1]._exception);
+						success = testProperties.hasOwnProperty('negative');
+					} else {
+						// Parse caught exceptions
+						results = CodeProcessor.getResults();
+
+						if (results.errors.length) {
+							errorMessage = ['Errors: '];
+							results.errors.forEach(function (err) {
+								errorMessage.push(parseException(err));
+							});
+							success = testProperties.hasOwnProperty('negative');
+						} else {
+							success = !testProperties.hasOwnProperty('negative');
+							if (!success) {
+								errorMessage = 'The test was expected to fail but didn\'t';
+							}
+						}
+					}
+				} else {
+					success = testProperties.hasOwnProperty('negative');
+					errorMessage = 'SyntaxError: ' + ast.message;
+				}
+			} catch (e) {
+				if (e.isCodeProcessorException) {
+					results = ['throw', Runtime._exception, undefined];
+					errorMessage = Runtime._exception;
+					if (Base.type(errorMessage) === 'String') {
+						errorMessage = errorMessage.value;
+					} else if (Base.type(errorMessage) === 'Unknown') {
+						errorMessage = '<unknown>';
+					} else {
+						errorMessage = errorMessage._lookupProperty('message').value.value;
+					}
+					success = testProperties.hasOwnProperty('negative');
+
+					Runtime._exception = undefined;
+				} else {
+					success = false;
+					errorMessage = '**** Internal error: ' + e.message + '\n' + e.stack;
+					isInternalError = true;
 				}
 			}
-		} else {
-			success = testProperties.hasOwnProperty('negative');
-			errorMessage = 'SyntaxError: ' + ast.message;
+			callback({
+				success: success,
+				error: errorMessage,
+				isInternalError: isInternalError
+			});
 		}
-	} catch (e) {
-		if (e.isCodeProcessorException) {
-			results = ['throw', Runtime._exception, undefined];
-			errorMessage = Runtime._exception;
-			if (Base.type(errorMessage) === 'String') {
-				errorMessage = errorMessage.value;
-			} else if (Base.type(errorMessage) === 'Unknown') {
-				errorMessage = '<unknown>';
-			} else {
-				errorMessage = errorMessage._lookupProperty('message').value.value;
-			}
-			success = testProperties.hasOwnProperty('negative');
-
-			Runtime._exception = undefined;
-		} else {
-			success = false;
-			errorMessage = '**** Internal error: ' + e.message + '\n' + e.stack;
-			isInternalError = true;
-		}
-	}
-	return {
-		success: success,
-		error: errorMessage,
-		isInternalError: isInternalError
-	};
+	});
 };
 
 exports.getPrettyTime = function (diff) {
