@@ -93,7 +93,7 @@ All tests passed
 * ch12/12.2/12.2.1/12.2.1-1-s.js
 	* This is, arguably, a bug in uglify. We may need to consider doing a three pass evaluation of code, with the first being a syntax check that is strict mode aware
 * ch12/12.2/12.2.1/12.2.1-3-s.js
-	*
+	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-12-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-14-s.js
@@ -207,11 +207,11 @@ All tests passed
 All tests passed
 
 #### Section 2
-* ch13/13.2/13.2-18-1.js
-	* Very esoteric and non-obvious, so not fixing for now
+All tests passed
 
 ### Chapter 14
 
+#### Section 1
 * ch14/14.1/14.1-16-s.js
 	* Two issues: the test assumes global scope, and if there is a bug, it's in uglify
 * ch14/14.1/14.1-4-s.js

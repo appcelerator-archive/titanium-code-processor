@@ -18,19 +18,6 @@ var dnode = require('dnode'),
 	startTime = Date.now(),
 	testsFailed = [];
 
-/*var d = dnode.connect({
-	host: 'localhost',
-	port: 7070
-});
-d.on('remote', function (remote) {
-	remote.runUnitTest('/Users/bhughes/Work/test-262/test/suite/ch11/11.1/11.1.5/11.1.5_6-2-1-s.js', function (results) {
-		console.log(results);
-		remote.exit(function () {
-			d.end();
-		});
-	});
-});*/
-
 module.exports.addService = function addService(host, port) {
 	var d = dnode.connect({
 			host: host,

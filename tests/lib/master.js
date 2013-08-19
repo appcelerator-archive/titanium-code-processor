@@ -71,7 +71,6 @@ module.exports.run = function (cluster) {
 			});
 			server.listen(7070);
 			mdns.createAdvertisement(mdns.tcp('ticp-unit-test'), 7070).start();
-
 			console.log('Unit test server running on port 7070');
 		});
 	});
