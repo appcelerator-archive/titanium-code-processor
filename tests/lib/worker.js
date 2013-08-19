@@ -13,19 +13,15 @@ module.exports.run = function () {
 	process.on('message', function (message) {
 		switch(message.type) {
 			case 'processFile':
-				processFile(message);
+				testutils.evaluateTest(message.testSuiteFile, message.sdkPath, undefined, function (results) {
+					process.send({
+						success: results.success,
+						error: results.error,
+						isInternalError: results.isInternalError,
+						file: message.testSuiteFile
+					});
+				});
 				break;
 		}
 	});
-
-	function processFile(message) {
-		testutils.evaluateTest(message.testSuiteFile, undefined, function (results) {
-			process.send({
-				success: results.success,
-				error: results.error,
-				isInternalError: results.isInternalError,
-				file: message.testSuiteFile
-			});
-		});
-	}
 };

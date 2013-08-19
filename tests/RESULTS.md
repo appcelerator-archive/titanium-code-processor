@@ -33,10 +33,6 @@ All tests passed
 ### Chapter 11
 
 #### Section 1
-* ch11/11.1/11.1.1/S11.1.1_A3.1.js
-	* Same bug as S10.4.1_A1_T2
-* ch11/11.1/11.1.1/S11.1.1_A4.1.js
-	* Same bug as S10.4.1_A1_T2
 * ch11/11.1/11.1.5/11.1.5_6-2-1-s.js
 	* I think the test is wrong. The test references a variable instantiated inside the eval outside of the eval. From the spec: "10.4.2.1 Strict Mode Restrictions: The eval code cannot instantiate variable or function bindings in the variable environment of the calling context that invoked the eval if either the code of the calling context or the eval code is strict code. Instead such bindings are instantiated in a new VariableEnvironment that is only accessible to the eval code."
 * ch11/11.1/11.1.5/11.1.5_6-2-2-s.js
@@ -47,8 +43,7 @@ All tests passed
 	* Same issue as ch11/11.1/11.1.5/11.1.5_6-2-2-s.js
 
 #### Section 2
-* ch11/11.2/11.2.1/S11.2.1_A4_T1.js
-	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
+All tests passed
 
 #### Section 3
 All tests passed
@@ -69,7 +64,7 @@ All tests passed
 
 #### Section 8
 * ch11/11.8/11.8.6/S11.8.6_A6_T3.js
-	* This bug is tricky cause it relates to object prototypes and the recusrive referencing issue. The seemingly obvious fix would break other tests.
+	* This bug is tricky cause it relates to object prototypes and the recursive referencing issue. The seemingly obvious fix would break other tests.
 
 #### Section 9
 All tests passed
@@ -97,6 +92,8 @@ All tests passed
 #### Section 2
 * ch12/12.2/12.2.1/12.2.1-1-s.js
 	* This is, arguably, a bug in uglify. We may need to consider doing a three pass evaluation of code, with the first being a syntax check that is strict mode aware
+* ch12/12.2/12.2.1/12.2.1-3-s.js
+	*
 * ch12/12.2/12.2.1/12.2.1-12-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-14-s.js
@@ -127,20 +124,6 @@ All tests passed
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-33-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
-
-/Users/bhughes/Work/test-262/test/suite/ch12/12.2/12.2.1/12.2.1-3-s.js
-/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.11_T1.js
-/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.11_T2.js
-/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.11_T4.js
-/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.12_T1.js
-/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.12_T2.js
-/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.12_T4.js
-/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.2_T1.js
-/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.2_T2.js
-/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.2_T4.js
-/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.7_T1.js
-/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.7_T2.js
-/Users/bhughes/Work/test-262/test/suite/ch12/12.10/S12.10_A1.7_T4.js
 
 #### Section 3
 All tests passed
@@ -195,8 +178,6 @@ All tests passed
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.10/12.10.1/12.10.1-9-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
-* ch12/12.10/S12.10_A1.11_T1.js
-	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
 
 #### Section 11
 All tests passed
