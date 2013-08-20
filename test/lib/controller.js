@@ -8,7 +8,7 @@
 
 var dnode = require('dnode'),
 
-	testutiles = require('./testutils'),
+	testutils = require('./testutils'),
 
 	servers = [],
 	testList = [],
@@ -42,7 +42,7 @@ module.exports.removeService = function removeService(config) {
 };
 
 module.exports.init = function runTests(chapters) {
-	testList = testutiles.getTests(chapters);
+	testList = testutils.getTests(chapters);
 	numTests = testList.length;
 	console.log('Running ' + numTests + ' tests from ' + (chapters ? 'Chapter ' + chapters.toString().replace(/\//g, '.') : 'all chapters') + '\n');
 };
@@ -72,12 +72,12 @@ function runNextTest(server) {
 			}
 
 			console.log((results.success ? 'PASS' : 'FAIL') + ' (' + total + ' of ' + numTests +', ' +
-				testutiles.getPrettyTime((numTests - total) * (Date.now() - startTime) / total) + ' remaining, ' +
+				testutils.getPrettyTime((numTests - total) * (Date.now() - startTime) / total) + ' remaining, ' +
 				Math.floor(100 * successes / total) + '% pass rate so far): ' +
 				results.file + (!results.success ? '\n   ' + results.error : ''));
 
 			if (total == numTests) {
-				console.log('\nAll tests finished in ' + testutiles.getPrettyTime(Date.now() - startTime) + '. ' +
+				console.log('\nAll tests finished in ' + testutils.getPrettyTime(Date.now() - startTime) + '. ' +
 					successes + ' out of ' + total + ' tests (' + Math.floor(100 * successes / total) + '%) passed.\n');
 				if (testsFailed.length) {
 					console.log(testsFailed.length + ' test' + (testsFailed.length === 1 ? '' : 's') + ' failed:\n' +
