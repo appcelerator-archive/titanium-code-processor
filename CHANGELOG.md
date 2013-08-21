@@ -14,6 +14,7 @@
 * Fixed a bug with decode/encode URI methods not handling exceptions properly
 * Fixed a bug where explicitly passing null or undefined to new Object() improperly threw an exception
 * Fixed a bug where the builtin global constructors had their prototype defined twice
+* Fixed a bug where strings were not handling numerical property access correctly
 
 ### Miscellany
 * Merged the require-provider and common-globals plugins into the ti-api-provider
