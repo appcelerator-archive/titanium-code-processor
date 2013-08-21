@@ -16,7 +16,8 @@ var dnode = require('dnode'),
 	successes = 0,
 	total = 0,
 	startTime = Date.now(),
-	testsFailed = [];
+	testsFailed = [],
+	finishedCallback;
 
 module.exports.addService = function addService(host, port) {
 	var d = dnode.connect({
@@ -37,13 +38,15 @@ module.exports.addService = function addService(host, port) {
 	});
 };
 
-module.exports.removeService = function removeService(config) {
-	console.log('ERROR: server was removed', config);
+module.exports.removeService = function removeService() {
+	console.log('ERROR: server was removed. Removal of servers is not supported yet, exiting');
+	process.exit(1);
 };
 
-module.exports.init = function runTests(chapters) {
+module.exports.init = function runTests(chapters, callback) {
 	testList = testutils.getTests(chapters);
 	numTests = testList.length;
+	finishedCallback = callback;
 	console.log('Running ' + numTests + ' tests from ' + (chapters ? 'Chapter ' + chapters.toString().replace(/\//g, '.') : 'all chapters') + '\n');
 };
 
@@ -82,6 +85,9 @@ function runNextTest(server) {
 				if (testsFailed.length) {
 					console.log(testsFailed.length + ' test' + (testsFailed.length === 1 ? '' : 's') + ' failed:\n' +
 						testsFailed.sort().join('\n') + '\n');
+				}
+				if (finishedCallback) {
+					finishedCallback();
 				}
 				process.exit();
 			}
