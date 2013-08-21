@@ -17,6 +17,7 @@
 * Fixed a bug where strings were not handling numerical property access correctly
 * Fixed a bug where the built-in global object's properties enumerable flags weren't being set properly
 * Fixed a bug where some properties on the RegExp prototype weren't being added
+* Fixed a bug where Object.defineProperties tried to evaluate non-enumerable properties
 
 ### Miscellany
 * Merged the require-provider and common-globals plugins into the ti-api-provider
