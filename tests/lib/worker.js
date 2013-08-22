@@ -6,14 +6,16 @@
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
-module.exports.run = function () {
+var path = require('path'),
 
-	var testutils = require('./testutils');
+	testutils = require('./testutils');
+
+module.exports.run = function () {
 
 	process.on('message', function (message) {
 		switch(message.type) {
 			case 'processFile':
-				testutils.evaluateTest(message.testSuiteFile, message.sdkPath, undefined, function (results) {
+				testutils.evaluateTest(path.join(testutils.getTest262Dir(), message.testSuiteFile), message.sdkPath, undefined, function (results) {
 					process.send({
 						success: results.success,
 						error: results.error,
