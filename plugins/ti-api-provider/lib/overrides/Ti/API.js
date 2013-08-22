@@ -12,7 +12,10 @@ var path = require('path'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base'));
 
-exports.getOverrides = function () {
+exports.getOverrides = function (options) {
+	if (options.globalsOnly) {
+		return [];
+	}
 	var globalObject = Runtime.getGlobalObject();
 	return [{
 		regex: /^Titanium\.API\.debug$/,

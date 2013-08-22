@@ -9,19 +9,22 @@
 var fs = require('fs'),
 	path = require('path'),
 	existsSync = fs.existsSync || path.existsSync,
+	exec = require('child_process').exec,
 
 	wrench = require('wrench'),
 
 	CodeProcessor = require('../../lib/CodeProcessor'),
 	Runtime = require('../../lib/Runtime'),
-	Base = require('../../lib/Base'),
 	RuleProcessor = require('../../lib/RuleProcessor'),
-	AST = require('../../lib/AST');
+	Base = require('../../lib/Base'),
+	AST = require('../../lib/AST'),
+
+	sdkPath;
 
 exports.getCodeProcessorConfig = function() {
 	var config;
 	try {
-		config = JSON.parse(fs.readFileSync(path.join(process.env.HOME, '.titanium', 'config.json')));
+		config = JSON.parse(fs.readFileSync(path.join(process.env.HOME || process.env.USERPROFILE, '.titanium', 'config.json')));
 		config = config['code-processor'];
 		if (!config) {
 			console.error('Missing "code-processor" entry in titanium config file');
@@ -59,14 +62,19 @@ exports.getTest262Dir = function() {
 	return config;
 };
 
-exports.getTests = function (test) {
-	var testPath = [exports.getTest262Dir(), 'test', 'suite'],
+exports.getTests = function (test, relativePaths) {
+	var testPath = ['test', 'suite'],
+		test262Dir = exports.getTest262Dir(),
 		i, len,
 		segments,
 		isS = /^S/.test(test),
 		jsRegex = /\.js$/,
 		fileList,
 		prunedFileList = [];
+
+	if (!relativePaths) {
+		testPath.unshift(test262Dir);
+	}
 
 	if (test) {
 		if (isS) {
@@ -80,7 +88,7 @@ exports.getTests = function (test) {
 		testPath = path.join.apply(path, testPath);
 		if (segments.join('.') !== test) {
 			fileList = path.join(testPath, (isS ? 'S' : '') + test + '.js');
-			if (!existsSync(fileList)) {
+			if (!existsSync(relativePaths ? path.join(test262Dir, fileList) : fileList)) {
 				console.error('Test file "' + fileList + '" does not exist');
 				return;
 			}
@@ -89,11 +97,11 @@ exports.getTests = function (test) {
 	} else {
 		testPath = path.join.apply(path, testPath);
 	}
-	if (!existsSync(testPath)) {
+	if (!existsSync(relativePaths ? path.join(test262Dir, testPath) : testPath)) {
 		console.error('Test path "' + testPath + '" does not exist');
 		return;
 	}
-	fileList = wrench.readdirSyncRecursive(testPath);
+	fileList = wrench.readdirSyncRecursive(relativePaths ? path.join(test262Dir, testPath) : testPath);
 	for(i = 0, len = fileList.length; i < len; i++) {
 		if (jsRegex.test(fileList[i])) {
 			prunedFileList.push(path.join(testPath, fileList[i]));
@@ -117,7 +125,8 @@ exports.parseHeader = function (testCase) {
 		body,
 		testProperties = {},
 		i, len,
-		propMatch;
+		propMatch,
+		ast;
 
 	match = testFileRegex.exec(testCase);
 	if (!match) {
@@ -141,6 +150,10 @@ exports.parseHeader = function (testCase) {
 				testProperties[propMatch[1]] = properties[i].replace(propMatch[1], '').replace(starsRegex, '\n').trim();
 			}
 		}
+		ast = AST.parseString(testCase);
+		if (!ast.syntaxError) {
+			testProperties.isStrictModeTest = RuleProcessor.isBlockStrict(ast);
+		}
 		return testProperties;
 	}
 };
@@ -162,21 +175,9 @@ exports.getLibrary = function() {
 	return testLib;
 };
 
-exports.initCodeProcessor = function (logger) {
+exports.evaluateTest = function(testFilePath, sdkPath, logger, callback) {
 	var testLib = exports.getLibrary(),
-		testLibAST = AST.parseString(testLib);
-	Runtime.setLogger(logger);
-	CodeProcessor.init(undefined, {
-		exactMode: true
-	}, [{
-		path: path.resolve(path.join(__dirname, '..', '..', 'plugins', 'ti-api-provider'))
-	}], testLibAST);
-	Runtime._unknown = false;
-	testLibAST.processRule();
-};
-
-exports.evaluateTest = function(testFilePath) {
-	var testFileContents = fs.readFileSync(testFilePath),
+		testFileContents = fs.readFileSync(testFilePath).toString(),
 		testProperties = exports.parseHeader(testFileContents),
 		ast,
 		test262Dir = exports.getTest262Dir(),
@@ -184,6 +185,8 @@ exports.evaluateTest = function(testFilePath) {
 		errorMessage,
 		success,
 		isInternalError = false;
+
+	Runtime.setLogger(logger);
 
 	function parseException(exception) {
 		if (Base.type(exception) === 'String') {
@@ -204,17 +207,30 @@ exports.evaluateTest = function(testFilePath) {
 	try {
 		/*jshint debug: true*/
 		debugger;
-		ast = AST.parse(testFilePath);
+		ast = AST.parseString((testProperties.isStrictModeTest ? '"use strict";\n' : '') + testLib +
+			'\n\n/****************************************\n' +
+			' * ' + testFilePath + '\n' +
+			' ****************************************/\n\n' +
+			testFileContents);
 		if (!ast.syntaxError) {
 			Runtime._unknown = false;
-			Base.createModuleContext(ast, RuleProcessor.isBlockStrict(ast), false, false);
+			CodeProcessor.init(undefined, {
+				exactMode: true
+			}, [{
+				path: path.resolve(path.join(__dirname, '..', '..', 'plugins', 'ti-api-provider')),
+				options: {
+					globalsOnly: true,
+					sdkPath: sdkPath,
+					platform: 'mobileweb',
+					modules: []
+				}
+			}], ast);
+			Runtime._unknown = false;
 
 			try {
 				results = ast.processRule();
 			} catch (e) {
 				throw e;
-			} finally {
-				Runtime.exitContext();
 			}
 
 			// Check if an exception was thrown but not caught
@@ -262,11 +278,11 @@ exports.evaluateTest = function(testFilePath) {
 			isInternalError = true;
 		}
 	}
-	return {
+	callback({
 		success: success,
 		error: errorMessage,
 		isInternalError: isInternalError
-	};
+	});
 };
 
 exports.getPrettyTime = function (diff) {

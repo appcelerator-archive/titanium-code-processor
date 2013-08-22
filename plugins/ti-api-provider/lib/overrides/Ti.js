@@ -16,6 +16,9 @@ var fs = require('fs'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime'));
 
 exports.getOverrides = function (options) {
+	if (options.globalsOnly) {
+		return [];
+	}
 	return [{
 		regex: /^Titanium\.version$/,
 		value: new Base.StringType(options.manifest.version)

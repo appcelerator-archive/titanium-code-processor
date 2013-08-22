@@ -7,6 +7,13 @@
 	"main": "lib/TiAPIProvider.js",
 	"dependencies": {},
 	"options": {
+		"globalsOnly": {
+			"description": "Only instantiates Global objects and methods (excludes Titanium). Other options are ignored if this is true. Used for unit tests.",
+			"types": [{
+				"type": "boolean"
+			}],
+			"required": false
+		},
 		"sdkPath": {
 			"description": "The path to the SDK that the project uses.",
 			"types": [{
