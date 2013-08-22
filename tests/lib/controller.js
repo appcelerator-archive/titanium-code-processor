@@ -42,7 +42,7 @@ module.exports.removeService = function removeService(config) {
 };
 
 module.exports.init = function runTests(chapters) {
-	testList = testutiles.getTests(chapters);
+	testList = testutiles.getTests(chapters, true);
 	numTests = testList.length;
 	console.log('Running ' + numTests + ' tests from ' + (chapters ? 'Chapter ' + chapters.toString().replace(/\//g, '.') : 'all chapters') + '\n');
 };

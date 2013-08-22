@@ -62,14 +62,19 @@ exports.getTest262Dir = function() {
 	return config;
 };
 
-exports.getTests = function (test) {
-	var testPath = [exports.getTest262Dir(), 'test', 'suite'],
+exports.getTests = function (test, relativePaths) {
+	var testPath = ['test', 'suite'],
+		test262Dir = exports.getTest262Dir(),
 		i, len,
 		segments,
 		isS = /^S/.test(test),
 		jsRegex = /\.js$/,
 		fileList,
 		prunedFileList = [];
+
+	if (!relativePaths) {
+		testPath.unshift(test262Dir);
+	}
 
 	if (test) {
 		if (isS) {
@@ -83,7 +88,7 @@ exports.getTests = function (test) {
 		testPath = path.join.apply(path, testPath);
 		if (segments.join('.') !== test) {
 			fileList = path.join(testPath, (isS ? 'S' : '') + test + '.js');
-			if (!existsSync(fileList)) {
+			if (!existsSync(relativePaths ? path.join(test262Dir, fileList) : fileList)) {
 				console.error('Test file "' + fileList + '" does not exist');
 				return;
 			}
@@ -92,11 +97,11 @@ exports.getTests = function (test) {
 	} else {
 		testPath = path.join.apply(path, testPath);
 	}
-	if (!existsSync(testPath)) {
+	if (!existsSync(relativePaths ? path.join(test262Dir, testPath) : testPath)) {
 		console.error('Test path "' + testPath + '" does not exist');
 		return;
 	}
-	fileList = wrench.readdirSyncRecursive(testPath);
+	fileList = wrench.readdirSyncRecursive(relativePaths ? path.join(test262Dir, testPath) : testPath);
 	for(i = 0, len = fileList.length; i < len; i++) {
 		if (jsRegex.test(fileList[i])) {
 			prunedFileList.push(path.join(testPath, fileList[i]));
