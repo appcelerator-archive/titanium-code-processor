@@ -68,8 +68,9 @@ exports.getTests = function (test, relativePaths) {
 		i, len,
 		segments,
 		isS = /^S/.test(test),
-		jsRegex = /\.js$/,
+		testRegex = /^ch(08|09|10|11|12|13|14|15).*\.js$/,
 		fileList,
+		file,
 		prunedFileList = [];
 
 	if (!relativePaths) {
@@ -103,8 +104,9 @@ exports.getTests = function (test, relativePaths) {
 	}
 	fileList = wrench.readdirSyncRecursive(relativePaths ? path.join(test262Dir, testPath) : testPath);
 	for(i = 0, len = fileList.length; i < len; i++) {
-		if (jsRegex.test(fileList[i])) {
-			prunedFileList.push(path.join(testPath, fileList[i]));
+		file = path.join(testPath, fileList[i]);
+		if (testRegex.test(file.replace((relativePaths ? path.join('test', 'suite') : path.join(test262Dir, 'test', 'path')) + path.sep, ''))) {
+			prunedFileList.push(file);
 		}
 	}
 	fileList = prunedFileList;
