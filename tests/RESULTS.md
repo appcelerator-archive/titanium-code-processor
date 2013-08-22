@@ -220,6 +220,10 @@ All tests passed
 	* Two issues: the test assumes global scope, and if there is a bug, it's in uglify
 
 ### Chapter 15
+
+#### Section 1
+* A number of tests in this section take a very long time to complete...too long for the unit test framework (it times out after 30 seconds) and fail because of it. There are no other known issues.
+
 Preliminary (1 hour 1 minute 56 seconds. 6564 out of 8074 tests (81%) passed)
 
 * ch15/15.1/15.1.1/15.1.1.1/15.1.1.1-0.js
