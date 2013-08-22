@@ -1,0 +1,32 @@
+#!/usr/bin/env node
+/**
+ * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.</p>
+ *
+ * Provides a CLI for the code processor unit tests
+ * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
+ */
+
+var path = require('path'),
+	spawn = require('child_process').spawn,
+
+	mdns = require('mdns'),
+
+	controller = require(path.join(__dirname, '..', 'lib', 'controller')),
+
+	server = spawn(path.join(__dirname, 'server'));
+
+// Find the unit test servers
+var browser = mdns.createBrowser(mdns.tcp('ticp-unit-test'));
+browser.on('serviceUp', function(service) {
+	controller.addService(service.addresses[0], service.port);
+});
+browser.on('serviceDown', function(service) {
+	controller.removeService(service);
+});
+browser.start();
+
+// Initialize the controller
+controller.init(process.argv[2], function () {
+	server.kill();
+});
