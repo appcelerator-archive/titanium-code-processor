@@ -7,164 +7,71 @@
  */
 
 var path = require('path'),
+	exec = require('child_process').exec,
+	os = require('os'),
 
-	wrench = require('wrench'),
-
-	testutiles = require('./testutils');
+	dnode = require('dnode'),
+	mdns = require('mdns');
 
 module.exports.run = function (cluster) {
 	require('child_process').spawn('node', [path.resolve(path.join(__dirname, '..', '..', 'tools', 'assemblebase'))], {
 		stdio: 'inherit'
 	}).on('exit', function() {
-		cluster.fork();
-		run(cluster, processArgs());
+		cluster.fork(); // Not sure why this is needed, but it crashes without it
+		exec('titanium sdk list -o json', function (error, stdout, stderr) {
+
+			if (error) {
+				throw new Error('Could not query the SDK information: ' + stderr);
+			}
+
+			var sdkInfo = JSON.parse(stdout),
+				sdkPath = sdkInfo.installed[sdkInfo.activeSDK],
+				server;
+
+			// Start the server and advertise it
+			server = dnode({
+				getConfig: function (callback) {
+					callback({
+						numCPUs: os.cpus().length
+					});
+				},
+				runUnitTest: function (testSuiteFile, callback) {
+					if (testSuiteFile) {
+						console.log('Running test "' + testSuiteFile + '"');
+						var worker = cluster.fork(),
+							timeout = setTimeout(function () {
+								callback({
+									success: false,
+									error: 'Test timed out',
+									isInternalError: false,
+									file: testSuiteFile
+								});
+								console.log('Test "' + testSuiteFile + '" timed out');
+								worker.destroy();
+							}, 30000);
+						worker.on('message', function(message) {
+							callback(message);
+							console.log('Test "' + testSuiteFile + '" finished');
+							clearTimeout(timeout);
+							worker.destroy();
+						});
+						worker.send({
+							type: 'processFile',
+							testSuiteFile: testSuiteFile,
+							sdkPath: sdkPath
+						});
+					} else {
+						callback();
+					}
+				},
+				exit: function () {
+					console.log('Received exit command');
+					process.exit();
+				}
+			});
+			server.listen(7070);
+			mdns.createAdvertisement(mdns.tcp('ticp-unit-test'), 7070).start();
+			console.log('Unit test server running on port 7070');
+		});
 	});
 };
-
-function printHelp() {
-	console.log(
-		'Usage: test [options]\n\n' +
-		'Options:\n' +
-		'   -s --single-threaded   Disables multi-threaded testing\n' +
-		'   -c --chapter CHAPTER   The chapter/section/file/whatever to test\n' +
-		'   -h --help              Displays this help information');
-}
-
-function processArgs() {
-	var options = {
-			'single-threaded': false,
-			chapter: ''
-		},
-		args = process.argv,
-		currentArg;
-
-	args.splice(0, 2); // remove "node tests"
-	console.log();
-	while(args.length) {
-		currentArg = args.shift();
-		switch(currentArg) {
-			case '-s':
-			case '--single-threaded':
-				options['single-threaded'] = true;
-				break;
-			case '-c':
-			case '--chapter':
-				options.chapter = args.shift();
-				if (!options.chapter) {
-					console.error('A chapter identifier must be specified with the -c flag');
-				printHelp();
-				process.exit(1);
-				}
-				break;
-			case '-h':
-			case '--help':
-				printHelp();
-				process.exit(1);
-				break;
-			default:
-				console.error('Invalid argument "' + currentArg + '"');
-				printHelp();
-				process.exit(1);
-				break;
-		}
-	}
-	return options;
-}
-
-function run(cluster, options) {
-	var multiThreaded = !options['single-threaded'],
-		chapter = options.chapter,
-		testList = [],
-		numTests,
-		successes = 0,
-		total = 0,
-		startTime = Date.now(),
-		testsFailed = [],
-		i, numThreads = multiThreaded ? require('os').cpus().length : 1,
-		printFinishedCountdown = numThreads;
-
-	function createWorker() {
-		var worker = cluster.fork();
-		worker.send({
-			type: 'init',
-			options: options
-		});
-		worker.on('message', function(message) {
-			clearTimeout(worker.timeout);
-			total++;
-			if (message.success) {
-				successes++;
-			} else {
-				testsFailed.push(message.file);
-			}
-
-			console.log((message.success ? 'PASS' : 'FAIL') + ' (' + total + ' of ' + numTests +', ' +
-				testutiles.getPrettyTime((numTests - total) * (Date.now() - startTime) / total) + ' remaining, ' +
-				Math.floor(100 * successes / total) + '% pass rate so far): ' +
-				message.file + (!message.success ? '\n   ' + message.error : ''));
-
-			if (message.isInternalError) {
-				worker.destroy();
-				setTimeout(function () {
-					processFile(createWorker());
-				}, 0);
-			} else {
-
-				setTimeout(function () {
-					processFile(worker);
-				}, 0);
-			}
-		});
-		return worker;
-	}
-
-	function processFile(worker) {
-		var file = testList.shift();
-
-		if (!file) {
-			printFinishedCountdown--;
-			if (!printFinishedCountdown) {
-				console.log('\nAll tests finished in ' + testutiles.getPrettyTime(Date.now() - startTime) + '. ' +
-					successes + ' out of ' + total + ' tests (' + Math.floor(100 * successes / total) + '%) passed.\n');
-				if (testsFailed.length) {
-					console.log(testsFailed.length + ' test' + (testsFailed.length === 1 ? '' : 's') + ' failed:\n' +
-						testsFailed.sort().join('\n') + '\n');
-				}
-				if (options['test-node']) {
-					wrench.rmdirSyncRecursive(path.resolve(path.join('/', 'tmp', 'titanium-code-processor')));
-				}
-				process.exit();
-			}
-		} else {
-			worker.send({
-				type: 'processFile',
-				testSuiteFile: file
-			});
-			worker.timeout = setTimeout(function () {
-				worker.destroy();
-				total++;
-				testsFailed.push(file);
-
-				console.log('FAIL (' + total + ' of ' + numTests +', ' +
-					testutiles.getPrettyTime((numTests - total) * (Date.now() - startTime) / total) + ' remaining, ' +
-					Math.floor(100 * successes / total) + '% pass rate so far): ' +
-					file + '\n   Execution timeout exceeded');
-
-				setTimeout(function () {
-					worker.destroy();
-					processFile(createWorker());
-				}, 0);
-			}, 30000);
-		}
-	}
-
-	testList = testutiles.getTests(chapter);
-	numTests = testList.length;
-
-	// Run the tests
-	console.log('Running ' + numTests + ' tests from ' + (options.chapter ? 'Chapter ' + options.chapter.toString().replace(/\//g, '.') : 'all chapters') +
-		' using ' + (numThreads > 1 ? numThreads + ' threads' : '1 thread') + '\n');
-	for(i = 0; i < numThreads; i++) {
-		processFile(createWorker());
-	}
-}

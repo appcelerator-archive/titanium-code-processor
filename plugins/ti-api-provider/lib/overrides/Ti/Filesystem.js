@@ -12,7 +12,10 @@ var path = require('path'),
 
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base'));
 
-exports.getOverrides = function () {
+exports.getOverrides = function (options) {
+	if (options.globalsOnly) {
+		return [];
+	}
 	return [{
 		regex: /^Titanium\.Filesystem\.resourcesDirectory$/,
 		value: new Base.StringType('/')

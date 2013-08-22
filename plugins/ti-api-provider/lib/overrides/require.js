@@ -26,6 +26,50 @@ var path = require('path'),
 	platformList;
 
 exports.getOverrides = function (options) {
+	if (options.globalsOnly) {
+		return [];
+	}
+
+	Runtime.on('fileListSet', function(e) {
+		var platformSpecificFiles = {},
+			genericFiles = {},
+			fileList = e.data.fileList,
+			file,
+			leadSegment,
+			i, len,
+			baseDir = Runtime.sourceInformation.sourceDir;
+		for (i = 0, len = fileList.length; i < len; i++) {
+			file = path.relative(baseDir, fileList[i]).split(path.sep);
+			leadSegment = file[0];
+			if (platformList.indexOf(leadSegment) !== -1) {
+				file.splice(0, 1);
+				if (leadSegment === platform) {
+					platformSpecificFiles[file.join(path.sep)] = 1;
+				}
+			} else {
+				genericFiles[file.join(path.sep)] = 1;
+			}
+		}
+		for (i in platformSpecificFiles) {
+			if (i in genericFiles) {
+				delete genericFiles[i];
+			}
+		}
+		fileList = Object.keys(genericFiles);
+		for (i in platformSpecificFiles) {
+			fileList.push(path.join(platform, i));
+		}
+		for (i = 0, len = fileList.length; i < len; i++) {
+			fileList[i] = path.join(baseDir, fileList[i]);
+		}
+		Runtime.fileList = fileList;
+	});
+
+	Runtime.isFileValid = function isFileValid(filename) {
+		var rootDir = filename.split(path.sep)[0];
+		return fileRegExp.test(filename) && (platformList.indexOf(rootDir) === -1 || rootDir === platform);
+	};
+
 	platform = options && options.platform;
 	platformList = options && options.platformList;
 	modules = options && options.modules || {};
@@ -140,46 +184,6 @@ exports.getOverrides = function (options) {
 			return result;
 		}
 	}];
-};
-
-Runtime.on('fileListSet', function(e) {
-	var platformSpecificFiles = {},
-		genericFiles = {},
-		fileList = e.data.fileList,
-		file,
-		leadSegment,
-		i, len,
-		baseDir = Runtime.sourceInformation.sourceDir;
-	for (i = 0, len = fileList.length; i < len; i++) {
-		file = path.relative(baseDir, fileList[i]).split(path.sep);
-		leadSegment = file[0];
-		if (platformList.indexOf(leadSegment) !== -1) {
-			file.splice(0, 1);
-			if (leadSegment === platform) {
-				platformSpecificFiles[file.join(path.sep)] = 1;
-			}
-		} else {
-			genericFiles[file.join(path.sep)] = 1;
-		}
-	}
-	for (i in platformSpecificFiles) {
-		if (i in genericFiles) {
-			delete genericFiles[i];
-		}
-	}
-	fileList = Object.keys(genericFiles);
-	for (i in platformSpecificFiles) {
-		fileList.push(path.join(platform, i));
-	}
-	for (i = 0, len = fileList.length; i < len; i++) {
-		fileList[i] = path.join(baseDir, fileList[i]);
-	}
-	Runtime.fileList = fileList;
-});
-
-Runtime.isFileValid = function isFileValid(filename) {
-	var rootDir = filename.split(path.sep)[0];
-	return fileRegExp.test(filename) && (platformList.indexOf(rootDir) === -1 || rootDir === platform);
 };
 
 // ******** Helper Methods ********

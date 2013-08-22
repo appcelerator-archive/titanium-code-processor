@@ -22,8 +22,7 @@ All tests passed
 All tests passed
 
 #### Section 4
-* ch10/10.4/10.4.1/S10.4.1_A1_T2.js
-	* Not exactly a bug, more something to consider. The Code Processor uses module scope, not global, but the test assumes global scope. Node.js fails this test too for the same reason
+All tests passed
 
 #### Section 5
 All tests passed
@@ -44,10 +43,7 @@ All tests passed
 	* Same issue as ch11/11.1/11.1.5/11.1.5_6-2-2-s.js
 
 #### Section 2
-* ch11/11.2/11.2.1/S11.2.1_A4_T1.js
-	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
-* ch11/11.2/11.2.1/S11.2.1_A4_T9.js
-	* The failures in this test are from the compatibility (with ECMAScript 3) section of the spec (appendix B)
+All tests passed
 
 #### Section 3
 All tests passed
@@ -55,8 +51,6 @@ All tests passed
 #### Section 4
 * ch11/11.4/11.4.1/11.4.1-3-a-1-s.js
 	* Same issue as ch11/11.1/11.1.5/11.1.5_6-2-1-s.js
-* ch11/11.4/11.4.1/11.4.1-4.a-8-s.js
-	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js (I think)
 
 #### Section 5
 All tests passed
@@ -70,7 +64,7 @@ All tests passed
 
 #### Section 8
 * ch11/11.8/11.8.6/S11.8.6_A6_T3.js
-	* This bug is tricky cause it relates to object prototypes and the recusrive referencing issue. The seemingly obvious fix would break other tests.
+	* This bug is tricky cause it relates to object prototypes and the recursive referencing issue. The seemingly obvious fix would break other tests.
 
 #### Section 9
 All tests passed
@@ -85,16 +79,7 @@ All tests passed
 All tests passed
 
 #### Section 13
-* ch11/11.13/11.13.1/11.13.1-4-1.js
-	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
-* ch11/11.13/11.13.1/11.13.1-4-27-s.js
-	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
-* ch11/11.13/11.13.1/11.13.1-4-28-s.js
-	* I have no idea what this test is doing. It starts by throwing an error, even though the code it wants to test is after the throw
-* ch11/11.13/11.13.1/11.13.1-4-29-s.js
-	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
-* ch11/11.13/11.13.1/11.13.1-4-3-s.js
-	* Same issue as ch10/10.4/10.4.1/S10.4.1_A1_T2.js
+All tests passed
 
 #### Section 14
 All tests passed
@@ -107,10 +92,14 @@ All tests passed
 #### Section 2
 * ch12/12.2/12.2.1/12.2.1-1-s.js
 	* This is, arguably, a bug in uglify. We may need to consider doing a three pass evaluation of code, with the first being a syntax check that is strict mode aware
+* ch12/12.2/12.2.1/12.2.1-3-s.js
+	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-12-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-14-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
+* ch12/12.2/12.2.1/12.2.1-21-s.js
+	* A bug in Uglify is causing it to crash
 * ch12/12.2/12.2.1/12.2.1-23-s.js
 	* Same issue as ch12/12.2/12.2.1/12.2.1-1-s.js
 * ch12/12.2/12.2.1/12.2.1-24-s.js
@@ -160,12 +149,10 @@ All tests passed
 	* Same issue as ch12/12.6/12.6.1/S12.6.1_A5.js
 
 #### Section 7
-* ch12/12.7/S12.7_A6.js
-	* This is technically a bug in uglify. continue/break statements throw a syntax error if not inside a loop. Uglify normally catches these, but missed this edge case
+All tests passed
 
 #### Section 8
-* ch12/12.8/S12.8_A6.js
-	* Same issue as ch12/12.7/S12.7_A6.js
+All tests passed
 
 #### Section 9
 All tests passed
@@ -220,11 +207,11 @@ All tests passed
 All tests passed
 
 #### Section 2
-* ch13/13.2/13.2-18-1.js
-	* Very esoteric and non-obvious, so not fixing for now
+All tests passed
 
 ### Chapter 14
 
+#### Section 1
 * ch14/14.1/14.1-16-s.js
 	* Two issues: the test assumes global scope, and if there is a bug, it's in uglify
 * ch14/14.1/14.1-4-s.js

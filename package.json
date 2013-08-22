@@ -24,7 +24,9 @@
 		"node-appc": "0.1.30"
 	},
 	"devDependencies": {
-		"commander": "1.2.x"
+		"commander": "1.2.x",
+		"dnode": "1.0.x",
+		"mdns": "1.1.x"
 	},
 	"engine": {
 		"node": ">=0.8"
