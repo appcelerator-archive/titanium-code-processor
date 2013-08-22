@@ -44,7 +44,7 @@ module.exports.removeService = function removeService() {
 };
 
 module.exports.init = function runTests(chapters, callback) {
-	testList = testutils.getTests(chapters);
+	testList = testutils.getTests(chapters, true);
 	numTests = testList.length;
 	finishedCallback = callback;
 	console.log('Running ' + numTests + ' tests from ' + (chapters ? 'Chapter ' + chapters.toString().replace(/\//g, '.') : 'all chapters') + '\n');
