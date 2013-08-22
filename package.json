@@ -16,9 +16,8 @@
 	"dependencies": {
 		"uglify-js": "2.x.x",
 		"wrench": "1.x.x",
-		"winston": "0.6.x",
-		"async": "0.1.x",
-		"xml2js": "0.2.x",
+		"winston": "0.7.x",
+		"async": "0.2.x",
 		"mu2": "0.5.x",
 		"colors": "0.6.x",
 		"source-map": "0.1.x",
