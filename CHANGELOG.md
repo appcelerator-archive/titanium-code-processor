@@ -3,6 +3,18 @@
 ## New Features
 * Implemented a proper CLI hook
 
+### Bug Fixes
+* Fixed regressions introduced when the CLI was overhauled for 3.2.0
+
+### Miscellany
+* Merged the require-provider and common-globals plugins into the ti-api-provider
+	* As a result, the code processor now only works with SDK 2.1.0 and newer
+
+## 1.0.2
+
+### Bug Fixes
+* Created a work-around for the code processor exiting before it has printed all of the results to stdout
+
 ## 1.0.1
 
 ### New Features

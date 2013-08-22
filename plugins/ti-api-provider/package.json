@@ -2,13 +2,10 @@
 	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "ti-api-provider",
 	"displayName": "Titanium API Provider",
-	"description": "Provides an implementation of th Titanium SDK",
+	"description": "Provides an implementation of the Titanium SDK",
 	"titaniumCodeProcessorPlugin": true,
 	"main": "lib/TiAPIProvider.js",
-	"dependencies": {
-		"require-provider": "*",
-		"common-globals": "*"
-	},
+	"dependencies": {},
 	"options": {
 		"sdkPath": {
 			"description": "The path to the SDK that the project uses.",
@@ -36,6 +33,46 @@
 					}],
 					"description": "The primitive value of the property",
 					"required": true
+				}
+			}],
+			"required": false
+		},
+		"platform": {
+			"description": "The platform to use in evaluating require paths",
+			"types": [{
+				"type": "string",
+				"allowedValues": [
+					"android",
+					"mobileweb",
+					"iphone",
+					"ipad",
+					"blackberry"
+				]
+			}],
+			"required": true
+		},
+		"modules": {
+			"description": "The set of modules the project uses",
+			"types": [{
+				"type": "object",
+				"properties": {
+					"<platform name or 'commonjs'>": {
+						"types": [{
+							"type": "object",
+							"properties": {
+								"<module name>": {
+									"types": [{
+										"type": "string",
+										"description": "The path to the module. Only valid for CommonJS modules"
+									},{
+										"type": "null",
+										"description": "Native modules are not evaluated, so the value should be null"
+									}]
+								}
+							}
+						}],
+						"required": false
+					}
 				}
 			}],
 			"required": false

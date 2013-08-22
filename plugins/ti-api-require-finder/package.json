@@ -1,12 +1,12 @@
 {
 	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
-	"name": "require-finder",
+	"name": "ti-api-require-finder",
 	"displayName": "Require Finder",
 	"description": "Lists all require statments that were found, and how they were evaluated",
 	"titaniumCodeProcessorPlugin": true,
-	"main": "lib/RequireFinder.js",
+	"main": "lib/TiApiRequireFinder.js",
 	"dependencies": {
-		"require-provider": "*"
+		"ti-api-provider": "*"
 	},
 	"options": {},
 	"engines": {

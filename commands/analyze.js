@@ -550,15 +550,10 @@ function validateCLIParameters(logger, config, cli, callback) {
 
 			// Set the plugin information
 			for(i = 0, len = plugins.length; i < len; i++) {
-				if (path.basename(plugins[i].path) === 'require-provider') {
-					plugins[i].options.modules = modules;
-				} else if (path.basename(plugins[i].path) === 'ti-api-provider') {
-					plugins[i].options.sdkPath = sdkPath;
-				}
-			}
-			for(i = 0, len = plugins.length; i < len; i++) {
-				if (path.basename(plugins[i].path) === 'require-provider') {
+				if (path.basename(plugins[i].path) === 'ti-api-provider') {
 					plugins[i].options.platform = argv.platform;
+					plugins[i].options.sdkPath = sdkPath;
+					plugins[i].options.modules = modules;
 				} else if (path.basename(plugins[i].path) === 'analysis-coverage') {
 					plugins[i].options.visualization = {
 						outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'analysis-coverage') : undefined

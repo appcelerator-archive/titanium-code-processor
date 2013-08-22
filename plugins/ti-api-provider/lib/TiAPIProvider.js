@@ -13,6 +13,8 @@ var fs = require('fs'),
 	existsSync = fs.existsSync || path.existsSync,
 	util = require('util'),
 
+	appc = require('node-appc'),
+
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	CodeProcessorUtils = require(path.join(global.titaniumCodeProcessorLibDir, 'CodeProcessorUtils')),
@@ -20,7 +22,8 @@ var fs = require('fs'),
 	jsca,
 	manifest,
 	platform,
-	platformList,
+	modules,
+	platformList = ['android', 'mobileweb', 'iphone', 'ipad', 'blackberry', 'tizen'],
 	values,
 	api,
 
@@ -30,7 +33,8 @@ var fs = require('fs'),
 
 	getterRegex = /^get([A-Z])(.*)$/,
 	setterRegex = /^set([A-Z])(.*)$/,
-	underscoreRegex = /\._/g;
+	underscoreRegex = /\._/g,
+	globalObjectRegex = /^Global\.(.*)$/;
 
 // ******** Plugin API Methods ********
 
@@ -42,7 +46,7 @@ var fs = require('fs'),
  * @param {Object} options The plugin options
  * @param {Array[Dependency Instance]} dependencies The dependant plugins of this plugin
  */
-exports.init = function init(options, dependencies) {
+exports.init = function init(options) {
 
 	// Iterate through the json object and inject all the APIs
 	var typesToInsert = {},
@@ -61,13 +65,8 @@ exports.init = function init(options, dependencies) {
 		overrideDefs,
 		rawManifest;
 
-	for (i = 0, ilen = dependencies.length; i < ilen; i++) {
-		if (dependencies[i].name === 'require-provider') {
-			exports.platform = platform = dependencies[i].platform;
-			exports.platformList = platformList = dependencies[i].platformList;
-		}
-	}
-
+	platform = exports.platform = options && options.platform;
+	modules = exports.modules = options && options.modules || {};
 	values = options && options.values || {};
 
 	api = {
@@ -76,6 +75,15 @@ exports.init = function init(options, dependencies) {
 
 	if (!options || !existsSync(options.sdkPath)) {
 		console.error('The ' + exports.displayName + ' plugin requires a valid "sdkPath" option');
+		process.exit(1);
+	}
+
+	if (!platform) {
+		console.error('The ' + exports.displayName + ' plugin requires the "platform" option');
+		process.exit(1);
+	}
+	if (platformList.indexOf(platform) === -1) {
+		console.error('"' + platform + '" is not a valid platform for the ' + exports.displayName + ' plugin');
 		process.exit(1);
 	}
 
@@ -110,6 +118,12 @@ exports.init = function init(options, dependencies) {
 		}
 	}
 
+	// Validate the SDK version
+	if (appc.version.lt(manifest.version, '2.1.0')) {
+		console.error('The ' + exports.displayName + ' plugin only works with SDK 2.1.0 or newer');
+		process.exit(1);
+	}
+
 	// Create the API tree
 	for (i = 0, ilen = types.length; i < ilen; i++) {
 		type = types[i];
@@ -131,6 +145,7 @@ exports.init = function init(options, dependencies) {
 					api: api,
 					manifest: manifest,
 					platform: platform,
+					platformList: platformList,
 					values: values,
 					createObject: createObject
 				});
@@ -148,7 +163,29 @@ exports.init = function init(options, dependencies) {
 		}
 	}
 
-	// Create the list of aliases and global objects
+	// Inject the global objects
+	for (i = 0, ilen = types.length; i < ilen; i++) {
+		if (types[i].name === 'Global') {
+			createGlobalObject(types[i], undefined, globalObject);
+		} else {
+			type = globalObjectRegex.exec(types[i].name);
+			if (type) {
+				if (globalObject.hasProperty(type[1])) {
+					createGlobalObject(types[i], type[1], globalObject.get(type[1]));
+				} else {
+					globalObject.defineOwnProperty(type[1], {
+						value: createGlobalObject(types[i], type[1]),
+						writable: false,
+						enumerable: true,
+						configurable: true
+					}, false, true);
+				}
+
+			}
+		}
+	}
+
+	// Create the list of aliases (The 'Titanium' object currently)
 	for (i = 0, ilen = aliases.length; i < ilen; i++) {
 		alias = aliases[i];
 		if (alias) {
@@ -160,7 +197,7 @@ exports.init = function init(options, dependencies) {
 		}
 	}
 
-	// Inject the global objects
+	// Inject the Titanium object
 	for (p in typesToInsert) {
 		obj = createObject(api.children[p]);
 		globalObject.defineOwnProperty(p, {
@@ -436,14 +473,178 @@ TiGetterFunction.prototype.callFunction = Base.wrapNativeCall(function callFunct
 });
 
 /**
+ * Creates a global object from an API node
+ *
+ * @private
+ * @method
+ */
+function createGlobalObject(apiNode, apiName, obj) {
+	var properties = apiNode.properties,
+		propertyList = {},
+		property,
+		functions = apiNode.functions,
+		func,
+		value,
+		name,
+		fullName,
+		type,
+		i, ilen, j, jlen;
+
+	if (!obj) {
+		obj = new TiObjectType({
+				node: apiNode,
+				children: {}
+			}),
+		obj._api = apiNode;
+		obj._apiName = apiName;
+	}
+
+	// Check if this object is being overridden
+	for (i = 0, ilen = objectOverrides.length; i < ilen; i++) {
+		if (objectOverrides[i].regex.test(apiName) && objectOverrides[i].obj) {
+			return objectOverrides[i].obj;
+		}
+	}
+
+	// Figure out which methods are getters/setters and which are just regular methods
+	for (i = 0, ilen = properties.length; i < ilen; i++) {
+		property = properties[i];
+		propertyList[property.name] = property;
+	}
+	for (i = 0; i < functions.length; i++) {
+		func = functions[i];
+		value = getterRegex.exec(func.name);
+		if (value) {
+			value = value[1].toLowerCase() + value[2];
+			if (propertyList[value]) {
+				propertyList[value]._getter = func;
+				functions.splice(i--, 1);
+			}
+		} else {
+			value = setterRegex.exec(func.name);
+			if (value) {
+				value = value[1].toLowerCase() + value[2];
+				if (propertyList[value]) {
+					propertyList[value]._setter = func;
+					functions.splice(i--, 1);
+				}
+			}
+		}
+	}
+
+	// Add the properties
+	for (i = 0, ilen = properties.length; i < ilen; i++) {
+		property = properties[i];
+		name = property.name;
+		if (obj.hasProperty(name)) { // We don't want to override an already existing property
+			continue;
+		}
+		type = property.type;
+		property.readonly = !property._setter;
+		fullName = apiName ? apiName + '.' + name : name;
+		value = undefined;
+		for (j = 0, jlen = propertyOverrides.length; j < jlen; j++) {
+			if (propertyOverrides[j].regex.test(fullName) && propertyOverrides[j].value) {
+				value = propertyOverrides[j].value;
+				break;
+			}
+		}
+		if (value) {
+			// Do nothing
+		} else if (fullName in values) {
+			if (values[fullName] === null) {
+				value = new Base.NullType();
+			} else {
+				switch(typeof values[fullName]) {
+					case 'number':
+						value = new Base.NumberType(values[fullName]);
+						break;
+					case 'string':
+						value = new Base.StringType(values[fullName]);
+						break;
+					case 'boolean':
+						value = new Base.BooleanType(values[fullName]);
+						break;
+					default:
+						console.error('Invalid value specified in ' + this.name + ' options: ' + values[fullName]);
+						process.exit(1);
+				}
+			}
+		} else if (type in api.children) {
+			value = createObject(api.children[type]);
+		} else {
+			value = new Base.UnknownType();
+		}
+		value._api = property;
+		value._apiName = fullName.replace(underscoreRegex, '.');
+		obj.defineOwnProperty(name, {
+			value: value,
+			writable:
+				!property.isClassProperty &&
+				!property.readonly,
+			enumerable: true,
+			configurable: true
+		}, false, true);
+		if (property._setter) {
+			obj.defineOwnProperty('set' + name[0].toUpperCase() + name.substr(1), {
+				value: new TiSetterFunction(obj, name),
+				writable: false,
+				enumerable: false,
+				configurable: true,
+			});
+		}
+		if (property._getter) {
+			obj.defineOwnProperty('get' + name[0].toUpperCase() + name.substr(1), {
+				value: new TiGetterFunction(obj, name),
+				writable: false,
+				enumerable: false,
+				configurable: true,
+			});
+		}
+	}
+
+	// Add the methods
+	for (i = 0, ilen = functions.length; i < ilen; i++) {
+		func = functions[i];
+		if (obj.hasProperty(func.name)) { // We don't want to override an already existing function
+			continue;
+		}
+		name = apiName ? apiName + '.' + func.name : func.name;
+		value = new TiFunction(func.returnTypes);
+		for (j = 0, jlen = methodOverrides.length; j < jlen; j++) {
+			if (methodOverrides[j].regex.test(name) && methodOverrides[j].callFunction) {
+				value.callFunction = methodOverrides[j].callFunction;
+			}
+		}
+		if (func.parameters) {
+			value.defineOwnProperty('length', {
+				value: new Base.NumberType(func.parameters.length),
+				writable: false,
+				enumerable: true,
+				configurable: true
+			}, false, true);
+		}
+		value._api = func;
+		value._apiName = name.replace(underscoreRegex, '.');
+		obj.defineOwnProperty(func.name, {
+			value: value,
+			writable: false,
+			enumerable: true,
+			configurable: true
+		}, false, true);
+	}
+
+	return obj;
+}
+
+/**
  * Creates a titanium object from an API node
  *
  * @private
  * @method
  */
-function createObject(apiNode) {
-	var obj = new TiObjectType(apiNode),
-		properties = apiNode.node.properties,
+function createObject(apiNode, obj) {
+	var properties = apiNode.node.properties,
 		propertyList = {},
 		property,
 		functions = apiNode.node.functions,
@@ -455,8 +656,11 @@ function createObject(apiNode) {
 		type,
 		p, i, ilen, j, jlen;
 
-	obj._api = apiNode.node;
-	obj._apiName = apiNode.node.name.replace(underscoreRegex, '.');
+	if (!obj) {
+		obj = new TiObjectType(apiNode),
+		obj._api = apiNode.node;
+		obj._apiName = apiNode.node.name.replace(underscoreRegex, '.');
+	}
 
 	// Check if this object is being overridden
 	for (i = 0, ilen = objectOverrides.length; i < ilen; i++) {

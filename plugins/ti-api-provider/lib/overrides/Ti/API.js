@@ -13,36 +13,31 @@ var path = require('path'),
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base'));
 
 exports.getOverrides = function () {
-	var consoleObject = Runtime.getGlobalObject().get('console'),
-		debug = consoleObject.get('debug'),
-		error = consoleObject.get('error'),
-		info = consoleObject.get('info'),
-		log = consoleObject.get('log'),
-		warn = consoleObject.get('warn');
+	var globalObject = Runtime.getGlobalObject();
 	return [{
 		regex: /^Titanium\.API\.debug$/,
 		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
-			return debug.callFunction(thisVal, args);
+			return globalObject.get('console').get('debug').callFunction(thisVal, args);
 		})
 	},{
 		regex: /^Titanium\.API\.error$/,
 		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
-			return error.callFunction(thisVal, args);
+			return globalObject.get('console').get('error').callFunction(thisVal, args);
 		})
 	},{
 		regex: /^Titanium\.API\.info$/,
 		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
-			return info.callFunction(thisVal, args);
+			return globalObject.get('console').get('info').callFunction(thisVal, args);
 		})
 	},{
 		regex: /^Titanium\.API\.log$/,
 		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
-			return log.callFunction(thisVal, args);
+			return globalObject.get('console').get('log').callFunction(thisVal, args);
 		})
 	},{
 		regex: /^Titanium\.API\.warn$/,
 		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {
-			return warn.callFunction(thisVal, args);
+			return globalObject.get('console').get('warn').callFunction(thisVal, args);
 		})
 	}];
 };

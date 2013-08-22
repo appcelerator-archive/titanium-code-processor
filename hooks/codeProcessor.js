@@ -51,20 +51,11 @@ exports.init = function init(logger, config, cli, appc) {
 					}, cli.tiapp['code-processor'].options),
 					[
 						{
-							path: path.join(codeProcessorPluginDir, 'common-globals'),
-							options: {}
-						},
-						{
-							path: path.join(codeProcessorPluginDir, 'require-provider'),
-							options: {
-								platform: cli.argv.platform,
-								modules: parsedModules
-							}
-						},
-						{
 							path: path.join(codeProcessorPluginDir, 'ti-api-provider'),
 							options: {
-								sdkPath: cli.sdk.path
+								sdkPath: cli.sdk.path,
+								platform: cli.argv.platform,
+								modules: parsedModules
 							}
 						},
 						{
