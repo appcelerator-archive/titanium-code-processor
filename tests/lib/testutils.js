@@ -24,7 +24,7 @@ var fs = require('fs'),
 exports.getCodeProcessorConfig = function() {
 	var config;
 	try {
-		config = JSON.parse(fs.readFileSync(path.join(process.env.HOME, '.titanium', 'config.json')));
+		config = JSON.parse(fs.readFileSync(path.join(process.env.HOME || process.env.USERPROFILE, '.titanium', 'config.json')));
 		config = config['code-processor'];
 		if (!config) {
 			console.error('Missing "code-processor" entry in titanium config file');
