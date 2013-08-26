@@ -25,8 +25,7 @@
 	},
 	"devDependencies": {
 		"commander": "1.2.x",
-		"dnode": "1.0.x",
-		"mdns": "1.1.x"
+		"dnode": "1.0.x"
 	},
 	"engine": {
 		"node": ">=0.8"
