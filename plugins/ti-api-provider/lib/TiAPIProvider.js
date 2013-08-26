@@ -148,7 +148,8 @@ exports.init = function init(options) {
 					platformList: platformList,
 					values: values,
 					createObject: createObject,
-					globalsOnly: options.globalsOnly
+					globalsOnly: options.globalsOnly,
+					modules: modules
 				});
 			for(j = 0, jlen = overrideDefs.length; j < jlen; j++) {
 				if (overrideDefs[j].callFunction) {

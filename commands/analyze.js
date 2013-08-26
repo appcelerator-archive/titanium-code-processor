@@ -510,7 +510,7 @@ function validateCLIParameters(logger, config, cli, callback) {
 				logger.info(__('No Titanium Modules required, continuing'));
 			} else {
 				logger.info(__n('Searching for %s Titanium Module', 'Searching for %s Titanium Modules', cli.tiapp.modules.length));
-				appc.timodule.find(cli.tiapp.modules, argv.platform, 'development', sdk, path.join(sdkPath, '..', '..', '..'), logger, function (moduleResults) {
+				appc.timodule.find(cli.tiapp.modules, argv.platform, 'development', sdk, [ path.join(sdkPath, '..', '..', '..'), projectRoot], logger, function (moduleResults) {
 					if (moduleResults.missing.length) {
 						logger.error(__('Could not find all required Titanium Modules:'));
 						moduleResults.missing.forEach(function (m) {
