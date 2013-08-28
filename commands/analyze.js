@@ -558,7 +558,6 @@ function validateCLIParameters(logger, config, cli, callback) {
 					plugins[i].options.visualization = {
 						outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'analysis-coverage') : undefined
 					};
-					plugins[i].suppressOutput = true;
 				} else if (path.basename(plugins[i].path) === 'unknown-ambiguous-visualizer') {
 					plugins[i].options.visualization = {
 						outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'unknown-ambiguous-visualizer') : undefined
