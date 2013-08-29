@@ -193,7 +193,7 @@ exports.config = function (logger, config, cli) {
 						default: Runtime.options.maxCycles
 					}
 				}, ti.commonOptions(logger, config)),
-				platforms: platformConf
+				platforms: {}
 			};
 			finished(conf);
 		});

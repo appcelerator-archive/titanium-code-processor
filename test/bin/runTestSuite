@@ -8,25 +8,20 @@
  */
 
 var path = require('path'),
+	fs = require('fs'),
 	spawn = require('child_process').spawn,
-
-	mdns = require('mdns'),
 
 	controller = require(path.join(__dirname, '..', 'lib', 'controller')),
 
 	server = spawn(path.join(__dirname, 'server'));
 
-// Find the unit test servers
-var browser = mdns.createBrowser(mdns.tcp('ticp-unit-test'));
-browser.on('serviceUp', function(service) {
-	controller.addService(service.addresses[0], service.port);
-});
-browser.on('serviceDown', function(service) {
-	controller.removeService(service);
-});
-browser.start();
-
 // Initialize the controller
 controller.init(process.argv[2], function () {
 	server.kill();
+});
+
+// Load the servers
+var config = JSON.parse(fs.readFileSync(path.join(process.env.HOME, '.titanium', 'config.json')));
+config['code-processor'].test.servers.forEach(function (server) {
+	controller.addService(server.address, server.port);
 });
