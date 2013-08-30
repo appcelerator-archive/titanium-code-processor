@@ -556,6 +556,7 @@ function validateCLIParameters(logger, config, cli, callback) {
 					plugins[i].options.platform = argv.platform;
 					plugins[i].options.sdkPath = sdkPath;
 					plugins[i].options.modules = modules;
+					plugins[i].options.tiappProperties = cli.tiapp.properties;
 				} else if (path.basename(plugins[i].path) === 'analysis-coverage') {
 					plugins[i].options.visualization = {
 						outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'analysis-coverage') : undefined
