@@ -14,6 +14,7 @@ var path = require('path'),
 
 	wrench = require('wrench'),
 	winston = require('winston'),
+	semver = require('semver'),
 
 	appc = require('node-appc'),
 	ti, // Will be loaded in the config method
@@ -22,7 +23,7 @@ var path = require('path'),
 	__ = i18n.__,
 	__n = i18n.__n,
 
-	activeSDK,
+	latestSDK,
 
 	CodeProcessor = require('../'),
 	Runtime = require('../lib/Runtime'),
@@ -42,12 +43,13 @@ exports.config = function (logger, config, cli) {
 		locations = cli.env.os.sdkPaths.map(function (p) { return afs.resolvePath(p); }),
 		sdks = cli.env.sdks,
 		vers = Object.keys(sdks).sort().reverse();
-	activeSDK = config.get('sdk.selected', config.get('app.sdk'));
 	locations.indexOf(defaultInstallLocation) == -1 && locations.push(defaultInstallLocation);
-	if ((!activeSDK || activeSDK == 'latest') && vers.length) {
-		activeSDK = vers[0];
+	latestSDK = vers[0];
+	if (semver.lt(latestSDK.match(/^([0-9]*\.[0-9]*\.[0-9]*)/)[1], '3.2.0')) {
+		logger.error('The Titanium Code Processor requires version 3.2.0 of the Titanium CLI or newer');
+		process.exit(1);
 	}
-	ti = require(path.join(sdks[activeSDK].path, 'node_modules', 'titanium-sdk'));
+	ti = require(path.join(sdks[latestSDK].path, 'node_modules', 'titanium-sdk'));
 
 	// Create the config
 	return function (finished) {
@@ -193,7 +195,7 @@ exports.config = function (logger, config, cli) {
 						default: Runtime.options.maxCycles
 					}
 				}, ti.commonOptions(logger, config)),
-				platforms: platformConf
+				platforms: {}
 			};
 			finished(conf);
 		});
@@ -434,7 +436,7 @@ function validateCLIParameters(logger, config, cli, callback) {
 	}
 
 	// Validate the platform
-	ti.validatePlatform(logger, cli.argv, 'platform');
+	ti.validatePlatform(logger, cli, 'platform');
 	if (ti.validatePlatformOptions(logger, config, cli, 'analyze') === false) {
 		callback(false);
 		return;

@@ -10,8 +10,7 @@ var path = require('path'),
 	exec = require('child_process').exec,
 	os = require('os'),
 
-	dnode = require('dnode'),
-	mdns = require('mdns');
+	dnode = require('dnode');
 
 module.exports.run = function (cluster) {
 	require('child_process').spawn('node', [path.resolve(path.join(__dirname, '..', '..', 'tools', 'assemblebase'))], {
@@ -70,7 +69,6 @@ module.exports.run = function (cluster) {
 				}
 			});
 			server.listen(7070);
-			mdns.createAdvertisement(mdns.tcp('ticp-unit-test'), 7070).start();
 			console.log('Unit test server running on port 7070');
 		});
 	});

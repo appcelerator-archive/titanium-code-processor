@@ -21,12 +21,12 @@
 		"mu2": "0.5.x",
 		"colors": "0.6.x",
 		"source-map": "0.1.x",
-		"node-appc": "0.1.30"
+		"node-appc": "0.1.30",
+		"semver": "2.1.x"
 	},
 	"devDependencies": {
 		"commander": "1.2.x",
-		"dnode": "1.0.x",
-		"mdns": "1.1.x"
+		"dnode": "1.0.x"
 	},
 	"engine": {
 		"node": ">=0.8"
