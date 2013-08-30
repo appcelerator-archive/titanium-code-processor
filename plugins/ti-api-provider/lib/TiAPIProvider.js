@@ -65,15 +65,15 @@ exports.init = function init(options) {
 		overrideDefs,
 		rawManifest;
 
-	platform = exports.platform = options && options.platform;
-	modules = exports.modules = options && options.modules || {};
-	values = options && options.values || {};
+	platform = exports.platform = options.platform;
+	modules = exports.modules = options.modules || {};
+	values = options.values || {};
 
 	api = {
 		children: {}
 	};
 
-	if (!options || !existsSync(options.sdkPath)) {
+	if (!existsSync(options.sdkPath)) {
 		console.error('The ' + exports.displayName + ' plugin requires a valid "sdkPath" option');
 		process.exit(1);
 	}
@@ -141,15 +141,16 @@ exports.init = function init(options) {
 	// Load the overrides
 	for (i = 0, ilen = overrideFiles.length; i < ilen; i++) {
 		if (jsRegex.test(overrideFiles[i])) {
-			overrideDefs = require(overrideFiles[i]).getOverrides({
+			overrideDefs = require(overrideFiles[i]).getOverrides(appc.util.mix(options, {
 					api: api,
 					manifest: manifest,
 					platform: platform,
 					platformList: platformList,
 					values: values,
 					createObject: createObject,
-					globalsOnly: options.globalsOnly
-				});
+					globalsOnly: options.globalsOnly,
+					modules: modules
+				}));
 			for(j = 0, jlen = overrideDefs.length; j < jlen; j++) {
 				if (overrideDefs[j].callFunction) {
 					methodOverrides.push(overrideDefs[j]);
