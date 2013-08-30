@@ -202,7 +202,7 @@ exports.getResultsPageData = function getResultsPageData(entryFile) {
 	var template = {};
 
 	template[entryFile] = {
-		template: path.join(__dirname, '..', 'templates', 'requireFinderTemplate.html'),
+		template: path.join(__dirname, '..', 'templates', 'tiApiRequireFinderTemplate.html'),
 		data: renderData
 	};
 
