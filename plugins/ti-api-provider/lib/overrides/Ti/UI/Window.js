@@ -17,7 +17,7 @@ exports.getOverrides = function () {
 	return [{
 		regex: /^Titanium\.UI\.Window\.open$/,
 		callFunction: Base.wrapNativeCall(function callFunction(thisVal) {
-			var requireFunction = Runtime.getGlobalObject().get('require'),
+			var requireFunction = Base.getGlobalObject().get('require'),
 				urlValue = thisVal.get('url');
 			if (requireFunction && urlValue && Base.type(urlValue) !== 'Undefined' && Base.type(urlValue) !== 'Null') {
 				requireFunction.callFunction(new Base.UndefinedType(), [urlValue]);
