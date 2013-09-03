@@ -50,7 +50,7 @@ exports.init = function init(options) {
 
 	// Iterate through the json object and inject all the APIs
 	var typesToInsert = {},
-		globalObject = Runtime.getGlobalObject(),
+		globalObject = Base.getGlobalObject(),
 		types,
 		type,
 		aliases,
