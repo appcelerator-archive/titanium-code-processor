@@ -16,83 +16,48 @@ var path = require('path'),
 
 describe('Cloning', function () {
 
-	describe('Cloning undefined', function () {
-
+	it('should clone undefined', function () {
 		var original = new Base.UndefinedType(),
 			cloned = Base.cloneValue(original);
-
-		it('should be a separate instance', function () {
-			should.notStrictEqual(original, cloned);
-		});
-
-		it('should be an undefined class', function () {
-			should.equal(original.className, cloned.className);
-		});
-
-		it('should be an undefined type', function () {
-			should.equal(Base.type(original), Base.type(cloned));
-		});
+		should.notStrictEqual(original, cloned, 'Cloned values should be separate instances');
+		should.equal(original.className, cloned.className, 'Cloned values should have the same class name');
+		should.equal(Base.type(original), Base.type(cloned), 'Cloned values should have the same type');
 	});
 
-	describe('Cloning null', function () {
-
+	it('should clone null', function () {
 		var original = new Base.NullType(),
 			cloned = Base.cloneValue(original);
-
-		it('should be a separate instance', function () {
-			should.notStrictEqual(original, cloned);
-		});
-
-		it('should be a null class', function () {
-			should.strictEqual(original.className, cloned.className);
-		});
-
-		it('should be a null type', function () {
-			should.strictEqual(Base.type(original), Base.type(cloned));
-		});
+		should.notStrictEqual(original, cloned, 'Cloned values should be separate instances');
+		should.strictEqual(original.className, cloned.className, 'Cloned values should have the same class name');
+		should.strictEqual(Base.type(original), Base.type(cloned), 'Cloned values should have the same type');
 	});
 
-	describe('Cloning a boolean', function () {
-
+	it('should clone a boolean', function () {
 		var original = new Base.BooleanType(true),
 			cloned = Base.cloneValue(original);
-
-		it('should be a separate instance', function () {
-			should.notStrictEqual(original, cloned);
-		});
-
-		it('should be a boolean class', function () {
-			should.strictEqual(original.className, cloned.className);
-		});
-
-		it('should be a boolean type', function () {
-			should.strictEqual(Base.type(original), Base.type(cloned));
-		});
-
-		it('should have the same value', function () {
-			should.strictEqual(original.value, cloned.value);
-		});
+		should.notStrictEqual(original, cloned, 'Cloned values should be separate instances');
+		should.strictEqual(original.className, cloned.className, 'Cloned values should have the same class name');
+		should.strictEqual(Base.type(original), Base.type(cloned), 'Cloned values should have the same type');
+		should.strictEqual(original.value, cloned.value, 'Cloned primitives should have the same value');
 	});
 
-	describe('Cloning a number', function () {
-
+	it('should clone a number', function () {
 		var original = new Base.NumberType(170),
 			cloned = Base.cloneValue(original);
+		should.notStrictEqual(original, cloned, 'Cloned values should be separate instances');
+		should.strictEqual(original.className, cloned.className, 'Cloned values should have the same class name');
+		should.strictEqual(Base.type(original), Base.type(cloned), 'Cloned values should have the same type');
+		should.strictEqual(original.value, cloned.value, 'Cloned primitives should have the same value');
+	});
 
-		it('should be a separate instance', function () {
-			should.notStrictEqual(original, cloned);
-		});
-
-		it('should be a number class', function () {
-			should.strictEqual(original.className, cloned.className);
-		});
-
-		it('should be a number type', function () {
-			should.strictEqual(Base.type(original), Base.type(cloned));
-		});
-
-		it('should have the same value', function () {
-			should.strictEqual(original.value, cloned.value);
-		});
+	it('should clone a string', function () {
+		var original = new Base.StringType('Hello World'),
+			cloned = Base.cloneValue(original);
+		should.notStrictEqual(original, cloned, 'Cloned values should be separate instances');
+		should.strictEqual(original.className, cloned.className, 'Cloned values should have the same class name');
+		should.strictEqual(Base.type(original), Base.type(cloned), 'Cloned values should have the same type');
+		should.strictEqual(original.value, cloned.value, 'Cloned primitives should have the same value');
+		should.ok(Base.strictEquals(original._lookupProperty('length').value,
+			cloned._lookupProperty('length').value), 'Cloned strings should have the same length');
 	});
 });
