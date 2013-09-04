@@ -26,7 +26,8 @@
 	},
 	"devDependencies": {
 		"commander": "1.2.x",
-		"dnode": "1.0.x"
+		"dnode": "1.0.x",
+		"should": "1.2.x"
 	},
 	"engine": {
 		"node": ">=0.8"
