@@ -18,6 +18,7 @@ describe('Cloning', function () {
 
 	Base.init();
 
+	var comparedValues = [];
 	function compareValues(original, cloned) {
 		if (!original && !cloned) {
 			return;
@@ -27,6 +28,10 @@ describe('Cloning', function () {
 		} else {
 			should.exist(cloned, 'Cloned value should exist');
 		}
+		if (comparedValues.indexOf(original) != -1) {
+			return;
+		}
+		comparedValues.push(original);
 		var type = Base.type(original),
 			i, len;
 		should.notStrictEqual(original, cloned, 'Cloned values should be separate instances');

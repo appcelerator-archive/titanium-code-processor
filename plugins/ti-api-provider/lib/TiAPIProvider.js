@@ -228,6 +228,7 @@ exports.init = function init(options) {
  * @private
  */
 function TiFunction(returnTypes, className) {
+	// TODO: I'm fairly certain this should be a call to FunctionTypeBase, but need to investigate
 	Base.ObjectType.call(this, className || 'Function');
 	this._returnTypes = returnTypes;
 }
