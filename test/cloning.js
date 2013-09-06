@@ -12,7 +12,10 @@ var path = require('path'),
 
 	should = require('should'),
 
-	Base = require(path.join(__dirname, '..', 'lib', 'Base'));
+	Base = require(path.join(__dirname, '..', 'lib', 'Base')),
+	AST = require(path.join(__dirname, '..', 'lib', 'AST'));
+
+require(path.join(__dirname, '..', 'lib', 'CodeProcessor')); // Called to prime rules, etc
 
 describe('Cloning', function () {
 
@@ -120,5 +123,20 @@ describe('Cloning', function () {
 		}, false, true);
 		cloned = cloner.cloneValue(original);
 		compareValues(original, cloned);
+	});
+
+	it('should clone a function', function () {
+		var original = new Base.FunctionType([], AST.parseString('function foo() { return 42; }'), Base.getGlobalContext().lexicalEnvironment, false),
+			cloner = new Base.Cloner(),
+			cloned;
+		original.defineOwnProperty('foo', {
+			value: new Base.StringType('fooval'),
+			writable: true,
+			configurable: true,
+			enumerable: false
+		}, false, true);
+		cloned = cloner.cloneValue(original);
+		compareValues(original, cloned);
+		compareValues(original.callFunction(new Base.UndefinedType(), []), cloned.callFunction(new Base.UndefinedType(), []));
 	});
 });
