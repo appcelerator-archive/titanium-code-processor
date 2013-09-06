@@ -214,7 +214,7 @@ function processFile(filename, createExports) {
 
 			// Process the code
 			results = root.processRule()[1];
-			Runtime.exitContext();
+			Base.exitContext();
 
 			// Exit the context and get the results
 			if (createExports) {

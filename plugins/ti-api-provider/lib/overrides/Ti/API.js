@@ -16,7 +16,7 @@ exports.getOverrides = function (options) {
 	if (options.globalsOnly) {
 		return [];
 	}
-	var globalObject = Runtime.getGlobalObject();
+	var globalObject = Base.getGlobalObject();
 	return [{
 		regex: /^Titanium\.API\.debug$/,
 		callFunction: Base.wrapNativeCall(function callFunction(thisVal, args) {

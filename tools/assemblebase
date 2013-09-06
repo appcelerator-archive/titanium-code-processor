@@ -48,7 +48,8 @@ var fs = require('fs'),
 		'context.js',
 		'globals.js',
 		'init.js',
-		'exceptions.js'
+		'exceptions.js',
+		'cloner.js'
 	],
 	baseDirPath = path.resolve(path.join(__dirname, '..', 'lib', 'base')),
 	baseFilePath = path.resolve(path.join(__dirname, '..', 'lib', 'Base.js')),
