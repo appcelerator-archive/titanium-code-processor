@@ -22,6 +22,11 @@ describe('Cloning', function () {
 		if (!original && !cloned) {
 			return;
 		}
+		if (!original) {
+			should.not.exist(cloned, 'Cloned value should not exist');
+		} else {
+			should.exist(cloned, 'Cloned value should exist');
+		}
 		var type = Base.type(original),
 			i, len;
 		should.notStrictEqual(original, cloned, 'Cloned values should be separate instances');
@@ -65,36 +70,42 @@ describe('Cloning', function () {
 
 	it('should clone undefined', function () {
 		var original = new Base.UndefinedType(),
-			cloned = Base.cloneValue(original);
+			cloner = new Base.Cloner(),
+			cloned = cloner.cloneValue(original);
 		compareValues(original, cloned);
 	});
 
 	it('should clone null', function () {
 		var original = new Base.NullType(),
-			cloned = Base.cloneValue(original);
+			cloner = new Base.Cloner(),
+			cloned = cloner.cloneValue(original);
 		compareValues(original, cloned);
 	});
 
 	it('should clone a boolean', function () {
 		var original = new Base.BooleanType(true),
-			cloned = Base.cloneValue(original);
+			cloner = new Base.Cloner(),
+			cloned = cloner.cloneValue(original);
 		compareValues(original, cloned);
 	});
 
 	it('should clone a number', function () {
 		var original = new Base.NumberType(170),
-			cloned = Base.cloneValue(original);
+			cloner = new Base.Cloner(),
+			cloned = cloner.cloneValue(original);
 		compareValues(original, cloned);
 	});
 
 	it('should clone a string', function () {
 		var original = new Base.StringType('Hello World'),
-			cloned = Base.cloneValue(original);
+			cloner = new Base.Cloner(),
+			cloned = cloner.cloneValue(original);
 		compareValues(original, cloned);
 	});
 
 	it('should clone an object', function () {
 		var original = new Base.ObjectType(),
+			cloner = new Base.Cloner(),
 			cloned;
 		original.defineOwnProperty('foo', {
 			value: new Base.StringType('fooval'),
@@ -102,7 +113,7 @@ describe('Cloning', function () {
 			configurable: true,
 			enumerable: false
 		}, false, true);
-		cloned = Base.cloneValue(original);
+		cloned = cloner.cloneValue(original);
 		compareValues(original, cloned);
 	});
 });

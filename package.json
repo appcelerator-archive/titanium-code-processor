@@ -22,7 +22,8 @@
 		"colors": "0.6.x",
 		"source-map": "0.1.x",
 		"node-appc": "0.1.30",
-		"semver": "2.1.x"
+		"semver": "2.1.x",
+		"es6-shim": "0.9.x"
 	},
 	"devDependencies": {
 		"commander": "1.2.x",
