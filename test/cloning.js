@@ -139,4 +139,41 @@ describe('Cloning', function () {
 		compareValues(original, cloned);
 		compareValues(original.callFunction(new Base.UndefinedType(), []), cloned.callFunction(new Base.UndefinedType(), []));
 	});
+
+	it('should clone an array', function () {
+		var original = new Base.ArrayType(),
+			cloner = new Base.Cloner(),
+			cloned;
+		original.put('0', new Base.NumberType(42));
+		original.put('1', new Base.StringType('Hello World'));
+		original.put('2', new Base.BooleanType(false));
+		cloned = cloner.cloneValue(original);
+		compareValues(original, cloned);
+	});
+
+	it('should clone a regex', function () {
+		var original = new Base.RegExpType('^hi', 'g'),
+			cloner = new Base.Cloner(),
+			cloned;
+		cloned = cloner.cloneValue(original);
+		compareValues(original, cloned);
+		compareValues(original.get('exec').callFunction(new Base.UndefinedType(), [new Base.StringType('hihihi')]),
+			cloned.get('exec').callFunction(new Base.UndefinedType(), [new Base.StringType('hihihi')]));
+	});
+
+	it('should clone an object', function () {
+		var errorConstructor = Base.getGlobalObject().get('RangeError'),
+			original = errorConstructor.construct(new Base.UndefinedType(), [ new Base.StringType('This is a range error') ]),
+			cloner = new Base.Cloner(),
+			cloned = cloner.cloneValue(original);
+		compareValues(original, cloned);
+	});
+
+	it('should clone an unknown type', function () {
+		var original = new Base.UnknownType(),
+			cloner = new Base.Cloner(),
+			cloned;
+		cloned = cloner.cloneValue(original);
+		compareValues(original, cloned);
+	});
 });
