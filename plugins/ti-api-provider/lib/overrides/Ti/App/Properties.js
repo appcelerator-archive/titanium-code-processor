@@ -16,7 +16,6 @@ exports.getOverrides = function (options) {
 	if (options.globalsOnly) {
 		return [];
 	}
-	debugger;
 	var tiappProperties = options.tiappProperties,
 		setProperty = Base.wrapNativeCall(function setProperty(thisVal, args) {
 			var name = Base.toString(args[0]);
