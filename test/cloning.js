@@ -217,8 +217,13 @@ describe('Cloning', function () {
 	it('should clone a module context', function () {
 		var original = Base.createModuleContext(AST.parseString('var x = 10; module.exports.y = 20;'), false, true, false),
 			cloner = new Base.Cloner(),
-			cloned = cloner.cloneContext(original);
+			cloned = cloner.cloneContext(original),
+			globalLexicalEnvironment = cloned.lexicalEnvironment.outer.envRec;
 		compareContexts(original, cloned);
+
+		// Quick test to make sure that we don't have duplicates of objects referenced multiple times
+		should.strictEqual(globalLexicalEnvironment.getBindingValue('JSON', false).get('stringify').objectPrototype,
+			globalLexicalEnvironment.getBindingValue('JSON', false).get('parse').objectPrototype);
 	});
 
 	it('should clone a function context', function () {
