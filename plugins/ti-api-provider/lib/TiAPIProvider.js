@@ -228,9 +228,9 @@ exports.init = function init(options) {
  * @private
  */
 function TiFunction(returnTypes, className) {
-	// TODO: I'm fairly certain this should be a call to FunctionTypeBase, but need to investigate
 	Base.FunctionTypeBase.call(this, className || 'Function');
 	this._returnTypes = returnTypes;
+	this.dontClone = true;
 }
 util.inherits(TiFunction, Base.FunctionTypeBase);
 
@@ -294,8 +294,9 @@ TiFunction.prototype.callFunction = Base.wrapNativeCall(function callFunction(th
  * @param {Object} api.children Any children of this object (i.e. separate JSCA types that are properties)
  */
 function TiObjectType(api, className) {
-	this._api = api;
 	Base.ObjectType.call(this, className || 'Object');
+	this._api = api;
+	this.dontClone = true;
 }
 util.inherits(TiObjectType, Base.ObjectType);
 
