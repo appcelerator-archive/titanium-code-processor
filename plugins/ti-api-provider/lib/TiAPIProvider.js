@@ -229,10 +229,10 @@ exports.init = function init(options) {
  */
 function TiFunction(returnTypes, className) {
 	// TODO: I'm fairly certain this should be a call to FunctionTypeBase, but need to investigate
-	Base.ObjectType.call(this, className || 'Function');
+	Base.FunctionTypeBase.call(this, className || 'Function');
 	this._returnTypes = returnTypes;
 }
-util.inherits(TiFunction, Base.FunctionType);
+util.inherits(TiFunction, Base.FunctionTypeBase);
 
 /**
  * @private
@@ -425,12 +425,12 @@ TiObjectType.prototype.delete = function objDelete(p) {
  * @method
  */
 function TiSetterFunction(obj, name, className) {
-	Base.ObjectType.call(this, className || 'Function');
+	Base.FunctionTypeBase.call(this, className || 'Function');
 	this._obj = obj;
 	this._name = name;
 	this._isTiSetter = true;
 }
-util.inherits(TiSetterFunction, Base.FunctionType);
+util.inherits(TiSetterFunction, Base.FunctionTypeBase);
 
 /**
  * @private
@@ -460,12 +460,12 @@ TiSetterFunction.prototype.callFunction = Base.wrapNativeCall(function callFunct
  * @method
  */
 function TiGetterFunction(obj, name, className) {
-	Base.ObjectType.call(this, className || 'Function');
+	Base.FunctionTypeBase.call(this, className || 'Function');
 	this._obj = obj;
 	this._name = name;
 	this._isTiGetter = true;
 }
-util.inherits(TiGetterFunction, Base.FunctionType);
+util.inherits(TiGetterFunction, Base.FunctionTypeBase);
 
 /**
  * @private
