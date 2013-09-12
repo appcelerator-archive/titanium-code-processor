@@ -322,10 +322,10 @@ TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, alternate, su
 	var value = Base.ObjectType.prototype.getOwnProperty.apply(this, arguments),
 		node;
 	if (value && !suppressEvent) {
-		node = value.value._api;
-		if (node) {
+		node = Base.ObjectType.prototype.getOwnProperty.call(this, p).value;
+		if (node._api) {
 			Runtime.fireEvent('tiPropertyReferenced', 'Property "' + p + '" was referenced', {
-				name: value.value._apiName,
+				name: node._apiName,
 				node: node
 			});
 		} else {
