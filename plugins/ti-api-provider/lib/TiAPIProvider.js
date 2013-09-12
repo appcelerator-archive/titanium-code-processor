@@ -318,7 +318,7 @@ util.inherits(TiObjectType, Base.ObjectType);
  *		{@link module:Base.UndefinedType} if the property does not exist
  * @see ECMA-262 Spec Chapter 8.12.3
  */
-TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, suppressEvent) {
+TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, alternate, suppressEvent) {
 	var value = Base.ObjectType.prototype.getOwnProperty.apply(this, arguments),
 		node;
 	if (value && !suppressEvent) {
