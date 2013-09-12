@@ -613,6 +613,9 @@ function createGlobalObject(apiNode, apiName, obj) {
 	// Add the methods
 	for (i = 0, ilen = functions.length; i < ilen; i++) {
 		func = functions[i];
+		if (!obj.hasProperty) {
+			debugger;
+		}
 		if (obj.hasProperty(func.name)) { // We don't want to override an already existing function
 			continue;
 		}
