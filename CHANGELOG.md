@@ -3,7 +3,7 @@
 ## New Features
 * Implemented a proper CLI hook
 * Unit tests now use RPC+Bonjour so that multiple systems can be combined to run unit tests faster
-* Implemented support for properly analyzing skipped blocks, improving the accuracy of results
+* Implemented support for properly analyzing skipped blocks, improving the accuracy of results considerably
 
 ### Bug Fixes
 * Fixed regressions introduced when the CLI was overhauled for 3.2.0
