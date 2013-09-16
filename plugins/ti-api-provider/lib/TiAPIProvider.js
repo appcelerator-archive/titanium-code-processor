@@ -320,9 +320,8 @@ util.inherits(TiObjectType, Base.ObjectType);
  */
 TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, alternate, suppressEvent) {
 	var value = Base.ObjectType.prototype.getOwnProperty.apply(this, arguments),
-		node;
-	if (value && !suppressEvent) {
-		node = Base.ObjectType.prototype.getOwnProperty.call(this, p).value;
+		node = value && value.value;
+	if (node && !suppressEvent) {
 		if (node._api) {
 			Runtime.fireEvent('tiPropertyReferenced', 'Property "' + p + '" was referenced', {
 				name: node._apiName,
