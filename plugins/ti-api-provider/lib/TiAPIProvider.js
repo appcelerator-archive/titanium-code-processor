@@ -475,7 +475,7 @@ TiGetterFunction.prototype.callFunction = Base.wrapNativeCall(function callFunct
 		Base.handleRecoverableNativeException('TypeError', 'Cannot invoke getters on objects that are not the original owner of the getter');
 		return new Base.UnknownType();
 	}
-	return thisVal.getOwnProperty(this._name, true).value;
+	return thisVal.getOwnProperty(this._name, false, true).value;
 });
 
 /**
