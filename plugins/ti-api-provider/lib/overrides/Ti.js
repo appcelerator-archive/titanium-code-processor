@@ -40,7 +40,7 @@ exports.getOverrides = function (options) {
 						for (j = 0; j < args[i].get('length').value; j++) {
 							callArgs[j] = new Base.UnknownType();
 						}
-						Runtime.queueFunction(args[i], new Base.UndefinedType(), callArgs, true);
+						Runtime.queueFunction(args[i], new Base.UndefinedType(), callArgs, true, Base.isSkippedMode());
 					}
 				} else if (this._api.parameters[i] && this._api.parameters[i].type === 'Function') {
 					Runtime.fireEvent('unknownCallback', 'An unknown value was passed to ' + this._apiName +

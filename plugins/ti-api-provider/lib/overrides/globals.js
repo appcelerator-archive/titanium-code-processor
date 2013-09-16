@@ -33,7 +33,7 @@ exports.getOverrides = function () {
 				}
 
 				// Call the function, discarding the result
-				Runtime.queueFunction(func, new Base.UndefinedType(), [], true);
+				Runtime.queueFunction(func, new Base.UndefinedType(), [], true, Base.isSkippedMode());
 			} else {
 				Runtime.fireEvent('unknownCallback', 'An unknown value was passed to setInterval. Some source code may not be analyzed.');
 			}
@@ -58,7 +58,7 @@ exports.getOverrides = function () {
 				}
 
 				// Call the function, discarding the result
-				Runtime.queueFunction(func, new Base.UndefinedType(), [], true);
+				Runtime.queueFunction(func, new Base.UndefinedType(), [], true, Base.isSkippedMode());
 			} else {
 				Runtime.fireEvent('unknownCallback', 'An unknown value was passed to setTimeout. Some source code may not be analyzed.');
 			}
