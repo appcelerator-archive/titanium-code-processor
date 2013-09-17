@@ -1,3 +1,8 @@
+## 1.0.3
+
+### New Features
+* Added a plugin option to not show its output in the report
+
 ## 1.0.2
 
 ### Bug Fixes
