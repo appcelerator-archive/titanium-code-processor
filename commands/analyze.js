@@ -46,7 +46,7 @@ exports.config = function (logger, config, cli) {
 	locations.indexOf(defaultInstallLocation) == -1 && locations.push(defaultInstallLocation);
 	latestSDK = vers[0];
 	if (semver.lt(latestSDK.match(/^([0-9]*\.[0-9]*\.[0-9]*)/)[1], '3.2.0')) {
-		logger.error('The Titanium Code Processor requires version 3.2.0 of the Titanium CLI or newer');
+		logger.error('The Titanium Code Processor requires version 3.2.0 of the Titanium SDK or newer');
 		process.exit(1);
 	}
 	ti = require(path.join(sdks[latestSDK].path, 'node_modules', 'titanium-sdk'));
