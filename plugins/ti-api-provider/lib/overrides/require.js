@@ -41,7 +41,7 @@ exports.getOverrides = function (options) {
 				for (entry in options.modules[platform]) {
 					modulePath = options.modules[platform][entry];
 					if (modulePath && !fs.existsSync(modulePath)) {
-						Runtime.log('error', 'Module "' + entry + '" for platform "' + platform + '" could not be found at "' + modulePath + '"');
+						console.error('Module "' + entry + '" for platform "' + platform + '" could not be found at "' + modulePath + '"');
 						errors = true;
 					}
 				}
