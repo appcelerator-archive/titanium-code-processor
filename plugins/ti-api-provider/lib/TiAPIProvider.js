@@ -10,7 +10,6 @@
 
 var fs = require('fs'),
 	path = require('path'),
-	existsSync = fs.existsSync || path.existsSync,
 	util = require('util'),
 
 	appc = require('node-appc'),
@@ -73,7 +72,7 @@ exports.init = function init(options) {
 		children: {}
 	};
 
-	if (!existsSync(options.sdkPath)) {
+	if (!fs.existsSync(options.sdkPath)) {
 		console.error('The ' + exports.displayName + ' plugin requires a valid "sdkPath" option');
 		process.exit(1);
 	}
@@ -89,7 +88,7 @@ exports.init = function init(options) {
 
 	// Parse and validate the JSCA file
 	jsca = path.join(options.sdkPath, 'api.jsca');
-	if (!existsSync(jsca)) {
+	if (!fs.existsSync(jsca)) {
 		console.error('The ' + exports.displayName + ' plugin could not find a valid JSCA file at "' + jsca + '"');
 		process.exit(1);
 	}
@@ -99,11 +98,11 @@ exports.init = function init(options) {
 
 	// Parse and validate the manifest file
 	manifest = path.join(options.sdkPath, 'manifest.json');
-	if (existsSync(manifest)) {
+	if (fs.existsSync(manifest)) {
 		manifest = JSON.parse(fs.readFileSync(manifest));
 	} else {
 		manifest = path.join(options.sdkPath, 'version.txt');
-		if (existsSync(manifest)) {
+		if (fs.existsSync(manifest)) {
 			rawManifest = fs.readFileSync(manifest).toString().split('\n');
 			manifest = {};
 			for (i = 0, ilen = rawManifest.length; i < ilen; i++) {
