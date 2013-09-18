@@ -117,6 +117,10 @@ exports.init = function init(options, dependencies) {
 			name = e.data.name,
 			invalidAPI;
 
+		// Global nodes don't have platform lists
+		if (!platformList) {
+			return;
+		}
 		for (i = 0, len = platformList.length; i < len; i++) {
 			if (platform === platformList[i].platform) {
 				isSupported = true;

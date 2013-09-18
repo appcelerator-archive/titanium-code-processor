@@ -413,11 +413,7 @@ function validateCLIParameters(logger, config, cli, callback) {
 	ti.validateTiappXml(logger, cli.tiapp);
 
 	// Note: we do custom SDK validation because the validateCorrectSDK method does a lot more than we need
-	sdk = cli.tiapp['sdk-version'] || activeSDK;
-
-	if (!sdk) {
-		process.exit(1);
-	}
+	sdk = cli.tiapp['sdk-version'] || Object.keys(cli.env.sdks).sort().reverse()[0];
 
 	// check the project's preferred sdk is even installed
 	if (sdk == '__global__' || !cli.env.sdks[sdk]) {
