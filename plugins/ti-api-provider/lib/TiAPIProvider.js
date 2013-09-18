@@ -228,11 +228,11 @@ exports.init = function init(options) {
  * @private
  */
 function TiFunction(returnTypes, className) {
-	// TODO: I'm fairly certain this should be a call to FunctionTypeBase, but need to investigate
-	Base.ObjectType.call(this, className || 'Function');
+	Base.FunctionTypeBase.call(this, className || 'Function');
 	this._returnTypes = returnTypes;
+	this.dontClone = true;
 }
-util.inherits(TiFunction, Base.FunctionType);
+util.inherits(TiFunction, Base.FunctionTypeBase);
 
 /**
  * @private
@@ -251,7 +251,7 @@ TiFunction.prototype.callFunction = Base.wrapNativeCall(function callFunction(th
 				for (j = 0, jlen = args[i].get('length').value; j < jlen; j++) {
 					callArgs[j] = new Base.UnknownType();
 				}
-				Runtime.queueFunction(args[i], thisVal, callArgs, true);
+				Runtime.queueFunction(args[i], thisVal, callArgs, true, Base.isSkippedMode());
 			}
 		} else if (this._api.parameters[i] && this._api.parameters[i].type === 'Function') {
 			Runtime.fireEvent('unknownCallback', 'An unknown value was passed to ' + this._apiName +
@@ -294,8 +294,9 @@ TiFunction.prototype.callFunction = Base.wrapNativeCall(function callFunction(th
  * @param {Object} api.children Any children of this object (i.e. separate JSCA types that are properties)
  */
 function TiObjectType(api, className) {
-	this._api = api;
 	Base.ObjectType.call(this, className || 'Object');
+	this._api = api;
+	this.dontClone = true;
 }
 util.inherits(TiObjectType, Base.ObjectType);
 
@@ -317,14 +318,13 @@ util.inherits(TiObjectType, Base.ObjectType);
  *		{@link module:Base.UndefinedType} if the property does not exist
  * @see ECMA-262 Spec Chapter 8.12.3
  */
-TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, suppressEvent) {
+TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, alternate, suppressEvent) {
 	var value = Base.ObjectType.prototype.getOwnProperty.apply(this, arguments),
-		node;
-	if (value && !suppressEvent) {
-		node = value.value._api;
-		if (node) {
+		node = value && value.value;
+	if (node && !suppressEvent) {
+		if (node._api) {
 			Runtime.fireEvent('tiPropertyReferenced', 'Property "' + p + '" was referenced', {
-				name: value.value._apiName,
+				name: node._apiName,
 				node: node
 			});
 		} else {
@@ -381,7 +381,7 @@ TiObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, t
 				for (i = 0, len = v.get('length').value; i < len; i++) {
 					callArgs[i] = new Base.UnknownType();
 				}
-				Runtime.queueFunction(v, this, callArgs, true);
+				Runtime.queueFunction(v, this, callArgs, true, Base.isSkippedMode());
 			}
 		} else if (!suppressEvent) {
 			Runtime.fireEvent('nonTiPropertySet', 'Property "' + p + '" was set but is not part of the API', {
@@ -425,12 +425,12 @@ TiObjectType.prototype.delete = function objDelete(p) {
  * @method
  */
 function TiSetterFunction(obj, name, className) {
-	Base.ObjectType.call(this, className || 'Function');
+	Base.FunctionTypeBase.call(this, className || 'Function');
 	this._obj = obj;
 	this._name = name;
 	this._isTiSetter = true;
 }
-util.inherits(TiSetterFunction, Base.FunctionType);
+util.inherits(TiSetterFunction, Base.FunctionTypeBase);
 
 /**
  * @private
@@ -460,12 +460,12 @@ TiSetterFunction.prototype.callFunction = Base.wrapNativeCall(function callFunct
  * @method
  */
 function TiGetterFunction(obj, name, className) {
-	Base.ObjectType.call(this, className || 'Function');
+	Base.FunctionTypeBase.call(this, className || 'Function');
 	this._obj = obj;
 	this._name = name;
 	this._isTiGetter = true;
 }
-util.inherits(TiGetterFunction, Base.FunctionType);
+util.inherits(TiGetterFunction, Base.FunctionTypeBase);
 
 /**
  * @private
@@ -475,7 +475,7 @@ TiGetterFunction.prototype.callFunction = Base.wrapNativeCall(function callFunct
 		Base.handleRecoverableNativeException('TypeError', 'Cannot invoke getters on objects that are not the original owner of the getter');
 		return new Base.UnknownType();
 	}
-	return thisVal.getOwnProperty(this._name, true).value;
+	return thisVal.getOwnProperty(this._name, false, true).value;
 });
 
 /**
@@ -612,6 +612,9 @@ function createGlobalObject(apiNode, apiName, obj) {
 	// Add the methods
 	for (i = 0, ilen = functions.length; i < ilen; i++) {
 		func = functions[i];
+		if (!obj.hasProperty) {
+			debugger;
+		}
 		if (obj.hasProperty(func.name)) { // We don't want to override an already existing function
 			continue;
 		}

@@ -68,7 +68,7 @@ describe('Cloning', function () {
 		}
 		comparedValues.push(original);
 		var type = Base.type(original),
-			i, len;
+			i, ilen, j, jlen;
 		should.notStrictEqual(original, cloned, 'Cloned values should be separate instances');
 		should.equal(original.className, cloned.className, 'Cloned values should have the same class name');
 		should.equal(Base.type(original), Base.type(cloned), 'Cloned values should have the same type');
@@ -93,8 +93,12 @@ describe('Cloning', function () {
 			compareValues(original.objectPrototype, cloned.objectPrototype);
 			should.equal(original._properties.length, cloned._properties.length,
 				'Cloned objects should have the same number of properties');
-			for (i = 0, len = original._properties.length; i < len; i++) {
-				compareDescriptors(original._properties[i], cloned._properties[i]);
+			for (i = 0, ilen = original._properties.length; i < ilen; i++) {
+				compareDescriptors(original._properties[i].value, cloned._properties[i].value);
+				for (j = 0, jlen = original._properties[i].alternateValues.length; j < jlen; j++) {
+					compareDescriptors(original._properties[i].alternateValues[j],
+						cloned._properties[i].alternateValues[j]);
+				}
 			}
 		}
 	}
@@ -217,8 +221,13 @@ describe('Cloning', function () {
 	it('should clone a module context', function () {
 		var original = Base.createModuleContext(AST.parseString('var x = 10; module.exports.y = 20;'), false, true, false),
 			cloner = new Base.Cloner(),
-			cloned = cloner.cloneContext(original);
+			cloned = cloner.cloneContext(original),
+			globalLexicalEnvironment = cloned.lexicalEnvironment.outer.envRec;
 		compareContexts(original, cloned);
+
+		// Quick test to make sure that we don't have duplicates of objects referenced multiple times
+		should.strictEqual(globalLexicalEnvironment.getBindingValue('JSON', false).get('stringify').objectPrototype,
+			globalLexicalEnvironment.getBindingValue('JSON', false).get('parse').objectPrototype);
 	});
 
 	it('should clone a function context', function () {
