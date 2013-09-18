@@ -77,15 +77,6 @@ exports.init = function init(options) {
 		process.exit(1);
 	}
 
-	if (!platform) {
-		console.error('The ' + exports.displayName + ' plugin requires the "platform" option');
-		process.exit(1);
-	}
-	if (platformList.indexOf(platform) === -1) {
-		console.error('"' + platform + '" is not a valid platform for the ' + exports.displayName + ' plugin');
-		process.exit(1);
-	}
-
 	// Parse and validate the JSCA file
 	jsca = path.join(options.sdkPath, 'api.jsca');
 	if (!fs.existsSync(jsca)) {
@@ -115,6 +106,23 @@ exports.init = function init(options) {
 			console.error('The ' + exports.displayName + ' plugin could not find a valid manifest file at "' + manifest + '"');
 			process.exit(1);
 		}
+	}
+
+	// Validate the platform information
+	platformList = manifest.platforms || platformList;
+	if (platformList.indexOf('iphone') != -1 && platformList.indexOf('ipad') == -1) {
+		platformList.push('ipad');
+	}
+	if (platformList.indexOf('ipad') != -1 && platformList.indexOf('iphone') == -1) {
+		platformList.push('iphone');
+	}
+	if (!platform) {
+		console.error('The ' + exports.displayName + ' plugin requires the "platform" option');
+		process.exit(1);
+	}
+	if (platformList.indexOf(platform) === -1) {
+		console.error('"' + platform + '" is not a valid platform for the ' + exports.displayName + ' plugin');
+		process.exit(1);
 	}
 
 	// Validate the SDK version
