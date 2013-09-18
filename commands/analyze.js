@@ -557,10 +557,40 @@ function validateCLIParameters(logger, config, cli, callback) {
 					plugins[i].options.visualization = {
 						outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'analysis-coverage') : undefined
 					};
+
+					// Check if this is an alloy app
+					if (existsSync(path.join(projectRoot, 'app'))) {
+						plugins[i].options.blacklistedFiles = [
+							path.join(projectRoot, 'Resources', 'alloy.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'CFG.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'widget.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'backbone.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'underscore.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'localStorage.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'properties.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'sql.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'util.js')
+						];
+					}
 				} else if (path.basename(plugins[i].path) === 'unknown-ambiguous-visualizer') {
 					plugins[i].options.visualization = {
 						outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'unknown-ambiguous-visualizer') : undefined
 					};
+
+					// Check if this is an alloy app
+					if (existsSync(path.join(projectRoot, 'app'))) {
+						plugins[i].options.blacklistedFiles = [
+							path.join(projectRoot, 'Resources', 'alloy.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'CFG.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'widget.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'backbone.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'underscore.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'localStorage.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'properties.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'sql.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'util.js')
+						];
+					}
 				}
 			}
 
