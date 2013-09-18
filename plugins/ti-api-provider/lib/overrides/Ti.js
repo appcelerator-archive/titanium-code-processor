@@ -10,7 +10,6 @@
 
 var fs = require('fs'),
 	path = require('path'),
-	existsSync = fs.existsSync || path.existsSync,
 
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime'));
@@ -105,13 +104,13 @@ exports.getOverrides = function (options) {
 					filePath = path.resolve(path.join(path.dirname(Runtime.getCurrentLocation().filename), filename));
 				} else {
 					filePath = path.resolve(path.join(Runtime.sourceInformation.sourceDir, options.platform, filename));
-					if (!existsSync(filePath)) {
+					if (!fs.existsSync(filePath)) {
 						filePath = path.resolve(path.join(Runtime.sourceInformation.sourceDir, filename));
 					}
 				}
 
 				// Make sure the file exists
-				if (existsSync(filePath)) {
+				if (fs.existsSync(filePath)) {
 
 					Runtime.fireEvent('tiIncludeResolved', 'The Ti.include path "' + filePath + '" was resolved', {
 						name: filename,

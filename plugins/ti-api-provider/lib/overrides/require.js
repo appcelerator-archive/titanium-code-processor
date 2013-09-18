@@ -10,7 +10,6 @@
 
 var path = require('path'),
 	fs = require('fs'),
-	existsSync = fs.existsSync || path.existsSync,
 
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
@@ -26,9 +25,32 @@ var path = require('path'),
 	platformList;
 
 exports.getOverrides = function (options) {
+
 	if (options.globalsOnly) {
 		return [];
 	}
+
+	// Validate the module paths
+	(function () {
+		var platform,
+			entry,
+			modulePath,
+			errors;
+		if (options.modules) {
+			for (platform in options.modules) {
+				for (entry in options.modules[platform]) {
+					modulePath = options.modules[platform][entry];
+					if (modulePath && !fs.existsSync(modulePath)) {
+						Runtime.log('error', 'Module "' + entry + '" for platform "' + platform + '" could not be found at "' + modulePath + '"');
+						errors = true;
+					}
+				}
+			}
+		}
+		if (errors) {
+			process.exit(1);
+		}
+	})();
 
 	Runtime.on('fileListSet', function(e) {
 		var platformSpecificFiles = {},
@@ -148,7 +170,7 @@ exports.getOverrides = function (options) {
 					} else {
 						filePath = path.resolve(path.join(Runtime.sourceInformation.sourceDir, platform, name));
 						filePath += isModule ? '.js' : '';
-						if (!existsSync(filePath)) {
+						if (!fs.existsSync(filePath)) {
 							filePath = path.resolve(path.join(Runtime.sourceInformation.sourceDir, name));
 							filePath += isModule ? '.js' : '';
 						}
@@ -198,7 +220,7 @@ function processFile(filename, createExports) {
 		context;
 
 	// Make sure the file exists
-	if (existsSync(filename)) {
+	if (fs.existsSync(filename)) {
 
 		// Fire the parsing begin event
 		Runtime.fireEvent('enteredFile', 'Entering file "' + filename + '"', {
