@@ -4,6 +4,8 @@
 * Implemented a proper CLI hook
 * Unit tests now use RPC+Bonjour so that multiple systems can be combined to run unit tests faster
 * Implemented support for properly analyzing skipped blocks, improving the accuracy of results considerably
+* Added blacklisting of Alloy support files in coverage reports
+* The supported platforms are now pulled from the SDK's manifest, meaning that it properly won't support iPhone on Windows
 
 ### Bug Fixes
 * Fixed regressions introduced when the CLI was overhauled for 3.2.0
@@ -19,6 +21,8 @@
 * Fixed a bug where the built-in global object's properties enumerable flags weren't being set properly
 * Fixed a bug where some properties on the RegExp prototype weren't being added
 * Fixed a bug where Object.defineProperties tried to evaluate non-enumerable properties
+* Fixed a crash when passing in an invalid module path via configuration files
+* Changed infinite loop detection to throw an error, not a warning
 
 ### Miscellany
 * Merged the require-provider and common-globals plugins into the ti-api-provider
