@@ -442,175 +442,176 @@ function validateCLIParameters(logger, config, cli, callback) {
 	}
 
 	// Load the project specific plugins
-	ti.loadPlugins(logger, cli, config, cli.argv['project-dir']);
+	ti.loadPlugins(logger, config, cli, cli.argv['project-dir'], function () {
 
-	// Parse the config options
-	options = {};
-	options.invokeMethods = argv['method-invokation'] !== false;
-	options.evaluateLoops = argv['loop-evaluation'] !== false;
-	options.maxLoopIterations = parseInt(argv['max-loop-iterations'], 10);
-	options.maxRecursionLimit = parseInt(argv['max-recursion-limit'], 10);
-	options.cycleDetectionStackSize = parseInt(argv['cycle-detection-stack-size'], 10);
-	options.maxCycles = parseInt(argv['max-cycles'], 10);
-	options.logConsoleCalls = argv['console-passthrough'] !== false;
-	options.executionTimeLimit = parseInt(argv['execution-time-limit'], 10);
-	options.exactMode = argv['exact-mode'];
-	options.nativeExceptionRecovery = argv['native-exception-recovery'] !== false;
-	options.processUnvisitedCode = argv['process-unvisited-code'];
-	options.resultsPath = argv['results-dir'];
+		// Parse the config options
+		options = {};
+		options.invokeMethods = argv['method-invokation'] !== false;
+		options.evaluateLoops = argv['loop-evaluation'] !== false;
+		options.maxLoopIterations = parseInt(argv['max-loop-iterations'], 10);
+		options.maxRecursionLimit = parseInt(argv['max-recursion-limit'], 10);
+		options.cycleDetectionStackSize = parseInt(argv['cycle-detection-stack-size'], 10);
+		options.maxCycles = parseInt(argv['max-cycles'], 10);
+		options.logConsoleCalls = argv['console-passthrough'] !== false;
+		options.executionTimeLimit = parseInt(argv['execution-time-limit'], 10);
+		options.exactMode = argv['exact-mode'];
+		options.nativeExceptionRecovery = argv['native-exception-recovery'] !== false;
+		options.processUnvisitedCode = argv['process-unvisited-code'];
+		options.resultsPath = argv['results-dir'];
 
-	// Calculate the project root
-	projectRoot = argv['project-dir'] || '.';
-	sourceInformation = {};
-	projectRoot = sourceInformation.projectDir = path.resolve(projectRoot);
+		// Calculate the project root
+		projectRoot = argv['project-dir'] || '.';
+		sourceInformation = {};
+		projectRoot = sourceInformation.projectDir = path.resolve(projectRoot);
 
-	// Set the source information
-	sourceInformation.sourceDir = path.join(projectRoot, 'Resources');
-	entryPoint = sourceInformation.entryPoint = path.join(projectRoot, 'Resources', 'app.js');
+		// Set the source information
+		sourceInformation.sourceDir = path.join(projectRoot, 'Resources');
+		entryPoint = sourceInformation.entryPoint = path.join(projectRoot, 'Resources', 'app.js');
 
-	// Analyze the project
-	logger.info('Analyzing project at "' + projectRoot + '"');
-	validateAlloyHook(projectRoot, logger, function () {
+		// Analyze the project
+		logger.info('Analyzing project at "' + projectRoot + '"');
+		validateAlloyHook(projectRoot, logger, function () {
 
-		// Create the plugin info
-		CodeProcessor.queryPlugins(config.paths && config.paths.codeProcessorPlugins || [],
-				logger, function(err, results) {
-			var modules = {},
-				pluginList = argv.plugins,
-				plugin,
-				sdkPath,
-				blacklistedFiles = [],
-				p, m;
+			// Create the plugin info
+			CodeProcessor.queryPlugins(config.paths && config.paths.codeProcessorPlugins || [],
+					logger, function(err, results) {
+				var modules = {},
+					pluginList = argv.plugins,
+					plugin,
+					sdkPath,
+					blacklistedFiles = [],
+					p, m;
 
-			plugins = [];
-			if (argv['all-plugins']) {
-				for(plugin in results) {
-					plugins.push({
-						path: results[plugin].path,
-						options: {}
-					});
-				}
-			} else {
-				pluginList = pluginList ? pluginList.split(',') : [];
-				for(i = 0, len = pluginList.length; i < len; i++) {
-					plugin = pluginList[i];
-					if (plugin in results) {
+				plugins = [];
+				if (argv['all-plugins']) {
+					for(plugin in results) {
 						plugins.push({
 							path: results[plugin].path,
 							options: {}
 						});
-					} else if (logger) {
-						logger.warn(__('Plugin "%s" is unknown', pluginList[i]));
+					}
+				} else {
+					pluginList = pluginList ? pluginList.split(',') : [];
+					for(i = 0, len = pluginList.length; i < len; i++) {
+						plugin = pluginList[i];
+						if (plugin in results) {
+							plugins.push({
+								path: results[plugin].path,
+								options: {}
+							});
+						} else if (logger) {
+							logger.warn(__('Plugin "%s" is unknown', pluginList[i]));
+						}
 					}
 				}
-			}
 
-			// Load the ti module and CLI plugins
-			sdkPath = cli.env.sdks[sdk].path;
+				// Load the ti module and CLI plugins
+				sdkPath = cli.env.sdks[sdk].path;
 
-			// Get the list of modules from the tiapp.xml
-			if (!cli.tiapp.modules || !cli.tiapp.modules.length) {
-				logger.info(__('No Titanium Modules required, continuing'));
-			} else {
-				logger.info(__n('Searching for %s Titanium Module', 'Searching for %s Titanium Modules', cli.tiapp.modules.length));
-				appc.timodule.find(cli.tiapp.modules, argv.platform, 'development', sdk, [ path.join(sdkPath, '..', '..', '..'), projectRoot], logger, function (moduleResults) {
-					if (moduleResults.missing.length) {
-						logger.error(__('Could not find all required Titanium Modules:'));
-						moduleResults.missing.forEach(function (m) {
-							logger.error('   id: ' + m.id + '\t version: ' + (m.version || 'latest') + '\t platform: ' + m.platform + '\t deploy-type: ' + m.deployType);
-						});
-						logger.log();
-						process.exit(1);
-					}
-
-					if (moduleResults.incompatible.length) {
-						logger.error(__('Found incompatible Titanium Modules:'));
-						moduleResults.incompatible.forEach(function (m) {
-							logger.error('   id: ' + m.id + '\t version: ' + (m.version || 'latest') + '\t platform: ' + m.platform + '\t min sdk: ' + m.minsdk);
-						});
-						logger.log();
-						process.exit(1);
-					}
-
-					if (moduleResults.conflict.length) {
-						logger.error(__('Found conflicting Titanium modules:'));
-						moduleResults.conflict.forEach(function (m) {
-							logger.error('   ' + __('Titanium module "%s" requested for both ' + argv.platform + ' and CommonJS platforms, but only one may be used at a time.', m.id));
-						});
-						logger.log();
-						process.exit(1);
-					}
-
-					moduleResults.found.forEach(function (module) {
-						var platform = module.platform[0];
-						if (!modules[platform]) {
-							modules[platform] = {};
+				// Get the list of modules from the tiapp.xml
+				if (!cli.tiapp.modules || !cli.tiapp.modules.length) {
+					logger.info(__('No Titanium Modules required, continuing'));
+				} else {
+					logger.info(__n('Searching for %s Titanium Module', 'Searching for %s Titanium Modules', cli.tiapp.modules.length));
+					appc.timodule.find(cli.tiapp.modules, argv.platform, 'development', sdk, [ path.join(sdkPath, '..', '..', '..'), projectRoot], logger, function (moduleResults) {
+						if (moduleResults.missing.length) {
+							logger.error(__('Could not find all required Titanium Modules:'));
+							moduleResults.missing.forEach(function (m) {
+								logger.error('   id: ' + m.id + '\t version: ' + (m.version || 'latest') + '\t platform: ' + m.platform + '\t deploy-type: ' + m.deployType);
+							});
+							logger.log();
+							process.exit(1);
 						}
-						modules[platform][module.id] = module.modulePath;
+
+						if (moduleResults.incompatible.length) {
+							logger.error(__('Found incompatible Titanium Modules:'));
+							moduleResults.incompatible.forEach(function (m) {
+								logger.error('   id: ' + m.id + '\t version: ' + (m.version || 'latest') + '\t platform: ' + m.platform + '\t min sdk: ' + m.minsdk);
+							});
+							logger.log();
+							process.exit(1);
+						}
+
+						if (moduleResults.conflict.length) {
+							logger.error(__('Found conflicting Titanium modules:'));
+							moduleResults.conflict.forEach(function (m) {
+								logger.error('   ' + __('Titanium module "%s" requested for both ' + argv.platform + ' and CommonJS platforms, but only one may be used at a time.', m.id));
+							});
+							logger.log();
+							process.exit(1);
+						}
+
+						moduleResults.found.forEach(function (module) {
+							var platform = module.platform[0];
+							if (!modules[platform]) {
+								modules[platform] = {};
+							}
+							modules[platform][module.id] = module.modulePath;
+						});
 					});
-				});
-			}
-
-			// Create the file blacklist
-			if (!DISABLE_BLACKLIST) {
-				if (existsSync(path.join(projectRoot, 'app'))) {
-					blacklistedFiles = blacklistedFiles.concat([
-						path.join(projectRoot, 'Resources', 'alloy.js'),
-						path.join(projectRoot, 'Resources', 'alloy', 'CFG.js'),
-						path.join(projectRoot, 'Resources', 'alloy', 'widget.js'),
-						path.join(projectRoot, 'Resources', 'alloy', 'backbone.js'),
-						path.join(projectRoot, 'Resources', 'alloy', 'underscore.js'),
-						path.join(projectRoot, 'Resources', 'alloy', 'sync', 'localStorage.js'),
-						path.join(projectRoot, 'Resources', 'alloy', 'sync', 'properties.js'),
-						path.join(projectRoot, 'Resources', 'alloy', 'sync', 'sql.js'),
-						path.join(projectRoot, 'Resources', 'alloy', 'sync', 'util.js')
-					]);
 				}
-				for (p in modules) {
-					for (m in modules[p]) {
-						if (modules[p][m]) {
-							blacklistedFiles = blacklistedFiles.concat(CodeProcessorUtils.findJavaScriptFiles(modules[p][m]));
+
+				// Create the file blacklist
+				if (!DISABLE_BLACKLIST) {
+					if (existsSync(path.join(projectRoot, 'app'))) {
+						blacklistedFiles = blacklistedFiles.concat([
+							path.join(projectRoot, 'Resources', 'alloy.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'CFG.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'widget.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'backbone.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'underscore.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'localStorage.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'properties.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'sql.js'),
+							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'util.js')
+						]);
+					}
+					for (p in modules) {
+						for (m in modules[p]) {
+							if (modules[p][m]) {
+								blacklistedFiles = blacklistedFiles.concat(CodeProcessorUtils.findJavaScriptFiles(modules[p][m]));
+							}
 						}
 					}
 				}
-			}
 
-			// Set the plugin information
-			for(i = 0, len = plugins.length; i < len; i++) {
-				if (path.basename(plugins[i].path) === 'ti-api-provider') {
-					plugins[i].options.platform = argv.platform;
-					plugins[i].options.sdkPath = sdkPath;
-					plugins[i].options.modules = modules;
-					plugins[i].options.tiappProperties = cli.tiapp.properties;
-				} else if (path.basename(plugins[i].path) === 'analysis-coverage') {
-					plugins[i].options.visualization = {
-						outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'analysis-coverage') : undefined
-					};
+				// Set the plugin information
+				for(i = 0, len = plugins.length; i < len; i++) {
+					if (path.basename(plugins[i].path) === 'ti-api-provider') {
+						plugins[i].options.platform = argv.platform;
+						plugins[i].options.sdkPath = sdkPath;
+						plugins[i].options.modules = modules;
+						plugins[i].options.tiappProperties = cli.tiapp.properties;
+					} else if (path.basename(plugins[i].path) === 'analysis-coverage') {
+						plugins[i].options.visualization = {
+							outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'analysis-coverage') : undefined
+						};
 
-					// Check if this is an alloy app
-					if (existsSync(path.join(projectRoot, 'app'))) {
-						plugins[i].options.blacklistedFiles = blacklistedFiles;
-					}
-				} else if (path.basename(plugins[i].path) === 'unknown-ambiguous-visualizer') {
-					plugins[i].options.visualization = {
-						outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'unknown-ambiguous-visualizer') : undefined
-					};
+						// Check if this is an alloy app
+						if (existsSync(path.join(projectRoot, 'app'))) {
+							plugins[i].options.blacklistedFiles = blacklistedFiles;
+						}
+					} else if (path.basename(plugins[i].path) === 'unknown-ambiguous-visualizer') {
+						plugins[i].options.visualization = {
+							outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'unknown-ambiguous-visualizer') : undefined
+						};
 
-					// Check if this is an alloy app
-					if (existsSync(path.join(projectRoot, 'app'))) {
-						plugins[i].options.blacklistedFiles = blacklistedFiles;
+						// Check if this is an alloy app
+						if (existsSync(path.join(projectRoot, 'app'))) {
+							plugins[i].options.blacklistedFiles = blacklistedFiles;
+						}
 					}
 				}
-			}
 
-			// Check if this is an alloy app
-			if (existsSync(path.join(projectRoot, 'app'))) {
-				sourceInformation.sourceMapDir = path.join(projectRoot, 'build', 'map', 'Resources');
-				sourceInformation.originalSourceDir = path.join(projectRoot, 'app');
-			}
+				// Check if this is an alloy app
+				if (existsSync(path.join(projectRoot, 'app'))) {
+					sourceInformation.sourceMapDir = path.join(projectRoot, 'build', 'map', 'Resources');
+					sourceInformation.originalSourceDir = path.join(projectRoot, 'app');
+				}
 
-			// Tell the CLI we are done
-			callback(true);
+				// Tell the CLI we are done
+				callback(true);
+			});
 		});
 	});
 }
