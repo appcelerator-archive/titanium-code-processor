@@ -6,6 +6,7 @@
 * Implemented support for properly analyzing skipped blocks, improving the accuracy of results considerably
 * Added blacklisting of Alloy support files in coverage reports
 * The supported platforms are now pulled from the SDK's manifest, meaning that it properly won't support iPhone on Windows
+* Added support for recovering gracefully from infinite recursion
 
 ### Bug Fixes
 * Fixed regressions introduced when the CLI was overhauled for 3.2.0
