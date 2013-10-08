@@ -219,7 +219,7 @@ exports.validate = function (logger, config, cli) {
 };
 
 exports.run = function (logger, config, cli) {
-	cli.fireHook('codeprocessor.pre', function () {
+	cli.fireHook('codeprocessor.pre.run', function () {
 
 		// Validate the source information, now that alloy has been compiled
 		if (!existsSync(sourceInformation.projectDir)) {
