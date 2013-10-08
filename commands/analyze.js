@@ -219,7 +219,7 @@ exports.validate = function (logger, config, cli) {
 };
 
 exports.run = function (logger, config, cli) {
-	cli.fireHook('codeprocessor.pre.run', function () {
+	cli.fireHook('codeprocessor.pre', function () {
 
 		// Validate the source information, now that alloy has been compiled
 		if (!existsSync(sourceInformation.projectDir)) {
@@ -574,6 +574,7 @@ function validateCLIParameters(logger, config, cli, callback) {
 						}
 					}
 				}
+				options.blacklistedFiles = blacklistedFiles;
 
 				// Set the plugin information
 				for(i = 0, len = plugins.length; i < len; i++) {
@@ -586,20 +587,10 @@ function validateCLIParameters(logger, config, cli, callback) {
 						plugins[i].options.visualization = {
 							outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'analysis-coverage') : undefined
 						};
-
-						// Check if this is an alloy app
-						if (existsSync(path.join(projectRoot, 'app'))) {
-							plugins[i].options.blacklistedFiles = blacklistedFiles;
-						}
 					} else if (path.basename(plugins[i].path) === 'unknown-ambiguous-visualizer') {
 						plugins[i].options.visualization = {
 							outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'unknown-ambiguous-visualizer') : undefined
 						};
-
-						// Check if this is an alloy app
-						if (existsSync(path.join(projectRoot, 'app'))) {
-							plugins[i].options.blacklistedFiles = blacklistedFiles;
-						}
 					}
 				}
 
