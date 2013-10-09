@@ -33,7 +33,8 @@ var path = require('path'),
 	options,
 	plugins;
 
-const DISABLE_BLACKLIST = false;
+const DISABLE_BLACKLIST = false,
+	VISUALIZE_BLACKLISTED_FILES = false;
 
 exports.cliVersion = '>=3.X';
 exports.title = __('Analyze');
@@ -587,10 +588,12 @@ function validateCLIParameters(logger, config, cli, callback) {
 						plugins[i].options.visualization = {
 							outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'analysis-coverage') : undefined
 						};
+						plugins[i].options.analyzeBlacklistedFiles = VISUALIZE_BLACKLISTED_FILES;
 					} else if (path.basename(plugins[i].path) === 'unknown-ambiguous-visualizer') {
 						plugins[i].options.visualization = {
 							outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'unknown-ambiguous-visualizer') : undefined
 						};
+						plugins[i].options.analyzeBlacklistedFiles = VISUALIZE_BLACKLISTED_FILES;
 					}
 				}
 
