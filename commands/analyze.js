@@ -33,7 +33,8 @@ var path = require('path'),
 	options,
 	plugins;
 
-const DISABLE_BLACKLIST = false;
+const DISABLE_BLACKLIST = false,
+	VISUALIZE_BLACKLISTED_FILES = false;
 
 exports.cliVersion = '>=3.X';
 exports.title = __('Analyze');
@@ -574,6 +575,7 @@ function validateCLIParameters(logger, config, cli, callback) {
 						}
 					}
 				}
+				options.blacklistedFiles = blacklistedFiles;
 
 				// Set the plugin information
 				for(i = 0, len = plugins.length; i < len; i++) {
@@ -586,20 +588,12 @@ function validateCLIParameters(logger, config, cli, callback) {
 						plugins[i].options.visualization = {
 							outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'analysis-coverage') : undefined
 						};
-
-						// Check if this is an alloy app
-						if (existsSync(path.join(projectRoot, 'app'))) {
-							plugins[i].options.blacklistedFiles = blacklistedFiles;
-						}
+						plugins[i].options.analyzeBlacklistedFiles = VISUALIZE_BLACKLISTED_FILES;
 					} else if (path.basename(plugins[i].path) === 'unknown-ambiguous-visualizer') {
 						plugins[i].options.visualization = {
 							outputDirectory: options.resultsPath ? path.join(options.resultsPath, 'unknown-ambiguous-visualizer') : undefined
 						};
-
-						// Check if this is an alloy app
-						if (existsSync(path.join(projectRoot, 'app'))) {
-							plugins[i].options.blacklistedFiles = blacklistedFiles;
-						}
+						plugins[i].options.analyzeBlacklistedFiles = VISUALIZE_BLACKLISTED_FILES;
 					}
 				}
 

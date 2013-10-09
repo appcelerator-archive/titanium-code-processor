@@ -219,35 +219,39 @@ function processFile(filename, createExports) {
 		results,
 		context;
 
-	// Make sure the file exists
+	// Make sure the file exists and that the blacklist isn't supposed to keep it from being processed
 	if (fs.existsSync(filename)) {
 
-		// Fire the parsing begin event
-		Runtime.fireEvent('enteredFile', 'Entering file "' + filename + '"', {
-			filename: filename
-		});
-
-		// Read in the file and generate the AST
-		root = AST.parse(filename);
-		if (!root.syntaxError) {
-
-			// Create the context, checking for strict mode
-			context = Base.createModuleContext(root, RuleProcessor.isBlockStrict(root), createExports, false);
-
-			// Process the code
-			results = root.processRule()[1];
-			Base.exitContext();
-
-			// Exit the context and get the results
-			if (createExports) {
-				results = Base.type(context.thisBinding) === 'Unknown' ? new Base.UnknownType() : context.thisBinding.get('exports');
-			}
-		} else {
-			Runtime.reportUglifyError(root);
+		if(Runtime.isFileBlacklisted(filename) && Base.isSkippedMode()) {
 			results = new Base.UnknownType();
-		}
-		this._ast = root;
+		} else {
 
+			// Fire the parsing begin event
+			Runtime.fireEvent('enteredFile', 'Entering file "' + filename + '"', {
+				filename: filename
+			});
+
+			// Read in the file and generate the AST
+			root = AST.parse(filename);
+			if (!root.syntaxError) {
+
+				// Create the context, checking for strict mode
+				context = Base.createModuleContext(root, RuleProcessor.isBlockStrict(root), createExports, false);
+
+				// Process the code
+				results = root.processRule()[1];
+				Base.exitContext();
+
+				// Exit the context and get the results
+				if (createExports) {
+					results = Base.type(context.thisBinding) === 'Unknown' ? new Base.UnknownType() : context.thisBinding.get('exports');
+				}
+			} else {
+				Runtime.reportUglifyError(root);
+				results = new Base.UnknownType();
+			}
+			this._ast = root;
+		}
 	} else {
 		throw new Error('Internal Error: could not find file "' + filename + '"');
 	}
