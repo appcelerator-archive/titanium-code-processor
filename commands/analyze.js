@@ -26,15 +26,13 @@ var path = require('path'),
 	latestSDK,
 
 	CodeProcessor = require('../'),
-	CodeProcessorUtils = require('../lib/CodeProcessorUtils'),
 	Runtime = require('../lib/Runtime'),
 
 	sourceInformation,
 	options,
 	plugins;
 
-const DISABLE_BLACKLIST = false,
-	VISUALIZE_BLACKLISTED_FILES = false;
+const VISUALIZE_BLACKLISTED_FILES = false;
 
 exports.cliVersion = '>=3.X';
 exports.title = __('Analyze');
@@ -97,6 +95,10 @@ exports.config = function (logger, config, cli) {
 					'wait': {
 						abbr: 'W',
 						desc: __('Process waits on standard input after processing the results'),
+						default: false
+					},
+					'skip-alloy-recompile': {
+						desc: __('If the app is an Alloy app, causes it to not be recompiled'),
 						default: false
 					}
 				},
@@ -220,7 +222,8 @@ exports.validate = function (logger, config, cli) {
 };
 
 exports.run = function (logger, config, cli) {
-	cli.fireHook('codeprocessor.pre.run', function () {
+
+	function runFunc() {
 
 		// Validate the source information, now that alloy has been compiled
 		if (!existsSync(sourceInformation.projectDir)) {
@@ -253,7 +256,13 @@ exports.run = function (logger, config, cli) {
 				}
 			});
 		}, 0);
-	});
+	}
+
+	if (cli.argv['skip-alloy-recompile']) {
+		runFunc();
+	} else {
+		cli.fireHook('codeprocessor.pre.run', runFunc);
+	}
 };
 
 function validateAlloyHook(projectDir, logger, callback) {
@@ -479,9 +488,7 @@ function validateCLIParameters(logger, config, cli, callback) {
 				var modules = {},
 					pluginList = argv.plugins,
 					plugin,
-					sdkPath,
-					blacklistedFiles = [],
-					p, m;
+					sdkPath;
 
 				plugins = [];
 				if (argv['all-plugins']) {
@@ -551,31 +558,6 @@ function validateCLIParameters(logger, config, cli, callback) {
 						});
 					});
 				}
-
-				// Create the file blacklist
-				if (!DISABLE_BLACKLIST) {
-					if (existsSync(path.join(projectRoot, 'app'))) {
-						blacklistedFiles = blacklistedFiles.concat([
-							path.join(projectRoot, 'Resources', 'alloy.js'),
-							path.join(projectRoot, 'Resources', 'alloy', 'CFG.js'),
-							path.join(projectRoot, 'Resources', 'alloy', 'widget.js'),
-							path.join(projectRoot, 'Resources', 'alloy', 'backbone.js'),
-							path.join(projectRoot, 'Resources', 'alloy', 'underscore.js'),
-							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'localStorage.js'),
-							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'properties.js'),
-							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'sql.js'),
-							path.join(projectRoot, 'Resources', 'alloy', 'sync', 'util.js')
-						]);
-					}
-					for (p in modules) {
-						for (m in modules[p]) {
-							if (modules[p][m]) {
-								blacklistedFiles = blacklistedFiles.concat(CodeProcessorUtils.findJavaScriptFiles(modules[p][m]));
-							}
-						}
-					}
-				}
-				options.blacklistedFiles = blacklistedFiles;
 
 				// Set the plugin information
 				for(i = 0, len = plugins.length; i < len; i++) {
