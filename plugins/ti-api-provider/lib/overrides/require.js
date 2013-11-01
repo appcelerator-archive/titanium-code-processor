@@ -142,7 +142,6 @@ exports.getOverrides = function (options) {
 					isModule = true;
 				}
 
-				debugger;
 				if (name == 'ti.cloud') {
 					result = options.cloudModules.cloud;
 				} else if(name == 'ti.cloudpush') {
