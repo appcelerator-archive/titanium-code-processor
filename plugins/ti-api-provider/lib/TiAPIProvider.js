@@ -62,7 +62,8 @@ exports.init = function init(options) {
 		jsRegex = /\.js$/,
 		overrideFiles = CodeProcessorUtils.findJavaScriptFiles(path.join(__dirname, 'overrides')),
 		overrideDefs,
-		rawManifest;
+		rawManifest,
+		cloudModules = {};
 
 	platform = exports.platform = options.platform;
 	modules = exports.modules = options.modules || {};
@@ -156,7 +157,8 @@ exports.init = function init(options) {
 					values: values,
 					createObject: createObject,
 					globalsOnly: options.globalsOnly,
-					modules: modules
+					modules: modules,
+					cloudModules: cloudModules
 				}));
 			for(j = 0, jlen = overrideDefs.length; j < jlen; j++) {
 				if (overrideDefs[j].callFunction) {
@@ -226,6 +228,13 @@ exports.init = function init(options) {
 				}, false, true);
 			}
 		}
+
+		// Splice out the cloud module, since it's special. Yes, this is very hacky
+		root = globalObject._lookupProperty('Titanium').value;
+		cloudModules.cloud = root._lookupProperty('Cloud').value;
+		cloudModules.cloudPush = root._lookupProperty('CloudPush').value;
+		root._removeProperty('Cloud');
+		root._removeProperty('CloudPush');
 	}
 };
 
