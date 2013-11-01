@@ -142,7 +142,11 @@ exports.getOverrides = function (options) {
 					isModule = true;
 				}
 
-				if (isModule) {
+				if (name == 'ti.cloud') {
+					result = options.cloudModules.cloud;
+				} else if(name == 'ti.cloudpush') {
+					result = options.cloudModules.cloudPush;
+				} else if (isModule) {
 					if (filePath) {
 						Runtime.fireEvent('requireResolved', 'Module "' + name + '" was resolved to "' + filePath + '"', {
 							name: name,
