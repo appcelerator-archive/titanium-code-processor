@@ -4,7 +4,7 @@
  *
  * Processes Titanium APIs for the code processor
  *
- * @module plugins/TiAPIProcessor
+ * @module plugins/TiAPIProvider
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
@@ -41,9 +41,9 @@ var fs = require('fs'),
  * Initializes the plugin
  *
  * @method
- * @name module:plugins/TiAPIProcessor#init
+ * @name module:plugins/TiAPIProvider#init
  * @param {Object} options The plugin options
- * @param {Array[Dependency Instance]} dependencies The dependant plugins of this plugin
+ * @param {Array.<Object>} dependencies The dependant plugins of this plugin
  */
 exports.init = function init(options) {
 
@@ -302,7 +302,7 @@ TiFunction.prototype.callFunction = Base.wrapNativeCall(function callFunction(th
  * @classdesc A custom object implementation that hooks into get, put, and delete so it can fire the appropriate Ti events
  *
  * @constructor
- * @name module:plugins/TiAPIProcessor~TiObjectType
+ * @name module:plugins/TiAPIProvider~TiObjectType
  * @private
  * @extends module:Base.ObjectType
  * @param {Object} api The api describing the object
@@ -319,10 +319,10 @@ util.inherits(TiObjectType, Base.ObjectType);
 /**
  * Indicates that a titanium property was referenced (i.e. read).
  *
- * @name module:plugins/TiAPIProcessor#tiPropertyReferenced
+ * @name module:plugins/TiAPIProvider#tiPropertyReferenced
  * @event
  * @param {String} name The name of the property that was referenced
- * @param {{@link module:Base.DataPropertyDescriptor}|{@link module:Base.AccessorPropertyDescriptor}|undefined} The
+ * @param {(module:Base.DataPropertyDescriptor | module:Base.AccessorPropertyDescriptor | undefined)} The
  *		descriptor fetched, if it could be found.
  */
 /**
@@ -330,7 +330,7 @@ util.inherits(TiObjectType, Base.ObjectType);
  *
  * @method
  * @param {String} p The name of the property to fetch
- * @returns {{@link module:Base.BaseType}} The value of the property, or a new instance of
+ * @returns {module:Base.BaseType} The value of the property, or a new instance of
  *		{@link module:Base.UndefinedType} if the property does not exist
  * @see ECMA-262 Spec Chapter 8.12.3
  */
@@ -355,7 +355,7 @@ TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, alternate, su
 /**
  * Indicates that a titanium property was set (i.e. written).
  *
- * @name module:plugins/TiAPIProcessor#tiPropertySet
+ * @name module:plugins/TiAPIProvider#tiPropertySet
  * @event
  * @param {String} name The name of the property that was set
  * @param {module:Base.BaseType} value The value that was set
@@ -410,7 +410,7 @@ TiObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, t
 /**
  * Indicates that a titanium property was deleted
  *
- * @name module:plugins/TiAPIProcessor#tiPropertyDeleted
+ * @name module:plugins/TiAPIProvider#tiPropertyDeleted
  * @event
  * @param {String} name The name of the property referenced
  */

@@ -86,7 +86,7 @@ function generateRenderData() {
  * @method
  * @name module:plugins/TiAPIDeprecationFinder#init
  * @param {Object} options The plugin options
- * @param {Array[Dependency Instance]} dependencies The dependant plugins of this plugin
+ * @param {Array.<Object>} dependencies The dependant plugins of this plugin
  */
 exports.init = function init() {
 	results = {

@@ -115,7 +115,7 @@ function generateRenderData() {
  * @method
  * @name module:plugins/TiAPIUsageFinder#init
  * @param {Object} options The plugin options
- * @param {Array[Dependency Instance]} dependencies The dependant plugins of this plugin
+ * @param {Array.<Object>} dependencies The dependant plugins of this plugin
  */
 exports.init = function init() {
 	function processReference(e) {

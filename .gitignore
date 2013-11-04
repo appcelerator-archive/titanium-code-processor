@@ -2,3 +2,4 @@
 ._*
 .DS_Store
 /tests/test-262
+/tools/jsdoc
