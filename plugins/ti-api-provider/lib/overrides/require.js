@@ -87,11 +87,6 @@ exports.getOverrides = function (options) {
 		Runtime.fileList = fileList;
 	});
 
-	Runtime.isFileValid = function isFileValid(filename) {
-		var rootDir = filename.split(path.sep)[0];
-		return fileRegExp.test(filename) && (platformList.indexOf(rootDir) === -1 || rootDir === platform);
-	};
-
 	platform = options && options.platform;
 	platformList = options && options.platformList;
 	modules = options && options.modules || {};
@@ -203,7 +198,7 @@ exports.getOverrides = function (options) {
 							name: name,
 							path: filePath
 						});
-						Runtime.reportError('RequireMissing', eventDescription);
+						Runtime.reportError('RequireMissing', eventDescription, RuleProcessor.getStackTrace());
 					}
 				}
 			}

@@ -12,7 +12,8 @@ var fs = require('fs'),
 	path = require('path'),
 
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
-	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime'));
+	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
+	RuleProcessor = require(path.join(global.titaniumCodeProcessorLibDir, 'RuleProcessor'));
 
 exports.getOverrides = function (options) {
 	if (options.globalsOnly) {
@@ -137,7 +138,7 @@ exports.getOverrides = function (options) {
 					Runtime.fireEvent('tiIncludeMissing', eventDescription, {
 						name: filename
 					});
-					Runtime.reportError('tiIncludeMissing', eventDescription);
+					Runtime.reportError('tiIncludeMissing', eventDescription, RuleProcessor.getStackTrace());
 				}
 			}.bind(this));
 			return new Base.UndefinedType();
