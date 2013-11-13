@@ -4,7 +4,7 @@
  *
  * This plugin finds the Titanium APIs that are used.
  *
- * @module plugins/TiAPIUsageFinder
+ * @module plugins/TiApiUsageFinder
  */
 
 var path = require('path'),
@@ -123,7 +123,7 @@ function generateRenderData() {
  * Initializes the plugin
  *
  * @method
- * @name module:plugins/TiAPIUsageFinder#init
+ * @name module:plugins/TiApiUsageFinder#init
  * @param {Object} options The plugin options
  * @param {Array.<Object>} dependencies The dependant plugins of this plugin
  */
@@ -166,7 +166,7 @@ exports.init = function init() {
 * Gets the results of the plugin
 *
 * @method
-* @name module:plugins/TiAPIUsageFinder#getResults
+* @name module:plugins/TiApiUsageFinder#getResults
 * @returns {Object} A dictionary of the Titanium APIs that were used along with a count of how many times they were used.
 */
 exports.getResults = function getResults() {

@@ -4,7 +4,7 @@
  *
  * common globals implementations
  *
- * @module plugins/TiAPIProcessor
+ * @module plugins/TiApiProcessor/globals
  */
 
 var path = require('path'),
@@ -12,6 +12,13 @@ var path = require('path'),
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime'));
 
+/**
+ * Gets the set of overrides defined in this file
+ *
+ * @method
+ * @param  {Object} options The options passed to the Ti API provider plugin
+ * @return {Array.<module:plugins/TiApiProcessor.override>} The list of overrides
+ */
 exports.getOverrides = function () {
 	return [{
 		regex: /^clearInterval$/,

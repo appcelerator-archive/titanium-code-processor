@@ -4,7 +4,7 @@
  *
  * Ti.include implementation
  *
- * @module plugins/TiAPIProcessor
+ * @module plugins/TiApiProcessor/Ti
  */
 
 var fs = require('fs'),
@@ -14,6 +14,13 @@ var fs = require('fs'),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime')),
 	RuleProcessor = require(path.join(global.titaniumCodeProcessorLibDir, 'RuleProcessor'));
 
+/**
+ * Gets the set of overrides defined in this file
+ *
+ * @method
+ * @param  {Object} options The options passed to the Ti API provider plugin
+ * @return {Array.<module:plugins/TiApiProcessor.override>} The list of overrides
+ */
 exports.getOverrides = function (options) {
 	if (options.globalsOnly) {
 		return [];

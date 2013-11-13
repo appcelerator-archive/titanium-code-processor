@@ -4,7 +4,7 @@
  *
  * Processes Titanium APIs for the code processor
  *
- * @module plugins/TiAPIProvider
+ * @module plugins/TiApiProvider
  */
 
 var fs = require('fs'),
@@ -34,13 +34,27 @@ var fs = require('fs'),
 	underscoreRegex = /\._/g,
 	globalObjectRegex = /^Global\.(.*)$/;
 
+/**
+ * An override entry. Overrides can override three things: properties, methods, and namespaces. These follow the way that
+ * objects/namespaces/etc are defined in api.jsca, even though namespaces really are just properties with objects. Each
+ * entry must only have one of value, callFunction , or obj, and the type of override is determined by which property is
+ * present.
+ *
+ * @typedef {Object} module:plugins/TiApiProcessor.override
+ * @property {RegExp} regex The regex defining the API or APIs that are being overridden
+ * @property {module:Base.BaseType} [value] The value of the property
+ * @property {Function} [callFunction] The Function.Call implementation for this function property
+ * @property {module:Base.BaseType} [obj] The value of the object
+ *
+ */
+
 // ******** Plugin API Methods ********
 
 /**
  * Initializes the plugin
  *
  * @method
- * @name module:plugins/TiAPIProvider#init
+ * @name module:plugins/TiApiProvider#init
  * @param {Object} options The plugin options
  * @param {Array.<Object>} dependencies The dependant plugins of this plugin
  */
@@ -301,7 +315,7 @@ TiFunction.prototype.callFunction = Base.wrapNativeCall(function callFunction(th
  * @classdesc A custom object implementation that hooks into get, put, and delete so it can fire the appropriate Ti events
  *
  * @constructor
- * @name module:plugins/TiAPIProvider~TiObjectType
+ * @name module:plugins/TiApiProvider~TiObjectType
  * @private
  * @extends module:Base.ObjectType
  * @param {Object} api The api describing the object
@@ -318,9 +332,9 @@ util.inherits(TiObjectType, Base.ObjectType);
 /**
  * Indicates that a titanium property was referenced (i.e. read).
  *
- * @name module:plugins/TiAPIProvider#tiPropertyReferenced
+ * @name module:plugins/TiApiProvider#tiPropertyReferenced
  * @event
- * @param {String} name The name of the property that was referenced
+ * @param {string} name The name of the property that was referenced
  * @param {(module:Base.DataPropertyDescriptor | module:Base.AccessorPropertyDescriptor | undefined)} The
  *		descriptor fetched, if it could be found.
  */
@@ -328,7 +342,9 @@ util.inherits(TiObjectType, Base.ObjectType);
  * ECMA-262 Spec: <em>Returns the value of the named property.</em>
  *
  * @method
- * @param {String} p The name of the property to fetch
+ * @param {string} p The name of the property to fetch
+ * @param {boolean} alternate Whether or not to fetch the alternate values, or the base value
+ * @param {boolean} suppressEvent Not used here, simply used as a placeholder for the implementation in TiApiProvieer
  * @returns {module:Base.BaseType} The value of the property, or a new instance of
  *		{@link module:Base.UndefinedType} if the property does not exist
  * @see ECMA-262 Spec Chapter 8.12.3
@@ -354,9 +370,9 @@ TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, alternate, su
 /**
  * Indicates that a titanium property was set (i.e. written).
  *
- * @name module:plugins/TiAPIProvider#tiPropertySet
+ * @name module:plugins/TiApiProvider#tiPropertySet
  * @event
- * @param {String} name The name of the property that was set
+ * @param {string} name The name of the property that was set
  * @param {module:Base.BaseType} value The value that was set
  */
 /**
@@ -364,10 +380,10 @@ TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, alternate, su
  * handling.</em>
  *
  * @method
- * @param {String} p The name of the parameter to set the value as
- * @param {module:Base.BaseType} v The value to set
- * @param {Boolean} throwFlag Whether or not to throw an exception on error (related to strict mode)
- * @param {Boolean} suppressEvent Suppresses the 'propertySet' event (used when setting prototypes)
+ * @param {string} p The name of the parameter to set the value as
+ * @param {module:Base.BaseType} desc The value to set
+ * @param {boolean} throwFlag Whether or not to throw an exception on error (related to strict mode)
+ * @param {boolean} suppressEvent Suppresses the 'propertySet' event (used when setting prototypes)
  * @see ECMA-262 Spec Chapter 8.12.5
  */
 TiObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, throwFlag, suppressEvent) {
@@ -409,17 +425,16 @@ TiObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, t
 /**
  * Indicates that a titanium property was deleted
  *
- * @name module:plugins/TiAPIProvider#tiPropertyDeleted
+ * @name module:plugins/TiApiProvider#tiPropertyDeleted
  * @event
- * @param {String} name The name of the property referenced
+ * @param {string} name The name of the property referenced
  */
 /**
  * ECMA-262 Spec: <em>Removes the specified named own property from the object. The flag controls failure handling.</em>
  *
  * @method
- * @param {String} p The name of the parameter to delete
- * @param {Boolean} throwFlag Whether or not to throw an exception on error (related to strict mode)
- * @returns {Boolean} Whether or not the object was deleted succesfully
+ * @param {string} p The name of the parameter to delete
+ * @returns {boolean} Whether or not the object was deleted succesfully
  * @see ECMA-262 Spec Chapter 8.12.7
  */
 TiObjectType.prototype.delete = function objDelete(p) {
@@ -437,7 +452,6 @@ TiObjectType.prototype.delete = function objDelete(p) {
  * Creates a setter function
  *
  * @private
- * @method
  */
 function TiSetterFunction(obj, name, className) {
 	Base.FunctionTypeBase.call(this, className || 'Function');
@@ -472,7 +486,6 @@ TiSetterFunction.prototype.callFunction = Base.wrapNativeCall(function callFunct
  * Creates a getter function
  *
  * @private
- * @method
  */
 function TiGetterFunction(obj, name, className) {
 	Base.FunctionTypeBase.call(this, className || 'Function');
@@ -497,7 +510,6 @@ TiGetterFunction.prototype.callFunction = Base.wrapNativeCall(function callFunct
  * Creates a global object from an API node
  *
  * @private
- * @method
  */
 function createGlobalObject(apiNode, apiName, obj) {
 	var properties = apiNode.properties,
@@ -662,7 +674,6 @@ function createGlobalObject(apiNode, apiName, obj) {
  * Creates a titanium object from an API node
  *
  * @private
- * @method
  */
 function createObject(apiNode, obj) {
 	var properties = apiNode.node.properties,
