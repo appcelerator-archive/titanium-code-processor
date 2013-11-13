@@ -17,8 +17,6 @@ var fs = require('fs'),
 	],
 	fileList = [];
 
-process.chdir(path.join(__dirname, 'jsdoc'));
-
 if (fs.existsSync(path.join(codeProcessorDir, 'docs'))) {
 	wrench.rmdirSyncRecursive(path.join(codeProcessorDir, 'docs'));
 }
@@ -39,6 +37,6 @@ while(directoryQueue.length) {
 }
 fileList.push(path.join(codeProcessorDir, 'api_cover_page.md'));
 
-spawn('./jsdoc', ['--verbose', '--lenient', '--destination', path.join(codeProcessorDir, 'docs')].concat(fileList), {
+spawn('jsdoc', ['--destination', path.join(codeProcessorDir, 'docs')].concat(fileList), {
 	stdio: 'inherit'
 });

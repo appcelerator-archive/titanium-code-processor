@@ -4,7 +4,7 @@
  *
  * Ti.App.Properties implementation
  *
- * @module plugins/TiApiProcessor/Ti/App/Properties
+ * @module plugins/TiApiProvider/Ti/App/Properties
  */
 
 var path = require('path'),
@@ -17,7 +17,7 @@ var path = require('path'),
  *
  * @method
  * @param  {Object} options The options passed to the Ti API provider plugin
- * @return {Array.<module:plugins/TiApiProcessor.override>} The list of overrides
+ * @return {Array.<module:plugins/TiApiProvider.override>} The list of overrides
  */
 exports.getOverrides = function (options) {
 	if (options.globalsOnly) {

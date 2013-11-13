@@ -35,15 +35,20 @@ var fs = require('fs'),
 	globalObjectRegex = /^Global\.(.*)$/;
 
 /**
+ * @callback module:plugins/TiApiProvider.overrideFunctionCallback
+ * @param {module:Base.BaseType} thisVal The this value for the call
+ * @param {Array.<module:Base.BaseType>} args The function call arguments
+ */
+/**
  * An override entry. Overrides can override three things: properties, methods, and namespaces. These follow the way that
  * objects/namespaces/etc are defined in api.jsca, even though namespaces really are just properties with objects. Each
  * entry must only have one of value, callFunction , or obj, and the type of override is determined by which property is
  * present.
  *
- * @typedef {Object} module:plugins/TiApiProcessor.override
+ * @typedef {Object} module:plugins/TiApiProvider.override
  * @property {RegExp} regex The regex defining the API or APIs that are being overridden
  * @property {module:Base.BaseType} [value] The value of the property
- * @property {Function} [callFunction] The Function.Call implementation for this function property
+ * @property {module:plugins/TiApiProvider.overrideFunctionCallback} [callFunction] The Function.Call implementation for this function property
  * @property {module:Base.BaseType} [obj] The value of the object
  *
  */
