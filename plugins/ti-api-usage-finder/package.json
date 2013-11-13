@@ -1,5 +1,4 @@
 {
-	"author": "Allen Yeung <ayeung@appcelerator.com> (https://github.com/ayeung/)",
 	"name": "ti-api-usage-finder",
 	"displayName": "API Usage Finder",
 	"description": "Lists all of the Titanium APIs used by the project and how often they are used",

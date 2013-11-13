@@ -1,5 +1,4 @@
 {
-	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "ti-api-include-finder",
 	"displayName": "Include Finder",
 	"description": "Lists all Ti.include statments that were found, and how they were evaluated",

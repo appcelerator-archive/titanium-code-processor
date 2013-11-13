@@ -1,5 +1,4 @@
 {
-	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "ti-api-provider",
 	"displayName": "Titanium API Provider",
 	"description": "Provides an implementation of the Titanium SDK",

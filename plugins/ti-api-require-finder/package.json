@@ -1,5 +1,4 @@
 {
-	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "ti-api-require-finder",
 	"displayName": "Require Finder",
 	"description": "Lists all require statments that were found, and how they were evaluated",

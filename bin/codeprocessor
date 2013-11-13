@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * @fileoverview rovides a CLI interface into the code processor API
- * @author Bryan Hughes <bhughes@appcelerator.com>
+ * @fileoverview CLI shim for studio. Hopefully this can be removed some day
  */
 
 // ******** Requires and File-Level Variables ********

@@ -1,5 +1,4 @@
 {
-	"author": "Allen Yeung <ayeung@appcelerator.com> (https://github.com/ayeung/)",
 	"name": "ti-api-platform-validator",
 	"displayName": "Platform Validator",
 	"description": "Validates that all platform specific APIs used by the project are only used on the appropriate platform",
