@@ -4,7 +4,7 @@
 	"displayName": "API Usage Finder",
 	"description": "Lists all of the Titanium APIs used by the project and how often they are used",
 	"titaniumCodeProcessorPlugin": true,
-	"main": "lib/TiAPIUsageFinder.js",
+	"main": "lib/TiApiUsageFinder.js",
 	"dependencies": {
 		"ti-api-provider": "*"
 	},

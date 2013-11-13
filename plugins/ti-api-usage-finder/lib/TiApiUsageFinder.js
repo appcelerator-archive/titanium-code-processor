@@ -19,6 +19,11 @@ var path = require('path'),
 
 // ******** Helper Methods ********
 
+/**
+ * Generates the raw results data for this plugin
+ *
+ * @private
+ */
 function generateResultsData() {
 	var summary,
 		numAPIs = Object.keys(results.global).length,
@@ -36,6 +41,12 @@ function generateResultsData() {
 	results.summary = summary;
 }
 
+/**
+ * Generates the render data for this plugin. This is typically an abstracted version of the raw results, carefully
+ * modified to match the requirements of the render templates
+ *
+ * @private
+ */
 function generateRenderData() {
 	var numAPIs = Object.keys(results.global).length,
 		baseDirectory = Runtime.sourceInformation.projectDir + path.sep,
@@ -169,10 +180,7 @@ exports.getResults = function getResults() {
  * @method
  * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
  *		as one of the entries in the template
- * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
- *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
- *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
- *		information to dump into the template
+ * @return {module:CodeProcessor.pluginResultsPageData} The information for generating the template(s)
  */
 exports.getResultsPageData = function getResultsPageData(entryFile) {
 	var template = {};
@@ -188,7 +196,7 @@ exports.getResultsPageData = function getResultsPageData(entryFile) {
 /**
  * Renders the results data to a log-friendly string
  *
- * @param {Function} arrayGen Log-friendly table generator
+ * @param {module:CodeProcessor.arrayGen} arrayGen Log-friendly table generator
  * @return {String} The rendered data
  */
 exports.renderLogOutput = function renderLogOutput(arrayGen) {

@@ -4,7 +4,7 @@
  *
  * This plugin finds the Titanium APIs that are used that are not supported on the current platform
  *
- * @module plugins/TiAPIPlatformValidator
+ * @module plugins/TiApiPlatformValidator
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
@@ -19,6 +19,11 @@ var path = require('path'),
 
 // ******** Helper Methods ********
 
+/**
+ * Generates the raw results data for this plugin
+ *
+ * @private
+ */
 function generateResultsData() {
 	var summary,
 		numInvalidAPIs = Object.keys(results.invalidAPIs).length;
@@ -32,6 +37,12 @@ function generateResultsData() {
 	results.summary = summary;
 }
 
+/**
+ * Generates the render data for this plugin. This is typically an abstracted version of the raw results, carefully
+ * modified to match the requirements of the render templates
+ *
+ * @private
+ */
 function generateRenderData() {
 	var numInvalidAPIs = Object.keys(results.invalidAPIs).length,
 		invalidAPIs,
@@ -91,7 +102,6 @@ function generateRenderData() {
  * Initializes the plugin
  *
  * @method
- * @name module:plugins/TiAPIPlatformValidator#init
  * @param {Object} options The plugin options
  * @param {Array.<Object>} dependencies The dependant plugins of this plugin
  */
@@ -160,8 +170,8 @@ exports.init = function init(options, dependencies) {
 * Gets the results of the plugin
 *
 * @method
- * @name module:plugins/TiAPIPlatformValidator#getResults
 * @returns {Object} A dictionary of the Titanium APIs that were used along with a count of how many times they were used.
+*		Each key is the API name and the value is the count
 */
 exports.getResults = function getResults() {
 	return results;
@@ -171,12 +181,9 @@ exports.getResults = function getResults() {
  * Generates the results template data to be rendered
  *
  * @method
- * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ * @param {string} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
  *		as one of the entries in the template
- * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
- *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
- *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
- *		information to dump into the template
+ * @return {module:CodeProcessor.pluginResultsPageData} The information for generating the template(s)
  */
 exports.getResultsPageData = function getResultsPageData(entryFile) {
 	var template = {};
@@ -192,8 +199,8 @@ exports.getResultsPageData = function getResultsPageData(entryFile) {
 /**
  * Renders the results data to a log-friendly string
  *
- * @param {Function} arrayGen Log-friendly table generator
- * @return {String} The rendered data
+ * @param {module:CodeProcessor.arrayGen} arrayGen Log-friendly table generator
+ * @return {string} The rendered data
  */
 exports.renderLogOutput = function renderLogOutput(arrayGen) {
 	var resultsToLog;

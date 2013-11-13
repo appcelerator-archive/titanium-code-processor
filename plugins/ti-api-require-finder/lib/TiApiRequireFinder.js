@@ -2,6 +2,8 @@
  * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
+ * This plugin finds all of the files that were included via <code>require()</code>
+ *
  * @module plugins/TiApiRequireFinder
  * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
@@ -18,6 +20,11 @@ var path = require('path'),
 
 // ******** Helper Methods ********
 
+/**
+ * Generates the raw results data for this plugin
+ *
+ * @private
+ */
 function generateResultsData() {
 	var resolved = results.resolved.length,
 		unresolved = results.unresolved.length,
@@ -46,6 +53,12 @@ function generateResultsData() {
 	}
 }
 
+/**
+ * Generates the render data for this plugin. This is typically an abstracted version of the raw results, carefully
+ * modified to match the requirements of the render templates
+ *
+ * @private
+ */
 function generateRenderData() {
 	var numRequiresResolved = results.resolved.length,
 		numRequiresUnresolved = results.unresolved.length,
@@ -144,7 +157,6 @@ function generateRenderData() {
  * Initializes the plugin
  *
  * @method
- * @name module:plugins/TiApiRequireFinder#init
  * @param {Object} options The plugin options
  * @param {Array.<Object>} dependencies The dependant plugins of this plugin
  */
@@ -177,7 +189,6 @@ exports.init = function init() {
 * Gets the results of the plugin
 *
 * @method
- * @name module:plugins/TiApiRequireFinder#getResults
 * @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
 *		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
 *		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
@@ -193,10 +204,7 @@ exports.getResults = function getResults() {
  * @method
  * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
  *		as one of the entries in the template
- * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
- *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
- *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
- *		information to dump into the template
+ * @return {module:CodeProcessor.pluginResultsPageData} The information for generating the template(s)
  */
 exports.getResultsPageData = function getResultsPageData(entryFile) {
 	var template = {};
@@ -212,7 +220,7 @@ exports.getResultsPageData = function getResultsPageData(entryFile) {
 /**
  * Renders the results data to a log-friendly string
  *
- * @param {Function} arrayGen Log-friendly table generator
+ * @param {module:CodeProcessor.arrayGen} arrayGen Log-friendly table generator
  * @return {String} The rendered data
  */
 exports.renderLogOutput = function (arrayGen) {

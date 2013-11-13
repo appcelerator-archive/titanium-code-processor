@@ -4,8 +4,9 @@
  *
  * This plugin finds the deprecated Titanium APIs that are used.
  *
- * @module plugins/TiAPIDeprecationFinder
- * @author Allen Yeung &lt;<a href='mailto:ayeung@appcelerator.com'>ayeung@appcelerator.com</a>&gt;
+ * @module plugins/TiApiDeprecationFinder
+ * @author Bryan Hughes <bhughes@appcelerator.com>
+ * @author Allen Yeung <ayeung@appcelerator.com>
  */
 
 var path = require('path'),
@@ -19,6 +20,11 @@ var path = require('path'),
 
 // ******** Helper Methods ********
 
+/**
+ * Generates the raw results data for this plugin
+ *
+ * @private
+ */
 function generateResultsData() {
 	var summary,
 		numDeprecatedAPIs = Object.keys(results.deprecatedAPIs).length;
@@ -32,6 +38,12 @@ function generateResultsData() {
 	results.summary = summary;
 }
 
+/**
+ * Generates the render data for this plugin. This is typically an abstracted version of the raw results, carefully
+ * modified to match the requirements of the render templates
+ *
+ * @private
+ */
 function generateRenderData() {
 	var numDeprecatedAPIs = Object.keys(results.deprecatedAPIs).length,
 		deprecatedAPIs,
@@ -84,7 +96,6 @@ function generateRenderData() {
  * Initializes the plugin
  *
  * @method
- * @name module:plugins/TiAPIDeprecationFinder#init
  * @param {Object} options The plugin options
  * @param {Array.<Object>} dependencies The dependant plugins of this plugin
  */
@@ -130,8 +141,8 @@ exports.init = function init() {
 * Gets the results of the plugin
 *
 * @method
- * @name module:plugins/TiAPIDeprecationFinder#getResults
-* @returns {Object} A dictionary of the deprecated Titanium APIs that were used along with a count of how many times they were used.
+* @returns {Object} A dictionary of the deprecated Titanium APIs that were used along with a count of how many times
+*		they were used. The API name is the key and the count is the value.
 */
 exports.getResults = function getResults() {
 	return results;
@@ -141,12 +152,9 @@ exports.getResults = function getResults() {
  * Generates the results template data to be rendered
  *
  * @method
- * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ * @param {string} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
  *		as one of the entries in the template
- * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
- *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
- *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
- *		information to dump into the template
+ * @return {module:CodeProcessor.pluginResultsPageData} The information for generating the template(s)
  */
 exports.getResultsPageData = function getResultsPageData(entryFile) {
 	var template = {};
@@ -162,8 +170,8 @@ exports.getResultsPageData = function getResultsPageData(entryFile) {
 /**
  * Renders the results data to a log-friendly string
  *
- * @param {Function} arrayGen Log-friendly table generator
- * @return {String} The rendered data
+ * @param {module:CodeProcessor.arrayGen} arrayGen Log-friendly table generator
+ * @return {string} The rendered data
  */
 exports.renderLogOutput = function renderLogOutput(arrayGen) {
 	var resultsToLog;

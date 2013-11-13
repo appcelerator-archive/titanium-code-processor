@@ -18,17 +18,16 @@ if (fs.existsSync(path.join(codeProcessorDir, 'docs'))) {
 }
 
 while(directoryQueue.length) {
-	var dir = directoryQueue.pop(),
+	var dir = directoryQueue.shift(),
 		files = fs.readdirSync(dir), file,
 		i = 0, len = files.length;
-	if (dir !== path.join(codeProcessorDir, 'lib', 'base')) {
-		for(; i < len; i++) {
-			file = path.join(dir,files[i]);
-			if (fs.statSync(file).isDirectory()) {
-				directoryQueue.push(file);
-			} else if (file.match(/.js$/)) {
-				fileList.push(file);
-			}
+
+	for(; i < len; i++) {
+		file = path.join(dir,files[i]);
+		if (fs.statSync(file).isDirectory()) {
+			directoryQueue.push(file);
+		} else if (file.match(/.js$/) && file != 'Base.js') {
+			fileList.push(file);
 		}
 	}
 }

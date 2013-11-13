@@ -4,7 +4,7 @@
 	"displayName": "Titanium API Provider",
 	"description": "Provides an implementation of the Titanium SDK",
 	"titaniumCodeProcessorPlugin": true,
-	"main": "lib/TiAPIProvider.js",
+	"main": "lib/TiApiProvider.js",
 	"dependencies": {},
 	"options": {
 		"globalsOnly": {
