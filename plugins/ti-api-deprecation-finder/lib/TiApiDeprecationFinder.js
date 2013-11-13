@@ -1,12 +1,10 @@
 /**
- * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+ * <p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
  * This plugin finds the deprecated Titanium APIs that are used.
  *
  * @module plugins/TiApiDeprecationFinder
- * @author Bryan Hughes <bhughes@appcelerator.com>
- * @author Allen Yeung <ayeung@appcelerator.com>
  */
 
 var path = require('path'),

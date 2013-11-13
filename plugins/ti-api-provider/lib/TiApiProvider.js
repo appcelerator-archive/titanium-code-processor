@@ -1,11 +1,10 @@
 /**
- * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+ * <p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
  * Processes Titanium APIs for the code processor
  *
  * @module plugins/TiAPIProvider
- * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
 var fs = require('fs'),

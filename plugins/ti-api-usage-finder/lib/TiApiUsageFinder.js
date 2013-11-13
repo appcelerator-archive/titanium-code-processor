@@ -1,11 +1,10 @@
 /**
- * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+ * <p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
  * This plugin finds the Titanium APIs that are used.
  *
  * @module plugins/TiAPIUsageFinder
- * @author Allen Yeung &lt;<a href='mailto:ayeung@appcelerator.com'>ayeung@appcelerator.com</a>&gt;
  */
 
 var path = require('path'),
