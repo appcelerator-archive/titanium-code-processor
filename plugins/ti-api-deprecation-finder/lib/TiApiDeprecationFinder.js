@@ -93,7 +93,7 @@ function generateRenderData() {
 /**
  * Initializes the plugin
  *
- * @method
+ * @method module:plugins/TiApiDeprecationFinder.init
  * @param {Object} options The plugin options
  * @param {Array.<Object>} dependencies The dependant plugins of this plugin
  */
@@ -136,11 +136,17 @@ exports.init = function init() {
 };
 
 /**
+ * @typedef {Object} module:plugins/TiApiDeprecationFinder.results
+ * @property {string} summary A short summary of the results
+ * @property {Object.<string, number>} deprecatedAPIs The deprecated APIs used in the project. Each key is the name
+ *		of the deprecated API being used, and the value is the number of times it was used.
+ */
+/**
 * Gets the results of the plugin
 *
-* @method
-* @returns {Object} A dictionary of the deprecated Titanium APIs that were used along with a count of how many times
-*		they were used. The API name is the key and the count is the value.
+* @method module:plugins/TiApiDeprecationFinder.getResults
+* @returns {module:plugins/TiApiDeprecationFinder.results} A dictionary of the deprecated Titanium APIs that were used
+*		along with a count of how many times they were used. The API name is the key and the count is the value.
 */
 exports.getResults = function getResults() {
 	return results;
@@ -149,7 +155,7 @@ exports.getResults = function getResults() {
 /**
  * Generates the results template data to be rendered
  *
- * @method
+ * @method module:plugins/TiApiDeprecationFinder.getResultsPageData
  * @param {string} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
  *		as one of the entries in the template
  * @return {module:CodeProcessor.pluginResultsPageData} The information for generating the template(s)
@@ -168,6 +174,7 @@ exports.getResultsPageData = function getResultsPageData(entryFile) {
 /**
  * Renders the results data to a log-friendly string
  *
+ * @method module:plugins/TiApiDeprecationFinder.renderLogOutput
  * @param {module:CodeProcessor.arrayGen} arrayGen Log-friendly table generator
  * @return {string} The rendered data
  */

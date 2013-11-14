@@ -385,7 +385,11 @@ function validateConfigFile(logger, config, cli, callback) {
 					} catch(e) {} // squash
 				}
 			} catch(e) {
-				console.log('error', 'Could not parse "' + path.join(configFile.plugins[i].path, 'package.json') + '": ' + e);
+				if (!configFile.plugins[i]) {
+					console.error(__('Plugin entry for "%s" is missing a path entry', pkg.name));
+				} else {
+					console.error(__('Could not parse "%s": ', path.join(configFile.plugins[i].path, 'package.json')) + e);
+				}
 				process.exit(1);
 			}
 		}

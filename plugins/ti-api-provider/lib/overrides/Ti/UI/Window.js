@@ -14,7 +14,7 @@ var path = require('path'),
 /**
  * Gets the set of overrides defined in this file
  *
- * @method
+ * @method module:plugins/TiApiProvider/Ti/UI/Window.getOverrides
  * @param  {Object} options The options passed to the Ti API provider plugin
  * @return {Array.<module:plugins/TiApiProvider.override>} The list of overrides
  */

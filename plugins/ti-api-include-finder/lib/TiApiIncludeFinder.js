@@ -133,7 +133,7 @@ function generateRenderData() {
 /**
  * Initializes the plugin
  *
- * @method
+ * @method module:plugins/TiApiIncludeFinder.init
  */
 exports.init = function init() {
 	results = {
@@ -157,21 +157,34 @@ exports.init = function init() {
 };
 
 /**
- * typedef {Object} module:plugins/TiApiIncludeFinder.resolvedResult
+ * @typedef {Object} module:plugins/TiApiIncludeFinder.resolvedResult
  * @extends module:Runtime.eventObject
- * @property {string} name The name passed to the include call
+ * @property {string} name The name (after conversion to a string) passed to the include call
  * @property {string} path The full path to the file that was included
  */
 /**
- * typedef {Object} module:plugins/TiApiIncludeFinder.results
- * @property {Array.<string>} resolved A list of the <code>Ti.include()</code> calls that were resolved to a local file
- * @property {Array.<string>} unresolved A list of the <code>Ti.include()</code> calls that could not be resolved to a name
- * @property {Array.<string>} missing A list of the <code>Ti.include()</code> calls that were resolved, but could not be found
+ * @typedef {Object} module:plugins/TiApiIncludeFinder.unresolvedResult
+ * @extends module:Runtime.eventObject
+ */
+/**
+ * @typedef {Object} module:plugins/TiApiIncludeFinder.missingResult
+ * @extends module:Runtime.eventObject
+ * @property {string} name The name (after conversion to a string) passed to the include call
+ */
+/**
+ * @typedef {Object} module:plugins/TiApiIncludeFinder.results
+ * @property {string} summary A short summary of the results
+ * @property {Array.<module:plugins/TiApiIncludeFinder.resolvedResult>} resolved A list of the
+ *		<code>Ti.include()</code> calls that were resolved
+ * @property {Array.<module:plugins/TiApiIncludeFinder.unresolvedResult>} unresolved A list of the
+ *		<code>Ti.include()</code> calls without a name that can be resolved
+ * @property {Array.<module:plugins/TiApiIncludeFinder.missingResult>} missing A list of the
+ *		<code>Ti.include()</code> calls that were resolved, but could not be found
  */
 /**
 * Gets the results of the plugin
 *
-* @method
+* @method module:plugins/TiApiIncludeFinder.getResults
 * @return {module:plugins/TiApiIncludeFinder.results} The list of resolved and unresolved <code>Ti.include()</code> calls
 */
 exports.getResults = function getResults() {
@@ -181,7 +194,7 @@ exports.getResults = function getResults() {
 /**
  * Generates the results template data to be rendered
  *
- * @method
+ * @method module:plugins/TiApiIncludeFinder.getResultsPageData
  * @param {string} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
  *		as one of the entries in the template
  * @return {module:CodeProcessor.pluginResultsPageData} The information for generating the template(s)
@@ -200,6 +213,7 @@ exports.getResultsPageData = function getResultsPageData(entryFile) {
 /**
  * Renders the results data to a log-friendly string
  *
+ * @method module:plugins/TiApiIncludeFinder.renderLogOutput
  * @param {module:CodeProcessor.arrayGen} arrayGen Log-friendly table generator
  * @return {string} The rendered data
  */

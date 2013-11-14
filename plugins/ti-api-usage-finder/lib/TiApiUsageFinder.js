@@ -122,8 +122,7 @@ function generateRenderData() {
 /**
  * Initializes the plugin
  *
- * @method
- * @name module:plugins/TiApiUsageFinder#init
+ * @method module:plugins/TiApiUsageFinder.init
  * @param {Object} options The plugin options
  * @param {Array.<Object>} dependencies The dependant plugins of this plugin
  */
@@ -163,10 +162,18 @@ exports.init = function init() {
 };
 
 /**
+ * @typedef {Object} module:plugins/TiApiUsageFinder.results
+ * @property {string} summary A short summary of the results
+ * @property {Object.<string, number>} global The list of all APIs used across the project. Each key is the name of the
+ *		API used, and the value is the number of times it was used.
+ * @property {Object.<Object.<string, number>>} file The list of APIs used broken down by file. Each key on the outer
+ *		object is the name of a file, each key on the inner objects is the name of an API, and the value is the number
+ *		of times the API is used.
+ */
+/**
 * Gets the results of the plugin
 *
-* @method
-* @name module:plugins/TiApiUsageFinder#getResults
+* @method module:plugins/TiApiUsageFinder.getResults
 * @returns {Object} A dictionary of the Titanium APIs that were used along with a count of how many times they were used.
 */
 exports.getResults = function getResults() {
@@ -176,7 +183,7 @@ exports.getResults = function getResults() {
 /**
  * Generates the results template data to be rendered
  *
- * @method
+ * @method module:plugins/TiApiUsageFinder.getResultsPageData
  * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
  *		as one of the entries in the template
  * @return {module:CodeProcessor.pluginResultsPageData} The information for generating the template(s)
@@ -195,6 +202,7 @@ exports.getResultsPageData = function getResultsPageData(entryFile) {
 /**
  * Renders the results data to a log-friendly string
  *
+ * @method module:plugins/TiApiUsageFinder.renderLogOutput
  * @param {module:CodeProcessor.arrayGen} arrayGen Log-friendly table generator
  * @return {String} The rendered data
  */

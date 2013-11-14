@@ -100,7 +100,7 @@ function generateRenderData() {
 /**
  * Initializes the plugin
  *
- * @method
+ * @method module:plugins/TiApiPlatformValidator.init
  * @param {Object} options The plugin options
  * @param {Array.<Object>} dependencies The dependant plugins of this plugin
  */
@@ -166,11 +166,16 @@ exports.init = function init(options, dependencies) {
 };
 
 /**
+ * @typedef {Object} module:plugins/TiApiPlatformValidator.results
+ * @property {string} summary A short summary of the results
+ * @property {Object.<string, number>} invalidAPIs The platform-specific APIs used incorrectly in the project. Each key
+ *		is the name of the platform-specific API used incorrectly, and the value is the count
+ */
+/**
 * Gets the results of the plugin
 *
-* @method
-* @returns {Object} A dictionary of the Titanium APIs that were used along with a count of how many times they were used.
-*		Each key is the API name and the value is the count
+* @method module:plugins/TiApiPlatformValidator.getResults
+* @returns {module:plugins/TiApiPlatformValidator.results} The results
 */
 exports.getResults = function getResults() {
 	return results;
@@ -179,7 +184,7 @@ exports.getResults = function getResults() {
 /**
  * Generates the results template data to be rendered
  *
- * @method
+ * @method module:plugins/TiApiPlatformValidator.getResultsPageData
  * @param {string} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
  *		as one of the entries in the template
  * @return {module:CodeProcessor.pluginResultsPageData} The information for generating the template(s)
@@ -198,6 +203,7 @@ exports.getResultsPageData = function getResultsPageData(entryFile) {
 /**
  * Renders the results data to a log-friendly string
  *
+ * @method module:plugins/TiApiPlatformValidator.renderLogOutput
  * @param {module:CodeProcessor.arrayGen} arrayGen Log-friendly table generator
  * @return {string} The rendered data
  */

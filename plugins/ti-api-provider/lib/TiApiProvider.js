@@ -58,8 +58,7 @@ var fs = require('fs'),
 /**
  * Initializes the plugin
  *
- * @method
- * @name module:plugins/TiApiProvider#init
+ * @method module:plugins/TiApiProvider.init
  * @param {Object} options The plugin options
  * @param {Array.<Object>} dependencies The dependant plugins of this plugin
  */
@@ -319,8 +318,7 @@ TiFunction.prototype.callFunction = Base.wrapNativeCall(function callFunction(th
 /**
  * @classdesc A custom object implementation that hooks into get, put, and delete so it can fire the appropriate Ti events
  *
- * @constructor
- * @name module:plugins/TiApiProvider~TiObjectType
+ * @constructor module:plugins/TiApiProvider~TiObjectType
  * @private
  * @extends module:base/types/object.ObjectType
  * @param {Object} api The api describing the object
@@ -337,8 +335,7 @@ util.inherits(TiObjectType, Base.ObjectType);
 /**
  * Indicates that a titanium property was referenced (i.e. read).
  *
- * @name module:plugins/TiApiProvider#tiPropertyReferenced
- * @event
+ * @event module:plugins/TiApiProvider#tiPropertyReferenced
  * @param {string} name The name of the property that was referenced
  * @param {(module:base/types/object.DataPropertyDescriptor | module:base/types/object.AccessorPropertyDescriptor | undefined)} The
  *		descriptor fetched, if it could be found.
@@ -346,7 +343,7 @@ util.inherits(TiObjectType, Base.ObjectType);
 /**
  * ECMA-262 Spec: <em>Returns the value of the named property.</em>
  *
- * @method
+ * @method module:plugins/TiApiProvider.getOwnProperty
  * @param {string} p The name of the property to fetch
  * @param {boolean} alternate Whether or not to fetch the alternate values, or the base value
  * @param {boolean} suppressEvent Not used here, simply used as a placeholder for the implementation in TiApiProvieer
@@ -375,8 +372,7 @@ TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, alternate, su
 /**
  * Indicates that a titanium property was set (i.e. written).
  *
- * @name module:plugins/TiApiProvider#tiPropertySet
- * @event
+ * @event module:plugins/TiApiProvider#tiPropertySet
  * @param {string} name The name of the property that was set
  * @param {module:base.BaseType} value The value that was set
  */
@@ -384,7 +380,7 @@ TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, alternate, su
  * ECMA-262 Spec: <em>Sets the specified named property to the value of the second parameter. The flag controls failure
  * handling.</em>
  *
- * @method
+ * @method module:plugins/TiApiProvider.defineOwnProperty
  * @param {string} p The name of the parameter to set the value as
  * @param {module:base.BaseType} desc The value to set
  * @param {boolean} throwFlag Whether or not to throw an exception on error (related to strict mode)
@@ -430,14 +426,13 @@ TiObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, t
 /**
  * Indicates that a titanium property was deleted
  *
- * @name module:plugins/TiApiProvider#tiPropertyDeleted
- * @event
+ * @event module:plugins/TiApiProvider#tiPropertyDeleted
  * @param {string} name The name of the property referenced
  */
 /**
  * ECMA-262 Spec: <em>Removes the specified named own property from the object. The flag controls failure handling.</em>
  *
- * @method
+ * @method module:plugins/TiApiProvider.delete
  * @param {string} p The name of the parameter to delete
  * @returns {boolean} Whether or not the object was deleted succesfully
  * @see ECMA-262 Spec Chapter 8.12.7

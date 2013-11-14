@@ -155,7 +155,7 @@ function generateRenderData() {
 /**
  * Initializes the plugin
  *
- * @method
+ * @method module:plugins/TiApiRequireFinder.init
  * @param {Object} options The plugin options
  * @param {Array.<Object>} dependencies The dependant plugins of this plugin
  */
@@ -185,13 +185,42 @@ exports.init = function init() {
 };
 
 /**
+ * @typedef {Object} module:plugins/TiApiRequireFinder.resolvedResult
+ * @extends module:Runtime.eventObject
+ * @property {string} name The name (after conversion to a string) passed to the include call
+ * @property {string} path The full path to the file that was included
+ */
+/**
+ * @typedef {Object} module:plugins/TiApiRequireFinder.unresolvedResult
+ * @extends module:Runtime.eventObject
+ */
+/**
+ * @typedef {Object} module:plugins/TiApiRequireFinder.missingResult
+ * @extends module:Runtime.eventObject
+ * @property {string} name The name (after conversion to a string) passed to the include call
+ */
+/**
+ * @typedef {Object} module:plugins/TiApiRequireFinder.skippedResult
+ * @extends module:Runtime.eventObject
+ * @property {string} name The name (after conversion to a string) passed to the include call
+ */
+/**
+ * @typedef {Object} module:plugins/TiApiRequireFinder.results
+ * @property {string} summary A short summary of the results
+ * @property {Array.<module:plugins/TiApiRequireFinder.resolvedResult>} resolved A list of the
+ *		<code>require()</code> calls that were resolved
+ * @property {Array.<module:plugins/TiApiRequireFinder.unresolvedResult>} unresolved A list of the
+ *		<code>require()</code> calls without a name that can be resolved
+ * @property {Array.<module:plugins/TiApiRequireFinder.missingResult>} missing A list of the
+ *		<code>require()</code> calls that were resolved, but could not be found
+ * @property {Array.<module:plugins/TiApiRequireFinder.skippedResult>} skipped A list of the
+ *		<code>require()</code> calls that were skipped because they are native modules
+ */
+/**
 * Gets the results of the plugin
 *
-* @method
-* @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
-*		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
-*		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
-*		method.
+* @method module:plugins/TiApiRequireFinder.getResults
+* @returns {module:plugins/TiApiRequireFinder.results} The results
 */
 exports.getResults = function getResults() {
 	return results;
@@ -200,7 +229,7 @@ exports.getResults = function getResults() {
 /**
  * Generates the results template data to be rendered
  *
- * @method
+ * @method module:plugins/TiApiRequireFinder.getResultsPageData
  * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
  *		as one of the entries in the template
  * @return {module:CodeProcessor.pluginResultsPageData} The information for generating the template(s)
@@ -219,6 +248,7 @@ exports.getResultsPageData = function getResultsPageData(entryFile) {
 /**
  * Renders the results data to a log-friendly string
  *
+ * @method module:plugins/TiApiRequireFinder.renderLogOutput
  * @param {module:CodeProcessor.arrayGen} arrayGen Log-friendly table generator
  * @return {String} The rendered data
  */
