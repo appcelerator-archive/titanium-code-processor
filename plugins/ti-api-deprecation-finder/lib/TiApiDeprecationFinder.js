@@ -145,7 +145,7 @@ exports.init = function init() {
 * Gets the results of the plugin
 *
 * @method module:plugins/TiApiDeprecationFinder.getResults
-* @returns {module:plugins/TiApiDeprecationFinder.results} A dictionary of the deprecated Titanium APIs that were used
+* @return {module:plugins/TiApiDeprecationFinder.results} A dictionary of the deprecated Titanium APIs that were used
 *		along with a count of how many times they were used. The API name is the key and the count is the value.
 */
 exports.getResults = function getResults() {

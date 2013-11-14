@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/base/globals.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: lib/base/globals.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * &lt;p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.&lt;/p>
+ *
+ * Contains all of the global objects (Math, eval, Object, etc)
+ *
+ * @module base/conversion
+ */
+/*global
+AST,
+Runtime,
+RuleProcessor,
+FunctionTypeBase,
+util,
+areAnyUnknown,
+UnknownType,
+type,
+handleRecoverableNativeException,
+createEvalContext,
+UndefinedType,
+throwNativeException,
+toString,
+toInt32,
+NumberType,
+BooleanType,
+toNumber,
+StringType,
+ObjectType,
+addReadOnlyProperty,
+addNonEnumerableProperty,
+NullType,
+ArrayType,
+isCallable,
+toInteger,
+wrapNativeCall,
+inTryCatch,
+getCurrentContext
+*/
+
+/*****************************************
+ *
+ * Global methods and objects
+ *
+ *****************************************/
+
+/**
+ * eval method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.1.2.1
+ */
+function EvalFunction(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(EvalFunction, FunctionTypeBase);
+EvalFunction.prototype.callFunction = function callFunction(thisVal, args, options) {
+
+	// Variable declarations
+	var x = args[0],
+		ast,
+		result,
+		filename = (options &amp;&amp; options.filename) || Runtime.getCurrentLocation().filename;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Step 1
+	if (!x) {
+		return new UndefinedType();
+	}
+	if (type(x) !== 'String') {
+		return x;
+	}
+
+	// Step 2
+	ast = AST.parseString(x.value, filename);
+	if (ast.syntaxError) {
+		if (!inTryCatch() &amp;&amp; Runtime.options.nativeExceptionRecovery &amp;&amp; !Runtime.options.exactMode) {
+			Runtime.reportUglifyError(ast);
+			return new UnknownType();
+		} else {
+			throwNativeException('SyntaxError', ast.message);
+		}
+	}
+
+	// Step 3
+	createEvalContext(getCurrentContext(), ast, RuleProcessor.isBlockStrict(ast), options &amp;&amp; options.isDirectEval);
+
+	// Step 4
+	try {
+		result = ast.processRule();
+	} finally {
+		// Step 5
+		exitContext();
+	}
+
+	// Step 6
+	if (result[0] === 'normal') {
+		return result[1] ? result[1] : new UndefinedType();
+	} else {
+		if (result[1]) {
+			if (result[1].className.match('Error$')) {
+				throwNativeException(result[1].get('name'), result[1].get('message'));
+			} else {
+				throwNativeException('Error', toString(result[1]).value);
+			}
+		} else {
+			throwNativeException('Error', 'Missing throw value');
+		}
+	}
+};
+
+/**
+ * parseInt method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.1.2.2
+ */
+function ParseIntFunction(className) {
+	FunctionTypeBase.call(this, 2, className || 'Function');
+}
+util.inherits(ParseIntFunction, FunctionTypeBase);
+ParseIntFunction.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var string,
+		radix,
+		s,
+		r;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1, 2, and 6
+	string = args[0];
+	radix = args[1];
+	s = toString(string).value.trim();
+	r = radix &amp;&amp; type(radix) !== 'Undefined' ? toInt32(radix).value : undefined;
+
+	// Use the built-in method to perform the parseInt
+	return new NumberType(parseInt(s, r));
+});
+
+/**
+ * parseFloat method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.1.2.3
+ */
+function ParseFloatFunction(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(ParseFloatFunction, FunctionTypeBase);
+ParseFloatFunction.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var string,
+		s;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1 and 2
+	string = args[0];
+	s = toString(string).value.trim();
+
+	// Use the built-in method to perform the parseFloat
+	return new NumberType(parseFloat(s));
+});
+
+/**
+ * isNaN method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.1.2.4
+ */
+function IsNaNFunction(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(IsNaNFunction, FunctionTypeBase);
+IsNaNFunction.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Use the built-in method to perform the isNaN
+	return new BooleanType(isNaN(toNumber(args[0]).value));
+});
+
+/**
+ * isFinite method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.1.2.5
+ */
+function IsFiniteFunction(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(IsFiniteFunction, FunctionTypeBase);
+IsFiniteFunction.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Use the built-in method to perform the isFinite
+	return new BooleanType(isFinite(toNumber(args[0]).value));
+});
+
+/**
+ * decodeURI method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.1.3.1
+ */
+function DecodeURIFunction(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(DecodeURIFunction, FunctionTypeBase);
+DecodeURIFunction.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	var decodedURI;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	try {
+		decodedURI = new StringType(decodeURI(toString(args[0]).value));
+	} catch (e) {
+		if (!e.isCodeProcessorException) {
+			handleRecoverableNativeException('URIError', e.toString());
+			decodedURI = new UnknownType();
+		} else {
+			throw e;
+		}
+	}
+
+	// Use the built-in method to perform the decodeURI
+	return decodedURI;
+});
+
+/**
+ * decodeURIComponent method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.1.3.2
+ */
+function DecodeURIComponentFunction(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(DecodeURIComponentFunction, FunctionTypeBase);
+DecodeURIComponentFunction.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	var decodedURIComponent;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	try {
+		decodedURIComponent = new StringType(decodeURIComponent(toString(args[0]).value));
+	} catch (e) {
+		if (!e.isCodeProcessorException) {
+			handleRecoverableNativeException('URIError', e.toString());
+			decodedURIComponent = new UnknownType();
+		} else {
+			throw e;
+		}
+	}
+
+	// Use the built-in method to perform the decodeURI
+	return decodedURIComponent;
+});
+
+/**
+ * encodeURI method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.1.3.3
+ */
+function EncodeURIFunction(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(EncodeURIFunction, FunctionTypeBase);
+EncodeURIFunction.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	var encodedURI;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	try {
+		encodedURI = new StringType(encodeURI(toString(args[0]).value));
+	} catch (e) {
+		if (!e.isCodeProcessorException) {
+			handleRecoverableNativeException('URIError', e.toString());
+			encodedURI = new UnknownType();
+		} else {
+			throw e;
+		}
+	}
+
+	// Use the built-in method to perform the decodeURI
+	return encodedURI;
+});
+
+/**
+ * encodeURIComponent method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.1.3.4
+ */
+function EncodeURIComponentFunction(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(EncodeURIComponentFunction, FunctionTypeBase);
+EncodeURIComponentFunction.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	var encodedURIComponent;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	try {
+		encodedURIComponent = new StringType(encodeURIComponent(toString(args[0]).value));
+	} catch (e) {
+		if (!e.isCodeProcessorException) {
+			handleRecoverableNativeException('URIError', e.toString());
+			encodedURIComponent = new UnknownType();
+		} else {
+			throw e;
+		}
+	}
+
+	// Use the built-in method to perform the decodeURI
+	return encodedURIComponent;
+});
+
+/*****************************************
+ *
+ * Chapter 15 - Global Objects
+ *
+ *****************************************/
+
+// ******** Math Object ********
+
+/**
+ * abs() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.1
+ */
+function MathAbsFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(MathAbsFunc, FunctionTypeBase);
+MathAbsFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var x = args[0];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	if (!x) {
+		return new NumberType(NaN);
+	} else {
+		return new NumberType(Math.abs(toNumber(x).value));
+	}
+});
+
+/**
+ * acos() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.2
+ */
+function MathAcosFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(MathAcosFunc, FunctionTypeBase);
+MathAcosFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var x = args[0];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	if (!x) {
+		return new NumberType(NaN);
+	} else {
+		return new NumberType(Math.acos(toNumber(x).value));
+	}
+});
+
+/**
+ * asin() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.3
+ */
+function MathAsinFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(MathAsinFunc, FunctionTypeBase);
+MathAsinFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var x = args[0];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	return new NumberType(x ? Math.asin(toNumber(x).value) : NaN);
+});
+
+/**
+ * atan() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.4
+ */
+function MathAtanFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(MathAtanFunc, FunctionTypeBase);
+MathAtanFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var x = args[0];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	if (!x) {
+		return new NumberType(NaN);
+	} else {
+		return new NumberType(Math.atan(toNumber(x).value));
+	}
+});
+
+/**
+ * atan2() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.5
+ */
+function MathAtan2Func(className) {
+	FunctionTypeBase.call(this, 2, className || 'Function');
+}
+util.inherits(MathAtan2Func, FunctionTypeBase);
+MathAtan2Func.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var x = args[0];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	if (!x) {
+		return new NumberType(NaN);
+	} else {
+		return new NumberType(Math.abs(toNumber(x).value));
+	}
+});
+
+/**
+ * ceil() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.6
+ */
+function MathCeilFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(MathCeilFunc, FunctionTypeBase);
+MathCeilFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var x = args[0];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	if (!x) {
+		return new NumberType(NaN);
+	} else {
+		return new NumberType(Math.ceil(toNumber(x).value));
+	}
+});
+
+/**
+ * cos() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.7
+ */
+function MathCosFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(MathCosFunc, FunctionTypeBase);
+MathCosFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var x = args[0];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	if (!x) {
+		return new NumberType(NaN);
+	} else {
+		return new NumberType(Math.cos(toNumber(x).value));
+	}
+});
+
+/**
+ * exp() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.8
+ */
+function MathExpFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(MathExpFunc, FunctionTypeBase);
+MathExpFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var x = args[0];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	if (!x) {
+		return new NumberType(NaN);
+	} else {
+		return new NumberType(Math.exp(toNumber(x).value));
+	}
+});
+
+/**
+ * floor() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.9
+ */
+function MathFloorFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(MathFloorFunc, FunctionTypeBase);
+MathFloorFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var x = args[0];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	if (!x) {
+		return new NumberType(NaN);
+	} else if (type(x) === 'Unknown') {
+		return new UnknownType();
+	} else {
+		return new NumberType(Math.floor(toNumber(x).value));
+	}
+});
+
+/**
+ * log() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.10
+ */
+function MathLogFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(MathLogFunc, FunctionTypeBase);
+MathLogFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var x = args[0];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	if (!x) {
+		return new NumberType(NaN);
+	} else {
+		return new NumberType(Math.log(toNumber(x).value));
+	}
+});
+
+/**
+ * max() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.11
+ */
+function MathMaxFunc(className) {
+	FunctionTypeBase.call(this, 2, className || 'Function');
+}
+util.inherits(MathMaxFunc, FunctionTypeBase);
+MathMaxFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var i, len,
+		value,
+		values = [];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	for (i = 0, len = args.length; i &lt; len; i++) {
+		value = toNumber(args[i]);
+		if (type(value) === 'Unknown') {
+			return new UnknownType();
+		}
+		values.push(toNumber(value).value);
+	}
+	return new NumberType(Math.max.apply(this, values));
+});
+
+/**
+ * min() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.12
+ */
+function MathMinFunc(className) {
+	FunctionTypeBase.call(this, 2, className || 'Function');
+}
+util.inherits(MathMinFunc, FunctionTypeBase);
+MathMinFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var i, len,
+		value,
+		values = [];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	for (i = 0, len = args.length; i &lt; len; i++) {
+		value = toNumber(args[i]);
+		if (type(value) === 'Unknown') {
+			return new UnknownType();
+		}
+		values.push(toNumber(value).value);
+	}
+	return new NumberType(Math.min.apply(this, values));
+});
+
+/**
+ * pow() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.13
+ */
+function MathPowFunc(className) {
+	FunctionTypeBase.call(this, 2, className || 'Function');
+}
+util.inherits(MathPowFunc, FunctionTypeBase);
+MathPowFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var x = args[0],
+		y = args[1];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	if (!x || !y) {
+		return new NumberType(NaN);
+	} else {
+		return new NumberType(Math.pow(toNumber(x).value, toNumber(y).value));
+	}
+});
+
+/**
+ * random() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.14
+ */
+function MathRandomFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(MathRandomFunc, FunctionTypeBase);
+MathRandomFunc.prototype.callFunction = wrapNativeCall(function callFunction() {
+	if (Runtime.options.exactMode) {
+		return new NumberType(Math.random());
+	} else {
+		return new UnknownType();
+	}
+});
+
+/**
+ * round() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.15
+ */
+function MathRoundFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(MathRoundFunc, FunctionTypeBase);
+MathRoundFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var x = args[0];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	if (!x) {
+		return new NumberType(NaN);
+	} else {
+		return new NumberType(Math.round(toNumber(x).value));
+	}
+});
+
+/**
+ * sin() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.16
+ */
+function MathSinFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(MathSinFunc, FunctionTypeBase);
+MathSinFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var x = args[0];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	if (!x) {
+		return new NumberType(NaN);
+	} else {
+		return new NumberType(Math.sin(toNumber(x).value));
+	}
+});
+
+/**
+ * sqrt() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.17
+ */
+function MathSqrtFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(MathSqrtFunc, FunctionTypeBase);
+MathSqrtFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var x = args[0];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	if (!x) {
+		return new NumberType(NaN);
+	} else {
+		return new NumberType(Math.sqrt(toNumber(x).value));
+	}
+});
+
+/**
+ * tan() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8.2.17
+ */
+function MathTanFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(MathTanFunc, FunctionTypeBase);
+MathTanFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var x = args[0];
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	if (!x) {
+		return new NumberType(NaN);
+	} else {
+		return new NumberType(Math.tan(toNumber(x).value));
+	}
+});
+
+/**
+ * Math Object
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.8
+ */
+function MathObject(className) {
+	ObjectType.call(this, className);
+
+	// Properties
+	addReadOnlyProperty(this, 'E', new NumberType(Math.E));
+	addReadOnlyProperty(this, 'LN10', new NumberType(Math.LN10));
+	addReadOnlyProperty(this, 'LN2', new NumberType(Math.LN2));
+	addReadOnlyProperty(this, 'LOG2E', new NumberType(Math.LOG2E));
+	addReadOnlyProperty(this, 'LOG10E', new NumberType(Math.LOG10E));
+	addReadOnlyProperty(this, 'PI', new NumberType(Math.PI));
+	addReadOnlyProperty(this, 'SQRT1_2', new NumberType(Math.SQRT1_2));
+	addReadOnlyProperty(this, 'SQRT2', new NumberType(Math.SQRT2));
+
+	// Methods
+	addNonEnumerableProperty(this, 'abs', new MathAbsFunc());
+	addNonEnumerableProperty(this, 'acos', new MathAcosFunc());
+	addNonEnumerableProperty(this, 'asin', new MathAsinFunc());
+	addNonEnumerableProperty(this, 'atan', new MathAtanFunc());
+	addNonEnumerableProperty(this, 'atan2', new MathAtan2Func());
+	addNonEnumerableProperty(this, 'ceil', new MathCeilFunc());
+	addNonEnumerableProperty(this, 'cos', new MathCosFunc());
+	addNonEnumerableProperty(this, 'exp', new MathExpFunc());
+	addNonEnumerableProperty(this, 'floor', new MathFloorFunc());
+	addNonEnumerableProperty(this, 'log', new MathLogFunc());
+	addNonEnumerableProperty(this, 'max', new MathMaxFunc());
+	addNonEnumerableProperty(this, 'min', new MathMinFunc());
+	addNonEnumerableProperty(this, 'pow', new MathPowFunc());
+	addNonEnumerableProperty(this, 'random', new MathRandomFunc());
+	addNonEnumerableProperty(this, 'round', new MathRoundFunc());
+	addNonEnumerableProperty(this, 'sin', new MathSinFunc());
+	addNonEnumerableProperty(this, 'sqrt', new MathSqrtFunc());
+	addNonEnumerableProperty(this, 'tan', new MathTanFunc());
+}
+util.inherits(MathObject, ObjectType);
+
+// ******** JSON Object ********
+
+/**
+ * parse() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.12.2
+ */
+function JSONParseFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(JSONParseFunc, FunctionTypeBase);
+JSONParseFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var text = args[0],
+		reviver = args[1],
+		nativeObject;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Parse the code
+	try {
+		nativeObject = JSON.parse(toString(text).value);
+	} catch(e) {
+		handleRecoverableNativeException('SyntaxError', e.message);
+		return new UnknownType();
+	}
+
+	// Convert the result into an object type
+	function processObject(nativeObj) {
+		var converted,
+			p,
+			child,
+			i, len;
+
+		function setProperty(k, v, obj) {
+			if (reviver) {
+				converted.put(k, v, true, true);
+				v = reviver.callFunction(obj, [k, v]);
+				if (type(v) !== 'Undefined') {
+					converted.put(k, v, true);
+				} else {
+					converted['delete'](k, false);
+				}
+			} else {
+				converted.put(k, v, true, true);
+			}
+		}
+
+		switch(typeof nativeObj) {
+			case 'undefined':
+				return new UndefinedType();
+			case 'null':
+				return new NullType();
+			case 'string':
+				return new StringType(nativeObj);
+			case 'number':
+				return new NumberType(nativeObj);
+			case 'boolean':
+				return new BooleanType(nativeObj);
+			case 'object':
+				if (Array.isArray(nativeObj)) {
+					converted = new ArrayType();
+					for (i = 0, len = nativeObj.length; i &lt; len; i++) {
+						child = processObject(nativeObj[i]);
+						setProperty(i, child, converted);
+					}
+				} else {
+					converted = new ObjectType();
+					for (p in nativeObj) {
+						setProperty(p, processObject(nativeObj[p]), converted);
+					}
+				}
+				return converted;
+		}
+	}
+	return processObject(nativeObject);
+});
+
+/**
+ * parse() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.12.3
+ */
+function JSONStringifyFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(JSONStringifyFunc, FunctionTypeBase);
+JSONStringifyFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var value = args[0],
+		replacer = args[1],
+		space = args[2],
+		replacerFunction,
+		propertyList,
+		v,
+		i, len,
+		gap,
+		stack = [],
+		indent = '',
+		wrapper,
+		result;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	function str(key, holder) {
+
+		// Step 1
+		var value = holder.get(key),
+			toJSON;
+
+		// Step 2
+		if (type(value) === 'Object') {
+			toJSON = value.get('toJSON');
+			if (type(toJSON) === 'Unknown') {
+				throw 'Unknown';
+			}
+			if (isCallable(toJSON)) {
+				value = toJSON.callFunction(value, [key]);
+			}
+		}
+
+		// Step 3
+		if (replacerFunction) {
+			value = replacerFunction.callFunction(holder, [key, value]);
+		}
+
+		// Step 4
+		if (type(value) == 'Object') {
+			if (value.className === 'Number') {
+				value = toNumber(value);
+			}
+			if (value.className === 'String') {
+				value = toString(value);
+			}
+			if (value.className === 'Boolean') {
+				value = new BooleanType(value.primitiveValue);
+			}
+		}
+
+		// Steps 5-7
+		if (type(value) === 'Null') {
+			return 'null';
+		} else if (value.value === false) {
+			return 'false';
+		} else if (value.value === true) {
+			return 'true';
+		}
+
+		// Step 8
+		if (type(value) === 'String') {
+			return quote(value.value);
+		}
+
+		// Step 9
+		if (type(value) === 'Number') {
+			if (isFinite(value.value)) {
+				return toString(value).value;
+			} else {
+				return 'null';
+			}
+		}
+
+		// Step 10
+		if (type(value) === 'Unknown') {
+			throw 'Unknown';
+		}
+		if (type(value) === 'Object' &amp;&amp; isCallable(value)) {
+			if (value.className === 'Array') {
+				return ja(value);
+			}
+			return jo(value);
+		}
+
+		return undefined;
+	}
+
+	function quote(value) {
+		return JSON.stringify(value);
+	}
+
+	function jo(value) {
+
+		var stepBack = indent,
+			k,
+			p,
+			i, len,
+			partial = [],
+			strP,
+			member,
+			fin;
+
+		// Step 1
+		if (stack.indexOf(value) !== -1) {
+			handleRecoverableNativeException('TypeError', 'Invalid object type');
+			throw 'Unknown';
+		}
+
+		// Step 2
+		stack.push(value);
+
+		// Step 4
+		indent += gap;
+
+		// Steps 5 and 6
+		if (propertyList) {
+			k = propertyList;
+		} else {
+			k = [];
+			value._getPropertyNames().forEach(function (p) {
+				if (value._lookupProperty(p).enumerable) {
+					k.push(p);
+				}
+			});
+		}
+
+		// Step 8
+		for (i = 0, len = k.length; i &lt; len; i++) {
+			p = k[i];
+			strP = str(p, value);
+			if (strP) {
+				member = quote(p) + ':';
+				if (gap) {
+					member += space;
+				}
+				member += strP;
+				partial.push(member);
+			}
+		}
+
+		// Steps 9 and 10
+		if (!partial) {
+			fin = '{}';
+		} else {
+			if (!gap) {
+				fin = '{' + partial.join(',') + '}';
+			} else {
+				fin = '{\n' + indent + partial.join(',\n' + indent) + '\n' + stepBack + '}';
+			}
+		}
+
+		// Step 11
+		stack.pop();
+
+		// Step 12
+		indent = stepBack;
+
+		// Step 12
+		return fin;
+	}
+
+	function ja(value) {
+
+		var stepBack = indent,
+			partial = [],
+			len,
+			index = 0,
+			strP,
+			fin;
+
+		// Step 1
+		if (stack.indexOf(value) !== -1) {
+			handleRecoverableNativeException('TypeError', 'Invalid object type');
+			throw 'Unknown';
+		}
+
+		// Step 2
+		stack.push(value);
+
+		// Step 4
+		indent += gap;
+
+		// Step 6
+		len = value.get('length').value;
+
+		// Step 8
+		while (index &lt; len) {
+			strP = str(toString(new NumberType(index)).value, value);
+			if (strP) {
+				partial.push(strP);
+			} else {
+				partial.push('null');
+			}
+			index++;
+		}
+
+		// Steps 9 and 10
+		if (!partial) {
+			fin = '[]';
+		} else {
+			if (!gap) {
+				fin = '[' + partial.join(',') + ']';
+			} else {
+				fin = '[\n' + indent + partial.join(',\n' + indent) + '\n' + stepBack + ']';
+			}
+		}
+
+		// Step 11
+		stack.pop();
+
+		// Step 12
+		indent = stepBack;
+
+		// Step 12
+		return fin;
+	}
+
+	// Parse the replacer argument, Step 4
+	if (replacer &amp;&amp; type(replacer) === 'Object') {
+		if (isCallable(replacer)) {
+			replacerFunction = replacer;
+		} else if (replacer.className === 'Array') {
+			propertyList = [];
+			for (i = 0, len = toInteger(replacer.get('length')).value; i &lt; len; i++) {
+				v = replacer.get(i);
+				if (v.className === 'String' || v.className === 'Number') {
+					v = toString(v).value;
+					if (propertyList.indexOf(v) === -1) {
+						propertyList.push(v);
+					}
+				}
+			}
+		}
+	}
+
+	// Parse the space argument, steps 5-8
+	if (space) {
+		if (space.className === 'Number') {
+			space = Math.min(10, toNumber(space).value);
+			gap = (new Array(space)).join(' ');
+		} else if (space.className === 'String') {
+			gap = toString(space).value.substring(0, 9);
+			space = space.value;
+		} else {
+			space = undefined;
+			gap = '';
+		}
+	} else {
+		gap = '';
+	}
+
+	// Step 10
+	wrapper = new ObjectType();
+	wrapper.defineOwnProperty('', {
+		value: value,
+		writable: true,
+		enumerable: true,
+		configurable: true
+	}, false);
+
+	// Step 11
+	try {
+		result = str('', wrapper);
+	} catch(e) {
+		if (e === 'Unknown') {
+			return new UnknownType();
+		} else {
+			throw e;
+		}
+	}
+	if (typeof result == 'undefined') {
+		return new UndefinedType();
+	} else {
+		return new StringType(result);
+	}
+});
+
+/**
+ * JSON Object
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.12
+ */
+function JSONObject(className) {
+	ObjectType.call(this, className);
+
+	addNonEnumerableProperty(this, 'parse', new JSONParseFunc());
+	addNonEnumerableProperty(this, 'stringify', new JSONStringifyFunc());
+}
+util.inherits(JSONObject, ObjectType);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-AST.html">AST</a></li><li><a href="module-base.html">base</a></li><li><a href="array.html">base/constructors/array</a></li><li><a href="boolean.html">base/constructors/boolean</a></li><li><a href="date.html">base/constructors/date</a></li><li><a href="error.html">base/constructors/error</a></li><li><a href="function.html">base/constructors/function</a></li><li><a href="number.html">base/constructors/number</a></li><li><a href="object.html">base/constructors/object</a></li><li><a href="regexp.html">base/constructors/regexp</a></li><li><a href="string.html">base/constructors/string</a></li><li><a href="context.html">base/context</a></li><li><a href="conversion.html">base/conversion</a></li><li><a href="exceptions.html">base/exceptions</a></li><li><a href="init.html">base/init</a></li><li><a href="array_.html">base/prototypes/array</a></li><li><a href="boolean_.html">base/prototypes/boolean</a></li><li><a href="date_.html">base/prototypes/date</a></li><li><a href="error_.html">base/prototypes/error</a></li><li><a href="function_.html">base/prototypes/function</a></li><li><a href="number_.html">base/prototypes/number</a></li><li><a href="object_.html">base/prototypes/object</a></li><li><a href="regexp_.html">base/prototypes/regexp</a></li><li><a href="string_.html">base/prototypes/string</a></li><li><a href="array__.html">base/types/array</a></li><li><a href="boolean__.html">base/types/boolean</a></li><li><a href="function__.html">base/types/function</a></li><li><a href="null.html">base/types/null</a></li><li><a href="number__.html">base/types/number</a></li><li><a href="object__.html">base/types/object</a></li><li><a href="reference.html">base/types/reference</a></li><li><a href="regexp__.html">base/types/regexp</a></li><li><a href="string__.html">base/types/string</a></li><li><a href="undefined.html">base/types/undefined</a></li><li><a href="unknown.html">base/types/unknown</a></li><li><a href="module-CodeProcessor.html">CodeProcessor</a></li><li><a href="module-CodeProcessorUtils.html">CodeProcessorUtils</a></li><li><a href="TiApiDeprecationFinder.html">plugins/TiApiDeprecationFinder</a></li><li><a href="TiApiIncludeFinder.html">plugins/TiApiIncludeFinder</a></li><li><a href="TiApiPlatformValidator.html">plugins/TiApiPlatformValidator</a></li><li><a href="TiApiProvider.html">plugins/TiApiProvider</a></li><li><a href="globals.html">plugins/TiApiProvider/globals</a></li><li><a href="require.html">plugins/TiApiProvider/require</a></li><li><a href="Ti.html">plugins/TiApiProvider/Ti</a></li><li><a href="API.html">plugins/TiApiProvider/Ti/API</a></li><li><a href="App.html">plugins/TiApiProvider/Ti/App</a></li><li><a href="Properties.html">plugins/TiApiProvider/Ti/App/Properties</a></li><li><a href="FileSystem.html">plugins/TiApiProvider/Ti/FileSystem</a></li><li><a href="Window.html">plugins/TiApiProvider/Ti/UI/Window</a></li><li><a href="TiApiRequireFinder.html">plugins/TiApiRequireFinder</a></li><li><a href="TiApiUsageFinder.html">plugins/TiApiUsageFinder</a></li><li><a href="module-RuleProcessor.html">RuleProcessor</a></li><li><a href="AST_Accessor.html">rules/AST_Accessor</a></li><li><a href="AST_Array.html">rules/AST_Array</a></li><li><a href="AST_Assign.html">rules/AST_Assign</a></li><li><a href="AST_Binary.html">rules/AST_Binary</a></li><li><a href="AST_BlockStatement.html">rules/AST_BlockStatement</a></li><li><a href="AST_Break.html">rules/AST_Break</a></li><li><a href="AST_Call.html">rules/AST_Call</a></li><li><a href="AST_Conditional.html">rules/AST_Conditional</a></li><li><a href="AST_Const.html">rules/AST_Const</a></li><li><a href="AST_Continue.html">rules/AST_Continue</a></li><li><a href="AST_Debugger.html">rules/AST_Debugger</a></li><li><a href="AST_Defun.html">rules/AST_Defun</a></li><li><a href="AST_Directive.html">rules/AST_Directive</a></li><li><a href="AST_Do.html">rules/AST_Do</a></li><li><a href="AST_Dot.html">rules/AST_Dot</a></li><li><a href="AST_EmptyStatement.html">rules/AST_EmptyStatement</a></li><li><a href="AST_False.html">rules/AST_False</a></li><li><a href="AST_For.html">rules/AST_For</a></li><li><a href="AST_ForIn.html">rules/AST_ForIn</a></li><li><a href="AST_Function.html">rules/AST_Function</a></li><li><a href="AST_Hole.html">rules/AST_Hole</a></li><li><a href="AST_If.html">rules/AST_If</a></li><li><a href="AST_Infinity.html">rules/AST_Infinity</a></li><li><a href="AST_LabeledStatement.html">rules/AST_LabeledStatement</a></li><li><a href="AST_NaN.html">rules/AST_NaN</a></li><li><a href="AST_New.html">rules/AST_New</a></li><li><a href="AST_Null.html">rules/AST_Null</a></li><li><a href="AST_Number.html">rules/AST_Number</a></li><li><a href="AST_Object.html">rules/AST_Object</a></li><li><a href="AST_RegExp.html">rules/AST_RegExp</a></li><li><a href="AST_Return.html">rules/AST_Return</a></li><li><a href="AST_Seq.html">rules/AST_Seq</a></li><li><a href="AST_SimpleStatement.html">rules/AST_SimpleStatement</a></li><li><a href="AST_String.html">rules/AST_String</a></li><li><a href="AST_Sub.html">rules/AST_Sub</a></li><li><a href="AST_Switch.html">rules/AST_Switch</a></li><li><a href="AST_SymbolRef.html">rules/AST_SymbolRef</a></li><li><a href="AST_This.html">rules/AST_This</a></li><li><a href="AST_Throw.html">rules/AST_Throw</a></li><li><a href="AST_Toplevel.html">rules/AST_Toplevel</a></li><li><a href="AST_True.html">rules/AST_True</a></li><li><a href="AST_Try.html">rules/AST_Try</a></li><li><a href="AST_UnaryPostfix.html">rules/AST_UnaryPostfix</a></li><li><a href="AST_UnaryPrefix.html">rules/AST_UnaryPrefix</a></li><li><a href="AST_Undefined.html">rules/AST_Undefined</a></li><li><a href="AST_Var.html">rules/AST_Var</a></li><li><a href="AST_While.html">rules/AST_While</a></li><li><a href="AST_With.html">rules/AST_With</a></li><li><a href="module-Runtime.html">Runtime</a></li></ul><h3>Classes</h3><ul><li><a href="module-base.BaseType.html">BaseType</a></li><li><a href="context.DeclarativeEnvironmentRecord.html">DeclarativeEnvironmentRecord</a></li><li><a href="context.ObjectEnvironmentRecord.html">ObjectEnvironmentRecord</a></li><li><a href="context-ExecutionContext.html">ExecutionContext</a></li><li><a href="context-LexicalEnvironment.html">LexicalEnvironment</a></li><li><a href="array.ArrayPrototypeType.html">ArrayPrototypeType</a></li><li><a href="boolean.BooleanPrototypeType.html">BooleanPrototypeType</a></li><li><a href="date.DatePrototypeType.html">DatePrototypeType</a></li><li><a href="error.ErrorPrototypeType.html">ErrorPrototypeType</a></li><li><a href="function.FunctionPrototypeType.html">FunctionPrototypeType</a></li><li><a href="number.NumberPrototypeType.html">NumberPrototypeType</a></li><li><a href="object.ObjectPrototypeType.html">ObjectPrototypeType</a></li><li><a href="regexp.RegExpPrototypeType.html">RegExpPrototypeType</a></li><li><a href="string.StringPrototypeType.html">StringPrototypeType</a></li><li><a href="array.ArrayType.html">ArrayType</a></li><li><a href="boolean.BooleanType.html">BooleanType</a></li><li><a href="function.FunctionType.html">FunctionType</a></li><li><a href="function.FunctionTypeBase.html">FunctionTypeBase</a></li><li><a href="null.NullType.html">NullType</a></li><li><a href="number.NumberType.html">NumberType</a></li><li><a href="object.AccessorPropertyDescriptor.html">AccessorPropertyDescriptor</a></li><li><a href="object.DataPropertyDescriptor.html">DataPropertyDescriptor</a></li><li><a href="object.ObjectType.html">ObjectType</a></li><li><a href="reference.ReferenceType.html">ReferenceType</a></li><li><a href="regexp.RegExpType.html">RegExpType</a></li><li><a href="string.StringType.html">StringType</a></li><li><a href="undefined.UndefinedType.html">UndefinedType</a></li><li><a href="unknown.UnknownType.html">UnknownType</a></li><li><a href="module-Runtime.Evented.html">Evented</a></li></ul><h3>Events</h3><ul><li><a href="array.ArrayType.html#event:propertyDefined">propertyDefined</a></li><li><a href="array.ArrayType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="array.ArrayType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="array.ArrayType.html#event:propertySet">propertySet</a></li><li><a href="object.ObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="object.ObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="object.ObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="object.ObjectType.html#event:propertySet">propertySet</a></li><li><a href="module-CodeProcessor.html#event:enteredFile">enteredFile</a></li><li><a href="module-CodeProcessor.html#event:errorReported">errorReported</a></li><li><a href="module-CodeProcessor.html#event:maxIterationsExceeded">maxIterationsExceeded</a></li><li><a href="module-CodeProcessor.html#event:maxRecusionLimitReached">maxRecusionLimitReached</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingBegin">projectProcessingBegin</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingEnd">projectProcessingEnd</a></li><li><a href="module-CodeProcessor.html#event:undeclaredGlobalVariableCreated">undeclaredGlobalVariableCreated</a></li><li><a href="module-CodeProcessor.html#event:warningReported">warningReported</a></li><li><a href="TiApiProvider.html#event:tiPropertyDeleted">tiPropertyDeleted</a></li><li><a href="TiApiProvider.html#event:tiPropertyReferenced">tiPropertyReferenced</a></li><li><a href="TiApiProvider.html#event:tiPropertySet">tiPropertySet</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertySet">propertySet</a></li><li><a href="AST_Accessor.html#event:rule">rule</a></li><li><a href="AST_Array.html#event:rule">rule</a></li><li><a href="AST_Assign.html#event:rule">rule</a></li><li><a href="AST_Binary.html#event:rule">rule</a></li><li><a href="AST_BlockStatement.html#event:rule">rule</a></li><li><a href="AST_Break.html#event:rule">rule</a></li><li><a href="AST_Call.html#event:rule">rule</a></li><li><a href="AST_Conditional.html#event:rule">rule</a></li><li><a href="AST_Const.html#event:rule">rule</a></li><li><a href="AST_Continue.html#event:rule">rule</a></li><li><a href="AST_Debugger.html#event:rule">rule</a></li><li><a href="AST_Defun.html#event:rule">rule</a></li><li><a href="AST_Directive.html#event:rule">rule</a></li><li><a href="AST_Do.html#event:rule">rule</a></li><li><a href="AST_Dot.html#event:rule">rule</a></li><li><a href="AST_EmptyStatement.html#event:rule">rule</a></li><li><a href="AST_False.html#event:rule">rule</a></li><li><a href="AST_For.html#event:rule">rule</a></li><li><a href="AST_ForIn.html#event:rule">rule</a></li><li><a href="AST_Function.html#event:rule">rule</a></li><li><a href="AST_Hole.html#event:rule">rule</a></li><li><a href="AST_If.html#event:rule">rule</a></li><li><a href="AST_Infinity.html#event:rule">rule</a></li><li><a href="AST_LabeledStatement.html#event:rule">rule</a></li><li><a href="AST_NaN.html#event:rule">rule</a></li><li><a href="AST_New.html#event:rule">rule</a></li><li><a href="AST_Null.html#event:rule">rule</a></li><li><a href="AST_Number.html#event:rule">rule</a></li><li><a href="AST_Object.html#event:rule">rule</a></li><li><a href="AST_RegExp.html#event:rule">rule</a></li><li><a href="AST_Return.html#event:rule">rule</a></li><li><a href="AST_Seq.html#event:rule">rule</a></li><li><a href="AST_SimpleStatement.html#event:rule">rule</a></li><li><a href="AST_String.html#event:rule">rule</a></li><li><a href="AST_Sub.html#event:rule">rule</a></li><li><a href="AST_Switch.html#event:rule">rule</a></li><li><a href="AST_SymbolRef.html#event:rule">rule</a></li><li><a href="AST_This.html#event:rule">rule</a></li><li><a href="AST_Throw.html#event:rule">rule</a></li><li><a href="AST_Toplevel.html#event:rule">rule</a></li><li><a href="AST_True.html#event:rule">rule</a></li><li><a href="AST_Try.html#event:rule">rule</a></li><li><a href="AST_UnaryPostfix.html#event:rule">rule</a></li><li><a href="AST_UnaryPrefix.html#event:rule">rule</a></li><li><a href="AST_Undefined.html#event:rule">rule</a></li><li><a href="AST_Var.html#event:rule">rule</a></li><li><a href="AST_While.html#event:rule">rule</a></li><li><a href="AST_With.html#event:rule">rule</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Thu Nov 14 2013 15:31:12 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

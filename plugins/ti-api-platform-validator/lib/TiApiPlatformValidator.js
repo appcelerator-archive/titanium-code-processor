@@ -175,7 +175,7 @@ exports.init = function init(options, dependencies) {
 * Gets the results of the plugin
 *
 * @method module:plugins/TiApiPlatformValidator.getResults
-* @returns {module:plugins/TiApiPlatformValidator.results} The results
+* @return {module:plugins/TiApiPlatformValidator.results} The results
 */
 exports.getResults = function getResults() {
 	return results;

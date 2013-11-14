@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/base/conversion.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: lib/base/conversion.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * &lt;p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.&lt;/p>
+ *
+ * Contains conversion methods for types
+ *
+ * @module base/conversion
+ */
+/*global
+type,
+UnknownType,
+BooleanType,
+NumberType,
+StringType,
+ObjectType,
+UndefinedType,
+prototypes,
+handleRecoverableNativeException,
+throwNativeException,
+isType,
+isDataDescriptor
+*/
+
+/*****************************************
+ *
+ * Type Conversion
+ *
+ *****************************************/
+
+/**
+ * ECMA-262 Spec: &lt;em>The abstract operation ToPrimitive takes an input argument and an optional argument PreferredType.
+ * The abstract operation ToPrimitive converts its input argument to a non-Object type. If an object is capable of
+ * converting to more than one primitive type, it may use the optional hint PreferredType to favour that type.&lt;/em>
+ *
+ * @method module:base/conversion.toPrimitive
+ * @param {module:base.BaseType} input The value to convert
+ * @param {string} preferredType The preferred type to convert to
+ * @return {module:base.BaseType} The converted value
+ * @see ECMA-262 Spec Chapter 9.1
+ */
+exports.toPrimitive = toPrimitive;
+function toPrimitive(input, preferredType) {
+	input = input || new UndefinedType();
+	switch(type(input)) {
+		case 'Object':
+			return input.defaultValue(preferredType);
+		case 'Unknown':
+			return new UnknownType();
+		default:
+			return input;
+	}
+}
+
+/**
+ * ECMA-262 Spec: &lt;em>The abstract operation ToBoolean converts its argument to a value of type Boolean&lt;/em>
+ *
+ * @method module:base/conversion.toBoolean
+ * @param {module:base.BaseType} input The value to convert
+ * @return {module:base/types/boolean.BooleanType} The converted value
+ * @see ECMA-262 Spec Chapter 9.2
+ */
+exports.toBoolean = toBoolean;
+function toBoolean(input) {
+	var newBoolean = new BooleanType();
+	input = input || new UndefinedType();
+	switch (type(input)) {
+		case 'Undefined':
+			newBoolean.value = false;
+			break;
+		case 'Null':
+			newBoolean.value = false;
+			break;
+		case 'Boolean':
+			newBoolean.value = input.value;
+			break;
+		case 'Number':
+			newBoolean.value = !!input.value;
+			break;
+		case 'String':
+			newBoolean.value = !!input.value;
+			break;
+		case 'Object':
+			newBoolean.value = true;
+			break;
+		case 'Unknown':
+			return new UnknownType();
+	}
+	return newBoolean;
+}
+
+/**
+ * ECMA-262 Spec: &lt;em>The abstract operation ToNumber converts its argument to a value of type Number&lt;/em>
+ *
+ * @method module:base/conversion.toNumber
+ * @param {module:base.BaseType} input The value to convert
+ * @return {module:base/types/number.NumberType} The converted value
+ * @see ECMA-262 Spec Chapter 9.3
+ */
+exports.toNumber = toNumber;
+function toNumber(input) {
+	var newNumber = new NumberType();
+	input = input || new UndefinedType();
+	switch (type(input)) {
+		case 'Undefined':
+			newNumber.value = NaN;
+			break;
+		case 'Null':
+			newNumber.value = 0;
+			break;
+		case 'Boolean':
+			newNumber.value = input.value ? 1 : 0;
+			break;
+		case 'Number':
+			newNumber.value = input.value;
+			break;
+		case 'String':
+			newNumber.value = +input.value;
+			break;
+		case 'Object':
+			newNumber = toNumber(toPrimitive(input, 'Number'));
+			break;
+		case 'Unknown':
+			return new UnknownType();
+	}
+	return newNumber;
+}
+
+/**
+ * ECMA-262 Spec: &lt;em>The abstract operation ToInteger converts its argument to an integral numeric value.&lt;/em>
+ *
+ * @method module:base/conversion.toInteger
+ * @param {module:base.BaseType} input The value to convert
+ * @return {module:base/types/number.NumberType} The converted value
+ * @see ECMA-262 Spec Chapter 9.4
+ */
+exports.toInteger = toInteger;
+function toInteger(input) {
+	var newNumber = toNumber(input),
+		sign;
+	if (type(newNumber) === 'Unknown') {
+		return new UnknownType();
+	} else if (isNaN(newNumber.value)) {
+		newNumber.value = 0;
+	} else {
+		sign = newNumber.value &lt; 0 ? -1 : 1;
+		newNumber.value = sign * Math.floor(Math.abs(newNumber.value));
+	}
+	return newNumber;
+}
+
+/**
+ * ECMA-262 Spec: &lt;em>The abstract operation ToInt32 converts its argument to one of 2^32 integer values in the range
+ * -2^31 through 2^31 - 1, inclusive.&lt;/em>
+ *
+ * @method module:base/conversion.toInt32
+ * @param {module:base.BaseType} input The value to convert
+ * @return {module:base/types/number.NumberType} The converted value
+ * @see ECMA-262 Spec Chapter 9.5
+ */
+exports.toInt32 = toInt32;
+function toInt32(input) {
+	var newNumber = toNumber(input),
+		sign;
+	if (type(newNumber) === 'Unknown') {
+		return new UnknownType();
+	} else if (isNaN(newNumber.value) || newNumber.value === Infinity || newNumber.value === -Infinity) {
+		newNumber.value = 0;
+	} else {
+		sign = newNumber.value &lt; 0 ? -1 : 1;
+		newNumber.value = sign * Math.floor(Math.abs(newNumber.value)) % Math.pow(2, 32);
+		if (newNumber.value >= Math.pow(2, 31)) {
+			newNumber.value -= Math.pow(2, 32);
+		}
+	}
+	return newNumber;
+}
+
+/**
+ * ECMA-262 Spec: &lt;em>The abstract operation ToUint32 converts its argument to one of 2^32 integer values in the range 0
+ * through 2^32 - 1, inclusive.&lt;/em>
+ *
+ * @method module:base/conversion.toUint32
+ * @param {module:base.BaseType} input The value to convert
+ * @return {module:base/types/number.NumberType} The converted value
+ * @see ECMA-262 Spec Chapter 9.6
+ */
+exports.toUint32 = toUint32;
+function toUint32(input) {
+	var newNumber = toNumber(input),
+		sign;
+	if (type(newNumber) === 'Unknown') {
+		return new UnknownType();
+	} else if (isNaN(newNumber.value) || newNumber.value === Infinity || newNumber.value === -Infinity) {
+		newNumber.value = 0;
+	} else {
+		sign = newNumber.value &lt; 0 ? -1 : 1;
+		newNumber.value = sign * Math.floor(Math.abs(newNumber.value)) % Math.pow(2, 32);
+	}
+	return newNumber;
+}
+
+/**
+ * ECMA-262 Spec: &lt;em>The abstract operation ToUint16 converts its argument to one of 2^16 integer values in the range 0
+ * through 2^16 - 1, inclusive.&lt;/em>
+ *
+ * @method module:base/conversion.toUint16
+ * @param {module:base.BaseType} input The value to convert
+ * @return {module:base/types/number.NumberType} The converted value
+ * @see ECMA-262 Spec Chapter 9.7
+ */
+exports.toUint16 = toUint16;
+function toUint16(input) {
+	var newNumber = toNumber(input),
+		sign;
+	if (type(newNumber) === 'Unknown') {
+		return new UnknownType();
+	} else if (isNaN(newNumber.value) || newNumber.value === Infinity || newNumber.value === -Infinity) {
+		newNumber.value = 0;
+	} else {
+		sign = newNumber.value &lt; 0 ? -1 : 1;
+		newNumber.value = sign * Math.floor(Math.abs(newNumber.value)) % Math.pow(2, 16);
+	}
+	return newNumber;
+}
+
+/**
+ * ECMA-262 Spec: &lt;em>The abstract operation ToString converts its argument to a value of type String&lt;/em>
+ *
+ * @method module:base/conversion.toString
+ * @param {module:base.BaseType} input The value to convert
+ * @return {module:base/types/string.StringType} The converted value
+ * @see ECMA-262 Spec Chapter 9.8
+ */
+exports.toString = toString;
+function toString(input) {
+	var newString;
+	input = input || new UndefinedType();
+	if (type(input) === 'Unknown') {
+		newString = new UnknownType();
+	} else if (type(input) === 'Object') {
+		newString = toString(toPrimitive(input, 'String'));
+	} else {
+		newString = new StringType();
+		newString.value = input.value + '';
+	}
+	return newString;
+}
+
+/**
+ * ECMA-262 Spec: &lt;em>The abstract operation ToObject converts its argument to a value of type Object&lt;/em>
+ *
+ * @method module:base/conversion.toObject
+ * @param {module:base.BaseType} input The value to convert
+ * @return {module:base/types/object.ObjectType} The converted value
+ * @see ECMA-262 Spec Chapter 9.9
+ */
+exports.toObject = toObject;
+function toObject(input) {
+	var newObject;
+	input = input || new UndefinedType();
+	switch (type(input)) {
+		case 'Boolean':
+			newObject = new ObjectType();
+			newObject.className = 'Boolean';
+			newObject.primitiveValue = input.value;
+
+			Object.defineProperty(newObject, 'objectPrototype', {
+				get: function () {
+					return prototypes.Boolean;
+				},
+				configurable: true
+			});
+
+			return newObject;
+		case 'Number':
+			newObject = new ObjectType();
+			newObject.className = 'Number';
+			newObject.primitiveValue = input.value;
+
+			Object.defineProperty(newObject, 'objectPrototype', {
+				get: function () {
+					return prototypes.Number;
+				},
+				configurable: true
+			});
+
+			return newObject;
+		case 'String':
+			newObject = new ObjectType();
+			newObject.className = 'String';
+			newObject.primitiveValue = input.value;
+
+			Object.defineProperty(newObject, 'objectPrototype', {
+				get: function () {
+					return prototypes.String;
+				},
+				configurable: true
+			});
+
+			newObject._properties = input._properties;
+			return newObject;
+		case 'Object':
+			return input;
+		case 'Unknown':
+			return new UnknownType();
+		default:
+			handleRecoverableNativeException('TypeError', 'Values of type ' + type(input) + ' cannot be converted to objects');
+			return new UnknownType();
+	}
+}
+
+
+
+/**
+ * Converts a property descriptor to a generic object.
+ *
+ * @method module:base/conversion.fromPropertyDescriptor
+ * @param {module:base/types/object.DataPropertyDescriptor|module:base/types/object.AccessorPropertyDescriptor|Object} The property descriptor to convert
+ * @return {(module:base/types/undefined.UndefinedType | module:base/types/object.ObjectType)} The converted property descriptor
+ * @see ECMA-262 Spec Chapter 8.10.4
+ */
+exports.fromPropertyDescriptor = fromPropertyDescriptor;
+function fromPropertyDescriptor(desc) {
+
+	var obj = new ObjectType();
+
+	if (!desc) {
+		return new UndefinedType();
+	}
+
+	if (isDataDescriptor(desc)) {
+
+		obj.defineOwnProperty('value', {
+			value: desc.value || new UndefinedType(),
+			writable: true,
+			enumerable: true,
+			configurable: true
+		}, false, true);
+
+		obj.defineOwnProperty('writable', {
+			value: new BooleanType(desc.writable),
+			writable: true,
+			enumerable: true,
+			configurable: true
+		}, false, true);
+
+	} else {
+
+		obj.defineOwnProperty('get', {
+			value: desc.get || new UndefinedType(),
+			writable: true,
+			enumerable: true,
+			configurable: true
+		}, false, true);
+
+		obj.defineOwnProperty('set', {
+			value: desc.set || new UndefinedType(),
+			writable: true,
+			enumerable: true,
+			configurable: true
+		}, false, true);
+	}
+
+	obj.defineOwnProperty('configurable', {
+		value: new BooleanType(desc.configurable),
+		writable: true,
+		enumerable: true,
+		configurable: true
+	}, false, true);
+
+	obj.defineOwnProperty('enumerable', {
+		value: new BooleanType(desc.enumerable),
+		writable: true,
+		enumerable: true,
+		configurable: true
+	}, false, true);
+
+	return obj;
+}
+
+/**
+ * Converts a generic object to a property descriptor (think Object.defineProperty).
+ *
+ * @method module:base/conversion.toPropertyDescriptor
+ * @param {Object} o The object to convert
+ * @return {(module:base/types/object.DataPropertyDescriptor | module:base/types/object.AccessorPropertyDescriptor)} The converted property descriptor
+ * @see ECMA-262 Spec Chapter 8.10.5
+ */
+exports.toPropertyDescriptor = toPropertyDescriptor;
+function toPropertyDescriptor(obj) {
+	var desc = {},
+		getter,
+		setter;
+
+	if (type(obj) === 'Unknown') {
+
+		// Create a sensible default data property descriptor
+		desc.value = obj;
+		desc.writable = false;
+		desc.enumerable = true;
+		desc.configurable = false;
+
+	} else if (type(obj) === 'Object') {
+
+		// Parse through all of the options
+		if (obj.hasProperty('enumerable')) {
+			desc.enumerable = toBoolean(obj.get('enumerable')).value;
+		}
+		if (obj.hasProperty('configurable')) {
+			desc.configurable = toBoolean(obj.get('configurable')).value;
+		}
+		if (obj.hasProperty('value')) {
+			desc.value = obj.get('value');
+		}
+		if (obj.hasProperty('writable')) {
+			desc.writable = toBoolean(obj.get('writable')).value;
+		}
+		if (obj.hasProperty('get')) {
+			getter = obj.get('get');
+			if (type(getter) !== 'Undefined' &amp;&amp; type(getter) !== 'Unknown' &amp;&amp; !isCallable(getter)) {
+				throwNativeException('TypeError', 'get is not callable');
+			}
+			desc.get = getter;
+		}
+		if (obj.hasProperty('set')) {
+			setter = obj.get('set');
+			if (type(setter) !== 'Undefined' &amp;&amp; type(setter) !== 'Unknown' &amp;&amp; !isCallable(setter)) {
+				throwNativeException('TypeError', 'set is not callable');
+			}
+			desc.set = setter;
+		}
+		if ((desc.get || desc.set) &amp;&amp; (typeof desc.value != 'undefined' || typeof desc.writable != 'undefined')) {
+			throwNativeException('TypeError', 'Property descriptors cannot contain both get/set and value/writable properties');
+		}
+	} else {
+		throwNativeException('TypeError', 'Property descriptors must be objects');
+	}
+
+	return desc;
+}
+
+/**
+ * ECMA-262 Spec: &lt;em>The abstract operation CheckObjectCoercible throws an error if its argument is a value that cannot
+ * be converted to an Object using ToObject.&lt;/em>
+ *
+ * @method module:base/conversion.checkObjectCoercible
+ * @param {module:base.BaseType} input The value to check if it's coercible
+ * @see ECMA-262 Spec Chapter 9.10
+ */
+exports.checkObjectCoercible = checkObjectCoercible;
+function checkObjectCoercible(input) {
+	if (isType(input, ['Undefined', 'Null'])) {
+		throwNativeException('TypeError', type(input).toLowerCase() + ' cannot be coerced to an object');
+	}
+}
+
+/**
+ * ECMA-262 Spec: &lt;em>The abstract operation IsCallable determines if its argument, which must be an ECMAScript
+ * language value, is a callable function Object&lt;/em>
+ *
+ * @method module:base/conversion.isCallable
+ * @param {module:base.BaseType} input The value to check if it's callable
+ * @return {boolean} Whether or not the object is callable
+ * @see ECMA-262 Spec Chapter 9.11
+ */
+exports.isCallable = isCallable;
+function isCallable(input) {
+	if (input &amp;&amp; type(input) === 'Object') {
+		return !!input.callFunction;
+	} else {
+		return false;
+	}
+}
+
+/**
+ * Converts a value to unknown "in-place"
+ *
+ * @method module:base/conversion.convertToUnknown
+ * @param {module:base.BaseType} value The value to convert
+ */
+exports.convertToUnknown = convertToUnknown;
+function convertToUnknown (value) {
+	UnknownType.call(value);
+}
+
+/**
+ * The Strict Equality Comparison Algorithm
+ *
+ * @method module:base/conversion.strictEquals
+ * @param {module:base.BaseType} x The first value to compare
+ * @param {module:base.BaseType} y The second value to compare
+ * @return {boolean} Whether or not the two equals are strictly equal
+ * @see ECMA-262 Spec Chapter 11.9.6
+ */
+exports.strictEquals = strictEquals;
+function strictEquals(x, y) {
+	var typeX = type(x),
+		typeY = type(y);
+
+	if (typeX !== typeY) {
+		return false;
+	}
+
+	switch(typeX) {
+		case 'Undefined':
+		case 'Null': return true;
+		case 'Boolean':
+		case 'Number':
+		case 'String': return x.value === y.value;
+		case 'Object': return x === y;
+	}
+}
+
+/**
+ * The Abstract Equality Comparison Algorithm
+ *
+ * @method module:base/conversion.strictEquals
+ * @param {module:base.BaseType} x The first value to compare
+ * @param {module:base.BaseType} y The second value to compare
+ * @return {boolean} Whether or not the two equals are strictly equal
+ * @see ECMA-262 Spec Chapter 11.9.3
+ */
+exports.abstractEquality = abstractEquality;
+function abstractEquality(x, y) {
+	var typeX = type(x),
+		typeY = type(y),
+		xValue = x.value,
+		yValue = y.value;
+
+	// Step 1
+	if (typeY === typeX) {
+		if (typeX === 'Undefined' || typeX === 'Null') {
+			return true;
+		}
+		if (typeX === 'Number') {
+			if (isNaN(xValue) || isNaN(yValue)) {
+				return false;
+			}
+			return xValue === yValue;
+		}
+		if (typeX === 'String') {
+			return xValue === yValue;
+		}
+		if (typeX === 'Boolean') {
+			return xValue === yValue;
+		}
+		return x === y;
+	}
+
+	// Step 2
+	if (typeX === 'Undefined' &amp;&amp; typeY === 'Null') {
+		return true;
+	}
+
+	// Step 3
+	if (typeX === 'Null' &amp;&amp; typeY === 'Undefined') {
+		return true;
+	}
+
+	// Step 4
+	if (typeX === 'Number' &amp;&amp; typeY === 'String') {
+		return abstractEquality(x, toNumber(y));
+	}
+
+	// Step 5
+	if (typeX === 'String' &amp;&amp; typeY === 'Number') {
+		return abstractEquality(toNumber(x), y);
+	}
+
+	// Step 6
+	if (typeX === 'Boolean') {
+		return abstractEquality(toNumber(x), y);
+	}
+
+	// Step 7
+	if (typeY === 'Boolean') {
+		return abstractEquality(x, toNumber(y));
+	}
+
+	// Step 8
+	if (typeY === 'Object' &amp;&amp; (typeX === 'String' || typeX === 'Number')) {
+		return abstractEquality(x, toPrimitive(y));
+	}
+
+	// Step 8
+	if (typeX === 'Object' &amp;&amp; (typeY === 'String' || typeY === 'Number')) {
+		return abstractEquality(toPrimitive(x), y);
+	}
+
+	// Step 9
+	return false;
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-AST.html">AST</a></li><li><a href="module-base.html">base</a></li><li><a href="array.html">base/constructors/array</a></li><li><a href="boolean.html">base/constructors/boolean</a></li><li><a href="date.html">base/constructors/date</a></li><li><a href="error.html">base/constructors/error</a></li><li><a href="function.html">base/constructors/function</a></li><li><a href="number.html">base/constructors/number</a></li><li><a href="object.html">base/constructors/object</a></li><li><a href="regexp.html">base/constructors/regexp</a></li><li><a href="string.html">base/constructors/string</a></li><li><a href="context.html">base/context</a></li><li><a href="conversion.html">base/conversion</a></li><li><a href="exceptions.html">base/exceptions</a></li><li><a href="init.html">base/init</a></li><li><a href="array_.html">base/prototypes/array</a></li><li><a href="boolean_.html">base/prototypes/boolean</a></li><li><a href="date_.html">base/prototypes/date</a></li><li><a href="error_.html">base/prototypes/error</a></li><li><a href="function_.html">base/prototypes/function</a></li><li><a href="number_.html">base/prototypes/number</a></li><li><a href="object_.html">base/prototypes/object</a></li><li><a href="regexp_.html">base/prototypes/regexp</a></li><li><a href="string_.html">base/prototypes/string</a></li><li><a href="array__.html">base/types/array</a></li><li><a href="boolean__.html">base/types/boolean</a></li><li><a href="function__.html">base/types/function</a></li><li><a href="null.html">base/types/null</a></li><li><a href="number__.html">base/types/number</a></li><li><a href="object__.html">base/types/object</a></li><li><a href="reference.html">base/types/reference</a></li><li><a href="regexp__.html">base/types/regexp</a></li><li><a href="string__.html">base/types/string</a></li><li><a href="undefined.html">base/types/undefined</a></li><li><a href="unknown.html">base/types/unknown</a></li><li><a href="module-CodeProcessor.html">CodeProcessor</a></li><li><a href="module-CodeProcessorUtils.html">CodeProcessorUtils</a></li><li><a href="TiApiDeprecationFinder.html">plugins/TiApiDeprecationFinder</a></li><li><a href="TiApiIncludeFinder.html">plugins/TiApiIncludeFinder</a></li><li><a href="TiApiPlatformValidator.html">plugins/TiApiPlatformValidator</a></li><li><a href="TiApiProvider.html">plugins/TiApiProvider</a></li><li><a href="globals.html">plugins/TiApiProvider/globals</a></li><li><a href="require.html">plugins/TiApiProvider/require</a></li><li><a href="Ti.html">plugins/TiApiProvider/Ti</a></li><li><a href="API.html">plugins/TiApiProvider/Ti/API</a></li><li><a href="App.html">plugins/TiApiProvider/Ti/App</a></li><li><a href="Properties.html">plugins/TiApiProvider/Ti/App/Properties</a></li><li><a href="FileSystem.html">plugins/TiApiProvider/Ti/FileSystem</a></li><li><a href="Window.html">plugins/TiApiProvider/Ti/UI/Window</a></li><li><a href="TiApiRequireFinder.html">plugins/TiApiRequireFinder</a></li><li><a href="TiApiUsageFinder.html">plugins/TiApiUsageFinder</a></li><li><a href="module-RuleProcessor.html">RuleProcessor</a></li><li><a href="AST_Accessor.html">rules/AST_Accessor</a></li><li><a href="AST_Array.html">rules/AST_Array</a></li><li><a href="AST_Assign.html">rules/AST_Assign</a></li><li><a href="AST_Binary.html">rules/AST_Binary</a></li><li><a href="AST_BlockStatement.html">rules/AST_BlockStatement</a></li><li><a href="AST_Break.html">rules/AST_Break</a></li><li><a href="AST_Call.html">rules/AST_Call</a></li><li><a href="AST_Conditional.html">rules/AST_Conditional</a></li><li><a href="AST_Const.html">rules/AST_Const</a></li><li><a href="AST_Continue.html">rules/AST_Continue</a></li><li><a href="AST_Debugger.html">rules/AST_Debugger</a></li><li><a href="AST_Defun.html">rules/AST_Defun</a></li><li><a href="AST_Directive.html">rules/AST_Directive</a></li><li><a href="AST_Do.html">rules/AST_Do</a></li><li><a href="AST_Dot.html">rules/AST_Dot</a></li><li><a href="AST_EmptyStatement.html">rules/AST_EmptyStatement</a></li><li><a href="AST_False.html">rules/AST_False</a></li><li><a href="AST_For.html">rules/AST_For</a></li><li><a href="AST_ForIn.html">rules/AST_ForIn</a></li><li><a href="AST_Function.html">rules/AST_Function</a></li><li><a href="AST_Hole.html">rules/AST_Hole</a></li><li><a href="AST_If.html">rules/AST_If</a></li><li><a href="AST_Infinity.html">rules/AST_Infinity</a></li><li><a href="AST_LabeledStatement.html">rules/AST_LabeledStatement</a></li><li><a href="AST_NaN.html">rules/AST_NaN</a></li><li><a href="AST_New.html">rules/AST_New</a></li><li><a href="AST_Null.html">rules/AST_Null</a></li><li><a href="AST_Number.html">rules/AST_Number</a></li><li><a href="AST_Object.html">rules/AST_Object</a></li><li><a href="AST_RegExp.html">rules/AST_RegExp</a></li><li><a href="AST_Return.html">rules/AST_Return</a></li><li><a href="AST_Seq.html">rules/AST_Seq</a></li><li><a href="AST_SimpleStatement.html">rules/AST_SimpleStatement</a></li><li><a href="AST_String.html">rules/AST_String</a></li><li><a href="AST_Sub.html">rules/AST_Sub</a></li><li><a href="AST_Switch.html">rules/AST_Switch</a></li><li><a href="AST_SymbolRef.html">rules/AST_SymbolRef</a></li><li><a href="AST_This.html">rules/AST_This</a></li><li><a href="AST_Throw.html">rules/AST_Throw</a></li><li><a href="AST_Toplevel.html">rules/AST_Toplevel</a></li><li><a href="AST_True.html">rules/AST_True</a></li><li><a href="AST_Try.html">rules/AST_Try</a></li><li><a href="AST_UnaryPostfix.html">rules/AST_UnaryPostfix</a></li><li><a href="AST_UnaryPrefix.html">rules/AST_UnaryPrefix</a></li><li><a href="AST_Undefined.html">rules/AST_Undefined</a></li><li><a href="AST_Var.html">rules/AST_Var</a></li><li><a href="AST_While.html">rules/AST_While</a></li><li><a href="AST_With.html">rules/AST_With</a></li><li><a href="module-Runtime.html">Runtime</a></li></ul><h3>Classes</h3><ul><li><a href="module-base.BaseType.html">BaseType</a></li><li><a href="context.DeclarativeEnvironmentRecord.html">DeclarativeEnvironmentRecord</a></li><li><a href="context.ObjectEnvironmentRecord.html">ObjectEnvironmentRecord</a></li><li><a href="context-ExecutionContext.html">ExecutionContext</a></li><li><a href="context-LexicalEnvironment.html">LexicalEnvironment</a></li><li><a href="array.ArrayPrototypeType.html">ArrayPrototypeType</a></li><li><a href="boolean.BooleanPrototypeType.html">BooleanPrototypeType</a></li><li><a href="date.DatePrototypeType.html">DatePrototypeType</a></li><li><a href="error.ErrorPrototypeType.html">ErrorPrototypeType</a></li><li><a href="function.FunctionPrototypeType.html">FunctionPrototypeType</a></li><li><a href="number.NumberPrototypeType.html">NumberPrototypeType</a></li><li><a href="object.ObjectPrototypeType.html">ObjectPrototypeType</a></li><li><a href="regexp.RegExpPrototypeType.html">RegExpPrototypeType</a></li><li><a href="string.StringPrototypeType.html">StringPrototypeType</a></li><li><a href="array.ArrayType.html">ArrayType</a></li><li><a href="boolean.BooleanType.html">BooleanType</a></li><li><a href="function.FunctionType.html">FunctionType</a></li><li><a href="function.FunctionTypeBase.html">FunctionTypeBase</a></li><li><a href="null.NullType.html">NullType</a></li><li><a href="number.NumberType.html">NumberType</a></li><li><a href="object.AccessorPropertyDescriptor.html">AccessorPropertyDescriptor</a></li><li><a href="object.DataPropertyDescriptor.html">DataPropertyDescriptor</a></li><li><a href="object.ObjectType.html">ObjectType</a></li><li><a href="reference.ReferenceType.html">ReferenceType</a></li><li><a href="regexp.RegExpType.html">RegExpType</a></li><li><a href="string.StringType.html">StringType</a></li><li><a href="undefined.UndefinedType.html">UndefinedType</a></li><li><a href="unknown.UnknownType.html">UnknownType</a></li><li><a href="module-Runtime.Evented.html">Evented</a></li></ul><h3>Events</h3><ul><li><a href="array.ArrayType.html#event:propertyDefined">propertyDefined</a></li><li><a href="array.ArrayType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="array.ArrayType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="array.ArrayType.html#event:propertySet">propertySet</a></li><li><a href="object.ObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="object.ObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="object.ObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="object.ObjectType.html#event:propertySet">propertySet</a></li><li><a href="module-CodeProcessor.html#event:enteredFile">enteredFile</a></li><li><a href="module-CodeProcessor.html#event:errorReported">errorReported</a></li><li><a href="module-CodeProcessor.html#event:maxIterationsExceeded">maxIterationsExceeded</a></li><li><a href="module-CodeProcessor.html#event:maxRecusionLimitReached">maxRecusionLimitReached</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingBegin">projectProcessingBegin</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingEnd">projectProcessingEnd</a></li><li><a href="module-CodeProcessor.html#event:undeclaredGlobalVariableCreated">undeclaredGlobalVariableCreated</a></li><li><a href="module-CodeProcessor.html#event:warningReported">warningReported</a></li><li><a href="TiApiProvider.html#event:tiPropertyDeleted">tiPropertyDeleted</a></li><li><a href="TiApiProvider.html#event:tiPropertyReferenced">tiPropertyReferenced</a></li><li><a href="TiApiProvider.html#event:tiPropertySet">tiPropertySet</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertySet">propertySet</a></li><li><a href="AST_Accessor.html#event:rule">rule</a></li><li><a href="AST_Array.html#event:rule">rule</a></li><li><a href="AST_Assign.html#event:rule">rule</a></li><li><a href="AST_Binary.html#event:rule">rule</a></li><li><a href="AST_BlockStatement.html#event:rule">rule</a></li><li><a href="AST_Break.html#event:rule">rule</a></li><li><a href="AST_Call.html#event:rule">rule</a></li><li><a href="AST_Conditional.html#event:rule">rule</a></li><li><a href="AST_Const.html#event:rule">rule</a></li><li><a href="AST_Continue.html#event:rule">rule</a></li><li><a href="AST_Debugger.html#event:rule">rule</a></li><li><a href="AST_Defun.html#event:rule">rule</a></li><li><a href="AST_Directive.html#event:rule">rule</a></li><li><a href="AST_Do.html#event:rule">rule</a></li><li><a href="AST_Dot.html#event:rule">rule</a></li><li><a href="AST_EmptyStatement.html#event:rule">rule</a></li><li><a href="AST_False.html#event:rule">rule</a></li><li><a href="AST_For.html#event:rule">rule</a></li><li><a href="AST_ForIn.html#event:rule">rule</a></li><li><a href="AST_Function.html#event:rule">rule</a></li><li><a href="AST_Hole.html#event:rule">rule</a></li><li><a href="AST_If.html#event:rule">rule</a></li><li><a href="AST_Infinity.html#event:rule">rule</a></li><li><a href="AST_LabeledStatement.html#event:rule">rule</a></li><li><a href="AST_NaN.html#event:rule">rule</a></li><li><a href="AST_New.html#event:rule">rule</a></li><li><a href="AST_Null.html#event:rule">rule</a></li><li><a href="AST_Number.html#event:rule">rule</a></li><li><a href="AST_Object.html#event:rule">rule</a></li><li><a href="AST_RegExp.html#event:rule">rule</a></li><li><a href="AST_Return.html#event:rule">rule</a></li><li><a href="AST_Seq.html#event:rule">rule</a></li><li><a href="AST_SimpleStatement.html#event:rule">rule</a></li><li><a href="AST_String.html#event:rule">rule</a></li><li><a href="AST_Sub.html#event:rule">rule</a></li><li><a href="AST_Switch.html#event:rule">rule</a></li><li><a href="AST_SymbolRef.html#event:rule">rule</a></li><li><a href="AST_This.html#event:rule">rule</a></li><li><a href="AST_Throw.html#event:rule">rule</a></li><li><a href="AST_Toplevel.html#event:rule">rule</a></li><li><a href="AST_True.html#event:rule">rule</a></li><li><a href="AST_Try.html#event:rule">rule</a></li><li><a href="AST_UnaryPostfix.html#event:rule">rule</a></li><li><a href="AST_UnaryPrefix.html#event:rule">rule</a></li><li><a href="AST_Undefined.html#event:rule">rule</a></li><li><a href="AST_Var.html#event:rule">rule</a></li><li><a href="AST_While.html#event:rule">rule</a></li><li><a href="AST_With.html#event:rule">rule</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Thu Nov 14 2013 15:31:12 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

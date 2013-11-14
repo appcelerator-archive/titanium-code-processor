@@ -347,7 +347,7 @@ util.inherits(TiObjectType, Base.ObjectType);
  * @param {string} p The name of the property to fetch
  * @param {boolean} alternate Whether or not to fetch the alternate values, or the base value
  * @param {boolean} suppressEvent Not used here, simply used as a placeholder for the implementation in TiApiProvieer
- * @returns {module:base.BaseType} The value of the property, or a new instance of
+ * @return {module:base.BaseType} The value of the property, or a new instance of
  *		{@link module:base/types/undefined.UndefinedType} if the property does not exist
  * @see ECMA-262 Spec Chapter 8.12.3
  */
@@ -434,7 +434,7 @@ TiObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, t
  *
  * @method module:plugins/TiApiProvider.delete
  * @param {string} p The name of the parameter to delete
- * @returns {boolean} Whether or not the object was deleted succesfully
+ * @return {boolean} Whether or not the object was deleted succesfully
  * @see ECMA-262 Spec Chapter 8.12.7
  */
 TiObjectType.prototype.delete = function objDelete(p) {

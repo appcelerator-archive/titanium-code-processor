@@ -220,7 +220,7 @@ exports.init = function init() {
 * Gets the results of the plugin
 *
 * @method module:plugins/TiApiRequireFinder.getResults
-* @returns {module:plugins/TiApiRequireFinder.results} The results
+* @return {module:plugins/TiApiRequireFinder.results} The results
 */
 exports.getResults = function getResults() {
 	return results;
@@ -230,7 +230,7 @@ exports.getResults = function getResults() {
  * Generates the results template data to be rendered
  *
  * @method module:plugins/TiApiRequireFinder.getResultsPageData
- * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ * @param {string} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
  *		as one of the entries in the template
  * @return {module:CodeProcessor.pluginResultsPageData} The information for generating the template(s)
  */
@@ -250,7 +250,7 @@ exports.getResultsPageData = function getResultsPageData(entryFile) {
  *
  * @method module:plugins/TiApiRequireFinder.renderLogOutput
  * @param {module:CodeProcessor.arrayGen} arrayGen Log-friendly table generator
- * @return {String} The rendered data
+ * @return {string} The rendered data
  */
 exports.renderLogOutput = function (arrayGen) {
 	var resultsToLog = renderData.numRequiresResolved + ' resolved\n' +

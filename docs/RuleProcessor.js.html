@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/RuleProcessor.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: lib/RuleProcessor.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * &lt;p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.&lt;/p>
+ *
+ * Provides helper methods for processing rules
+ *
+ * @module RuleProcessor
+ */
+
+var Runtime = require('./Runtime'),
+	trace,
+	cycle,
+	cycleLocation,
+	cycleCount,
+	callLocationStack = [],
+	traceLocation = 0,
+	throwNativeException,
+	recursionExitPoint = -1;
+
+/**
+ * A return tuple is a value returned from a JavaScript statement. It is always composed of three elements. The first is
+ * a string and represents the status. Typically this is "normal", but can also be things like "throw" or "return". The
+ * second element is a primary value for the statement, if any, such as the value returned from a function when the
+ * first element is "return". The third element is used for miscellaneous purposes.
+ *
+ * @typedef {Array} module:RuleProcessor.returnTuple
+ */
+
+/**
+ * Preprocess a rule. This method does things like updating the location stack, checking for execution timeout errors,
+ * checking for cycle errors, etc.
+ *
+ * @method module:RuleProcessor.preProcess
+ * @param {module:AST.node} astSet The AST node to preprocess
+ */
+exports.preProcess = preProcess;
+function preProcess(ast) {
+
+	// Some rules do not have location information, so we have to check for them here and use the previous information otherwise
+	var currentLocation = Runtime.getCurrentLocation(),
+		start = ast.start,
+		filename = (start &amp;&amp; start.file) || currentLocation.filename,
+		line = (start &amp;&amp; start.line) || currentLocation.line,
+		column = (start &amp;&amp; start.col) || currentLocation.column,
+		previousTraceEntryLocation,
+		Base = require('./Base');
+
+	// Store line and column numbers, if they exist
+	Runtime.setCurrentLocation(filename, line, column);
+
+	// Make sure we haven't exceeded the time limit
+	if (Runtime.executionTimeLimit &amp;&amp; Runtime.executionTimeLimit &lt; Date.now()) {
+		throwNativeException('RangeError', 'Execution timeout exceeded');
+	}
+
+	// Add to the trace and look for cycles
+	if (!trace) {
+		trace = new Array(Runtime.options.cycleDetectionStackSize);
+	}
+	if (cycle) {
+		if (ast === cycle[cycleLocation]) {
+			cycleLocation++;
+			if (cycleLocation === cycle.length) {
+				cycleCount++;
+				if (cycleCount > Runtime.options.maxCycles) {
+					throwNativeException('RangeError', 'The maximum number of cycles was detected');
+				}
+				cycleLocation = 0;
+			}
+		} else {
+			cycle = undefined;
+		}
+	} else {
+		previousTraceEntryLocation = trace.indexOf(ast);
+		if (previousTraceEntryLocation !== -1) {
+			if (previousTraceEntryLocation &lt; traceLocation) {
+				cycle = trace.slice(previousTraceEntryLocation, traceLocation);
+			} else {
+				cycle = trace.slice(previousTraceEntryLocation).concat(trace.slice(0, traceLocation));
+			}
+			cycleCount = 1;
+			cycleLocation = 1;
+		}
+	}
+	trace[traceLocation] = ast;
+	traceLocation++;
+	if (traceLocation === trace.length) {
+		traceLocation = 0;
+	}
+
+	Base.setVisited(ast);
+}
+
+/**
+ * Post process a rule
+ *
+ * @method module:RuleProcessor.postProcess
+ * @param {module:AST.node} ast The AST node to process
+ * @param {(Array | Base.BaseType)} returnValue The return value, either a JS value or a return tuple
+ */
+exports.postProcess = postProcess;
+function postProcess(ast, returnValue) {
+	returnValue = Array.isArray(returnValue) ? returnValue[1] : returnValue;
+	ast._unknown = ast._unknown || !!(returnValue &amp;&amp; returnValue.type === 'Unknown');
+	Runtime.exitCurrentLocation();
+}
+
+/**
+ * Enters a function call by pushing the function information on the call stack
+ *
+ * @method module:RuleProcessor.enterCall
+ */
+exports.enterCall = enterCall;
+function enterCall() {
+	var currentLocation = Runtime.getCurrentLocation();
+	callLocationStack.push(currentLocation.filename + ':' + currentLocation.line + ':' + currentLocation.column);
+}
+
+/**
+ * Exits a function call by popping the call stack
+ *
+ * @method module:RuleProcessor.exitCall
+ */
+exports.exitCall = exitCall;
+function exitCall() {
+	callLocationStack.pop();
+}
+
+/**
+ * Gets the current call stack trace, with the location of the current rule on top of the stack (like you see in debuggers)
+ *
+ * @method module:RuleProcessor.getStackTrace
+ * @return {Array.&lt;string>} An array of stack trace locations
+ */
+exports.getStackTrace = getStackTrace;
+function getStackTrace() {
+	var currentLocation = Runtime.getCurrentLocation();
+	return callLocationStack.concat([currentLocation.filename + ':' + currentLocation.line + ':' + currentLocation.column]);
+}
+
+/**
+ * Returns whether or not this function is a recursion exit point (i.e. where it gets out of the recursive call)
+ *
+ * @method module:RuleProcessor.isRecursionExitPoint
+ * @return {boolean} Whether or not this is a recursive exit point. Returns false if not in a recursive call.
+ */
+exports.isRecursionExitPoint = isRecursionExitPoint;
+function isRecursionExitPoint() {
+	return !!callLocationStack.length &amp;&amp; (recursionExitPoint == callLocationStack.length - 1);
+}
+
+/**
+ * Checks the callstack to see if it looks like we're stuck in infinite recursion
+ *
+ * @method module:RuleProcessor.checkForInfiniteRecursion
+ * @return {boolean} Whether or not we think we are infinitely recursing
+ */
+exports.checkForInfiniteRecursion = checkForInfiniteRecursion;
+function checkForInfiniteRecursion() {
+	var counter = 0,
+		before,
+		after,
+		isInfiniteRecursion,
+		i, len,
+		replacedRegex = /^\*/;
+
+	function replaceAll(string, search, value) {
+		while(string.indexOf(search) != -1) {
+			string = string.replace(search, value);
+		}
+		return string;
+	}
+
+	// Find cycles via Brent's Algorithm: http://en.wikipedia.org/wiki/Cycle_detection#Brent.27s_algorithm
+	function brent(sequence) {
+		var power = 1,
+			lam = 1,
+			tortoise = 0,
+			hare = 1,
+			mu,
+			cycle;
+
+		while(sequence[tortoise] != sequence[hare]) {
+			if (power == lam) {
+				tortoise = hare;
+				power *= 2;
+				lam = 0;
+			}
+			hare++;
+			lam++;
+		}
+
+		mu = 0;
+		tortoise = 0;
+		hare = lam;
+		while(sequence[tortoise] != sequence[hare]) {
+			tortoise++;
+			hare++;
+			mu++;
+		}
+		if (tortoise == sequence.length) {
+			return sequence;
+		}
+
+		cycle = sequence.slice(tortoise, hare).join('?');
+
+		if (/^\*[0-9]*$/.test(cycle)) {
+			return sequence;
+		}
+		return brent(replaceAll(sequence.join('?'), cycle, '*' + counter++).split('?'));
+	}
+
+	// Looks for repeated sequences and merges them into a single identifier
+	function mergeRepeated(sequence) {
+		var cycleLength,
+			cycle,
+			replacements = {};
+		for (var i = 0; i &lt; sequence.length; i++) {
+			cycleLength = 0;
+			while(sequence[i + ++cycleLength] == sequence[i]);
+			if (cycleLength > 1) {
+				cycle = sequence.slice(i, i + cycleLength).join('?');
+				if (!replacements[cycle]) {
+					replacements[cycle] = '*' + counter++;
+				}
+				sequence = replaceAll(sequence.join('?'), cycle, replacements[cycle]).split('?');
+			}
+			if (cycleLength > Runtime.options.maxRecursionLimit) {
+				isInfiniteRecursion = true;
+			}
+		}
+		return sequence;
+	}
+
+	// Deep clone the array since we will be modifying it
+	before = [].concat(callLocationStack);
+
+	// Alternate between Brent's method and merging repeated values until there are no more changes
+	while(true) {
+		after = brent(before);
+		if (before.join('?') == after.join('?')) {
+			break;
+		}
+		before = after;
+
+		after = mergeRepeated(before);
+		if (after === true) {
+			break;
+		}
+		if (before.join('?') == after.join('?')) {
+			break;
+		}
+		before = after;
+	}
+
+	if (isInfiniteRecursion) {
+		for (i = 0, len = after.length; i &lt; len; i++) {
+			if (replacedRegex.test(after[i])) {
+				recursionExitPoint = i;
+				return true;
+			}
+		}
+		recursionExitPoint = -1;
+	}
+	return false;
+}
+
+/**
+ * Tells whether or not we are in the process of unrolling a recursive call
+ *
+ * @method module:RuleProcessor.inRecursionUnroll
+ * @return {boolean} Whether or not we are in a recursion unroll
+ */
+exports.inRecursionUnroll = inRecursionUnroll;
+function inRecursionUnroll() {
+	return recursionExitPoint != -1;
+}
+
+/**
+ * Clears the recursion exit point
+ *
+ * @method module:RuleProcessor.clearRecursionExitPoint
+ */
+exports.clearRecursionExitPoint = clearRecursionExitPoint;
+function clearRecursionExitPoint() {
+	recursionExitPoint = -1;
+}
+
+/**
+ * Sets the native throw exception method, used to break a cyclical dep with Base (hacky but necessary)
+ *
+ * @method module:RuleProcessor.setThrowNativeException
+ * @param {module:base.BaseType} value The native exception
+ */
+exports.setThrowNativeException = setThrowNativeException;
+function setThrowNativeException(value) {
+	throwNativeException = value;
+}
+
+/**
+ * Process a set of AST nodes, taking into account return and throw statements
+ *
+ * @method module:RuleProcessor.processBlock
+ * @param {Array.&lt;module:AST.node>} astSet The set of AST nodes to process
+ * @return {Array} The return tuple from the AST set
+ */
+exports.processBlock = processBlock;
+function processBlock(astSet) {
+
+	var i, len,
+		result = ['normal', undefined, undefined],
+		v,
+		Base = require('./Base');
+
+	for (i = 0, len = astSet ? astSet.length : 0; i &lt; len; i++) {
+		try {
+			v = astSet[i].processRule();
+		} catch(e) {
+			if (!inRecursionUnroll()) {
+				Base.processInSkippedMode(processBlock.bind(null, astSet.slice(i + 1)));
+			}
+			throw e;
+		}
+		if (v &amp;&amp; v.length === 3 &amp;&amp; v[0] !== 'normal') {
+			result = v;
+			Base.processInSkippedMode(processBlock.bind(null, astSet.slice(i + 1)));
+			break;
+		}
+		if (v[1]) {
+			result[1] = v[1];
+		}
+		result[2] = v[2];
+	}
+	return result;
+}
+
+/**
+ * Determines whether or not a block is strict
+ *
+ * @method module:RuleProcessor.isBlockStrict
+ * @param {Array.&lt;module:AST.node>} astSet The set to check for strict mode on
+ * @return {boolean} Whether or not the block is strict
+ */
+exports.isBlockStrict = isBlockStrict;
+function isBlockStrict(ast) {
+	var i, len;
+	for (i = 0, len = ast.directives.length; i &lt; len; i++) {
+		if (ast.directives[i] === 'use strict') {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Fires a rule event from the given ast and data. It's basically a special purpose mixin for events
+ *
+ * @method module:RuleProcessor.fireRuleEvent
+ * @param {module:AST.node} ast The ast associated with the event that will be queried for the base event information
+ * @param {Object} data The data to mixin the base event information in to. This object is modified
+ * @param {boolean} processingComplete Indicates if this rule has been processed or not. Useful for doing pre vs post
+ *		order traversals. Note: every rule fires a rule event twice, once before processing has begun and once after
+ *		processing has completed, as indicated by this property.
+ */
+exports.fireRuleEvent = fireRuleEvent;
+function fireRuleEvent(ast, data, processingComplete) {
+	data.ruleName = ast.className;
+	data.ast = ast;
+	data.processingComplete = processingComplete;
+	Runtime.fireEvent('rule', 'Rule ' + data.ruleName + ' was encountered', data);
+}
+
+/**
+ * Gets the name of the rule of the supplied ast node.
+ *
+ * @method module:RuleProcessor.getRuleName
+ * @param {module:AST.node} ast The ast to get the name of
+ * @return {string} The name of the node
+ */
+exports.getRuleName = getRuleName;
+function getRuleName(ast) {
+	return typeof ast[0] === 'string' ? ast[0] : ast[0].name;
+}
+
+/**
+ * Logs a rule
+ *
+ * @method module:RuleProcessor.logRule
+ * @param {string} ruleName The name of the rule
+ */
+exports.logRule = logRule;
+function logRule(ruleName, data) {
+	var location = Runtime.getCurrentLocation();
+	Runtime.log('trace', 'Processing rule ' + ruleName + ': ' + (data ? data + ' ': '') +
+		'(' + location.filename + ':' + location.line + ':' + location.column + ')');
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-AST.html">AST</a></li><li><a href="module-base.html">base</a></li><li><a href="array.html">base/constructors/array</a></li><li><a href="boolean.html">base/constructors/boolean</a></li><li><a href="date.html">base/constructors/date</a></li><li><a href="error.html">base/constructors/error</a></li><li><a href="function.html">base/constructors/function</a></li><li><a href="number.html">base/constructors/number</a></li><li><a href="object.html">base/constructors/object</a></li><li><a href="regexp.html">base/constructors/regexp</a></li><li><a href="string.html">base/constructors/string</a></li><li><a href="context.html">base/context</a></li><li><a href="conversion.html">base/conversion</a></li><li><a href="exceptions.html">base/exceptions</a></li><li><a href="init.html">base/init</a></li><li><a href="array_.html">base/prototypes/array</a></li><li><a href="boolean_.html">base/prototypes/boolean</a></li><li><a href="date_.html">base/prototypes/date</a></li><li><a href="error_.html">base/prototypes/error</a></li><li><a href="function_.html">base/prototypes/function</a></li><li><a href="number_.html">base/prototypes/number</a></li><li><a href="object_.html">base/prototypes/object</a></li><li><a href="regexp_.html">base/prototypes/regexp</a></li><li><a href="string_.html">base/prototypes/string</a></li><li><a href="array__.html">base/types/array</a></li><li><a href="boolean__.html">base/types/boolean</a></li><li><a href="function__.html">base/types/function</a></li><li><a href="null.html">base/types/null</a></li><li><a href="number__.html">base/types/number</a></li><li><a href="object__.html">base/types/object</a></li><li><a href="reference.html">base/types/reference</a></li><li><a href="regexp__.html">base/types/regexp</a></li><li><a href="string__.html">base/types/string</a></li><li><a href="undefined.html">base/types/undefined</a></li><li><a href="unknown.html">base/types/unknown</a></li><li><a href="module-CodeProcessor.html">CodeProcessor</a></li><li><a href="module-CodeProcessorUtils.html">CodeProcessorUtils</a></li><li><a href="TiApiDeprecationFinder.html">plugins/TiApiDeprecationFinder</a></li><li><a href="TiApiIncludeFinder.html">plugins/TiApiIncludeFinder</a></li><li><a href="TiApiPlatformValidator.html">plugins/TiApiPlatformValidator</a></li><li><a href="TiApiProvider.html">plugins/TiApiProvider</a></li><li><a href="globals.html">plugins/TiApiProvider/globals</a></li><li><a href="require.html">plugins/TiApiProvider/require</a></li><li><a href="Ti.html">plugins/TiApiProvider/Ti</a></li><li><a href="API.html">plugins/TiApiProvider/Ti/API</a></li><li><a href="App.html">plugins/TiApiProvider/Ti/App</a></li><li><a href="Properties.html">plugins/TiApiProvider/Ti/App/Properties</a></li><li><a href="FileSystem.html">plugins/TiApiProvider/Ti/FileSystem</a></li><li><a href="Window.html">plugins/TiApiProvider/Ti/UI/Window</a></li><li><a href="TiApiRequireFinder.html">plugins/TiApiRequireFinder</a></li><li><a href="TiApiUsageFinder.html">plugins/TiApiUsageFinder</a></li><li><a href="module-RuleProcessor.html">RuleProcessor</a></li><li><a href="AST_Accessor.html">rules/AST_Accessor</a></li><li><a href="AST_Array.html">rules/AST_Array</a></li><li><a href="AST_Assign.html">rules/AST_Assign</a></li><li><a href="AST_Binary.html">rules/AST_Binary</a></li><li><a href="AST_BlockStatement.html">rules/AST_BlockStatement</a></li><li><a href="AST_Break.html">rules/AST_Break</a></li><li><a href="AST_Call.html">rules/AST_Call</a></li><li><a href="AST_Conditional.html">rules/AST_Conditional</a></li><li><a href="AST_Const.html">rules/AST_Const</a></li><li><a href="AST_Continue.html">rules/AST_Continue</a></li><li><a href="AST_Debugger.html">rules/AST_Debugger</a></li><li><a href="AST_Defun.html">rules/AST_Defun</a></li><li><a href="AST_Directive.html">rules/AST_Directive</a></li><li><a href="AST_Do.html">rules/AST_Do</a></li><li><a href="AST_Dot.html">rules/AST_Dot</a></li><li><a href="AST_EmptyStatement.html">rules/AST_EmptyStatement</a></li><li><a href="AST_False.html">rules/AST_False</a></li><li><a href="AST_For.html">rules/AST_For</a></li><li><a href="AST_ForIn.html">rules/AST_ForIn</a></li><li><a href="AST_Function.html">rules/AST_Function</a></li><li><a href="AST_Hole.html">rules/AST_Hole</a></li><li><a href="AST_If.html">rules/AST_If</a></li><li><a href="AST_Infinity.html">rules/AST_Infinity</a></li><li><a href="AST_LabeledStatement.html">rules/AST_LabeledStatement</a></li><li><a href="AST_NaN.html">rules/AST_NaN</a></li><li><a href="AST_New.html">rules/AST_New</a></li><li><a href="AST_Null.html">rules/AST_Null</a></li><li><a href="AST_Number.html">rules/AST_Number</a></li><li><a href="AST_Object.html">rules/AST_Object</a></li><li><a href="AST_RegExp.html">rules/AST_RegExp</a></li><li><a href="AST_Return.html">rules/AST_Return</a></li><li><a href="AST_Seq.html">rules/AST_Seq</a></li><li><a href="AST_SimpleStatement.html">rules/AST_SimpleStatement</a></li><li><a href="AST_String.html">rules/AST_String</a></li><li><a href="AST_Sub.html">rules/AST_Sub</a></li><li><a href="AST_Switch.html">rules/AST_Switch</a></li><li><a href="AST_SymbolRef.html">rules/AST_SymbolRef</a></li><li><a href="AST_This.html">rules/AST_This</a></li><li><a href="AST_Throw.html">rules/AST_Throw</a></li><li><a href="AST_Toplevel.html">rules/AST_Toplevel</a></li><li><a href="AST_True.html">rules/AST_True</a></li><li><a href="AST_Try.html">rules/AST_Try</a></li><li><a href="AST_UnaryPostfix.html">rules/AST_UnaryPostfix</a></li><li><a href="AST_UnaryPrefix.html">rules/AST_UnaryPrefix</a></li><li><a href="AST_Undefined.html">rules/AST_Undefined</a></li><li><a href="AST_Var.html">rules/AST_Var</a></li><li><a href="AST_While.html">rules/AST_While</a></li><li><a href="AST_With.html">rules/AST_With</a></li><li><a href="module-Runtime.html">Runtime</a></li></ul><h3>Classes</h3><ul><li><a href="module-base.BaseType.html">BaseType</a></li><li><a href="context.DeclarativeEnvironmentRecord.html">DeclarativeEnvironmentRecord</a></li><li><a href="context.ObjectEnvironmentRecord.html">ObjectEnvironmentRecord</a></li><li><a href="context-ExecutionContext.html">ExecutionContext</a></li><li><a href="context-LexicalEnvironment.html">LexicalEnvironment</a></li><li><a href="array.ArrayPrototypeType.html">ArrayPrototypeType</a></li><li><a href="boolean.BooleanPrototypeType.html">BooleanPrototypeType</a></li><li><a href="date.DatePrototypeType.html">DatePrototypeType</a></li><li><a href="error.ErrorPrototypeType.html">ErrorPrototypeType</a></li><li><a href="function.FunctionPrototypeType.html">FunctionPrototypeType</a></li><li><a href="number.NumberPrototypeType.html">NumberPrototypeType</a></li><li><a href="object.ObjectPrototypeType.html">ObjectPrototypeType</a></li><li><a href="regexp.RegExpPrototypeType.html">RegExpPrototypeType</a></li><li><a href="string.StringPrototypeType.html">StringPrototypeType</a></li><li><a href="array.ArrayType.html">ArrayType</a></li><li><a href="boolean.BooleanType.html">BooleanType</a></li><li><a href="function.FunctionType.html">FunctionType</a></li><li><a href="function.FunctionTypeBase.html">FunctionTypeBase</a></li><li><a href="null.NullType.html">NullType</a></li><li><a href="number.NumberType.html">NumberType</a></li><li><a href="object.AccessorPropertyDescriptor.html">AccessorPropertyDescriptor</a></li><li><a href="object.DataPropertyDescriptor.html">DataPropertyDescriptor</a></li><li><a href="object.ObjectType.html">ObjectType</a></li><li><a href="reference.ReferenceType.html">ReferenceType</a></li><li><a href="regexp.RegExpType.html">RegExpType</a></li><li><a href="string.StringType.html">StringType</a></li><li><a href="undefined.UndefinedType.html">UndefinedType</a></li><li><a href="unknown.UnknownType.html">UnknownType</a></li><li><a href="module-Runtime.Evented.html">Evented</a></li></ul><h3>Events</h3><ul><li><a href="array.ArrayType.html#event:propertyDefined">propertyDefined</a></li><li><a href="array.ArrayType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="array.ArrayType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="array.ArrayType.html#event:propertySet">propertySet</a></li><li><a href="object.ObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="object.ObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="object.ObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="object.ObjectType.html#event:propertySet">propertySet</a></li><li><a href="module-CodeProcessor.html#event:enteredFile">enteredFile</a></li><li><a href="module-CodeProcessor.html#event:errorReported">errorReported</a></li><li><a href="module-CodeProcessor.html#event:maxIterationsExceeded">maxIterationsExceeded</a></li><li><a href="module-CodeProcessor.html#event:maxRecusionLimitReached">maxRecusionLimitReached</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingBegin">projectProcessingBegin</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingEnd">projectProcessingEnd</a></li><li><a href="module-CodeProcessor.html#event:undeclaredGlobalVariableCreated">undeclaredGlobalVariableCreated</a></li><li><a href="module-CodeProcessor.html#event:warningReported">warningReported</a></li><li><a href="TiApiProvider.html#event:tiPropertyDeleted">tiPropertyDeleted</a></li><li><a href="TiApiProvider.html#event:tiPropertyReferenced">tiPropertyReferenced</a></li><li><a href="TiApiProvider.html#event:tiPropertySet">tiPropertySet</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertySet">propertySet</a></li><li><a href="AST_Accessor.html#event:rule">rule</a></li><li><a href="AST_Array.html#event:rule">rule</a></li><li><a href="AST_Assign.html#event:rule">rule</a></li><li><a href="AST_Binary.html#event:rule">rule</a></li><li><a href="AST_BlockStatement.html#event:rule">rule</a></li><li><a href="AST_Break.html#event:rule">rule</a></li><li><a href="AST_Call.html#event:rule">rule</a></li><li><a href="AST_Conditional.html#event:rule">rule</a></li><li><a href="AST_Const.html#event:rule">rule</a></li><li><a href="AST_Continue.html#event:rule">rule</a></li><li><a href="AST_Debugger.html#event:rule">rule</a></li><li><a href="AST_Defun.html#event:rule">rule</a></li><li><a href="AST_Directive.html#event:rule">rule</a></li><li><a href="AST_Do.html#event:rule">rule</a></li><li><a href="AST_Dot.html#event:rule">rule</a></li><li><a href="AST_EmptyStatement.html#event:rule">rule</a></li><li><a href="AST_False.html#event:rule">rule</a></li><li><a href="AST_For.html#event:rule">rule</a></li><li><a href="AST_ForIn.html#event:rule">rule</a></li><li><a href="AST_Function.html#event:rule">rule</a></li><li><a href="AST_Hole.html#event:rule">rule</a></li><li><a href="AST_If.html#event:rule">rule</a></li><li><a href="AST_Infinity.html#event:rule">rule</a></li><li><a href="AST_LabeledStatement.html#event:rule">rule</a></li><li><a href="AST_NaN.html#event:rule">rule</a></li><li><a href="AST_New.html#event:rule">rule</a></li><li><a href="AST_Null.html#event:rule">rule</a></li><li><a href="AST_Number.html#event:rule">rule</a></li><li><a href="AST_Object.html#event:rule">rule</a></li><li><a href="AST_RegExp.html#event:rule">rule</a></li><li><a href="AST_Return.html#event:rule">rule</a></li><li><a href="AST_Seq.html#event:rule">rule</a></li><li><a href="AST_SimpleStatement.html#event:rule">rule</a></li><li><a href="AST_String.html#event:rule">rule</a></li><li><a href="AST_Sub.html#event:rule">rule</a></li><li><a href="AST_Switch.html#event:rule">rule</a></li><li><a href="AST_SymbolRef.html#event:rule">rule</a></li><li><a href="AST_This.html#event:rule">rule</a></li><li><a href="AST_Throw.html#event:rule">rule</a></li><li><a href="AST_Toplevel.html#event:rule">rule</a></li><li><a href="AST_True.html#event:rule">rule</a></li><li><a href="AST_Try.html#event:rule">rule</a></li><li><a href="AST_UnaryPostfix.html#event:rule">rule</a></li><li><a href="AST_UnaryPrefix.html#event:rule">rule</a></li><li><a href="AST_Undefined.html#event:rule">rule</a></li><li><a href="AST_Var.html#event:rule">rule</a></li><li><a href="AST_While.html#event:rule">rule</a></li><li><a href="AST_With.html#event:rule">rule</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Thu Nov 14 2013 15:31:12 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

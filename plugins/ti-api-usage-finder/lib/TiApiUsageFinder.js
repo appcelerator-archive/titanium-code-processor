@@ -174,7 +174,7 @@ exports.init = function init() {
 * Gets the results of the plugin
 *
 * @method module:plugins/TiApiUsageFinder.getResults
-* @returns {Object} A dictionary of the Titanium APIs that were used along with a count of how many times they were used.
+* @return {Object} A dictionary of the Titanium APIs that were used along with a count of how many times they were used.
 */
 exports.getResults = function getResults() {
 	return results;
@@ -184,7 +184,7 @@ exports.getResults = function getResults() {
  * Generates the results template data to be rendered
  *
  * @method module:plugins/TiApiUsageFinder.getResultsPageData
- * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ * @param {string} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
  *		as one of the entries in the template
  * @return {module:CodeProcessor.pluginResultsPageData} The information for generating the template(s)
  */
@@ -204,7 +204,7 @@ exports.getResultsPageData = function getResultsPageData(entryFile) {
  *
  * @method module:plugins/TiApiUsageFinder.renderLogOutput
  * @param {module:CodeProcessor.arrayGen} arrayGen Log-friendly table generator
- * @return {String} The rendered data
+ * @return {string} The rendered data
  */
 exports.renderLogOutput = function renderLogOutput(arrayGen) {
 	var resultsToLog,

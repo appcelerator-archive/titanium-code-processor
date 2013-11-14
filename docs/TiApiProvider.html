@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Module: plugins/TiApiProvider</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Module: plugins/TiApiProvider</h1>
+    
+    
+
+
+
+<section>
+    
+<header>
+    <h2>
+    plugins/TiApiProvider
+    </h2>
+    
+</header>  
+
+<article>
+    <div class="container-overview">
+    
+    
+    
+        
+            <div class="description"><p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
+Please see the LICENSE file for information about licensing.</p>
+
+Processes Titanium APIs for the code processor</div>
+        
+        
+        
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="TiApiProvider.js.html">plugins/ti-api-provider/lib/TiApiProvider.js</a>, <a href="TiApiProvider.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+        
+        
+    
+    </div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+        <h3 class="subsection-title">Methods</h3>
+        
+        <dl>
+            
+<dt>
+    <h4 class="name" id="defineOwnProperty"><span class="type-signature">&lt;static> </span>defineOwnProperty<span class="signature">(p, desc, throwFlag, suppressEvent)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        ECMA-262 Spec: <em>Sets the specified named property to the value of the second parameter. The flag controls failure
+handling.</em>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>p</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The name of the parameter to set the value as</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>desc</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-base.BaseType.html">module:base.BaseType</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The value to set</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>throwFlag</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Whether or not to throw an exception on error (related to strict mode)</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>suppressEvent</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Suppresses the 'propertySet' event (used when setting prototypes)</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="TiApiProvider.js.html">plugins/ti-api-provider/lib/TiApiProvider.js</a>, <a href="TiApiProvider.js.html#line379">line 379</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li>ECMA-262 Spec Chapter 8.12.5</li>
+        </ul>
+    </dd>
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="delete"><span class="type-signature">&lt;static> </span>delete<span class="signature">(p)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        ECMA-262 Spec: <em>Removes the specified named own property from the object. The flag controls failure handling.</em>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>p</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The name of the parameter to delete</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="TiApiProvider.js.html">plugins/ti-api-provider/lib/TiApiProvider.js</a>, <a href="TiApiProvider.js.html#line432">line 432</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li>ECMA-262 Spec Chapter 8.12.7</li>
+        </ul>
+    </dd>
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    Whether or not the object was deleted succesfully
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">boolean</span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getOwnProperty"><span class="type-signature">&lt;static> </span>getOwnProperty<span class="signature">(p, alternate, suppressEvent)</span><span class="type-signature"> &rarr; {<a href="module-base.BaseType.html">module:base.BaseType</a>}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        ECMA-262 Spec: <em>Returns the value of the named property.</em>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>p</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The name of the property to fetch</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>alternate</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Whether or not to fetch the alternate values, or the base value</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>suppressEvent</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Not used here, simply used as a placeholder for the implementation in TiApiProvieer</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="TiApiProvider.js.html">plugins/ti-api-provider/lib/TiApiProvider.js</a>, <a href="TiApiProvider.js.html#line343">line 343</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li>ECMA-262 Spec Chapter 8.12.3</li>
+        </ul>
+    </dd>
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The value of the property, or a new instance of
+		<a href="undefined.UndefinedType.html">module:base/types/undefined.UndefinedType</a> if the property does not exist
+</div>
+
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type"><a href="module-base.BaseType.html">module:base.BaseType</a></span>
+
+
+	</dd>
+</dl>
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="init"><span class="type-signature">&lt;static> </span>init<span class="signature">(options, dependencies)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Initializes the plugin
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The plugin options</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>dependencies</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The dependant plugins of this plugin</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="TiApiProvider.js.html">plugins/ti-api-provider/lib/TiApiProvider.js</a>, <a href="TiApiProvider.js.html#line58">line 58</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        </dl>
+    
+    
+    
+        <h3 class="subsection-title">Type Definitions</h3>
+        
+        <dl>
+                
+<dt>
+    <h4 class="name" id="override">override</h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        An override entry. Overrides can override three things: properties, methods, and namespaces. These follow the way that
+objects/namespaces/etc are defined in api.jsca, even though namespaces really are just properties with objects. Each
+entry must only have one of value, callFunction , or obj, and the type of override is determined by which property is
+present.
+    </div>
+    
+    
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">Object</span>
+
+
+            </li>
+        </ul>
+    
+
+    
+<dl class="details">
+    
+        
+        <h5 class="subsection-title">Properties:</h5>
+        
+        <dl>
+
+<table class="props">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Argument</th>
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>regex</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">RegExp</span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">The regex defining the API or APIs that are being overridden</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-base.BaseType.html">module:base.BaseType</a></span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">The value of the property</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callFunction</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="TiApiProvider.html#overrideFunctionCallback">module:plugins/TiApiProvider.overrideFunctionCallback</a></span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">The Function.Call implementation for this function property</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>obj</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-base.BaseType.html">module:base.BaseType</a></span>
+
+
+            
+            </td>
+            
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                </td>
+            
+            
+            
+            
+            <td class="description last">The value of the object</td>
+        </tr>
+	
+	
+	</tbody>
+</table></dl>
+        
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="TiApiProvider.js.html">plugins/ti-api-provider/lib/TiApiProvider.js</a>, <a href="TiApiProvider.js.html#line42">line 42</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+            
+                
+<dt>
+    <h4 class="name" id="overrideFunctionCallback"><span class="type-signature"></span>overrideFunctionCallback<span class="signature">(thisVal, args)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>thisVal</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-base.BaseType.html">module:base.BaseType</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The this value for the call</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>args</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;<a href="module-base.BaseType.html">module:base.BaseType</a>></span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The function call arguments</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="TiApiProvider.js.html">plugins/ti-api-provider/lib/TiApiProvider.js</a>, <a href="TiApiProvider.js.html#line37">line 37</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+            </dl>
+    
+    
+    
+        <h3 class="subsection-title">Events</h3>
+        
+        <dl>
+            
+<dt>
+    <h4 class="name" id="event:tiPropertyDeleted">tiPropertyDeleted</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Indicates that a titanium property was deleted
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The name of the property referenced</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="TiApiProvider.js.html">plugins/ti-api-provider/lib/TiApiProvider.js</a>, <a href="TiApiProvider.js.html#line426">line 426</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="event:tiPropertyReferenced">tiPropertyReferenced</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Indicates that a titanium property was referenced (i.e. read).
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The name of the property that was referenced</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>The</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="object.DataPropertyDescriptor.html">module:base/types/object.DataPropertyDescriptor</a></span>
+|
+
+<span class="param-type"><a href="object.AccessorPropertyDescriptor.html">module:base/types/object.AccessorPropertyDescriptor</a></span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">descriptor fetched, if it could be found.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="TiApiProvider.js.html">plugins/ti-api-provider/lib/TiApiProvider.js</a>, <a href="TiApiProvider.js.html#line335">line 335</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="event:tiPropertySet">tiPropertySet</h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Indicates that a titanium property was set (i.e. written).
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The name of the property that was set</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-base.BaseType.html">module:base.BaseType</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">The value that was set</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="TiApiProvider.js.html">plugins/ti-api-provider/lib/TiApiProvider.js</a>, <a href="TiApiProvider.js.html#line372">line 372</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        </dl>
+    
+</article>
+
+</section>  
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-AST.html">AST</a></li><li><a href="module-base.html">base</a></li><li><a href="array.html">base/constructors/array</a></li><li><a href="boolean.html">base/constructors/boolean</a></li><li><a href="date.html">base/constructors/date</a></li><li><a href="error.html">base/constructors/error</a></li><li><a href="function.html">base/constructors/function</a></li><li><a href="number.html">base/constructors/number</a></li><li><a href="object.html">base/constructors/object</a></li><li><a href="regexp.html">base/constructors/regexp</a></li><li><a href="string.html">base/constructors/string</a></li><li><a href="context.html">base/context</a></li><li><a href="conversion.html">base/conversion</a></li><li><a href="exceptions.html">base/exceptions</a></li><li><a href="init.html">base/init</a></li><li><a href="array_.html">base/prototypes/array</a></li><li><a href="boolean_.html">base/prototypes/boolean</a></li><li><a href="date_.html">base/prototypes/date</a></li><li><a href="error_.html">base/prototypes/error</a></li><li><a href="function_.html">base/prototypes/function</a></li><li><a href="number_.html">base/prototypes/number</a></li><li><a href="object_.html">base/prototypes/object</a></li><li><a href="regexp_.html">base/prototypes/regexp</a></li><li><a href="string_.html">base/prototypes/string</a></li><li><a href="array__.html">base/types/array</a></li><li><a href="boolean__.html">base/types/boolean</a></li><li><a href="function__.html">base/types/function</a></li><li><a href="null.html">base/types/null</a></li><li><a href="number__.html">base/types/number</a></li><li><a href="object__.html">base/types/object</a></li><li><a href="reference.html">base/types/reference</a></li><li><a href="regexp__.html">base/types/regexp</a></li><li><a href="string__.html">base/types/string</a></li><li><a href="undefined.html">base/types/undefined</a></li><li><a href="unknown.html">base/types/unknown</a></li><li><a href="module-CodeProcessor.html">CodeProcessor</a></li><li><a href="module-CodeProcessorUtils.html">CodeProcessorUtils</a></li><li><a href="TiApiDeprecationFinder.html">plugins/TiApiDeprecationFinder</a></li><li><a href="TiApiIncludeFinder.html">plugins/TiApiIncludeFinder</a></li><li><a href="TiApiPlatformValidator.html">plugins/TiApiPlatformValidator</a></li><li><a href="TiApiProvider.html">plugins/TiApiProvider</a></li><li><a href="globals.html">plugins/TiApiProvider/globals</a></li><li><a href="require.html">plugins/TiApiProvider/require</a></li><li><a href="Ti.html">plugins/TiApiProvider/Ti</a></li><li><a href="API.html">plugins/TiApiProvider/Ti/API</a></li><li><a href="App.html">plugins/TiApiProvider/Ti/App</a></li><li><a href="Properties.html">plugins/TiApiProvider/Ti/App/Properties</a></li><li><a href="FileSystem.html">plugins/TiApiProvider/Ti/FileSystem</a></li><li><a href="Window.html">plugins/TiApiProvider/Ti/UI/Window</a></li><li><a href="TiApiRequireFinder.html">plugins/TiApiRequireFinder</a></li><li><a href="TiApiUsageFinder.html">plugins/TiApiUsageFinder</a></li><li><a href="module-RuleProcessor.html">RuleProcessor</a></li><li><a href="AST_Accessor.html">rules/AST_Accessor</a></li><li><a href="AST_Array.html">rules/AST_Array</a></li><li><a href="AST_Assign.html">rules/AST_Assign</a></li><li><a href="AST_Binary.html">rules/AST_Binary</a></li><li><a href="AST_BlockStatement.html">rules/AST_BlockStatement</a></li><li><a href="AST_Break.html">rules/AST_Break</a></li><li><a href="AST_Call.html">rules/AST_Call</a></li><li><a href="AST_Conditional.html">rules/AST_Conditional</a></li><li><a href="AST_Const.html">rules/AST_Const</a></li><li><a href="AST_Continue.html">rules/AST_Continue</a></li><li><a href="AST_Debugger.html">rules/AST_Debugger</a></li><li><a href="AST_Defun.html">rules/AST_Defun</a></li><li><a href="AST_Directive.html">rules/AST_Directive</a></li><li><a href="AST_Do.html">rules/AST_Do</a></li><li><a href="AST_Dot.html">rules/AST_Dot</a></li><li><a href="AST_EmptyStatement.html">rules/AST_EmptyStatement</a></li><li><a href="AST_False.html">rules/AST_False</a></li><li><a href="AST_For.html">rules/AST_For</a></li><li><a href="AST_ForIn.html">rules/AST_ForIn</a></li><li><a href="AST_Function.html">rules/AST_Function</a></li><li><a href="AST_Hole.html">rules/AST_Hole</a></li><li><a href="AST_If.html">rules/AST_If</a></li><li><a href="AST_Infinity.html">rules/AST_Infinity</a></li><li><a href="AST_LabeledStatement.html">rules/AST_LabeledStatement</a></li><li><a href="AST_NaN.html">rules/AST_NaN</a></li><li><a href="AST_New.html">rules/AST_New</a></li><li><a href="AST_Null.html">rules/AST_Null</a></li><li><a href="AST_Number.html">rules/AST_Number</a></li><li><a href="AST_Object.html">rules/AST_Object</a></li><li><a href="AST_RegExp.html">rules/AST_RegExp</a></li><li><a href="AST_Return.html">rules/AST_Return</a></li><li><a href="AST_Seq.html">rules/AST_Seq</a></li><li><a href="AST_SimpleStatement.html">rules/AST_SimpleStatement</a></li><li><a href="AST_String.html">rules/AST_String</a></li><li><a href="AST_Sub.html">rules/AST_Sub</a></li><li><a href="AST_Switch.html">rules/AST_Switch</a></li><li><a href="AST_SymbolRef.html">rules/AST_SymbolRef</a></li><li><a href="AST_This.html">rules/AST_This</a></li><li><a href="AST_Throw.html">rules/AST_Throw</a></li><li><a href="AST_Toplevel.html">rules/AST_Toplevel</a></li><li><a href="AST_True.html">rules/AST_True</a></li><li><a href="AST_Try.html">rules/AST_Try</a></li><li><a href="AST_UnaryPostfix.html">rules/AST_UnaryPostfix</a></li><li><a href="AST_UnaryPrefix.html">rules/AST_UnaryPrefix</a></li><li><a href="AST_Undefined.html">rules/AST_Undefined</a></li><li><a href="AST_Var.html">rules/AST_Var</a></li><li><a href="AST_While.html">rules/AST_While</a></li><li><a href="AST_With.html">rules/AST_With</a></li><li><a href="module-Runtime.html">Runtime</a></li></ul><h3>Classes</h3><ul><li><a href="module-base.BaseType.html">BaseType</a></li><li><a href="context.DeclarativeEnvironmentRecord.html">DeclarativeEnvironmentRecord</a></li><li><a href="context.ObjectEnvironmentRecord.html">ObjectEnvironmentRecord</a></li><li><a href="context-ExecutionContext.html">ExecutionContext</a></li><li><a href="context-LexicalEnvironment.html">LexicalEnvironment</a></li><li><a href="array.ArrayPrototypeType.html">ArrayPrototypeType</a></li><li><a href="boolean.BooleanPrototypeType.html">BooleanPrototypeType</a></li><li><a href="date.DatePrototypeType.html">DatePrototypeType</a></li><li><a href="error.ErrorPrototypeType.html">ErrorPrototypeType</a></li><li><a href="function.FunctionPrototypeType.html">FunctionPrototypeType</a></li><li><a href="number.NumberPrototypeType.html">NumberPrototypeType</a></li><li><a href="object.ObjectPrototypeType.html">ObjectPrototypeType</a></li><li><a href="regexp.RegExpPrototypeType.html">RegExpPrototypeType</a></li><li><a href="string.StringPrototypeType.html">StringPrototypeType</a></li><li><a href="array.ArrayType.html">ArrayType</a></li><li><a href="boolean.BooleanType.html">BooleanType</a></li><li><a href="function.FunctionType.html">FunctionType</a></li><li><a href="function.FunctionTypeBase.html">FunctionTypeBase</a></li><li><a href="null.NullType.html">NullType</a></li><li><a href="number.NumberType.html">NumberType</a></li><li><a href="object.AccessorPropertyDescriptor.html">AccessorPropertyDescriptor</a></li><li><a href="object.DataPropertyDescriptor.html">DataPropertyDescriptor</a></li><li><a href="object.ObjectType.html">ObjectType</a></li><li><a href="reference.ReferenceType.html">ReferenceType</a></li><li><a href="regexp.RegExpType.html">RegExpType</a></li><li><a href="string.StringType.html">StringType</a></li><li><a href="undefined.UndefinedType.html">UndefinedType</a></li><li><a href="unknown.UnknownType.html">UnknownType</a></li><li><a href="module-Runtime.Evented.html">Evented</a></li></ul><h3>Events</h3><ul><li><a href="array.ArrayType.html#event:propertyDefined">propertyDefined</a></li><li><a href="array.ArrayType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="array.ArrayType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="array.ArrayType.html#event:propertySet">propertySet</a></li><li><a href="object.ObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="object.ObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="object.ObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="object.ObjectType.html#event:propertySet">propertySet</a></li><li><a href="module-CodeProcessor.html#event:enteredFile">enteredFile</a></li><li><a href="module-CodeProcessor.html#event:errorReported">errorReported</a></li><li><a href="module-CodeProcessor.html#event:maxIterationsExceeded">maxIterationsExceeded</a></li><li><a href="module-CodeProcessor.html#event:maxRecusionLimitReached">maxRecusionLimitReached</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingBegin">projectProcessingBegin</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingEnd">projectProcessingEnd</a></li><li><a href="module-CodeProcessor.html#event:undeclaredGlobalVariableCreated">undeclaredGlobalVariableCreated</a></li><li><a href="module-CodeProcessor.html#event:warningReported">warningReported</a></li><li><a href="TiApiProvider.html#event:tiPropertyDeleted">tiPropertyDeleted</a></li><li><a href="TiApiProvider.html#event:tiPropertyReferenced">tiPropertyReferenced</a></li><li><a href="TiApiProvider.html#event:tiPropertySet">tiPropertySet</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertySet">propertySet</a></li><li><a href="AST_Accessor.html#event:rule">rule</a></li><li><a href="AST_Array.html#event:rule">rule</a></li><li><a href="AST_Assign.html#event:rule">rule</a></li><li><a href="AST_Binary.html#event:rule">rule</a></li><li><a href="AST_BlockStatement.html#event:rule">rule</a></li><li><a href="AST_Break.html#event:rule">rule</a></li><li><a href="AST_Call.html#event:rule">rule</a></li><li><a href="AST_Conditional.html#event:rule">rule</a></li><li><a href="AST_Const.html#event:rule">rule</a></li><li><a href="AST_Continue.html#event:rule">rule</a></li><li><a href="AST_Debugger.html#event:rule">rule</a></li><li><a href="AST_Defun.html#event:rule">rule</a></li><li><a href="AST_Directive.html#event:rule">rule</a></li><li><a href="AST_Do.html#event:rule">rule</a></li><li><a href="AST_Dot.html#event:rule">rule</a></li><li><a href="AST_EmptyStatement.html#event:rule">rule</a></li><li><a href="AST_False.html#event:rule">rule</a></li><li><a href="AST_For.html#event:rule">rule</a></li><li><a href="AST_ForIn.html#event:rule">rule</a></li><li><a href="AST_Function.html#event:rule">rule</a></li><li><a href="AST_Hole.html#event:rule">rule</a></li><li><a href="AST_If.html#event:rule">rule</a></li><li><a href="AST_Infinity.html#event:rule">rule</a></li><li><a href="AST_LabeledStatement.html#event:rule">rule</a></li><li><a href="AST_NaN.html#event:rule">rule</a></li><li><a href="AST_New.html#event:rule">rule</a></li><li><a href="AST_Null.html#event:rule">rule</a></li><li><a href="AST_Number.html#event:rule">rule</a></li><li><a href="AST_Object.html#event:rule">rule</a></li><li><a href="AST_RegExp.html#event:rule">rule</a></li><li><a href="AST_Return.html#event:rule">rule</a></li><li><a href="AST_Seq.html#event:rule">rule</a></li><li><a href="AST_SimpleStatement.html#event:rule">rule</a></li><li><a href="AST_String.html#event:rule">rule</a></li><li><a href="AST_Sub.html#event:rule">rule</a></li><li><a href="AST_Switch.html#event:rule">rule</a></li><li><a href="AST_SymbolRef.html#event:rule">rule</a></li><li><a href="AST_This.html#event:rule">rule</a></li><li><a href="AST_Throw.html#event:rule">rule</a></li><li><a href="AST_Toplevel.html#event:rule">rule</a></li><li><a href="AST_True.html#event:rule">rule</a></li><li><a href="AST_Try.html#event:rule">rule</a></li><li><a href="AST_UnaryPostfix.html#event:rule">rule</a></li><li><a href="AST_UnaryPrefix.html#event:rule">rule</a></li><li><a href="AST_Undefined.html#event:rule">rule</a></li><li><a href="AST_Var.html#event:rule">rule</a></li><li><a href="AST_While.html#event:rule">rule</a></li><li><a href="AST_With.html#event:rule">rule</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Thu Nov 14 2013 15:31:14 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

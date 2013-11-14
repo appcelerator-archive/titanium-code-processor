@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/base/types/object.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: lib/base/types/object.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * &lt;p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.&lt;/p>
+ *
+ * Definition for the object type
+ *
+ * @module base/types/object
+ */
+/*global
+UndefinedType,
+type,
+isCallable,
+throwNativeException,
+isObject,
+isType,
+toObject,
+BaseType,
+prototypes,
+util,
+UnknownType,
+handleRecoverableNativeException,
+isPrimitive,
+sameValue,
+isAmbiguousBlock
+*/
+
+/*****************************************
+ *
+ * Object Type Class
+ *
+ *****************************************/
+
+// ******** Property Classes ********
+
+/**
+ * @classdesc A Data Descriptor represents the interface an object exposes for getting and setting a property via direct
+ * assignment.
+ *
+ * @constructor module:base/types/object.DataPropertyDescriptor
+ * @property {module:base.BaseType} value ECMA-262 Spec: &lt;em>The value retrieved by reading the property.&lt;/em>
+ * @property {boolean} writable ECMA-262 Spec: &lt;em>If false, attempts by ECMAScript code to change the property‘s
+ *		[[value]] attribute using [[put]] will not succeed.&lt;/em>
+ * @property {boolean} get ECMA-262 Spec: &lt;em>If true, the property will be enumerated by a for-in enumeration
+ *		(see 12.6.4). Otherwise, the property is said to be non-enumerable.&lt;/em>
+ * @property {boolean} get ECMA-262 Spec: &lt;em>If false, attempts to delete the property, change the property to be an
+ *		accessor property, or change its attributes (other than [[value]]) will fail.&lt;/em>
+ * @see ECMA-262 Spec Chapter 8.10
+ */
+exports.DataPropertyDescriptor = DataPropertyDescriptor;
+function DataPropertyDescriptor() {
+	this.value = new UndefinedType();
+	this.writable = false;
+	this.enumerable = false;
+	this.configurable = false;
+}
+
+/**
+ * @classdesc An Accessor Descriptor represents the interface an object exposes for getting and setting a property via
+ * get and set methods.
+ *
+ * @constructor module:base/types/object.AccessorPropertyDescriptor
+ * @property {module:base.BaseType} get ECMA-262 Spec: &lt;em>If the value is an Object it must be a function Object.
+ *		The function‘s [[call]] internal method (8.6.2) is called with an empty arguments list to return the property
+ *		value each time a get access of the property is performed.&lt;/em>
+ * @property {module:base.BaseType} set ECMA-262 Spec: &lt;em>If the value is an Object it must be a function Object. The
+ *		function‘s [[call]] internal method (8.6.2) is called with an arguments list containing the assigned value as
+ *		its sole argument each time a set access of the property is performed. The effect of a property's [[set]]
+ *		internal method may, but is not required to, have an effect on the value returned by subsequent calls to the
+ *		property's [[get]] internal method.&lt;/em>
+ * @property {boolean} enumerable ECMA-262 Spec: &lt;em>If true, the property is to be enumerated by a for-in enumeration
+ *		(see 12.6.4). Otherwise, the property is said to be non-enumerable.&lt;/em>
+ * @property {boolean} configurable ECMA-262 Spec: &lt;em>If false, attempts to delete the property, change the property to
+ *		be a data property, or change its attributes will fail.&lt;/em>
+ * @see ECMA-262 Spec Chapter 8.10
+ */
+exports.AccessorPropertyDescriptor = AccessorPropertyDescriptor;
+function AccessorPropertyDescriptor() {
+
+	this.get = undefined;
+	this.set = undefined;
+	this.enumerable = false;
+	this.configurable = false;
+}
+
+// ******** Property Descriptor Query Methods ********
+
+/**
+ * Determines if the supplied property descriptor is a data descriptor or not
+ *
+ * @method module:base/types/object.isDataDescriptor
+ * @param {(module:base/types/object.DataPropertyDescriptor | module:base/types/object.AccessorPropertyDescriptor | Object)} desc The property descriptor to test
+ * @return {boolean} Whether or not the descriptor is a data descriptor
+ * @see ECMA-262 Spec Chapter 8.10.2
+ */
+exports.isDataDescriptor = isDataDescriptor;
+function isDataDescriptor(desc) {
+	if (!desc) {
+		return false;
+	}
+	if (typeof desc.value == 'undefined' &amp;&amp; typeof desc.writable == 'undefined') {
+		return false;
+	}
+	return true;
+}
+
+/**
+ * Determines if the supplied property descriptor is an accessor descriptor or not
+ *
+ * @method module:base/types/object.isAccessorDescriptor
+ * @param {(module:base/types/object.DataPropertyDescriptor | module:base/types/object.AccessorPropertyDescriptor | Object)} desc The property descriptor to test
+ * @return {boolean} Whether or not the descriptor is an accessor descriptor
+ * @see ECMA-262 Spec Chapter 8.10.1
+ */
+exports.isAccessorDescriptor = isAccessorDescriptor;
+function isAccessorDescriptor(desc) {
+	if (!desc) {
+		return false;
+	}
+	if (typeof desc.get == 'undefined' &amp;&amp; typeof desc.set == 'undefined') {
+		return false;
+	}
+	return true;
+}
+
+/**
+ * Determines if the supplied property descriptor is a generic descriptor or not
+ *
+ * @method module:base/types/object.isGenericDescriptor
+ * @param {(module:base/types/object.DataPropertyDescriptor | module:base/types/object.AccessorPropertyDescriptor | Object)} desc The property descriptor to test
+ * @return {boolean} Whether or not the descriptor is a generic descriptor
+ * @see ECMA-262 Spec Chapter 8.10.3
+ */
+exports.isGenericDescriptor = isGenericDescriptor;
+function isGenericDescriptor(desc) {
+	if (!desc) {
+		return false;
+	}
+	return !isAccessorDescriptor(desc) &amp;&amp; !isDataDescriptor(desc);
+}
+
+/**
+ * Checks if two descriptions describe the same description.
+ *
+ * @method module:base/types/object.sameDesc
+ * @private
+ * @param {(module:base/types/object.DataPropertyDescriptor | module:base/types/object.AccessorPropertyDescriptor)} x The first descriptor
+ * @param {(module:base/types/object.DataPropertyDescriptor | module:base/types/object.AccessorPropertyDescriptor)} y The second descriptor
+ * @return {boolean} Whether or not the descriptions are the same
+ */
+exports.sameDesc = sameDesc;
+function sameDesc(x, y) {
+	if (isDataDescriptor(x) &amp;&amp; isDataDescriptor(y)) {
+		return x.configurable === y.configurable &amp;&amp; x.enumerable === y.enumerable &amp;&amp;
+			x.writable === y.writable &amp;&amp; sameValue(x.value, y.value);
+	} else if (isAccessorDescriptor(x) &amp;&amp; isAccessorDescriptor(y)) {
+		x.configurable === y.configurable &amp;&amp; x.enumerable === y.enumerable &amp;&amp;
+			sameValue(x.get, y.get) &amp;&amp; sameValue(x.set &amp;&amp; y.set);
+	} else {
+		return false;
+	}
+}
+
+/**
+ * @classdesc An object type. Note: functions are defined as objects, and so are represented by the class.
+ *
+ * @constructor module:base/types/object.ObjectType
+ * @extends module:base.BaseType
+ * @param {string} className The name of the class, such as 'String' or 'Object'
+ * @param {(module:base.BaseType | undefined)} value The value to base this object off of
+ * @param {boolean} dontCreatePrototype Whether or not to attach the Object prototype to this object
+ * @see ECMA-262 Spec Chapters 8.6 and 15.2.2
+ */
+exports.ObjectType = ObjectType;
+function ObjectType(className, value, dontCreatePrototype) {
+
+	var proto;
+
+	// Step 1
+	if (value &amp;&amp; isObject(value)) {
+		return value;
+	} else if(value &amp;&amp; isType(value, ['String', 'Number', 'Boolean'])) {
+		return toObject(value);
+	}
+
+	// Initialize the instance (Step 5 implicit)
+	BaseType.call(this, className || 'Object');
+
+	// Step 4
+	Object.defineProperty(this, 'objectPrototype', {
+		get: function () {
+			return proto || !dontCreatePrototype &amp;&amp; prototypes.Object;
+		},
+		set: function (value) {
+			proto = value;
+		},
+		configurable: true
+	});
+
+
+	// Step 6
+	this.extensible = true;
+
+	this.type = 'Object';
+
+	this._properties = [];
+}
+util.inherits(ObjectType, BaseType);
+
+/**
+ * Indicates that a property was referenced (i.e. read).
+ *
+ * @event module:base/types/object.ObjectType#propertyReferenced
+ * @param {string} name The name of the property that was referenced
+ * @param {(module:base/types/object.DataPropertyDescriptor | module:base/types/object.AccessorPropertyDescriptor | undefined)} The descriptor
+ *		fetched, if it could be found.
+ */
+/**
+ * ECMA-262 Spec: &lt;em>Returns the value of the named property.&lt;/em>
+ *
+ * @method module:base/types/object.ObjectType#get
+ * @param {string} p The name of the property to fetch
+ * @param {boolean} alternate Whether or not to fetch the alternate values, or the base value
+ * @return {module:base.BaseType} The value of the property, or a new instance of
+ *		{@link module:base/types/undefined.UndefinedType} if the property does not exist
+ * @see ECMA-262 Spec Chapter 8.12.3
+ */
+ObjectType.prototype.get = function get(p, alternate) {
+	var desc = this.getProperty(p, alternate),
+		result,
+		prop;
+
+	function lookup(desc) {
+		if (desc) {
+			if (isDataDescriptor(desc)) {
+				return desc.value;
+			} else {
+				return (desc.get &amp;&amp; desc.get.className !== 'Undefined' &amp;&amp; desc.get.callFunction(this)) || new UndefinedType();
+			}
+		}
+	}
+
+	if (alternate) {
+		result = {};
+		for (prop in desc) {
+			result[prop] = lookup(desc[prop]);
+		}
+	} else {
+		result = lookup(desc);
+	}
+
+	this.fireEvent('propertyReferenced', 'Property "' + p + '" was referenced', {
+		name: p,
+		desc: desc
+	});
+
+	return result || new UndefinedType();
+};
+
+/**
+ * ECMA-262 Spec: &lt;em>Returns the Property Descriptor of the named own property of this object, or undefined if absent.&lt;/em>
+ *
+ * @method module:base/types/object.ObjectType#getOwnProperty
+ * @param {string} p The name of the property descriptor to fetch
+ * @param {boolean} alternate Whether or not to fetch the alternate values, or the base value
+ * @param {boolean} suppressEvent Not used here, simply used as a placeholder for the implementation in TiApiProvieer
+ * @return {(module:base/types/object.DataPropertyDescriptor | module:base/types/object.AccessorPropertyDescriptor | undefined)} The
+ *		objects property, or undefined if the property does not exist
+ * @see ECMA-262 Spec Chapter 8.12.1
+ */
+ObjectType.prototype.getOwnProperty = function getOwnProperty(p, alternate) {
+	var x,
+		prop,
+		copied;
+
+	function copyDescriptor(desc) {
+		var d = {};
+		if (isDataDescriptor(desc)) {
+			d.value = desc.value;
+			d.writable = desc.writable;
+		} else {
+			d.get = desc.get;
+			d.set = desc.set;
+		}
+		d.enumerable = desc.enumerable;
+		d.configurable = desc.configurable;
+		return d;
+	}
+
+	if (type(this) === 'Unknown') {
+		return alternate ? { 1: {
+			value: new UnknownType(),
+			configurable: false,
+			writable: false,
+			enumerable: true
+		} } : {
+			value: new UnknownType(),
+			configurable: false,
+			writable: false,
+			enumerable: true
+		};
+	}
+	x = this._lookupProperty(p, alternate);
+	if (x) {
+		if (alternate) {
+			copied = {};
+			for (prop in x) {
+				copied[prop] = copyDescriptor(x[prop]);
+			}
+			return copied;
+		} else {
+			return copyDescriptor(x);
+		}
+	}
+};
+
+/**
+ * ECMA-262 Spec: &lt;em>Returns the fully populated Property Descriptor of the named property of this object, or undefined
+ * if absent.&lt;/em>
+ *
+ * @method module:base/types/object.ObjectType#getProperty
+ * @param {string} p The name of the property descriptor to fetch
+ * @param {boolean} alternate Whether or not to fetch the alternate values, or the base value
+ * @return {(module:base/types/object.DataPropertyDescriptor | module:base/types/object.AccessorPropertyDescriptor | undefined)} The objects property,
+ *		or undefined if the property does not exist
+ * @see ECMA-262 Spec Chapter 8.12.2
+ */
+ObjectType.prototype.getProperty = function getProperty(p, alternate) {
+	var prop = this.getOwnProperty(p, alternate);
+	if (prop) {
+		return prop;
+	}
+	return this.objectPrototype &amp;&amp; type(this.objectPrototype) != 'Null' &amp;&amp; this.objectPrototype != this ?
+		this.objectPrototype.getProperty(p, alternate) : undefined;
+};
+
+/**
+ * Indicates that a property was set (i.e. written).
+ *
+ * @event module:base/types/object.ObjectType#propertySet
+ * @param {string} name The name of the property that was set
+ * @param {module:base.BaseType} value The value that was set
+ */
+/**
+ * ECMA-262 Spec: &lt;em>Sets the specified named property to the value of the second parameter. The flag controls failure
+ * handling.&lt;/em>
+ *
+ * @method module:base/types/object.ObjectType#put
+ * @param {string} p The name of the parameter to set the value as
+ * @param {module:base.BaseType} v The value to set
+ * @param {boolean} throwFlag Whether or not to throw an exception on error (related to strict mode)
+ * @param {boolean} suppressEvent Suppresses the 'propertySet' event (used when setting prototypes)
+ * @see ECMA-262 Spec Chapter 8.12.5
+ */
+ObjectType.prototype.put = function put(p, v, throwFlag, suppressEvent) {
+
+	var canPutP = this.canPut(p),
+		ownDesc,
+		desc;
+	if (canPutP === 'Unknown') {
+		return;
+	}
+
+	if (!canPutP) {
+		if (throwFlag) {
+			handleRecoverableNativeException('TypeError', 'Cannot put argument');
+			this.defineOwnProperty(p, { value: new UnknownType() }, throwFlag, suppressEvent);
+		} else {
+			return;
+		}
+	}
+
+	if (!suppressEvent) {
+		this.fireEvent('propertySet', 'Property "' + p + '" was set', {
+			name: p,
+			value: v
+		});
+	}
+
+	ownDesc = this.getOwnProperty(p);
+	if (isDataDescriptor(ownDesc)) {
+		this.defineOwnProperty(p, { value: v }, throwFlag, suppressEvent);
+		return;
+	}
+
+	desc = this.getProperty(p);
+	if (isAccessorDescriptor(desc)) {
+		desc.set.callFunction(this, [v]);
+	} else {
+		this.defineOwnProperty(p, {
+			value: v,
+			writable: true,
+			enumerable: true,
+			configurable: true
+		}, throwFlag, suppressEvent);
+	}
+};
+
+/**
+ * ECMA-262 Spec: &lt;em>Returns a boolean value indicating whether a [[put]] operation with PropertyName can be performed.&lt;/em>
+ *
+ * @method module:base/types/object.ObjectType#canPut
+ * @param {string} p The name of the parameter to test
+ * @return {boolean} Whether or not the parameter can be put
+ * @see ECMA-262 Spec Chapter 8.12.4
+ */
+ObjectType.prototype.canPut = function canPut(p) {
+	var desc = this.getOwnProperty(p),
+		inherited;
+	if (desc) {
+		if (isAccessorDescriptor(desc)) {
+			return desc.set &amp;&amp; desc.set.className != 'Undefined';
+		} else {
+			return desc.writable;
+		}
+	}
+
+	if (this.objectPrototype &amp;&amp; type(this.objectPrototype) == 'Unknown') {
+		return 'Unknown';
+	}
+
+	if (!this.objectPrototype || type(this.objectPrototype) == 'Null') {
+		return this.extensible;
+	}
+
+	inherited = this.objectPrototype.getProperty(p);
+	if (typeof inherited == 'undefined') {
+		return this.extensible;
+	}
+
+	if (isAccessorDescriptor(inherited)) {
+		return inherited.set &amp;&amp; inherited.set.className != 'Undefined';
+	} else {
+		return this.extensible &amp;&amp; inherited.writable;
+	}
+};
+
+/**
+ * ECMA-262 Spec: &lt;em>Returns a boolean value indicating whether the object already has a property with the given name.&lt;/em>
+ *
+ * @method module:base/types/object.ObjectType#hasProperty
+ * @param {string} p The name of the parameter to check for
+ * @param {boolean} Whether or not the property exists on the object
+ * @see ECMA-262 Spec Chapter 8.12.6
+ */
+ObjectType.prototype.hasProperty = function hasProperty(p) {
+	return !!this.getProperty(p);
+};
+
+/**
+ * Indicates that a property was deleted
+ *
+ * @event module:base/types/object.ObjectType#propertyDeleted
+ * @param {string} name The name of the property referenced
+ */
+/**
+ * ECMA-262 Spec: &lt;em>Removes the specified named own property from the object. The flag controls failure handling.&lt;/em>
+ *
+ * @method module:base/types/object.ObjectType#delete
+ * @param {string} p The name of the parameter to delete
+ * @param {boolean} throwFlag Whether or not to throw an exception on error (related to strict mode)
+ * @return {boolean} Whether or not the object was deleted succesfully
+ * @see ECMA-262 Spec Chapter 8.12.7
+ */
+ObjectType.prototype['delete'] = function objDelete(p, throwFlag) {
+	var desc = this.getOwnProperty(p);
+
+	this.fireEvent('propertyDeleted', 'Property "' + p + '" was deleted', {
+		name: p
+	});
+
+	if (typeof desc == 'undefined') {
+		return true;
+	}
+	if (desc.configurable) {
+		this._removeProperty(p);
+		return true;
+	}
+	if (throwFlag) {
+		throwNativeException('TypeError', 'Unable to delete "' + p + '"');
+	}
+	return false;
+};
+
+/**
+ * ECMA-262 Spec: &lt;em>Returns a default primitive value for the object.&lt;/em>
+ *
+ * @method module:base/types/object.ObjectType#defaultValue
+ * @param {string} A hint for the default value, one of 'String' or 'Number.' Any other value is interpreted as 'String'
+ * @return {(module:base/types/string.StringType | module:base/types/number.NumberType | module:base/types/undefined.UndefinedType)} The primitive default value
+ * @see ECMA-262 Spec Chapter 8.12.8
+ */
+ObjectType.prototype.defaultValue = function defaultValue(hint) {
+
+	var result;
+
+	function defaultToString() {
+		var toString = this.get('toString'),
+			str;
+		if (type(toString) === 'Unknown') {
+			return new UnknownType();
+		}
+		if (isCallable(toString)) {
+			str = toString.callFunction(this);
+			if (type(str) === 'Unknown' || isPrimitive(str)) {
+				return str;
+			}
+		}
+	}
+
+	function defaultValueOf() {
+		var valueOf = this.get('valueOf'),
+			val;
+		if (type(valueOf) === 'Unknown') {
+			return new UnknownType();
+		}
+		if (isCallable(valueOf)) {
+			val = valueOf.callFunction(this);
+			if (type(val) === 'Unknown' || isPrimitive(val)) {
+				return val;
+			}
+		}
+	}
+
+	if (hint === 'String') {
+		result = defaultToString.call(this);
+		if (result) {
+			return result;
+		}
+		result = defaultValueOf.call(this);
+		if (result) {
+			return result;
+		}
+		handleRecoverableNativeException('TypeError', 'Could not get the default string value');
+		return new UnknownType();
+	} else {
+		result = defaultValueOf.call(this);
+		if (result) {
+			return result;
+		}
+		result = defaultToString.call(this);
+		if (result) {
+			return result;
+		}
+		handleRecoverableNativeException('TypeError', 'Could not get the default number value');
+		return new UnknownType();
+	}
+};
+
+/**
+ * Indicates that a property was defined.
+ *
+ * @event module:base/types/object.ObjectType#propertyDefined
+ * @param {string} name The name of the property referenced
+ */
+/**
+ * ECMA-262 Spec: &lt;em>Creates or alters the named own property to have the state described by a Property Descriptor. The
+ * flag controls failure handling.&lt;/em>
+ *
+ * @method module:base/types/object.ObjectType#defineOwnProperty
+ * @param {string} p The name of the parameter to delete
+ * @param {(module:base/types/object.DataPropertyDescriptor | module:base/types/object.AccessorPropertyDescriptor)} desc The descriptor for the property
+ * @param {boolean} throwFlag Whether or not to throw an exception on error (related to strict mode)
+ * @param {boolean} suppressEvent Suppresses the 'propertyDefined' event (used when setting prototypes)
+ * @return {boolean} Indicates whether or not the property was defined successfully
+ * @see ECMA-262 Spec Chapter 8.12.9
+ */
+ObjectType.prototype.defineOwnProperty = function defineOwnProperty(p, desc, throwFlag, suppressEvent) {
+	var current = this.getOwnProperty(p, false, true),
+		newProp,
+		descKeys = Object.keys(desc),
+		i;
+
+	if (isDataDescriptor(desc)) {
+		desc.value = desc.value || new UndefinedType();
+		desc.value._updateClosure(this._closure);
+		if (type(desc.value) === 'Unknown' || !desc.value._isLocal() || isAmbiguousBlock()) {
+			newProp = new DataPropertyDescriptor();
+			if (typeof desc.configurable != 'undefined') {
+				newProp.configurable = desc.configurable;
+			}
+			if (typeof desc.enumerable != 'undefined') {
+				newProp.enumerable = desc.enumerable;
+			}
+			if (typeof desc.writable != 'undefined') {
+				newProp.writable = desc.writable;
+			}
+			newProp.value = new UnknownType();
+			this._addProperty(p, newProp);
+			return true;
+		}
+	}
+
+	if (typeof current == 'undefined' &amp;&amp; !this.extensible) {
+		if (throwFlag) {
+			handleRecoverableNativeException('TypeError', 'Could not define property ' + p + ': object is not extensible');
+		}
+		return false;
+	}
+
+	if (!suppressEvent) {
+		this.fireEvent('propertyDefined', 'Property "' + p + '" was defined', {
+			name: p
+		});
+	}
+
+	if (typeof current == 'undefined' &amp;&amp; this.extensible) {
+		if (isAccessorDescriptor(desc)) {
+			newProp = new AccessorPropertyDescriptor();
+			if (typeof desc.configurable != 'undefined') {
+				newProp.configurable = desc.configurable;
+			}
+			if (typeof desc.enumerable != 'undefined') {
+				newProp.enumerable = desc.enumerable;
+			}
+			if (typeof desc.get != 'undefined') {
+				newProp.get = desc.get;
+			}
+			if (typeof desc.set != 'undefined') {
+				newProp.set = desc.set;
+			}
+		} else {
+			newProp = new DataPropertyDescriptor();
+			if (typeof desc.configurable != 'undefined') {
+				newProp.configurable = desc.configurable;
+			}
+			if (typeof desc.enumerable != 'undefined') {
+				newProp.enumerable = desc.enumerable;
+			}
+			if (typeof desc.value != 'undefined') {
+				newProp.value = desc.value;
+			}
+			if (typeof desc.writable != 'undefined') {
+				newProp.writable = desc.writable;
+			}
+		}
+		this._addProperty(p, newProp);
+		return true;
+	}
+
+	if (descKeys.length === 0) {
+		return true;
+	}
+
+	if (sameDesc(current, desc)) {
+		return true;
+	}
+	if (!current.configurable) {
+		if (desc.configurable || (typeof desc.enumerable != 'undefined' &amp;&amp; desc.enumerable !== current.enumerable)) {
+			if (throwFlag) {
+				handleRecoverableNativeException('TypeError', 'Could not define property ' + p +
+					': existing property is not configurable and writable mismatch between existing and new property');
+			}
+			return false;
+		}
+	}
+
+	if (isGenericDescriptor(desc)) {
+		current = desc;
+	} else if (isDataDescriptor(desc) !== isDataDescriptor(current)) {
+		if (!current.configurable) {
+			if (throwFlag) {
+				handleRecoverableNativeException('TypeError', 'Could not define property ' + p +
+					': descriptor type mismatch between existing and new property');
+			}
+			return false;
+		}
+
+		if (isDataDescriptor(current)) {
+			newProp = new AccessorPropertyDescriptor();
+			newProp.configurable = current.configurable;
+			newProp.enumerable = current.enumerable;
+		} else {
+			newProp = new DataPropertyDescriptor();
+			newProp.configurable = current.configurable;
+			newProp.enumerable = current.enumerable;
+		}
+		current = newProp;
+	} else if (isDataDescriptor(desc) &amp;&amp; isDataDescriptor(current)) {
+		if (!current.configurable &amp;&amp; !current.writable) {
+			if (desc.writable) {
+				if (throwFlag) {
+					handleRecoverableNativeException('TypeError', 'Could not define property ' + p +
+						': existing property is not configurable and writable mismatch between existing and new property');
+				}
+				return false;
+			}
+			if (typeof desc.value != 'undefined' &amp;&amp; !sameDesc(desc, current)) {
+				if (throwFlag) {
+					handleRecoverableNativeException('TypeError', 'Could not define property ' + p +
+						': existing property is not configurable and value mismatch between existing and new property');
+				}
+				return false;
+			}
+		}
+	} else if (isAccessorDescriptor(desc) &amp;&amp; isAccessorDescriptor(current)) {
+		if (!current.configurable &amp;&amp; typeof desc.set != 'undefined') {
+			if (!sameValue(desc.set, current.set)) {
+				if (throwFlag) {
+					handleRecoverableNativeException('TypeError', 'Could not define property ' + p +
+						': existing property is not configurable and set mismatch between existing and new property');
+				}
+				return false;
+			}
+			if (!sameValue(desc.get, current.get)) {
+				if (throwFlag) {
+					handleRecoverableNativeException('TypeError', 'Could not define property ' + p +
+						': existing property is not configurable and get mismatch between existing and new property');
+				}
+				return false;
+			}
+		}
+	}
+	for (i in descKeys) {
+		current[descKeys[i]] = desc[descKeys[i]];
+	}
+	this._addProperty(p, current);
+	return true;
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-AST.html">AST</a></li><li><a href="module-base.html">base</a></li><li><a href="array.html">base/constructors/array</a></li><li><a href="boolean.html">base/constructors/boolean</a></li><li><a href="date.html">base/constructors/date</a></li><li><a href="error.html">base/constructors/error</a></li><li><a href="function.html">base/constructors/function</a></li><li><a href="number.html">base/constructors/number</a></li><li><a href="object.html">base/constructors/object</a></li><li><a href="regexp.html">base/constructors/regexp</a></li><li><a href="string.html">base/constructors/string</a></li><li><a href="context.html">base/context</a></li><li><a href="conversion.html">base/conversion</a></li><li><a href="exceptions.html">base/exceptions</a></li><li><a href="init.html">base/init</a></li><li><a href="array_.html">base/prototypes/array</a></li><li><a href="boolean_.html">base/prototypes/boolean</a></li><li><a href="date_.html">base/prototypes/date</a></li><li><a href="error_.html">base/prototypes/error</a></li><li><a href="function_.html">base/prototypes/function</a></li><li><a href="number_.html">base/prototypes/number</a></li><li><a href="object_.html">base/prototypes/object</a></li><li><a href="regexp_.html">base/prototypes/regexp</a></li><li><a href="string_.html">base/prototypes/string</a></li><li><a href="array__.html">base/types/array</a></li><li><a href="boolean__.html">base/types/boolean</a></li><li><a href="function__.html">base/types/function</a></li><li><a href="null.html">base/types/null</a></li><li><a href="number__.html">base/types/number</a></li><li><a href="object__.html">base/types/object</a></li><li><a href="reference.html">base/types/reference</a></li><li><a href="regexp__.html">base/types/regexp</a></li><li><a href="string__.html">base/types/string</a></li><li><a href="undefined.html">base/types/undefined</a></li><li><a href="unknown.html">base/types/unknown</a></li><li><a href="module-CodeProcessor.html">CodeProcessor</a></li><li><a href="module-CodeProcessorUtils.html">CodeProcessorUtils</a></li><li><a href="TiApiDeprecationFinder.html">plugins/TiApiDeprecationFinder</a></li><li><a href="TiApiIncludeFinder.html">plugins/TiApiIncludeFinder</a></li><li><a href="TiApiPlatformValidator.html">plugins/TiApiPlatformValidator</a></li><li><a href="TiApiProvider.html">plugins/TiApiProvider</a></li><li><a href="globals.html">plugins/TiApiProvider/globals</a></li><li><a href="require.html">plugins/TiApiProvider/require</a></li><li><a href="Ti.html">plugins/TiApiProvider/Ti</a></li><li><a href="API.html">plugins/TiApiProvider/Ti/API</a></li><li><a href="App.html">plugins/TiApiProvider/Ti/App</a></li><li><a href="Properties.html">plugins/TiApiProvider/Ti/App/Properties</a></li><li><a href="FileSystem.html">plugins/TiApiProvider/Ti/FileSystem</a></li><li><a href="Window.html">plugins/TiApiProvider/Ti/UI/Window</a></li><li><a href="TiApiRequireFinder.html">plugins/TiApiRequireFinder</a></li><li><a href="TiApiUsageFinder.html">plugins/TiApiUsageFinder</a></li><li><a href="module-RuleProcessor.html">RuleProcessor</a></li><li><a href="AST_Accessor.html">rules/AST_Accessor</a></li><li><a href="AST_Array.html">rules/AST_Array</a></li><li><a href="AST_Assign.html">rules/AST_Assign</a></li><li><a href="AST_Binary.html">rules/AST_Binary</a></li><li><a href="AST_BlockStatement.html">rules/AST_BlockStatement</a></li><li><a href="AST_Break.html">rules/AST_Break</a></li><li><a href="AST_Call.html">rules/AST_Call</a></li><li><a href="AST_Conditional.html">rules/AST_Conditional</a></li><li><a href="AST_Const.html">rules/AST_Const</a></li><li><a href="AST_Continue.html">rules/AST_Continue</a></li><li><a href="AST_Debugger.html">rules/AST_Debugger</a></li><li><a href="AST_Defun.html">rules/AST_Defun</a></li><li><a href="AST_Directive.html">rules/AST_Directive</a></li><li><a href="AST_Do.html">rules/AST_Do</a></li><li><a href="AST_Dot.html">rules/AST_Dot</a></li><li><a href="AST_EmptyStatement.html">rules/AST_EmptyStatement</a></li><li><a href="AST_False.html">rules/AST_False</a></li><li><a href="AST_For.html">rules/AST_For</a></li><li><a href="AST_ForIn.html">rules/AST_ForIn</a></li><li><a href="AST_Function.html">rules/AST_Function</a></li><li><a href="AST_Hole.html">rules/AST_Hole</a></li><li><a href="AST_If.html">rules/AST_If</a></li><li><a href="AST_Infinity.html">rules/AST_Infinity</a></li><li><a href="AST_LabeledStatement.html">rules/AST_LabeledStatement</a></li><li><a href="AST_NaN.html">rules/AST_NaN</a></li><li><a href="AST_New.html">rules/AST_New</a></li><li><a href="AST_Null.html">rules/AST_Null</a></li><li><a href="AST_Number.html">rules/AST_Number</a></li><li><a href="AST_Object.html">rules/AST_Object</a></li><li><a href="AST_RegExp.html">rules/AST_RegExp</a></li><li><a href="AST_Return.html">rules/AST_Return</a></li><li><a href="AST_Seq.html">rules/AST_Seq</a></li><li><a href="AST_SimpleStatement.html">rules/AST_SimpleStatement</a></li><li><a href="AST_String.html">rules/AST_String</a></li><li><a href="AST_Sub.html">rules/AST_Sub</a></li><li><a href="AST_Switch.html">rules/AST_Switch</a></li><li><a href="AST_SymbolRef.html">rules/AST_SymbolRef</a></li><li><a href="AST_This.html">rules/AST_This</a></li><li><a href="AST_Throw.html">rules/AST_Throw</a></li><li><a href="AST_Toplevel.html">rules/AST_Toplevel</a></li><li><a href="AST_True.html">rules/AST_True</a></li><li><a href="AST_Try.html">rules/AST_Try</a></li><li><a href="AST_UnaryPostfix.html">rules/AST_UnaryPostfix</a></li><li><a href="AST_UnaryPrefix.html">rules/AST_UnaryPrefix</a></li><li><a href="AST_Undefined.html">rules/AST_Undefined</a></li><li><a href="AST_Var.html">rules/AST_Var</a></li><li><a href="AST_While.html">rules/AST_While</a></li><li><a href="AST_With.html">rules/AST_With</a></li><li><a href="module-Runtime.html">Runtime</a></li></ul><h3>Classes</h3><ul><li><a href="module-base.BaseType.html">BaseType</a></li><li><a href="context.DeclarativeEnvironmentRecord.html">DeclarativeEnvironmentRecord</a></li><li><a href="context.ObjectEnvironmentRecord.html">ObjectEnvironmentRecord</a></li><li><a href="context-ExecutionContext.html">ExecutionContext</a></li><li><a href="context-LexicalEnvironment.html">LexicalEnvironment</a></li><li><a href="array.ArrayPrototypeType.html">ArrayPrototypeType</a></li><li><a href="boolean.BooleanPrototypeType.html">BooleanPrototypeType</a></li><li><a href="date.DatePrototypeType.html">DatePrototypeType</a></li><li><a href="error.ErrorPrototypeType.html">ErrorPrototypeType</a></li><li><a href="function.FunctionPrototypeType.html">FunctionPrototypeType</a></li><li><a href="number.NumberPrototypeType.html">NumberPrototypeType</a></li><li><a href="object.ObjectPrototypeType.html">ObjectPrototypeType</a></li><li><a href="regexp.RegExpPrototypeType.html">RegExpPrototypeType</a></li><li><a href="string.StringPrototypeType.html">StringPrototypeType</a></li><li><a href="array.ArrayType.html">ArrayType</a></li><li><a href="boolean.BooleanType.html">BooleanType</a></li><li><a href="function.FunctionType.html">FunctionType</a></li><li><a href="function.FunctionTypeBase.html">FunctionTypeBase</a></li><li><a href="null.NullType.html">NullType</a></li><li><a href="number.NumberType.html">NumberType</a></li><li><a href="object.AccessorPropertyDescriptor.html">AccessorPropertyDescriptor</a></li><li><a href="object.DataPropertyDescriptor.html">DataPropertyDescriptor</a></li><li><a href="object.ObjectType.html">ObjectType</a></li><li><a href="reference.ReferenceType.html">ReferenceType</a></li><li><a href="regexp.RegExpType.html">RegExpType</a></li><li><a href="string.StringType.html">StringType</a></li><li><a href="undefined.UndefinedType.html">UndefinedType</a></li><li><a href="unknown.UnknownType.html">UnknownType</a></li><li><a href="module-Runtime.Evented.html">Evented</a></li></ul><h3>Events</h3><ul><li><a href="array.ArrayType.html#event:propertyDefined">propertyDefined</a></li><li><a href="array.ArrayType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="array.ArrayType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="array.ArrayType.html#event:propertySet">propertySet</a></li><li><a href="object.ObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="object.ObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="object.ObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="object.ObjectType.html#event:propertySet">propertySet</a></li><li><a href="module-CodeProcessor.html#event:enteredFile">enteredFile</a></li><li><a href="module-CodeProcessor.html#event:errorReported">errorReported</a></li><li><a href="module-CodeProcessor.html#event:maxIterationsExceeded">maxIterationsExceeded</a></li><li><a href="module-CodeProcessor.html#event:maxRecusionLimitReached">maxRecusionLimitReached</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingBegin">projectProcessingBegin</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingEnd">projectProcessingEnd</a></li><li><a href="module-CodeProcessor.html#event:undeclaredGlobalVariableCreated">undeclaredGlobalVariableCreated</a></li><li><a href="module-CodeProcessor.html#event:warningReported">warningReported</a></li><li><a href="TiApiProvider.html#event:tiPropertyDeleted">tiPropertyDeleted</a></li><li><a href="TiApiProvider.html#event:tiPropertyReferenced">tiPropertyReferenced</a></li><li><a href="TiApiProvider.html#event:tiPropertySet">tiPropertySet</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertySet">propertySet</a></li><li><a href="AST_Accessor.html#event:rule">rule</a></li><li><a href="AST_Array.html#event:rule">rule</a></li><li><a href="AST_Assign.html#event:rule">rule</a></li><li><a href="AST_Binary.html#event:rule">rule</a></li><li><a href="AST_BlockStatement.html#event:rule">rule</a></li><li><a href="AST_Break.html#event:rule">rule</a></li><li><a href="AST_Call.html#event:rule">rule</a></li><li><a href="AST_Conditional.html#event:rule">rule</a></li><li><a href="AST_Const.html#event:rule">rule</a></li><li><a href="AST_Continue.html#event:rule">rule</a></li><li><a href="AST_Debugger.html#event:rule">rule</a></li><li><a href="AST_Defun.html#event:rule">rule</a></li><li><a href="AST_Directive.html#event:rule">rule</a></li><li><a href="AST_Do.html#event:rule">rule</a></li><li><a href="AST_Dot.html#event:rule">rule</a></li><li><a href="AST_EmptyStatement.html#event:rule">rule</a></li><li><a href="AST_False.html#event:rule">rule</a></li><li><a href="AST_For.html#event:rule">rule</a></li><li><a href="AST_ForIn.html#event:rule">rule</a></li><li><a href="AST_Function.html#event:rule">rule</a></li><li><a href="AST_Hole.html#event:rule">rule</a></li><li><a href="AST_If.html#event:rule">rule</a></li><li><a href="AST_Infinity.html#event:rule">rule</a></li><li><a href="AST_LabeledStatement.html#event:rule">rule</a></li><li><a href="AST_NaN.html#event:rule">rule</a></li><li><a href="AST_New.html#event:rule">rule</a></li><li><a href="AST_Null.html#event:rule">rule</a></li><li><a href="AST_Number.html#event:rule">rule</a></li><li><a href="AST_Object.html#event:rule">rule</a></li><li><a href="AST_RegExp.html#event:rule">rule</a></li><li><a href="AST_Return.html#event:rule">rule</a></li><li><a href="AST_Seq.html#event:rule">rule</a></li><li><a href="AST_SimpleStatement.html#event:rule">rule</a></li><li><a href="AST_String.html#event:rule">rule</a></li><li><a href="AST_Sub.html#event:rule">rule</a></li><li><a href="AST_Switch.html#event:rule">rule</a></li><li><a href="AST_SymbolRef.html#event:rule">rule</a></li><li><a href="AST_This.html#event:rule">rule</a></li><li><a href="AST_Throw.html#event:rule">rule</a></li><li><a href="AST_Toplevel.html#event:rule">rule</a></li><li><a href="AST_True.html#event:rule">rule</a></li><li><a href="AST_Try.html#event:rule">rule</a></li><li><a href="AST_UnaryPostfix.html#event:rule">rule</a></li><li><a href="AST_UnaryPrefix.html#event:rule">rule</a></li><li><a href="AST_Undefined.html#event:rule">rule</a></li><li><a href="AST_Var.html#event:rule">rule</a></li><li><a href="AST_While.html#event:rule">rule</a></li><li><a href="AST_With.html#event:rule">rule</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Thu Nov 14 2013 15:31:12 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

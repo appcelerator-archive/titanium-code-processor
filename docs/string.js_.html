@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/base/prototypes/string.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: lib/base/prototypes/string.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * &lt;p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.&lt;/p>
+ *
+ * Definition for the string prototype
+ *
+ * @module base/prototypes/string
+ */
+/*global
+util,
+FunctionTypeBase,
+areAnyUnknown,
+UnknownType,
+type,
+StringType,
+handleRecoverableNativeException,
+checkObjectCoercible,
+toString,
+toInteger,
+NumberType,
+toNumber,
+RegExpType,
+NullType,
+ArrayType,
+isCallable,
+UndefinedType,
+toUint32,
+ObjectType,
+addNonEnumerableProperty,
+wrapNativeCall
+*/
+
+/*****************************************
+ *
+ * String Prototype Class
+ *
+ *****************************************/
+
+/**
+ * toString() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.2
+ */
+function StringProtoToStringFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(StringProtoToStringFunc, FunctionTypeBase);
+StringProtoToStringFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Make sure this is a string
+	if (type(thisVal) !== 'String') {
+		if (type(thisVal) === 'Object' &amp;&amp; thisVal.className === 'String') {
+			return new StringType(thisVal.primitiveValue + '');
+		} else {
+			handleRecoverableNativeException('TypeError', 'Value is not a number or number object');
+			return new UnknownType();
+		}
+	} else {
+		return new StringType(thisVal.value + '');
+	}
+});
+
+/**
+ * valueOf() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.3
+ */
+function StringProtoValueOfFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(StringProtoValueOfFunc, FunctionTypeBase);
+StringProtoValueOfFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	if (thisVal.className !== 'String') {
+		handleRecoverableNativeException('TypeError', 'Value is not a string');
+		return new UnknownType();
+	}
+	if (thisVal.hasOwnProperty('primitiveValue')) {
+		return new StringType(thisVal.primitiveValue);
+	} else {
+		return new StringType(thisVal.value);
+	}
+});
+
+/**
+ * charAt() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.4
+ */
+function StringProtoCharAtFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(StringProtoCharAtFunc, FunctionTypeBase);
+StringProtoCharAtFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	var pos = args[0],
+		s,
+		position;
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal);
+
+	// Step 3
+	position = toInteger(pos);
+
+	// Steps 4-6
+	return new StringType(s.value.charAt(position.value));
+});
+
+/**
+ * charCodeAt() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.5
+ */
+function StringProtoCharCodeAtFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(StringProtoCharCodeAtFunc, FunctionTypeBase);
+StringProtoCharCodeAtFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var pos = args[0],
+		s,
+		position;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal);
+
+	// Step 3
+	position = toInteger(pos);
+
+	// Steps 4-6
+	return new NumberType(s.value.charCodeAt(position.value));
+});
+
+/**
+ * concat() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.6
+ */
+function StringProtoConcatFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(StringProtoConcatFunc, FunctionTypeBase);
+StringProtoConcatFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	var s,
+		i, len;
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal).value;
+
+	// Step 3 (deep copy args and convert to values)
+	args = [].concat(args);
+	for (i = 0, len = args.length; i &lt; len; i++) {
+		args[i] = toString(args[i]).value;
+	}
+
+	// Steps 4-6
+	return new StringType(s.concat.apply(s, args));
+});
+
+/**
+ * indexOf() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.7
+ */
+function StringProtoIndexOfFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(StringProtoIndexOfFunc, FunctionTypeBase);
+StringProtoIndexOfFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var searchString = args[0],
+		position = args[2],
+		s,
+		searchStr,
+		pos;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal).value;
+
+	// Step 3
+	searchStr = toString(searchString).value;
+
+	// Step 4
+	pos = typeof position != 'undefined' ? toInteger(position).value : 0;
+
+	// Steps 5-8
+	return new NumberType(s.indexOf(searchStr, pos));
+});
+
+/**
+ * lastIndexOf() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.8
+ */
+function StringProtoLastIndexOfFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(StringProtoLastIndexOfFunc, FunctionTypeBase);
+StringProtoLastIndexOfFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var searchString = args[0],
+		position = args[2],
+		s,
+		searchStr,
+		pos;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal).value;
+
+	// Step 3
+	searchStr = toString(searchString).value;
+
+	// Step 4
+	pos = typeof position != 'undefined' ? toNumber(position).value : undefined;
+
+	// Steps 5-8
+	return new NumberType(s.lastIndexOf(searchStr, pos));
+
+});
+
+/**
+ * localeCompare() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.9
+ */
+function StringProtoLocaleCompareFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(StringProtoLocaleCompareFunc, FunctionTypeBase);
+StringProtoLocaleCompareFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var that = args[0],
+		s;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal).value;
+
+	// Step 3
+	that = toString(that).value;
+
+	return new NumberType(s.localeCompare(that));
+});
+
+/**
+ * match() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.10
+ */
+function StringProtoMatchFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(StringProtoMatchFunc, FunctionTypeBase);
+StringProtoMatchFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var regexp = args[0],
+		s,
+		rx,
+		result,
+		a,
+		i,
+		len;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal).value;
+
+	// Steps 3 and 4
+	if (regexp &amp;&amp; regexp.className === 'RegExp') {
+		rx = regexp;
+	} else {
+		if (!regexp || type(regexp) === 'Undefined') {
+			rx = new RegExpType('', '');
+		} else {
+			rx = new RegExpType(toString(regexp).value, '');
+		}
+	}
+
+	// Update the regexp object
+	rx._refreshRegExpFromProperties();
+
+	// Use the built-in match method to perform the match
+	result = s.match(rx.value);
+
+	// Update the regexp object
+	rx._refreshPropertiesFromRegExp();
+
+	// Check for no match
+	if (result === null) {
+		return new NullType();
+	}
+
+	// Create the results array
+	a = new ArrayType();
+	a.put('index', new NumberType(result.index), false, true);
+	a.put('input', rx, false, true);
+	for (i = 0, len = result.length; i &lt; len; i++) {
+		a.put(i, new StringType(result[i]), false, true);
+	}
+	a.put('length', new NumberType(result.length), false, true);
+	return a;
+});
+
+/**
+ * replace() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.11
+ */
+function StringProtoReplaceFunc(className) {
+	FunctionTypeBase.call(this, 2, className || 'Function');
+}
+util.inherits(StringProtoReplaceFunc, FunctionTypeBase);
+StringProtoReplaceFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var searchValue = args[0],
+		replaceValue = args[1],
+		s,
+		rx,
+		result;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal).value;
+
+	// Get the native searchValue
+	if (searchValue.className !== 'RegExp') {
+		searchValue = toString(searchValue);
+	} else {
+		searchValue._refreshRegExpFromProperties();
+	}
+	searchValue = searchValue.value;
+
+	// Run the built-in replace method
+	if (isCallable(replaceValue)) {
+		result = new StringType(s.replace(searchValue, function () {
+			var args = [
+					new StringType(arguments[0]) // match
+				],
+				i, len;
+
+			// Push the matches into the arguments
+			for (i = 1, len = arguments.length - 2; i &lt; len; i++) {
+				args.push(new StringType(arguments[i]));
+			}
+
+			// Push the offset and the string into the arguments
+			args.push(new NumberType(arguments[arguments.length - 2]));
+			args.push(new StringType(arguments[arguments.length - 1]));
+
+			// Call the callback method
+			return toString(replaceValue.callFunction(new UndefinedType(), args)).value;
+		}));
+	} else {
+		result = new StringType(s.replace(searchValue, toString(replaceValue).value));
+	}
+
+	// Update the regexp object
+	if (searchValue.className === 'RegExp') {
+		rx._refreshPropertiesFromRegExp();
+	}
+
+	return result;
+});
+
+/**
+ * search() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.12
+ */
+function StringProtoSearchFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(StringProtoSearchFunc, FunctionTypeBase);
+StringProtoSearchFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var regexp = args[0],
+		string,
+		rx,
+		result;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	string = toString(thisVal).value;
+
+	// Steps 3 and 4
+	if (regexp &amp;&amp; regexp.className === 'RegExp') {
+		rx = regexp;
+	} else {
+		if (!regexp || type(regexp) === 'Undefined') {
+			rx = new RegExpType('', '');
+		} else {
+			rx = new RegExpType(toString(regexp).value, '');
+		}
+	}
+
+	// Update the regexp object
+	rx._refreshRegExpFromProperties();
+
+	// Use the built-in method to perform the match
+	result = string.search(rx.value);
+
+	// Update the regexp object
+	rx._refreshPropertiesFromRegExp();
+
+	return new NumberType(result);
+});
+
+/**
+ * slice() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.13
+ */
+function StringProtoSliceFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(StringProtoSliceFunc, FunctionTypeBase);
+StringProtoSliceFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var start = args[0],
+		end = args[1],
+		s;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal).value;
+
+	// Step 4
+	start = toInteger(start).value;
+
+	// Step 5
+	end = typeof end != 'undefined' ? toInteger(end).value : s.length;
+
+	// Use the built-in method to perform the slice
+	return new StringType(s.slice(start, end));
+});
+
+/**
+ * split() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.14
+ */
+function StringProtoSplitFunc(className) {
+	FunctionTypeBase.call(this, 2, className || 'Function');
+}
+util.inherits(StringProtoSplitFunc, FunctionTypeBase);
+StringProtoSplitFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var separator = args[0],
+		limit = args[1],
+		s,
+		result,
+		a,
+		i,
+		len;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal).value;
+
+	// Convert the separator into a form the native method can use
+	if (!separator || type(separator) === 'Undefined') {
+		separator = undefined;
+	} else if (separator.className === 'RegExp'){
+		separator = separator.value;
+	} else {
+		separator = toString(separator).value;
+	}
+
+	// Convert the limit into a form the native method can use
+	if (!limit || type(limit) === 'Undefined') {
+		limit = undefined;
+	} else {
+		limit = toUint32(limit).value;
+	}
+
+	// Call the split method
+	result = s.split(separator, limit);
+
+	// Convert the results and return them
+	a = new ArrayType();
+	for (i = 0, len = result.length; i &lt; len; i++) {
+		a.put(i, new StringType(result[i]), false, true);
+	}
+	return a;
+});
+
+/**
+ * substring() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.15
+ */
+function StringProtoSubstringFunc(className) {
+	FunctionTypeBase.call(this, 2, className || 'Function');
+}
+util.inherits(StringProtoSubstringFunc, FunctionTypeBase);
+StringProtoSubstringFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var start = args[0],
+		end = args[1],
+		s;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal).value;
+
+	// Step 4
+	start = toInteger(start).value;
+
+	// Step 5
+	end = typeof end != 'undefined' ? toInteger(end).value : s.length;
+
+	// Use the built-in method to perform the substring
+	return new StringType(s.substring(start, end));
+});
+
+/**
+ * toLowerCase() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.16
+ */
+function StringProtoToLowerCaseFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(StringProtoToLowerCaseFunc, FunctionTypeBase);
+StringProtoToLowerCaseFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var s;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal).value;
+
+	// Use the built-in method to perform the toLowerCase
+	return new StringType(s.toLowerCase());
+
+});
+
+/**
+ * toLocaleLowerCase() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.17
+ */
+function StringProtoToLocaleLowerCaseFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(StringProtoToLocaleLowerCaseFunc, FunctionTypeBase);
+StringProtoToLocaleLowerCaseFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var s;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal).value;
+
+	// Use the built-in method to perform the toLowerCase
+	return new StringType(s.toLocaleLowerCase());
+});
+
+/**
+ * toUpperCase() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.18
+ */
+function StringProtoToUpperCaseFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(StringProtoToUpperCaseFunc, FunctionTypeBase);
+StringProtoToUpperCaseFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var s;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal).value;
+
+	// Use the built-in method to perform the toLowerCase
+	return new StringType(s.toUpperCase());
+});
+
+/**
+ * toLocaleUpperCase() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.19
+ */
+function StringProtoToLocaleUpperCaseFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(StringProtoToLocaleUpperCaseFunc, FunctionTypeBase);
+StringProtoToLocaleUpperCaseFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var s;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal).value;
+
+	// Use the built-in method to perform the toLowerCase
+	return new StringType(s.toLocaleUpperCase());
+});
+
+/**
+ * trim() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.5.4.20
+ */
+function StringProtoTrimFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(StringProtoTrimFunc, FunctionTypeBase);
+StringProtoTrimFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var s;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Step 1
+	checkObjectCoercible(thisVal);
+
+	// Step 2
+	s = toString(thisVal).value;
+
+	// Use the built-in method to perform the toLowerCase
+	return new StringType(s.trim());
+});
+
+/**
+ * @classdesc The prototype for Strings
+ *
+ * @constructor module:base/prototypes/string.StringPrototypeType
+ * @see ECMA-262 Spec Chapter 15.5.4
+ */
+exports.StringPrototypeType = StringPrototypeType;
+function StringPrototypeType(className) {
+	ObjectType.call(this, className || 'String');
+	this.primitiveValue = '';
+	addNonEnumerableProperty(this, 'length', new NumberType(0), false, true);
+
+	addNonEnumerableProperty(this, 'toString', new StringProtoToStringFunc(), false, true);
+	addNonEnumerableProperty(this, 'valueOf', new StringProtoValueOfFunc(), false, true);
+	addNonEnumerableProperty(this, 'charAt', new StringProtoCharAtFunc(), false, true);
+	addNonEnumerableProperty(this, 'charCodeAt', new StringProtoCharCodeAtFunc(), false, true);
+	addNonEnumerableProperty(this, 'concat', new StringProtoConcatFunc(), false, true);
+	addNonEnumerableProperty(this, 'indexOf', new StringProtoIndexOfFunc(), false, true);
+	addNonEnumerableProperty(this, 'lastIndexOf', new StringProtoLastIndexOfFunc(), false, true);
+	addNonEnumerableProperty(this, 'localeCompare', new StringProtoLocaleCompareFunc(), false, true);
+	addNonEnumerableProperty(this, 'match', new StringProtoMatchFunc(), false, true);
+	addNonEnumerableProperty(this, 'replace', new StringProtoReplaceFunc(), false, true);
+	addNonEnumerableProperty(this, 'search', new StringProtoSearchFunc(), false, true);
+	addNonEnumerableProperty(this, 'slice', new StringProtoSliceFunc(), false, true);
+	addNonEnumerableProperty(this, 'split', new StringProtoSplitFunc(), false, true);
+	addNonEnumerableProperty(this, 'substring', new StringProtoSubstringFunc(), false, true);
+	addNonEnumerableProperty(this, 'toLowerCase', new StringProtoToLowerCaseFunc(), false, true);
+	addNonEnumerableProperty(this, 'toLocaleLowerCase', new StringProtoToLocaleLowerCaseFunc(), false, true);
+	addNonEnumerableProperty(this, 'toUpperCase', new StringProtoToUpperCaseFunc(), false, true);
+	addNonEnumerableProperty(this, 'toLocaleUpperCase', new StringProtoToLocaleUpperCaseFunc(), false, true);
+	addNonEnumerableProperty(this, 'trim', new StringProtoTrimFunc(), false, true);
+}
+util.inherits(StringPrototypeType, ObjectType);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-AST.html">AST</a></li><li><a href="module-base.html">base</a></li><li><a href="array.html">base/constructors/array</a></li><li><a href="boolean.html">base/constructors/boolean</a></li><li><a href="date.html">base/constructors/date</a></li><li><a href="error.html">base/constructors/error</a></li><li><a href="function.html">base/constructors/function</a></li><li><a href="number.html">base/constructors/number</a></li><li><a href="object.html">base/constructors/object</a></li><li><a href="regexp.html">base/constructors/regexp</a></li><li><a href="string.html">base/constructors/string</a></li><li><a href="context.html">base/context</a></li><li><a href="conversion.html">base/conversion</a></li><li><a href="exceptions.html">base/exceptions</a></li><li><a href="init.html">base/init</a></li><li><a href="array_.html">base/prototypes/array</a></li><li><a href="boolean_.html">base/prototypes/boolean</a></li><li><a href="date_.html">base/prototypes/date</a></li><li><a href="error_.html">base/prototypes/error</a></li><li><a href="function_.html">base/prototypes/function</a></li><li><a href="number_.html">base/prototypes/number</a></li><li><a href="object_.html">base/prototypes/object</a></li><li><a href="regexp_.html">base/prototypes/regexp</a></li><li><a href="string_.html">base/prototypes/string</a></li><li><a href="array__.html">base/types/array</a></li><li><a href="boolean__.html">base/types/boolean</a></li><li><a href="function__.html">base/types/function</a></li><li><a href="null.html">base/types/null</a></li><li><a href="number__.html">base/types/number</a></li><li><a href="object__.html">base/types/object</a></li><li><a href="reference.html">base/types/reference</a></li><li><a href="regexp__.html">base/types/regexp</a></li><li><a href="string__.html">base/types/string</a></li><li><a href="undefined.html">base/types/undefined</a></li><li><a href="unknown.html">base/types/unknown</a></li><li><a href="module-CodeProcessor.html">CodeProcessor</a></li><li><a href="module-CodeProcessorUtils.html">CodeProcessorUtils</a></li><li><a href="TiApiDeprecationFinder.html">plugins/TiApiDeprecationFinder</a></li><li><a href="TiApiIncludeFinder.html">plugins/TiApiIncludeFinder</a></li><li><a href="TiApiPlatformValidator.html">plugins/TiApiPlatformValidator</a></li><li><a href="TiApiProvider.html">plugins/TiApiProvider</a></li><li><a href="globals.html">plugins/TiApiProvider/globals</a></li><li><a href="require.html">plugins/TiApiProvider/require</a></li><li><a href="Ti.html">plugins/TiApiProvider/Ti</a></li><li><a href="API.html">plugins/TiApiProvider/Ti/API</a></li><li><a href="App.html">plugins/TiApiProvider/Ti/App</a></li><li><a href="Properties.html">plugins/TiApiProvider/Ti/App/Properties</a></li><li><a href="FileSystem.html">plugins/TiApiProvider/Ti/FileSystem</a></li><li><a href="Window.html">plugins/TiApiProvider/Ti/UI/Window</a></li><li><a href="TiApiRequireFinder.html">plugins/TiApiRequireFinder</a></li><li><a href="TiApiUsageFinder.html">plugins/TiApiUsageFinder</a></li><li><a href="module-RuleProcessor.html">RuleProcessor</a></li><li><a href="AST_Accessor.html">rules/AST_Accessor</a></li><li><a href="AST_Array.html">rules/AST_Array</a></li><li><a href="AST_Assign.html">rules/AST_Assign</a></li><li><a href="AST_Binary.html">rules/AST_Binary</a></li><li><a href="AST_BlockStatement.html">rules/AST_BlockStatement</a></li><li><a href="AST_Break.html">rules/AST_Break</a></li><li><a href="AST_Call.html">rules/AST_Call</a></li><li><a href="AST_Conditional.html">rules/AST_Conditional</a></li><li><a href="AST_Const.html">rules/AST_Const</a></li><li><a href="AST_Continue.html">rules/AST_Continue</a></li><li><a href="AST_Debugger.html">rules/AST_Debugger</a></li><li><a href="AST_Defun.html">rules/AST_Defun</a></li><li><a href="AST_Directive.html">rules/AST_Directive</a></li><li><a href="AST_Do.html">rules/AST_Do</a></li><li><a href="AST_Dot.html">rules/AST_Dot</a></li><li><a href="AST_EmptyStatement.html">rules/AST_EmptyStatement</a></li><li><a href="AST_False.html">rules/AST_False</a></li><li><a href="AST_For.html">rules/AST_For</a></li><li><a href="AST_ForIn.html">rules/AST_ForIn</a></li><li><a href="AST_Function.html">rules/AST_Function</a></li><li><a href="AST_Hole.html">rules/AST_Hole</a></li><li><a href="AST_If.html">rules/AST_If</a></li><li><a href="AST_Infinity.html">rules/AST_Infinity</a></li><li><a href="AST_LabeledStatement.html">rules/AST_LabeledStatement</a></li><li><a href="AST_NaN.html">rules/AST_NaN</a></li><li><a href="AST_New.html">rules/AST_New</a></li><li><a href="AST_Null.html">rules/AST_Null</a></li><li><a href="AST_Number.html">rules/AST_Number</a></li><li><a href="AST_Object.html">rules/AST_Object</a></li><li><a href="AST_RegExp.html">rules/AST_RegExp</a></li><li><a href="AST_Return.html">rules/AST_Return</a></li><li><a href="AST_Seq.html">rules/AST_Seq</a></li><li><a href="AST_SimpleStatement.html">rules/AST_SimpleStatement</a></li><li><a href="AST_String.html">rules/AST_String</a></li><li><a href="AST_Sub.html">rules/AST_Sub</a></li><li><a href="AST_Switch.html">rules/AST_Switch</a></li><li><a href="AST_SymbolRef.html">rules/AST_SymbolRef</a></li><li><a href="AST_This.html">rules/AST_This</a></li><li><a href="AST_Throw.html">rules/AST_Throw</a></li><li><a href="AST_Toplevel.html">rules/AST_Toplevel</a></li><li><a href="AST_True.html">rules/AST_True</a></li><li><a href="AST_Try.html">rules/AST_Try</a></li><li><a href="AST_UnaryPostfix.html">rules/AST_UnaryPostfix</a></li><li><a href="AST_UnaryPrefix.html">rules/AST_UnaryPrefix</a></li><li><a href="AST_Undefined.html">rules/AST_Undefined</a></li><li><a href="AST_Var.html">rules/AST_Var</a></li><li><a href="AST_While.html">rules/AST_While</a></li><li><a href="AST_With.html">rules/AST_With</a></li><li><a href="module-Runtime.html">Runtime</a></li></ul><h3>Classes</h3><ul><li><a href="module-base.BaseType.html">BaseType</a></li><li><a href="context.DeclarativeEnvironmentRecord.html">DeclarativeEnvironmentRecord</a></li><li><a href="context.ObjectEnvironmentRecord.html">ObjectEnvironmentRecord</a></li><li><a href="context-ExecutionContext.html">ExecutionContext</a></li><li><a href="context-LexicalEnvironment.html">LexicalEnvironment</a></li><li><a href="array.ArrayPrototypeType.html">ArrayPrototypeType</a></li><li><a href="boolean.BooleanPrototypeType.html">BooleanPrototypeType</a></li><li><a href="date.DatePrototypeType.html">DatePrototypeType</a></li><li><a href="error.ErrorPrototypeType.html">ErrorPrototypeType</a></li><li><a href="function.FunctionPrototypeType.html">FunctionPrototypeType</a></li><li><a href="number.NumberPrototypeType.html">NumberPrototypeType</a></li><li><a href="object.ObjectPrototypeType.html">ObjectPrototypeType</a></li><li><a href="regexp.RegExpPrototypeType.html">RegExpPrototypeType</a></li><li><a href="string.StringPrototypeType.html">StringPrototypeType</a></li><li><a href="array.ArrayType.html">ArrayType</a></li><li><a href="boolean.BooleanType.html">BooleanType</a></li><li><a href="function.FunctionType.html">FunctionType</a></li><li><a href="function.FunctionTypeBase.html">FunctionTypeBase</a></li><li><a href="null.NullType.html">NullType</a></li><li><a href="number.NumberType.html">NumberType</a></li><li><a href="object.AccessorPropertyDescriptor.html">AccessorPropertyDescriptor</a></li><li><a href="object.DataPropertyDescriptor.html">DataPropertyDescriptor</a></li><li><a href="object.ObjectType.html">ObjectType</a></li><li><a href="reference.ReferenceType.html">ReferenceType</a></li><li><a href="regexp.RegExpType.html">RegExpType</a></li><li><a href="string.StringType.html">StringType</a></li><li><a href="undefined.UndefinedType.html">UndefinedType</a></li><li><a href="unknown.UnknownType.html">UnknownType</a></li><li><a href="module-Runtime.Evented.html">Evented</a></li></ul><h3>Events</h3><ul><li><a href="array.ArrayType.html#event:propertyDefined">propertyDefined</a></li><li><a href="array.ArrayType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="array.ArrayType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="array.ArrayType.html#event:propertySet">propertySet</a></li><li><a href="object.ObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="object.ObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="object.ObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="object.ObjectType.html#event:propertySet">propertySet</a></li><li><a href="module-CodeProcessor.html#event:enteredFile">enteredFile</a></li><li><a href="module-CodeProcessor.html#event:errorReported">errorReported</a></li><li><a href="module-CodeProcessor.html#event:maxIterationsExceeded">maxIterationsExceeded</a></li><li><a href="module-CodeProcessor.html#event:maxRecusionLimitReached">maxRecusionLimitReached</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingBegin">projectProcessingBegin</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingEnd">projectProcessingEnd</a></li><li><a href="module-CodeProcessor.html#event:undeclaredGlobalVariableCreated">undeclaredGlobalVariableCreated</a></li><li><a href="module-CodeProcessor.html#event:warningReported">warningReported</a></li><li><a href="TiApiProvider.html#event:tiPropertyDeleted">tiPropertyDeleted</a></li><li><a href="TiApiProvider.html#event:tiPropertyReferenced">tiPropertyReferenced</a></li><li><a href="TiApiProvider.html#event:tiPropertySet">tiPropertySet</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertySet">propertySet</a></li><li><a href="AST_Accessor.html#event:rule">rule</a></li><li><a href="AST_Array.html#event:rule">rule</a></li><li><a href="AST_Assign.html#event:rule">rule</a></li><li><a href="AST_Binary.html#event:rule">rule</a></li><li><a href="AST_BlockStatement.html#event:rule">rule</a></li><li><a href="AST_Break.html#event:rule">rule</a></li><li><a href="AST_Call.html#event:rule">rule</a></li><li><a href="AST_Conditional.html#event:rule">rule</a></li><li><a href="AST_Const.html#event:rule">rule</a></li><li><a href="AST_Continue.html#event:rule">rule</a></li><li><a href="AST_Debugger.html#event:rule">rule</a></li><li><a href="AST_Defun.html#event:rule">rule</a></li><li><a href="AST_Directive.html#event:rule">rule</a></li><li><a href="AST_Do.html#event:rule">rule</a></li><li><a href="AST_Dot.html#event:rule">rule</a></li><li><a href="AST_EmptyStatement.html#event:rule">rule</a></li><li><a href="AST_False.html#event:rule">rule</a></li><li><a href="AST_For.html#event:rule">rule</a></li><li><a href="AST_ForIn.html#event:rule">rule</a></li><li><a href="AST_Function.html#event:rule">rule</a></li><li><a href="AST_Hole.html#event:rule">rule</a></li><li><a href="AST_If.html#event:rule">rule</a></li><li><a href="AST_Infinity.html#event:rule">rule</a></li><li><a href="AST_LabeledStatement.html#event:rule">rule</a></li><li><a href="AST_NaN.html#event:rule">rule</a></li><li><a href="AST_New.html#event:rule">rule</a></li><li><a href="AST_Null.html#event:rule">rule</a></li><li><a href="AST_Number.html#event:rule">rule</a></li><li><a href="AST_Object.html#event:rule">rule</a></li><li><a href="AST_RegExp.html#event:rule">rule</a></li><li><a href="AST_Return.html#event:rule">rule</a></li><li><a href="AST_Seq.html#event:rule">rule</a></li><li><a href="AST_SimpleStatement.html#event:rule">rule</a></li><li><a href="AST_String.html#event:rule">rule</a></li><li><a href="AST_Sub.html#event:rule">rule</a></li><li><a href="AST_Switch.html#event:rule">rule</a></li><li><a href="AST_SymbolRef.html#event:rule">rule</a></li><li><a href="AST_This.html#event:rule">rule</a></li><li><a href="AST_Throw.html#event:rule">rule</a></li><li><a href="AST_Toplevel.html#event:rule">rule</a></li><li><a href="AST_True.html#event:rule">rule</a></li><li><a href="AST_Try.html#event:rule">rule</a></li><li><a href="AST_UnaryPostfix.html#event:rule">rule</a></li><li><a href="AST_UnaryPrefix.html#event:rule">rule</a></li><li><a href="AST_Undefined.html#event:rule">rule</a></li><li><a href="AST_Var.html#event:rule">rule</a></li><li><a href="AST_While.html#event:rule">rule</a></li><li><a href="AST_With.html#event:rule">rule</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Thu Nov 14 2013 15:31:12 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
