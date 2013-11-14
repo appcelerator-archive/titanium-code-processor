@@ -36,8 +36,8 @@ var fs = require('fs'),
 
 /**
  * @callback module:plugins/TiApiProvider.overrideFunctionCallback
- * @param {module:Base.BaseType} thisVal The this value for the call
- * @param {Array.<module:Base.BaseType>} args The function call arguments
+ * @param {module:base.BaseType} thisVal The this value for the call
+ * @param {Array.<module:base.BaseType>} args The function call arguments
  */
 /**
  * An override entry. Overrides can override three things: properties, methods, and namespaces. These follow the way that
@@ -47,9 +47,9 @@ var fs = require('fs'),
  *
  * @typedef {Object} module:plugins/TiApiProvider.override
  * @property {RegExp} regex The regex defining the API or APIs that are being overridden
- * @property {module:Base.BaseType} [value] The value of the property
+ * @property {module:base.BaseType} [value] The value of the property
  * @property {module:plugins/TiApiProvider.overrideFunctionCallback} [callFunction] The Function.Call implementation for this function property
- * @property {module:Base.BaseType} [obj] The value of the object
+ * @property {module:base.BaseType} [obj] The value of the object
  *
  */
 
@@ -322,7 +322,7 @@ TiFunction.prototype.callFunction = Base.wrapNativeCall(function callFunction(th
  * @constructor
  * @name module:plugins/TiApiProvider~TiObjectType
  * @private
- * @extends module:Base.ObjectType
+ * @extends module:base/types/object.ObjectType
  * @param {Object} api The api describing the object
  * @param {Object} api.node The JSCA node for the object
  * @param {Object} api.children Any children of this object (i.e. separate JSCA types that are properties)
@@ -340,7 +340,7 @@ util.inherits(TiObjectType, Base.ObjectType);
  * @name module:plugins/TiApiProvider#tiPropertyReferenced
  * @event
  * @param {string} name The name of the property that was referenced
- * @param {(module:Base.DataPropertyDescriptor | module:Base.AccessorPropertyDescriptor | undefined)} The
+ * @param {(module:base/types/object.DataPropertyDescriptor | module:base/types/object.AccessorPropertyDescriptor | undefined)} The
  *		descriptor fetched, if it could be found.
  */
 /**
@@ -350,8 +350,8 @@ util.inherits(TiObjectType, Base.ObjectType);
  * @param {string} p The name of the property to fetch
  * @param {boolean} alternate Whether or not to fetch the alternate values, or the base value
  * @param {boolean} suppressEvent Not used here, simply used as a placeholder for the implementation in TiApiProvieer
- * @returns {module:Base.BaseType} The value of the property, or a new instance of
- *		{@link module:Base.UndefinedType} if the property does not exist
+ * @returns {module:base.BaseType} The value of the property, or a new instance of
+ *		{@link module:base/types/undefined.UndefinedType} if the property does not exist
  * @see ECMA-262 Spec Chapter 8.12.3
  */
 TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, alternate, suppressEvent) {
@@ -378,7 +378,7 @@ TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, alternate, su
  * @name module:plugins/TiApiProvider#tiPropertySet
  * @event
  * @param {string} name The name of the property that was set
- * @param {module:Base.BaseType} value The value that was set
+ * @param {module:base.BaseType} value The value that was set
  */
 /**
  * ECMA-262 Spec: <em>Sets the specified named property to the value of the second parameter. The flag controls failure
@@ -386,7 +386,7 @@ TiObjectType.prototype.getOwnProperty = function getOwnProperty(p, alternate, su
  *
  * @method
  * @param {string} p The name of the parameter to set the value as
- * @param {module:Base.BaseType} desc The value to set
+ * @param {module:base.BaseType} desc The value to set
  * @param {boolean} throwFlag Whether or not to throw an exception on error (related to strict mode)
  * @param {boolean} suppressEvent Suppresses the 'propertySet' event (used when setting prototypes)
  * @see ECMA-262 Spec Chapter 8.12.5
