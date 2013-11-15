@@ -1,11 +1,10 @@
 /**
- * <p>Copyright (c) 2013 by Appcelerator, Inc. All Rights Reserved.
+ * <p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
  * require implementation
  *
- * @module plugins/TiAPIProcessor
- * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
+ * @module plugins/TiApiProvider/require
  */
 
 var path = require('path'),
@@ -24,6 +23,13 @@ var path = require('path'),
 	cache,
 	platformList;
 
+/**
+ * Gets the set of overrides defined in this file
+ *
+ * @method module:plugins/TiApiProvider/require.getOverrides
+ * @param  {Object} options The options passed to the Ti API provider plugin
+ * @return {Array.<module:plugins/TiApiProvider.override>} The list of overrides
+ */
 exports.getOverrides = function (options) {
 
 	if (options.globalsOnly) {
@@ -86,11 +92,6 @@ exports.getOverrides = function (options) {
 		}
 		Runtime.fileList = fileList;
 	});
-
-	Runtime.isFileValid = function isFileValid(filename) {
-		var rootDir = filename.split(path.sep)[0];
-		return fileRegExp.test(filename) && (platformList.indexOf(rootDir) === -1 || rootDir === platform);
-	};
 
 	platform = options && options.platform;
 	platformList = options && options.platformList;
@@ -203,7 +204,7 @@ exports.getOverrides = function (options) {
 							name: name,
 							path: filePath
 						});
-						Runtime.reportError('RequireMissing', eventDescription);
+						Runtime.reportError('RequireMissing', eventDescription, RuleProcessor.getStackTrace());
 					}
 				}
 			}

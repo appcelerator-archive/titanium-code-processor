@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/base/prototypes/array.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: lib/base/prototypes/array.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * &lt;p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.&lt;/p>
+ *
+ * Definition for the array prototype
+ *
+ * @module base/prototypes/array
+ */
+/*global
+util,
+FunctionTypeBase,
+areAnyUnknown,
+UnknownType,
+toObject,
+type,
+isCallable,
+ObjectProtoToStringFunc,
+toUint32,
+StringType,
+isType,
+handleRecoverableNativeException,
+ArrayType,
+NumberType,
+toString,
+UndefinedType,
+toInteger,
+strictEquals,
+BooleanType,
+toBoolean,
+ObjectType,
+ObjectProtoValueOfFunc,
+ObjectProtoHasOwnPropertyFunc,
+ObjectProtoIsPrototypeOfFunc,
+ObjectProtoPropertyIsEnumerableFunc,
+addNonEnumerableProperty,
+wrapNativeCall,
+convertToUnknown
+*/
+
+/*****************************************
+ *
+ * Array Prototype Class
+ *
+ *****************************************/
+
+/**
+ * toString() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.2
+ */
+function ArrayProtoToStringFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(ArrayProtoToStringFunc, FunctionTypeBase);
+ArrayProtoToStringFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations,
+	var array,
+		func;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1 and 2
+	array = toObject(thisVal);
+	func = array.get('join');
+
+	// Step 3
+	if (type(func) === 'Unknown') {
+		return new UnknownType();
+	} else if (!isCallable(func)) {
+		func = new ObjectProtoToStringFunc();
+	}
+
+	// Step 4
+	return func.callFunction(array, []);
+});
+
+/**
+ * toLocaleString() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.3
+ */
+function ArrayProtoToLocaleStringFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(ArrayProtoToLocaleStringFunc, FunctionTypeBase);
+ArrayProtoToLocaleStringFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var array,
+		len,
+		separator,
+		firstElement,
+		r,
+		func,
+		elementObj,
+		k,
+		s,
+		nextElement;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-4
+	array = toObject(thisVal);
+	len = toUint32(array.get('length')).value;
+	separator = ',';
+	k = 1;
+
+	// Step 5
+	if (len === 0) {
+		return new StringType();
+	}
+
+	// Step 6
+	firstElement = array.get(0);
+
+	// Steps 7 and 8
+	if (isType(firstElement, ['Undefined', 'Null'])) {
+		r = '';
+	} else {
+		elementObj = toObject(firstElement);
+		func = elementObj.get('toLocaleString');
+		if (type(elementObj) === 'Unknown' || type(func) === 'Unknown') {
+			return new UnknownType();
+		}
+		if (!isCallable(func)) {
+			handleRecoverableNativeException('TypeError', 'toLocaleString is not callable');
+			return new UnknownType();
+		}
+		r = func.callFunction(elementObj, []).value;
+	}
+
+	// Step 10
+	while (k &lt; len) {
+		s = r + separator;
+		nextElement = array.get(k);
+		if (isType(nextElement, ['Undefined', 'Null'])) {
+			r = '';
+		} else {
+			elementObj = toObject(nextElement);
+			func = elementObj.get('toLocaleString');
+			if (type(elementObj) === 'Unknown' || type(func) === 'Unknown') {
+				return new UnknownType();
+			}
+			if (!isCallable(func)) {
+				handleRecoverableNativeException('TypeError', 'toLocaleString is not callable');
+				return new UnknownType();
+			}
+			r = func.callFunction(elementObj, []).value;
+		}
+		r = s + r;
+		k++;
+	}
+
+	// Step 11
+	return new StringType(r);
+});
+
+/**
+ * concat() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.4
+ */
+function ArrayProtoConcatFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(ArrayProtoConcatFunc, FunctionTypeBase);
+ArrayProtoConcatFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var o,
+		a,
+		n,
+		items,
+		e,
+		k,
+		len;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-4
+	o = toObject(thisVal);
+	a = new ArrayType();
+	n = 0;
+	items = [o].concat(args);
+
+	// Step 5
+	while (items.length) {
+
+		// Step 5.a
+		e = items.shift();
+
+		if (e.className === 'Array') { // Step 5.b
+			k = 0;
+			len = e.get('length').value;
+			while (k &lt; len) {
+				if (e.hasProperty(k)) {
+					a.defineOwnProperty(n, {
+						value: e.get(k),
+						writable: true,
+						enumerable: true,
+						configurable: true
+					}, false, true);
+				}
+				n++;
+				k++;
+			}
+		} else { // Step 5.c
+			a.defineOwnProperty(n, {
+				value: e,
+				writable: true,
+				enumerable: true,
+				configurable: true
+			}, false, true);
+			n++;
+		}
+	}
+
+	// Why is length not set in the spec? Seems to be an omissions since other methods (like pop) do it.
+	a._addProperty('length', {
+		value: new NumberType(n),
+		writable: true,
+		enumerable: false,
+		configurable: false
+	});
+
+	// Step 6
+	return a;
+});
+
+/**
+ * join() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.5
+ */
+function ArrayProtoJoinFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(ArrayProtoJoinFunc, FunctionTypeBase);
+ArrayProtoJoinFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var separator,
+		o,
+		len,
+		sep,
+		r,
+		element0,
+		k,
+		s,
+		element,
+		next;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-3
+	separator = args[0];
+	o = toObject(thisVal);
+	len = toUint32(o.get('length')).value;
+	k = 1;
+
+	// Steps 4 and 5
+	if (!separator || type(separator) === 'Undefined') {
+		sep = ',';
+	} else {
+		sep = toString(separator).value;
+	}
+
+	// Step 6
+	if (len === 0) {
+		return new StringType();
+	}
+
+	// Step 7
+	element0 = o.get(0);
+
+	// Step 8
+	if (isType(element0, ['Undefined', 'Null'])) {
+		r = '';
+	} else {
+		r = toString(element0).value;
+	}
+
+	// Step 10
+	while (k &lt; len) {
+		s = r + sep;
+		element = o.get(k);
+		if (isType(element, ['Undefined', 'Null'])) {
+			next = '';
+		} else {
+			next = toString(element).value;
+		}
+		r = s + next;
+		k++;
+	}
+
+	// Step 11
+	return new StringType(r);
+});
+
+/**
+ * pop() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.6
+ */
+function ArrayProtoPopFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(ArrayProtoPopFunc, FunctionTypeBase);
+ArrayProtoPopFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args, options) {
+
+	// Variable declarations
+	var o,
+		len,
+		indx,
+		element;
+
+	if (options &amp;&amp; options.isAmbiguousContext) {
+		convertToUnknown(thisVal);
+		return new UnknownType();
+	}
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-3
+	o = toObject(thisVal);
+	len = toUint32(o.get('length')).value;
+
+	// Steps 4 and 5
+	if (len === 0) {
+		o._addProperty('length', {
+			value: new NumberType(0),
+			writable: true,
+			enumerable: false,
+			configurable: false
+		});
+		return new UndefinedType();
+	} else {
+		indx = len - 1;
+		element = o.get(indx);
+		o['delete'](indx, true);
+		o._addProperty('length', {
+			value: new NumberType(indx),
+			writable: true,
+			enumerable: false,
+			configurable: false
+		});
+		return element;
+	}
+});
+
+/**
+ * push() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.7
+ */
+function ArrayProtoPushFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(ArrayProtoPushFunc, FunctionTypeBase);
+ArrayProtoPushFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args, options) {
+
+	// Steps 1-4
+	var o,
+		n,
+		items,
+		lengthNumber;
+
+	if (options &amp;&amp; options.isAmbiguousContext) {
+		convertToUnknown(thisVal);
+		return new UnknownType();
+	}
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-4
+	o = toObject(thisVal);
+	n = toUint32(o.get('length')).value;
+	items = args;
+	lengthNumber = new NumberType();
+
+	// Step 5
+	while (items.length) {
+		o.put(n++, items.shift(), true, true);
+	}
+
+	// Step 6
+	lengthNumber.value = n;
+	o._addProperty('length', {
+		value: lengthNumber,
+		writable: true,
+		enumerable: false,
+		configurable: false
+	});
+
+	// Step 7
+	return lengthNumber;
+});
+
+/**
+ * reverse() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.8
+ */
+function ArrayProtoReverseFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(ArrayProtoReverseFunc, FunctionTypeBase);
+ArrayProtoReverseFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args, options) {
+
+	// Variable declarations
+	var o,
+		len,
+		upper,
+		middle,
+		lower,
+		upperValue,
+		lowerValue,
+		lowerExists,
+		upperExists;
+
+	if (options &amp;&amp; options.isAmbiguousContext) {
+		convertToUnknown(thisVal);
+		return new UnknownType();
+	}
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-5
+	o = toObject(thisVal);
+	len = toUint32(o.get('length')).value;
+	middle = Math.floor(len / 2);
+	lower = 0;
+
+	// Step 6
+	while (lower !== middle) {
+		upper = len - lower - 1;
+
+		lowerValue = o.get(lower);
+		upperValue = o.get(upper);
+
+		lowerExists = o.hasProperty(lower);
+		upperExists = o.hasProperty(upper);
+
+		if (lowerExists &amp;&amp; upperExists) {
+			o.put(lower, upperValue, true, true);
+			o.put(upper, lowerValue, true, true);
+		} else if (upperExists) {
+			o.put(lower, upperValue, true, true);
+			o['delete'](upper, true);
+		} else if (lowerExists) {
+			o['delete'](o, lower);
+			o.put(upper, lowerValue, true, true);
+		}
+
+		lower++;
+	}
+
+	// Step 7
+	return o;
+});
+
+/**
+ * shift() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.9
+ */
+function ArrayProtoShiftFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(ArrayProtoShiftFunc, FunctionTypeBase);
+ArrayProtoShiftFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args, options) {
+
+	// Variable declarations
+	var o,
+		len,
+		first,
+		k,
+		from,
+		to;
+
+	if (options &amp;&amp; options.isAmbiguousContext) {
+		convertToUnknown(thisVal);
+		return new UnknownType();
+	}
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-3
+	o = toObject(thisVal);
+	len = toUint32(o.get('length')).value;
+	k = 1;
+
+	// Step 4
+	if (len === 0) {
+		o._addProperty('length', {
+			value: new NumberType(0),
+			writable: true,
+			enumerable: false,
+			configurable: false
+		});
+		return new UndefinedType();
+	}
+
+	// Step 5
+	first = o.get(0);
+
+	// Step 7
+	while (k &lt; len) {
+		from = k;
+		to = k - 1;
+
+		if (o.hasProperty(from)) {
+			o.put(to, o.get(from), true, true);
+		} else {
+			o['delete'](to, true);
+		}
+		k++;
+	}
+
+	// Step 8
+	o['delete'](len - 1, true);
+
+	// Step 9
+	o._addProperty('length', {
+		value: new NumberType(len - 1),
+		writable: true,
+		enumerable: false,
+		configurable: false
+	});
+
+	// Step 10
+	return first;
+});
+
+/**
+ * slice() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.10
+ */
+function ArrayProtoSliceFunc(className) {
+	FunctionTypeBase.call(this, 2, className || 'Function');
+}
+util.inherits(ArrayProtoSliceFunc, FunctionTypeBase);
+ArrayProtoSliceFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var start,
+		end,
+		o,
+		a,
+		len,
+		relativeStart,
+		k,
+		relativeEnd,
+		finalVal,
+		n;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-9
+	start = args[0] || new NumberType(0);
+	end = args[1];
+	o = toObject(thisVal);
+	a = new ArrayType();
+	len = toUint32(o.get('length')).value;
+	relativeStart = toInteger(start).value;
+	k = relativeStart &lt; 0 ? Math.max(len + relativeStart, 0) : Math.min(relativeStart, len);
+	relativeEnd = !end || type(end) === 'Undefined' ? len : toInteger(end).value;
+	finalVal = relativeEnd &lt; 0 ? Math.max(len + relativeEnd, 0) : Math.min(relativeEnd, len);
+	n = 0;
+
+	// Step 10
+	while (k &lt; finalVal) {
+		if (o.hasProperty(k)) {
+			a.defineOwnProperty(n, {
+				value: o.get(k),
+				writable: true,
+				enumerable: true,
+				configurable: true
+			}, false, true);
+		}
+		k++;
+		n++;
+	}
+
+	// Step 11
+	return a;
+});
+
+/**
+ * sort() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.11
+ */
+function ArrayProtoSortFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(ArrayProtoSortFunc, FunctionTypeBase);
+ArrayProtoSortFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args, options) {
+
+	// Variable declarations
+	var compareFn,
+		o,
+		len,
+		changes;
+
+	if (options &amp;&amp; options.isAmbiguousContext) {
+		convertToUnknown(thisVal);
+		return new UnknownType();
+	}
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	compareFn = args[0];
+	o = toObject(thisVal);
+	len = toUint32(o.get('length')).value;
+	changes = true;
+
+	function swapValues(j, k) {
+		var jValue,
+			kValue;
+
+		// Pull the values out of the array, if they exist
+		if (o.hasProperty(j)) {
+			jValue = o.get(j);
+			o['delete'](j, true);
+		}
+		if (o.hasProperty(k)) {
+			kValue = o.get(k);
+			o['delete'](k, true);
+		}
+
+		// Put the values back into the array in their swapped positions
+		if (jValue) {
+			o.put(k, jValue, true, true);
+		}
+		if (kValue) {
+			o.put(j, kValue, true, true);
+		}
+	}
+
+	// SortCompare algorithm
+	function sortCompare(j, k) {
+
+		// Steps 3 and 4
+		var hasj = o.hasProperty(j),
+			hask = o.hasProperty(k),
+			x,
+			y,
+			xType,
+			yType,
+			xVal,
+			yVal;
+
+		// Steps 5-7
+		if (!hasj &amp;&amp; !hask) {
+			return 0;
+		}
+		if (!hasj) {
+			return 1;
+		}
+		if (!hask) {
+			return -1;
+		}
+
+		// Steps 8 and 9
+		x = o.get(j);
+		y = o.get(k);
+		xType = type(x);
+		yType = type(y);
+
+		// Steps 10-12
+		if (xType === 'Unknown' || yType === 'Unknown') {
+			return NaN;
+		}
+		if (xType === 'Undefined' &amp;&amp; yType === 'Undefined') {
+			return 0;
+		}
+		if (xType === 'Undefined') {
+			return 1;
+		}
+		if (yType === 'Undefined') {
+			return -1;
+		}
+
+		// Step 13
+		if (compareFn &amp;&amp; type(compareFn) !== 'Undefined') {
+			if (type(compareFn) === 'Unknown') {
+				throw 'Unknown';
+			}
+			if (!isCallable(compareFn)) {
+				handleRecoverableNativeException('TypeError', 'Compare funciton is not callable');
+				return new UnknownType();
+			}
+			return compareFn.callFunction(new UndefinedType(), [x, y]).value;
+		}
+
+		// Note: the spec says to always convert to a string and compare, but string comparisons don't work the same as
+		// number comparisons in JavaScript, so we have to handle numbers specially (i.e. 1 &lt; 10 !== '1' &lt; '10')
+		if (xType !== 'Number' || yType !== 'Number') {
+
+			// Steps 14 and 15
+			x = toString(x);
+			y = toString(y);
+		}
+		xVal = x.value;
+		yVal = y.value;
+
+		// Steps 16-18
+		if (xVal &lt; yVal) {
+			return -1;
+		}
+		if (xVal > yVal) {
+			return 1;
+		}
+		return 0;
+	}
+
+	// In-place quicksort algorithm
+	function sort(leftIndex, rightIndex) {
+		var storeIndex = leftIndex,
+			pivotIndex = Math.floor((rightIndex - leftIndex) / 2) + leftIndex,
+			i,
+			sortResult;
+
+		if (leftIndex &lt; rightIndex) {
+
+			// Swap the pivot and right values
+			swapValues(pivotIndex, rightIndex);
+
+			// Sort the array into the two pivot arrays
+			for (i = leftIndex; i &lt; rightIndex; i++) {
+
+				// Compare i and the store index, and swap if necessary
+				sortResult = sortCompare(i, rightIndex);
+				if (isNaN(sortResult)) {
+					throw 'Unknown';
+				} else if (sortResult &lt; 0) {
+					swapValues(i, storeIndex);
+					storeIndex++;
+				}
+			}
+
+			// Swap the pivot back into place and return its index
+			swapValues(storeIndex, rightIndex);
+
+			// Sort the left and right sides of the pivot
+			sort(leftIndex, storeIndex - 1);
+			sort(storeIndex + 1, rightIndex);
+		}
+	}
+
+	// Sort the array
+	try {
+		sort(0, len - 1);
+	} catch(e) {
+		var integerRegex = /^[0-9]*$/;
+		if (e === 'Unknown') {
+			this._getPropertyNames().forEach(function (propName) {
+				if (integerRegex.test(propName)) {
+					this._addProperty(propName, {
+						value: new UnknownType(),
+						writable: false,
+						configurable: false,
+						enumerable: true
+					});
+				}
+			}.bind(this));
+		} else {
+			throw e;
+		}
+	}
+
+	// Return the sorted object
+	return o;
+});
+
+/**
+ * splice() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.12
+ */
+function ArrayProtoSpliceFunc(className) {
+	FunctionTypeBase.call(this, 2, className || 'Function');
+}
+util.inherits(ArrayProtoSpliceFunc, FunctionTypeBase);
+ArrayProtoSpliceFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args, options) {
+
+	// Variable declarations
+	var start,
+		deleteCount,
+		o,
+		a,
+		len,
+		relativeStart,
+		actualStart,
+		actualDeleteCount,
+		k,
+		from,
+		to,
+		items,
+		itemCount;
+
+	if (options &amp;&amp; options.isAmbiguousContext) {
+		convertToUnknown(thisVal);
+		return new UnknownType();
+	}
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-8
+	start = args[0];
+	deleteCount = args[1];
+	o = toObject(thisVal);
+	a = new ArrayType();
+	len = toUint32(o.get('length')).value;
+	relativeStart = toUint32(start).value;
+	actualStart = relativeStart &lt; 0 ? Math.max(len + relativeStart, 0) : Math.min(relativeStart, len);
+	actualDeleteCount = Math.min(Math.max(toInteger(deleteCount).value, 0), len - actualStart);
+	k = 0;
+
+	// Step 9
+	while (k &lt; actualDeleteCount) {
+		from = actualStart + k;
+		if (o.hasProperty(from)) {
+			a.defineOwnProperty(k, {
+				value: o.get(from),
+				writable: true,
+				enumerable: true,
+				configurable: true
+			}, false, true);
+		}
+		k++;
+	}
+
+	// Steps 10 and 11
+	items = args.slice(2);
+	itemCount = items.length;
+
+	// Steps 12 and 13
+	if (itemCount &lt; actualDeleteCount) {
+		k = actualStart;
+		while (k &lt; len - actualDeleteCount) {
+			from = k + actualDeleteCount;
+			to = k + itemCount;
+
+			if (o.hasProperty(from)) {
+				o.put(to, o.get(from), true, true);
+			} else {
+				o['delete'](to, true, true);
+			}
+			k++;
+		}
+		k = len;
+		while (k > len - actualDeleteCount + itemCount) {
+			o['delete'](k - 1, true);
+			k--;
+		}
+	} else if (itemCount > actualDeleteCount) {
+		k = len - actualDeleteCount;
+		while (k > actualStart) {
+			from = k + actualDeleteCount - 1;
+			to = k + itemCount - 1;
+
+			if (o.hasProperty(from)) {
+				o.put(to, o.get(from), true, true);
+			} else {
+				o['delete'](to, true);
+			}
+
+			k--;
+		}
+	}
+
+	// Step 14
+	k = actualStart;
+
+	// Step 15
+	while (items.length) {
+		o.put(k, items.shift(), true, true);
+		k++;
+	}
+
+	// Step 16
+	o._addProperty('length', {
+		value: new NumberType(len - actualDeleteCount + itemCount),
+		writable: true,
+		enumerable: false,
+		configurable: false
+	});
+
+	// Step 17
+	return a;
+});
+
+/**
+ * unshift() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.13
+ */
+function ArrayProtoUnshiftFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(ArrayProtoUnshiftFunc, FunctionTypeBase);
+ArrayProtoUnshiftFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args, options) {
+
+	// Variable declarations
+	var o,
+		len,
+		argCount,
+		k = len,
+		from,
+		to,
+		j,
+		items;
+
+	if (options &amp;&amp; options.isAmbiguousContext) {
+		convertToUnknown(thisVal);
+		return new UnknownType();
+	}
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-5
+	o = toObject(thisVal);
+	len = toUint32(o.get('length')).value;
+	argCount = args.length;
+	k = len;
+
+	// Step 6
+	while (k > 0) {
+		from = k - 1;
+		to = k + argCount - 1;
+
+		if (o.hasProperty(from)) {
+			o.put(to, o.get(from), true, true);
+		} else {
+			o['delete'](to, true, true);
+		}
+
+		k--;
+	}
+
+	// Step 7 and 8
+	j = 0;
+	items = args;
+
+	// Step 9
+	while (items.length) {
+		o.put(j++, items.shift(), true, true);
+	}
+
+	// Step 10
+	o._addProperty('length', {
+		value: new NumberType(len + argCount),
+		writable: true,
+		enumerable: false,
+		configurable: false
+	});
+
+	// Step 11
+	return new NumberType(len + argCount);
+});
+
+/**
+ * indexOf() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.14
+ */
+function ArrayProtoIndexOfFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(ArrayProtoIndexOfFunc, FunctionTypeBase);
+ArrayProtoIndexOfFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	var searchElement,
+		fromIndex,
+		o,
+		len,
+		n = 0,
+		k,
+		elementK;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-3
+	searchElement = args[0] || new UndefinedType();
+	fromIndex = args[1] || new NumberType(0);
+	o = toObject(thisVal);
+	len = toUint32(o.get('length')).value;
+
+	// Step 4
+	if (len === 0) {
+		return new NumberType(-1);
+	}
+
+	// Step 5
+	if (fromIndex &amp;&amp; type(fromIndex) !== 'Undefined') {
+		n = toInteger(fromIndex).value;
+	}
+
+	// Step 6
+	if (n >= len) {
+		return new NumberType(-1);
+	}
+
+	// Steps 7 and 8
+	k = n >= 0 ? n : Math.max(len - Math.abs(n), 0);
+
+	// Step 9
+	while (k &lt; len) {
+		if (o.hasProperty(k)) {
+			elementK = o.get(k);
+			if (type(elementK) === 'Unknown') {
+				return new UnknownType();
+			}
+			if (strictEquals(searchElement, elementK)) {
+				return new NumberType(k);
+			}
+		}
+		k++;
+	}
+
+	// Step 10
+	return new NumberType(-1);
+});
+
+/**
+ * indexOf() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.15
+ */
+function ArrayProtoLastIndexOfFunc(className) {
+	FunctionTypeBase.call(this, 0, className || 'Function');
+}
+util.inherits(ArrayProtoLastIndexOfFunc, FunctionTypeBase);
+ArrayProtoLastIndexOfFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var searchElement,
+		fromIndex,
+		o,
+		len,
+		n,
+		k,
+		elementK;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-3
+	o = toObject(thisVal);
+	len = toUint32(o.get('length')).value;
+	searchElement = args[0] || new UndefinedType();
+	fromIndex = args[1] || new NumberType(len - 1);
+	n = len - 1;
+
+	// Step 4
+	if (len === 0) {
+		return new NumberType(-1);
+	}
+
+	// Step 5
+	if (fromIndex &amp;&amp; type(fromIndex) !== 'Undefined') {
+		n = toInteger(fromIndex).value;
+	}
+
+	// Steps 6 and 7
+	k = n >= 0 ? Math.min(n, len - 1) : len - Math.abs(n);
+
+	// Step 8
+	while (k >= 0) {
+		if (o.hasProperty(k)) {
+			elementK = o.get(k);
+			if (type(elementK) === 'Unknown') {
+				return new UnknownType();
+			}
+			if (strictEquals(searchElement, elementK)) {
+				return new NumberType (k);
+			}
+		}
+		k--;
+	}
+
+	// Step 9
+	return new NumberType(-1);
+});
+
+/**
+ * every() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.16
+ */
+function ArrayProtoEveryFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(ArrayProtoEveryFunc, FunctionTypeBase);
+ArrayProtoEveryFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var callbackFn,
+		thisArg,
+		o,
+		len,
+		t,
+		k;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-3
+	callbackFn = args[0];
+	thisArg = args[1];
+	o = toObject(thisVal);
+	len = toUint32(o.get('length')).value;
+	k = 0;
+
+	// Step 4
+	if (!isCallable(callbackFn)) {
+		handleRecoverableNativeException('TypeError', 'Callback function is not callable');
+		return new UnknownType();
+	}
+
+	// Step 5
+	t = callbackFn &amp;&amp; type(callbackFn) === 'Undefined' ? callbackFn : new UndefinedType();
+
+	// Step 7
+	while (k &lt; len) {
+		if (o.hasProperty(k) &amp;&amp; !toBoolean(callbackFn.callFunction(t, [o.get(k), new NumberType(k), o])).value) {
+			return new BooleanType(false);
+		}
+		k++;
+	}
+
+	// Step 8
+	return new BooleanType(true);
+});
+
+/**
+ * some() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.17
+ */
+function ArrayProtoSomeFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(ArrayProtoSomeFunc, FunctionTypeBase);
+ArrayProtoSomeFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var callbackFn,
+		thisArg,
+		o,
+		len,
+		t,
+		k;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-3
+	callbackFn = args[0];
+	thisArg = args[1];
+	o = toObject(thisVal);
+	len = toUint32(o.get('length')).value;
+	k = 0;
+
+	if (callbackFn &amp;&amp; type(callbackFn) === 'Unknown' || thisArg &amp;&amp; type(thisArg) === 'Unknown') {
+		return new UnknownType();
+	}
+
+	// Step 4
+	if (!isCallable(callbackFn)) {
+		handleRecoverableNativeException('TypeError', 'Callback function is not callable');
+		return new UnknownType();
+	}
+
+	// Step 5
+	t = callbackFn &amp;&amp; type(callbackFn) === 'Undefined' ? callbackFn : new UndefinedType();
+
+	// Step 7
+	while (k &lt; len) {
+		if (o.hasProperty(k) &amp;&amp; toBoolean(callbackFn.callFunction(t, [o.get(k), new NumberType(k), o])).value) {
+			return new BooleanType(true);
+		}
+		k++;
+	}
+
+	// Step 8
+	return new BooleanType(false);
+});
+
+/**
+ * forEach() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.18
+ */
+function ArrayProtoForEachFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(ArrayProtoForEachFunc, FunctionTypeBase);
+ArrayProtoForEachFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var callbackFn,
+		thisArg,
+		o,
+		len,
+		t,
+		k;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-3
+	callbackFn = args[0];
+	thisArg = args[1];
+	o = toObject(thisVal);
+	len = toUint32(o.get('length')).value;
+	k = 0;
+
+	// Step 4
+	if (!isCallable(callbackFn)) {
+		handleRecoverableNativeException('TypeError', 'Callback function is not callable');
+		return new UnknownType();
+	}
+
+	// Step 5
+	t = callbackFn &amp;&amp; type(callbackFn) === 'Undefined' ? callbackFn : new UndefinedType();
+
+	// Step 7
+	while  (k &lt; len) {
+		if (o.hasProperty(k)) {
+			callbackFn.callFunction(t, [o.get(k), new NumberType(k), o]);
+		}
+		k++;
+	}
+
+	// Step 8
+	return new UndefinedType();
+});
+
+/**
+ * map() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.19
+ */
+function ArrayProtoMapFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(ArrayProtoMapFunc, FunctionTypeBase);
+ArrayProtoMapFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var callbackFn,
+		thisArg,
+		o,
+		len,
+		t,
+		a,
+		k;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-3
+	callbackFn = args[0];
+	thisArg = args[1];
+	o = toObject(thisVal);
+	len = toUint32(o.get('length')).value;
+	k = 0;
+
+	// Step 4
+	if (!isCallable(callbackFn)) {
+		handleRecoverableNativeException('TypeError', 'Callback function is not callable');
+		return new UnknownType();
+	}
+
+	// Step 5
+	t = callbackFn &amp;&amp; type(callbackFn) === 'Undefined' ? callbackFn : new UndefinedType();
+
+	// Step 6
+	a = new ArrayType();
+	a._addProperty('length', {
+		value: new NumberType(len),
+		writable: true,
+		enumerable: false,
+		configurable: false
+	});
+
+	// Step 8
+	while (k &lt; len) {
+		if (o.hasProperty(k)) {
+			a.defineOwnProperty(k, {
+				value: callbackFn.callFunction(t, [o.get(k), new NumberType(k), o]),
+				writable: true,
+				enumerable: true,
+				configurable: true
+			}, false, true);
+		}
+		k++;
+	}
+
+	// Step 9
+	return a;
+});
+
+/**
+ * filter() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.20
+ */
+function ArrayProtoFilterFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(ArrayProtoFilterFunc, FunctionTypeBase);
+ArrayProtoFilterFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var callbackFn,
+		thisArg,
+		o,
+		len,
+		t,
+		a,
+		k,
+		to,
+		kValue;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-3
+	callbackFn = args[0];
+	thisArg = args[1];
+	o = toObject(thisVal);
+	len = toUint32(o.get('length')).value;
+	k = 0;
+	to = 0;
+
+	// Step 4
+	if (!isCallable(callbackFn)) {
+		handleRecoverableNativeException('TypeError', 'Callback function is not callable');
+		return new UnknownType();
+	}
+
+	// Step 5
+	t = callbackFn &amp;&amp; type(callbackFn) === 'Undefined' ? callbackFn : new UndefinedType();
+
+	// Step 6
+	a = new ArrayType();
+	a._addProperty('length', {
+		value: new NumberType(len),
+		writable: true,
+		enumerable: false,
+		configurable: false
+	});
+
+	// Step 9
+	while (k &lt; len) {
+		if (o.hasProperty(k)) {
+			kValue = o.get(k);
+			if (toBoolean(callbackFn.callFunction(t, [kValue, new NumberType(k), o])).value) {
+				a.defineOwnProperty(to, {
+					value: kValue,
+					writable: true,
+					enumerable: true,
+					configurable: true
+				}, false, true);
+				to++;
+			}
+		}
+		k++;
+	}
+
+	// Step 10
+	return a;
+});
+
+/**
+ * reduce() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.21
+ */
+function ArrayProtoReduceFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(ArrayProtoReduceFunc, FunctionTypeBase);
+ArrayProtoReduceFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var callbackFn,
+		initialValue,
+		o,
+		len,
+		k,
+		to,
+		accumulator,
+		kPresent,
+		undef;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-3
+	callbackFn = args[0];
+	initialValue = args[1];
+	o = toObject(thisVal);
+	len = toUint32(o.get('length')).value;
+	k = 0;
+	to = 0;
+	undef = new UndefinedType();
+
+	// Step 4
+	if (!isCallable(callbackFn)) {
+		handleRecoverableNativeException('TypeError', 'Callback function is not callable');
+		return new UnknownType();
+	}
+
+	// Step 5
+	if (len === 0 &amp;&amp; !initialValue) {
+		handleRecoverableNativeException('TypeError', 'Missing initial value');
+		return new UnknownType();
+	}
+
+	// Steps 7 and 8
+	if (initialValue) {
+		accumulator = initialValue;
+	} else {
+		kPresent = false;
+		while (!kPresent &amp;&amp; k &lt; len) {
+			kPresent = o.hasProperty(k);
+			if (kPresent) {
+				accumulator = o.get(k);
+			}
+			k++;
+		}
+		if (!kPresent) {
+			handleRecoverableNativeException('TypeError', 'Missing property ' + k);
+			return new UnknownType();
+		}
+	}
+
+	// Step 9
+	while (k &lt; len) {
+		if (o.hasProperty(k)) {
+			accumulator = callbackFn.callFunction(undef, [accumulator, o.get(k), new NumberType(k), o]);
+		}
+		k++;
+	}
+
+	// Step 10
+	return accumulator;
+});
+
+/**
+ * reduceRight() prototype method
+ *
+ * @private
+ * @see ECMA-262 Spec Chapter 15.4.4.22
+ */
+function ArrayReduceRightFunc(className) {
+	FunctionTypeBase.call(this, 1, className || 'Function');
+}
+util.inherits(ArrayReduceRightFunc, FunctionTypeBase);
+ArrayReduceRightFunc.prototype.callFunction = wrapNativeCall(function callFunction(thisVal, args) {
+
+	// Variable declarations
+	var callbackFn,
+		initialValue,
+		o,
+		len,
+		k,
+		to,
+		accumulator,
+		kPresent,
+		undef;
+
+	// Validate the parameters
+	if (areAnyUnknown((args || []).concat(thisVal))) {
+		return new UnknownType();
+	}
+
+	// Steps 1-3
+	callbackFn = args[0];
+	initialValue = args[1];
+	o = toObject(thisVal);
+	len = toUint32(o.get('length')).value;
+	k = len - 1;
+	to = 0;
+	undef = new UndefinedType();
+
+	// Step 4
+	if (!isCallable(callbackFn)) {
+		handleRecoverableNativeException('TypeError', 'Callback function is not callable');
+		return new UnknownType();
+	}
+
+	// Step 5
+	if (len === 0 &amp;&amp; !initialValue) {
+		handleRecoverableNativeException('TypeError', 'Missing initial value');
+		return new UnknownType();
+	}
+
+	// Steps 7 and 8
+	if (initialValue) {
+		accumulator = initialValue;
+	} else {
+		kPresent = false;
+		while (!kPresent &amp;&amp; k >= 0) {
+			kPresent = o.hasProperty(k);
+			if (kPresent) {
+				accumulator = o.get(k);
+			}
+			k--;
+		}
+		if (!kPresent) {
+			handleRecoverableNativeException('TypeError', 'Missing property ' + k);
+			return new UnknownType();
+		}
+	}
+
+	// Step 9
+	while (k >= 0) {
+		if (o.hasProperty(k)) {
+			accumulator = callbackFn.callFunction(undef, [accumulator, o.get(k), new NumberType(k), o]);
+		}
+		k--;
+	}
+
+	// Step 10
+	return accumulator;
+});
+
+/**
+ * @classdesc The prototype for Arrays
+ *
+ * @constructor module:base/prototypes/array.ArrayPrototypeType
+ * @see ECMA-262 Spec Chapter 15.4.4
+ */
+exports.ArrayPrototypeType = ArrayPrototypeType;
+function ArrayPrototypeType(className) {
+	ObjectType.call(this, className);
+
+	// Object prototype methods
+	addNonEnumerableProperty(this, 'valueOf', new ObjectProtoValueOfFunc(), false, true);
+	addNonEnumerableProperty(this, 'hasOwnProperty', new ObjectProtoHasOwnPropertyFunc(), false, true);
+	addNonEnumerableProperty(this, 'isPrototypeOf', new ObjectProtoIsPrototypeOfFunc(), false, true);
+	addNonEnumerableProperty(this, 'propertyIsEnumerable', new ObjectProtoPropertyIsEnumerableFunc(), false, true);
+
+	// Array prototype methods
+	addNonEnumerableProperty(this, 'toString', new ArrayProtoToStringFunc(), false, true);
+	addNonEnumerableProperty(this, 'toLocaleString', new ArrayProtoToLocaleStringFunc(), false, true);
+	addNonEnumerableProperty(this, 'concat', new ArrayProtoConcatFunc(), false, true);
+	addNonEnumerableProperty(this, 'join', new ArrayProtoJoinFunc(), false, true);
+	addNonEnumerableProperty(this, 'pop', new ArrayProtoPopFunc(), false, true);
+	addNonEnumerableProperty(this, 'push', new ArrayProtoPushFunc(), false, true);
+	addNonEnumerableProperty(this, 'reverse', new ArrayProtoReverseFunc(), false, true);
+	addNonEnumerableProperty(this, 'shift', new ArrayProtoShiftFunc(), false, true);
+	addNonEnumerableProperty(this, 'slice', new ArrayProtoSliceFunc(), false, true);
+	addNonEnumerableProperty(this, 'sort', new ArrayProtoSortFunc(), false, true);
+	addNonEnumerableProperty(this, 'splice', new ArrayProtoSpliceFunc(), false, true);
+	addNonEnumerableProperty(this, 'unshift', new ArrayProtoUnshiftFunc(), false, true);
+	addNonEnumerableProperty(this, 'indexOf', new ArrayProtoIndexOfFunc(), false, true);
+	addNonEnumerableProperty(this, 'lastIndexOf', new ArrayProtoLastIndexOfFunc(), false, true);
+	addNonEnumerableProperty(this, 'every', new ArrayProtoEveryFunc(), false, true);
+	addNonEnumerableProperty(this, 'some', new ArrayProtoSomeFunc(), false, true);
+	addNonEnumerableProperty(this, 'forEach', new ArrayProtoForEachFunc(), false, true);
+	addNonEnumerableProperty(this, 'map', new ArrayProtoMapFunc(), false, true);
+	addNonEnumerableProperty(this, 'filter', new ArrayProtoFilterFunc(), false, true);
+	addNonEnumerableProperty(this, 'reduce', new ArrayProtoReduceFunc(), false, true);
+	addNonEnumerableProperty(this, 'reduceRight', new ArrayReduceRightFunc(), false, true);
+}
+util.inherits(ArrayPrototypeType, ObjectType);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-AST.html">AST</a></li><li><a href="module-base.html">base</a></li><li><a href="array.html">base/constructors/array</a></li><li><a href="boolean.html">base/constructors/boolean</a></li><li><a href="date.html">base/constructors/date</a></li><li><a href="error.html">base/constructors/error</a></li><li><a href="function.html">base/constructors/function</a></li><li><a href="number.html">base/constructors/number</a></li><li><a href="object.html">base/constructors/object</a></li><li><a href="regexp.html">base/constructors/regexp</a></li><li><a href="string.html">base/constructors/string</a></li><li><a href="context.html">base/context</a></li><li><a href="conversion.html">base/conversion</a></li><li><a href="exceptions.html">base/exceptions</a></li><li><a href="init.html">base/init</a></li><li><a href="array_.html">base/prototypes/array</a></li><li><a href="boolean_.html">base/prototypes/boolean</a></li><li><a href="date_.html">base/prototypes/date</a></li><li><a href="error_.html">base/prototypes/error</a></li><li><a href="function_.html">base/prototypes/function</a></li><li><a href="number_.html">base/prototypes/number</a></li><li><a href="object_.html">base/prototypes/object</a></li><li><a href="regexp_.html">base/prototypes/regexp</a></li><li><a href="string_.html">base/prototypes/string</a></li><li><a href="array__.html">base/types/array</a></li><li><a href="boolean__.html">base/types/boolean</a></li><li><a href="function__.html">base/types/function</a></li><li><a href="null.html">base/types/null</a></li><li><a href="number__.html">base/types/number</a></li><li><a href="object__.html">base/types/object</a></li><li><a href="reference.html">base/types/reference</a></li><li><a href="regexp__.html">base/types/regexp</a></li><li><a href="string__.html">base/types/string</a></li><li><a href="undefined.html">base/types/undefined</a></li><li><a href="unknown.html">base/types/unknown</a></li><li><a href="module-CodeProcessor.html">CodeProcessor</a></li><li><a href="module-CodeProcessorUtils.html">CodeProcessorUtils</a></li><li><a href="TiApiDeprecationFinder.html">plugins/TiApiDeprecationFinder</a></li><li><a href="TiApiIncludeFinder.html">plugins/TiApiIncludeFinder</a></li><li><a href="TiApiPlatformValidator.html">plugins/TiApiPlatformValidator</a></li><li><a href="TiApiProvider.html">plugins/TiApiProvider</a></li><li><a href="globals.html">plugins/TiApiProvider/globals</a></li><li><a href="require.html">plugins/TiApiProvider/require</a></li><li><a href="Ti.html">plugins/TiApiProvider/Ti</a></li><li><a href="API.html">plugins/TiApiProvider/Ti/API</a></li><li><a href="App.html">plugins/TiApiProvider/Ti/App</a></li><li><a href="Properties.html">plugins/TiApiProvider/Ti/App/Properties</a></li><li><a href="FileSystem.html">plugins/TiApiProvider/Ti/FileSystem</a></li><li><a href="Window.html">plugins/TiApiProvider/Ti/UI/Window</a></li><li><a href="TiApiRequireFinder.html">plugins/TiApiRequireFinder</a></li><li><a href="TiApiUsageFinder.html">plugins/TiApiUsageFinder</a></li><li><a href="module-RuleProcessor.html">RuleProcessor</a></li><li><a href="AST_Accessor.html">rules/AST_Accessor</a></li><li><a href="AST_Array.html">rules/AST_Array</a></li><li><a href="AST_Assign.html">rules/AST_Assign</a></li><li><a href="AST_Binary.html">rules/AST_Binary</a></li><li><a href="AST_BlockStatement.html">rules/AST_BlockStatement</a></li><li><a href="AST_Break.html">rules/AST_Break</a></li><li><a href="AST_Call.html">rules/AST_Call</a></li><li><a href="AST_Conditional.html">rules/AST_Conditional</a></li><li><a href="AST_Const.html">rules/AST_Const</a></li><li><a href="AST_Continue.html">rules/AST_Continue</a></li><li><a href="AST_Debugger.html">rules/AST_Debugger</a></li><li><a href="AST_Defun.html">rules/AST_Defun</a></li><li><a href="AST_Directive.html">rules/AST_Directive</a></li><li><a href="AST_Do.html">rules/AST_Do</a></li><li><a href="AST_Dot.html">rules/AST_Dot</a></li><li><a href="AST_EmptyStatement.html">rules/AST_EmptyStatement</a></li><li><a href="AST_False.html">rules/AST_False</a></li><li><a href="AST_For.html">rules/AST_For</a></li><li><a href="AST_ForIn.html">rules/AST_ForIn</a></li><li><a href="AST_Function.html">rules/AST_Function</a></li><li><a href="AST_Hole.html">rules/AST_Hole</a></li><li><a href="AST_If.html">rules/AST_If</a></li><li><a href="AST_Infinity.html">rules/AST_Infinity</a></li><li><a href="AST_LabeledStatement.html">rules/AST_LabeledStatement</a></li><li><a href="AST_NaN.html">rules/AST_NaN</a></li><li><a href="AST_New.html">rules/AST_New</a></li><li><a href="AST_Null.html">rules/AST_Null</a></li><li><a href="AST_Number.html">rules/AST_Number</a></li><li><a href="AST_Object.html">rules/AST_Object</a></li><li><a href="AST_RegExp.html">rules/AST_RegExp</a></li><li><a href="AST_Return.html">rules/AST_Return</a></li><li><a href="AST_Seq.html">rules/AST_Seq</a></li><li><a href="AST_SimpleStatement.html">rules/AST_SimpleStatement</a></li><li><a href="AST_String.html">rules/AST_String</a></li><li><a href="AST_Sub.html">rules/AST_Sub</a></li><li><a href="AST_Switch.html">rules/AST_Switch</a></li><li><a href="AST_SymbolRef.html">rules/AST_SymbolRef</a></li><li><a href="AST_This.html">rules/AST_This</a></li><li><a href="AST_Throw.html">rules/AST_Throw</a></li><li><a href="AST_Toplevel.html">rules/AST_Toplevel</a></li><li><a href="AST_True.html">rules/AST_True</a></li><li><a href="AST_Try.html">rules/AST_Try</a></li><li><a href="AST_UnaryPostfix.html">rules/AST_UnaryPostfix</a></li><li><a href="AST_UnaryPrefix.html">rules/AST_UnaryPrefix</a></li><li><a href="AST_Undefined.html">rules/AST_Undefined</a></li><li><a href="AST_Var.html">rules/AST_Var</a></li><li><a href="AST_While.html">rules/AST_While</a></li><li><a href="AST_With.html">rules/AST_With</a></li><li><a href="module-Runtime.html">Runtime</a></li></ul><h3>Classes</h3><ul><li><a href="module-base.BaseType.html">BaseType</a></li><li><a href="context.DeclarativeEnvironmentRecord.html">DeclarativeEnvironmentRecord</a></li><li><a href="context.ObjectEnvironmentRecord.html">ObjectEnvironmentRecord</a></li><li><a href="context-ExecutionContext.html">ExecutionContext</a></li><li><a href="context-LexicalEnvironment.html">LexicalEnvironment</a></li><li><a href="array.ArrayPrototypeType.html">ArrayPrototypeType</a></li><li><a href="boolean.BooleanPrototypeType.html">BooleanPrototypeType</a></li><li><a href="date.DatePrototypeType.html">DatePrototypeType</a></li><li><a href="error.ErrorPrototypeType.html">ErrorPrototypeType</a></li><li><a href="function.FunctionPrototypeType.html">FunctionPrototypeType</a></li><li><a href="number.NumberPrototypeType.html">NumberPrototypeType</a></li><li><a href="object.ObjectPrototypeType.html">ObjectPrototypeType</a></li><li><a href="regexp.RegExpPrototypeType.html">RegExpPrototypeType</a></li><li><a href="string.StringPrototypeType.html">StringPrototypeType</a></li><li><a href="array.ArrayType.html">ArrayType</a></li><li><a href="boolean.BooleanType.html">BooleanType</a></li><li><a href="function.FunctionType.html">FunctionType</a></li><li><a href="function.FunctionTypeBase.html">FunctionTypeBase</a></li><li><a href="null.NullType.html">NullType</a></li><li><a href="number.NumberType.html">NumberType</a></li><li><a href="object.AccessorPropertyDescriptor.html">AccessorPropertyDescriptor</a></li><li><a href="object.DataPropertyDescriptor.html">DataPropertyDescriptor</a></li><li><a href="object.ObjectType.html">ObjectType</a></li><li><a href="reference.ReferenceType.html">ReferenceType</a></li><li><a href="regexp.RegExpType.html">RegExpType</a></li><li><a href="string.StringType.html">StringType</a></li><li><a href="undefined.UndefinedType.html">UndefinedType</a></li><li><a href="unknown.UnknownType.html">UnknownType</a></li><li><a href="module-Runtime.Evented.html">Evented</a></li></ul><h3>Events</h3><ul><li><a href="array.ArrayType.html#event:propertyDefined">propertyDefined</a></li><li><a href="array.ArrayType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="array.ArrayType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="array.ArrayType.html#event:propertySet">propertySet</a></li><li><a href="object.ObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="object.ObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="object.ObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="object.ObjectType.html#event:propertySet">propertySet</a></li><li><a href="module-CodeProcessor.html#event:enteredFile">enteredFile</a></li><li><a href="module-CodeProcessor.html#event:errorReported">errorReported</a></li><li><a href="module-CodeProcessor.html#event:maxIterationsExceeded">maxIterationsExceeded</a></li><li><a href="module-CodeProcessor.html#event:maxRecusionLimitReached">maxRecusionLimitReached</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingBegin">projectProcessingBegin</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingEnd">projectProcessingEnd</a></li><li><a href="module-CodeProcessor.html#event:undeclaredGlobalVariableCreated">undeclaredGlobalVariableCreated</a></li><li><a href="module-CodeProcessor.html#event:warningReported">warningReported</a></li><li><a href="TiApiProvider.html#event:tiPropertyDeleted">tiPropertyDeleted</a></li><li><a href="TiApiProvider.html#event:tiPropertyReferenced">tiPropertyReferenced</a></li><li><a href="TiApiProvider.html#event:tiPropertySet">tiPropertySet</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertySet">propertySet</a></li><li><a href="AST_Accessor.html#event:rule">rule</a></li><li><a href="AST_Array.html#event:rule">rule</a></li><li><a href="AST_Assign.html#event:rule">rule</a></li><li><a href="AST_Binary.html#event:rule">rule</a></li><li><a href="AST_BlockStatement.html#event:rule">rule</a></li><li><a href="AST_Break.html#event:rule">rule</a></li><li><a href="AST_Call.html#event:rule">rule</a></li><li><a href="AST_Conditional.html#event:rule">rule</a></li><li><a href="AST_Const.html#event:rule">rule</a></li><li><a href="AST_Continue.html#event:rule">rule</a></li><li><a href="AST_Debugger.html#event:rule">rule</a></li><li><a href="AST_Defun.html#event:rule">rule</a></li><li><a href="AST_Directive.html#event:rule">rule</a></li><li><a href="AST_Do.html#event:rule">rule</a></li><li><a href="AST_Dot.html#event:rule">rule</a></li><li><a href="AST_EmptyStatement.html#event:rule">rule</a></li><li><a href="AST_False.html#event:rule">rule</a></li><li><a href="AST_For.html#event:rule">rule</a></li><li><a href="AST_ForIn.html#event:rule">rule</a></li><li><a href="AST_Function.html#event:rule">rule</a></li><li><a href="AST_Hole.html#event:rule">rule</a></li><li><a href="AST_If.html#event:rule">rule</a></li><li><a href="AST_Infinity.html#event:rule">rule</a></li><li><a href="AST_LabeledStatement.html#event:rule">rule</a></li><li><a href="AST_NaN.html#event:rule">rule</a></li><li><a href="AST_New.html#event:rule">rule</a></li><li><a href="AST_Null.html#event:rule">rule</a></li><li><a href="AST_Number.html#event:rule">rule</a></li><li><a href="AST_Object.html#event:rule">rule</a></li><li><a href="AST_RegExp.html#event:rule">rule</a></li><li><a href="AST_Return.html#event:rule">rule</a></li><li><a href="AST_Seq.html#event:rule">rule</a></li><li><a href="AST_SimpleStatement.html#event:rule">rule</a></li><li><a href="AST_String.html#event:rule">rule</a></li><li><a href="AST_Sub.html#event:rule">rule</a></li><li><a href="AST_Switch.html#event:rule">rule</a></li><li><a href="AST_SymbolRef.html#event:rule">rule</a></li><li><a href="AST_This.html#event:rule">rule</a></li><li><a href="AST_Throw.html#event:rule">rule</a></li><li><a href="AST_Toplevel.html#event:rule">rule</a></li><li><a href="AST_True.html#event:rule">rule</a></li><li><a href="AST_Try.html#event:rule">rule</a></li><li><a href="AST_UnaryPostfix.html#event:rule">rule</a></li><li><a href="AST_UnaryPrefix.html#event:rule">rule</a></li><li><a href="AST_Undefined.html#event:rule">rule</a></li><li><a href="AST_Var.html#event:rule">rule</a></li><li><a href="AST_While.html#event:rule">rule</a></li><li><a href="AST_With.html#event:rule">rule</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Thu Nov 14 2013 15:31:12 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

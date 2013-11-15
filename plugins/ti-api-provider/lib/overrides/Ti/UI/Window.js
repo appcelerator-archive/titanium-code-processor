@@ -1,18 +1,23 @@
 /**
- * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+ * <p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
  * Ti.UI.Window implementation
  *
- * @module plugins/TiAPIProcessor
- * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
+ * @module plugins/TiApiProvider/Ti/UI/Window
  */
 
 var path = require('path'),
 
-	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
-	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime'));
+	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base'));
 
+/**
+ * Gets the set of overrides defined in this file
+ *
+ * @method module:plugins/TiApiProvider/Ti/UI/Window.getOverrides
+ * @param  {Object} options The options passed to the Ti API provider plugin
+ * @return {Array.<module:plugins/TiApiProvider.override>} The list of overrides
+ */
 exports.getOverrides = function () {
 	return [{
 		regex: /^Titanium\.UI\.Window\.open$/,

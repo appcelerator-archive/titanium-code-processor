@@ -1,10 +1,8 @@
 /**
- * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+ * <p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
  * CLI command interface for the code processor
- *
- * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
  */
 
 var path = require('path'),
@@ -387,7 +385,11 @@ function validateConfigFile(logger, config, cli, callback) {
 					} catch(e) {} // squash
 				}
 			} catch(e) {
-				console.log('error', 'Could not parse "' + path.join(configFile.plugins[i].path, 'package.json') + '": ' + e);
+				if (!configFile.plugins[i]) {
+					console.error(__('Plugin entry for "%s" is missing a path entry', pkg.name));
+				} else {
+					console.error(__('Could not parse "%s": ', path.join(configFile.plugins[i].path, 'package.json')) + e);
+				}
 				process.exit(1);
 			}
 		}

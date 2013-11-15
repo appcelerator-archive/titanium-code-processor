@@ -1,9 +1,10 @@
 /**
- * <p>Copyright (c) 2012 by Appcelerator, Inc. All Rights Reserved.
+ * <p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
- * @module plugins/TiIncludeFinder
- * @author Bryan Hughes &lt;<a href='mailto:bhughes@appcelerator.com'>bhughes@appcelerator.com</a>&gt;
+ * This plugin finds all files that were included via <code>Ti.include()</code>
+ *
+ * @module plugins/TiApiIncludeFinder
  */
 
 
@@ -18,6 +19,11 @@ var path = require('path'),
 
 // ******** Helper Methods ********
 
+/**
+ * Generates the raw results data for this plugin
+ *
+ * @private
+ */
 function generateResultsData() {
 	var resolved = results.resolved.length,
 		unresolved = results.unresolved.length,
@@ -42,6 +48,12 @@ function generateResultsData() {
 	}
 }
 
+/**
+ * Generates the render data for this plugin. This is typically an abstracted version of the raw results, carefully
+ * modified to match the requirements of the render templates
+ *
+ * @private
+ */
 function generateRenderData() {
 	var numIncludesResolved = results.resolved.length,
 		numIncludesUnresolved = results.unresolved.length,
@@ -121,10 +133,7 @@ function generateRenderData() {
 /**
  * Initializes the plugin
  *
- * @method
- * @name module:plugins/TiIncludeFinder#init
- * @param {Object} options The plugin options
- * @param {Array[Dependency Instance]} dependencies The dependant plugins of this plugin
+ * @method module:plugins/TiApiIncludeFinder.init
  */
 exports.init = function init() {
 	results = {
@@ -148,14 +157,35 @@ exports.init = function init() {
 };
 
 /**
+ * @typedef {Object} module:plugins/TiApiIncludeFinder.resolvedResult
+ * @extends module:Runtime.eventObject
+ * @property {string} name The name (after conversion to a string) passed to the include call
+ * @property {string} path The full path to the file that was included
+ */
+/**
+ * @typedef {Object} module:plugins/TiApiIncludeFinder.unresolvedResult
+ * @extends module:Runtime.eventObject
+ */
+/**
+ * @typedef {Object} module:plugins/TiApiIncludeFinder.missingResult
+ * @extends module:Runtime.eventObject
+ * @property {string} name The name (after conversion to a string) passed to the include call
+ */
+/**
+ * @typedef {Object} module:plugins/TiApiIncludeFinder.results
+ * @property {string} summary A short summary of the results
+ * @property {Array.<module:plugins/TiApiIncludeFinder.resolvedResult>} resolved A list of the
+ *		<code>Ti.include()</code> calls that were resolved
+ * @property {Array.<module:plugins/TiApiIncludeFinder.unresolvedResult>} unresolved A list of the
+ *		<code>Ti.include()</code> calls without a name that can be resolved
+ * @property {Array.<module:plugins/TiApiIncludeFinder.missingResult>} missing A list of the
+ *		<code>Ti.include()</code> calls that were resolved, but could not be found
+ */
+/**
 * Gets the results of the plugin
 *
-* @method
- * @name module:plugins/TiIncludeFinder#getResults
-* @returns {Object} A dictionary with two array properties: <code>resolved</code> and <code>unresolved</code>. The
-*		<code>resolved</code> array contains a list of resolved absolute paths to files that were required. The
-*		<code>unresolved</code> array contains a list of unresolved paths, as passed in to the <code>require()</code>
-*		method.
+* @method module:plugins/TiApiIncludeFinder.getResults
+* @return {module:plugins/TiApiIncludeFinder.results} The list of resolved and unresolved <code>Ti.include()</code> calls
 */
 exports.getResults = function getResults() {
 	return results;
@@ -164,13 +194,10 @@ exports.getResults = function getResults() {
 /**
  * Generates the results template data to be rendered
  *
- * @method
- * @param {String} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
+ * @method module:plugins/TiApiIncludeFinder.getResultsPageData
+ * @param {string} entryFile The path to the entrypoint file for this plugin. The template returned MUST have this value
  *		as one of the entries in the template
- * @return {Object} The information for generating the template(s). Each template is defined as a key-value pair in the
- *		object, with the key being the name of the file, without a path. Two keys are expected: template is the path to
- *		the mustache template (note the name of the file must be unique, irrespective of path) and data is the
- *		information to dump into the template
+ * @return {module:CodeProcessor.pluginResultsPageData} The information for generating the template(s)
  */
 exports.getResultsPageData = function getResultsPageData(entryFile) {
 	var template = {};
@@ -186,8 +213,9 @@ exports.getResultsPageData = function getResultsPageData(entryFile) {
 /**
  * Renders the results data to a log-friendly string
  *
- * @param {Function} arrayGen Log-friendly table generator
- * @return {String} The rendered data
+ * @method module:plugins/TiApiIncludeFinder.renderLogOutput
+ * @param {module:CodeProcessor.arrayGen} arrayGen Log-friendly table generator
+ * @return {string} The rendered data
  */
 exports.renderLogOutput = function renderLogOutput(arrayGen) {
 	var resultsToLog = renderData.numIncludesResolved + ' resolved\n' +

@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/CodeProcessor.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: lib/CodeProcessor.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * &lt;p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
+ * Please see the LICENSE file for information about licensing.&lt;/p>
+ *
+ * WARNING: The Code Processor IS NOT reentrant! A second invokation of the code processor prior to the first
+ * one finishing will kill the first instance and the second invokation may be unstable. A second invokation of the code
+ * processor after the first has finished is untested and not likely to work.
+ *
+ * @module CodeProcessor
+ */
+
+// ******** Globals ********
+
+var path = require('path'),
+	fs = require('fs'),
+	async = require('async'),
+
+	wrench = require('wrench'),
+	uglify = require('uglify-js'),
+	mu = require('mu2'),
+	sourcemap = require('source-map'),
+
+	RuleProcessor = require('./RuleProcessor'),
+	AST = require('./AST'),
+	Base = require('./Base'),
+	Runtime = require('./Runtime'),
+	CodeProcessorUtils = require('./CodeProcessorUtils'),
+
+	pluralize = CodeProcessorUtils.pluralize,
+
+	startTime = Date.now();
+
+// ******** Prime the rules ********
+(function(){
+	var rules = CodeProcessorUtils.findJavaScriptFiles(path.join(__dirname, 'rules')),
+		i,
+		len = rules.length;
+	for (i = 0; i &lt; len; i++) {
+		require(rules[i]);
+	}
+})();
+
+// ******** Put the lib dir in the global space so modules can use it ********
+
+global.titaniumCodeProcessorLibDir = __dirname;
+
+// ******** Event Documentation ********
+
+/**
+ * Indicates that a file is about to be processed.
+ *
+ * @event module:CodeProcessor.enteredFile
+ * @property {string} type The type of the event
+ * @property {string} description The description of the event
+ * @property {(string | undefined)} filename The name of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} line The line number of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} column The column number of the file being processed when the event was triggered, if any
+ * @property {Object} data The event-specific information
+ * @property {string} data.filename The absolute path to the file that is about to be processed
+ */
+
+/**
+ * Indicates that the current run of the project is about to be processed
+ *
+ * @event module:CodeProcessor.projectProcessingBegin
+ * @property {string} type The type of the event
+ * @property {string} description The description of the event
+ * @property {(string | undefined)} filename The name of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} line The line number of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} column The column number of the file being processed when the event was triggered, if any
+ */
+
+/**
+ * Indicates that the current run of the project has finished being processed
+ *
+ * @event module:CodeProcessor.projectProcessingEnd
+ * @property {string} type The type of the event
+ * @property {string} description The description of the event
+ * @property {(string | undefined)} filename The name of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} line The line number of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} column The column number of the file being processed when the event was triggered, if any
+ */
+
+/**
+ * Indicates that a global variable was just created because the identifier name was not declared anywhere
+ *
+ * @event module:CodeProcessor.undeclaredGlobalVariableCreated
+ * @property {string} type The type of the event
+ * @property {string} description The description of the event
+ * @property {(string | undefined)} filename The name of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} line The line number of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} column The column number of the file being processed when the event was triggered, if any
+ * @property {Object} data The event-specific information
+ * @property {string} data.name The name of the global variable that was just created
+ */
+
+/**
+ * The maximum recursion, as specified by the maxRecursionLimit property of {@link module:Runtime.options}, was reached
+ *
+ * @event module:CodeProcessor.maxRecusionLimitReached
+ * @property {string} type The type of the event
+ * @property {string} description The description of the event
+ * @property {(string | undefined)} filename The name of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} line The line number of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} column The column number of the file being processed when the event was triggered, if any
+ */
+
+/**
+ * The maximum loop iteration limit, as specifiedby the maxLoopIterations of {@link module:Runtime.options}, was reached
+ *
+ * @event module:CodeProcessor.maxIterationsExceeded
+ * @property {string} type The type of the event
+ * @property {string} description The description of the event
+ * @property {(string | undefined)} filename The name of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} line The line number of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} column The column number of the file being processed when the event was triggered, if any
+ */
+
+/**
+ * An error was reported
+ *
+ * @event module:CodeProcessor.errorReported
+ * @property {string} type The type of the event
+ * @property {string} description The description of the event
+ * @property {(string | undefined)} filename The name of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} line The line number of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} column The column number of the file being processed when the event was triggered, if any
+ * @property {Object} data The event-specific information
+ * @property {string} type The type of error, e.g. "SyntaxError"
+ * @property {string} description A description of the error
+ */
+
+/**
+ * A warning was reported
+ *
+ * @event module:CodeProcessor.warningReported
+ * @property {string} type The type of the event
+ * @property {string} description The description of the event
+ * @property {(string | undefined)} filename The name of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} line The line number of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} column The column number of the file being processed when the event was triggered, if any
+ * @property {Object} data The event-specific information
+ * @property {string} type The type of warning, e.g. "deprecatedTiPropertyReferenced"
+ * @property {string} description A description of the warning
+ */
+
+// ******** API Methods ********
+
+/**
+ * The query plugin callback definition
+ *
+ * @callback module:CodeProcessor.queryPluginsCallback
+ * @param {string} error The error, if one occured
+ * @param {Object} results The plugin information, varies from plugin to plugin (see plugin documentation for details)
+ */
+/**
+ * Queries all plugins found in the supplied search paths for their information
+ *
+ * @method module:CodeProcessor.queryPlugins
+ * @param {Array.&lt;string>} paths An array of paths to search in addition to the default path. Can be an empty array, but must not be undefined
+ * @param {Object} logger A Winston logger instance
+ * @param {module:CodeProcessor.queryPluginsCallback} callback The callback to call when finished
+ */
+exports.queryPlugins = queryPlugins;
+function queryPlugins(pluginPaths, logger, callback) {
+	var pluginResolutionTasks = [],
+		pluginInfo = {};
+	pluginPaths = [path.resolve(path.join(__dirname, '..', 'plugins'))].concat(pluginPaths),
+
+	pluginPaths.forEach(function (pluginPath) {
+		pluginResolutionTasks.push(function (next) {
+			next(undefined, CodeProcessorUtils.getSubDirectories(pluginPath));
+		});
+	});
+
+	async.parallel(pluginResolutionTasks, function (err, results) {
+		if (err) {
+			callback(err);
+		} else {
+			var pluginDirectories = [],
+				i, len,
+				pluginParseTasks = [];
+			for (i = 0, len = results.length; i &lt; len; i++) {
+				pluginDirectories = pluginDirectories.concat(results[i]);
+			}
+			pluginDirectories.forEach(function (pluginDirectory) {
+				pluginParseTasks.push(function (next) {
+					fs.readFile(path.join(pluginDirectory, 'package.json'), 'utf-8', function (err, data) {
+						var pluginData;
+						if (err) {
+							logger.warn('warn: Could not read plugin information in "' + pluginDirectory + '": ' + err);
+							next();
+						} else {
+							try {
+								pluginData = JSON.parse(data);
+								if (pluginData.titaniumCodeProcessorPlugin === true) {
+									pluginData.path = pluginDirectory;
+									pluginInfo[pluginData.name] = pluginData;
+								}
+							} catch(e) {
+								logger.warn('warn: Could not parse plugin information in "' + pluginDirectory + '": ' + e);
+							}
+							next();
+						}
+					});
+				});
+			});
+			async.parallel(pluginParseTasks, function () {
+				callback(undefined, pluginInfo);
+			});
+		}
+	});
+}
+
+/**
+ * The query options callback definition
+ *
+ * @callback module:CodeProcessor.queryOptionsCallback
+ * @param {string} error The error, if one occured
+ * @param {Object} results The information for each option
+ * @param {Object} results.entry A single option entry, where "entry" is the name of the option
+ * @param {string} results.entry.description A description of the option
+ * @param {primitive} results.entry.defaultValue The default value of the option
+ * @param {boolean} results.entry.require Whether or not the option is required
+ * @param {Array.&lt;{type: string}>} results.entry.types An array of type definitions
+ */
+/**
+ * Queries the set of options
+ *
+ * @method module:CodeProcessor.queryOptions
+ * @param {module:CodeProcessor.queryOptionsCallback} callback The callback to call when finished
+ */
+exports.queryOptions = queryOptions;
+function queryOptions(callback) {
+	callback(undefined, {
+		invokeMethods: {
+			description: 'Whether or not methods should be invoked',
+			types: [{
+				type: 'boolean'
+			}],
+			defaultValue: Runtime.options.invokeMethods,
+			required: false
+		},
+		evaluateLoops: {
+			description: 'Whether or not to evaluate loops',
+			types: [{
+				type: 'boolean'
+			}],
+			defaultValue: Runtime.options.evaluateLoops,
+			required: false
+		},
+		maxLoopIterations: {
+			description: 'The maximum number of iterations a loop can iterate before falling back to an unknown evaluation',
+			types: [{
+				type: 'number'
+			}],
+			defaultValue: Runtime.options.maxLoopIterations,
+			required: false
+		},
+		maxRecursionLimit: {
+			description: 'The maximum recursion depth to evaluate before throwing a RangeError exception',
+			types: [{
+				type: 'number'
+			}],
+			defaultValue: Runtime.options.maxRecursionLimit,
+			required: false
+		},
+		logConsoleCalls: {
+			description: 'If enabled, all console.* calls in a user\'s code are logged to the terminal',
+			types: [{
+				type: 'boolean'
+			}],
+			defaultValue: Runtime.options.logConsoleCalls,
+			required: false
+		},
+		executionTimeLimit: {
+			description: 'The maximum time the app is allowed to run before erroring. 0 means no time limit',
+			types: [{
+				type: 'number'
+			}],
+			defaultValue: Runtime.options.executionTimeLimit,
+			required: false
+		},
+		exactMode: {
+			description: 'whether or not the app should be evaluated in exact mode. Exact mode does not use ambiguous' +
+				' modes and throws an exception if an Unknown type is encountered',
+			types: [{
+				type: 'boolean'
+			}],
+			defaultValue: Runtime.options.exactMode,
+			required: false
+		},
+		nativeExceptionRecovery: {
+			description: 'whether or not to try and recover from recoverable native exceptions when not in try/catch statements',
+			types: [{
+				type: 'boolean'
+			}],
+			defaultValue: Runtime.options.nativeExceptionRecovery,
+			required: false
+		},
+		processUnvisitedCode: {
+			description: 'When set to true, all nodes and files that are not visited/skipped will be processed in ambiguous' +
+				' mode after all other code has been processed. While this will cause more of a project to be analyzed,' +
+				' this will decrease accuracy and can generate a lot of false positives',
+			types: [{
+				type: 'boolean'
+			}],
+			defaultValue: Runtime.options.processUnvisitedCode,
+			required: false
+		},
+		cycleDetectionStackSize: {
+			description: 'The size of the cycle detection stack. Cycles that are larger than this size will not be caught',
+			types: [{
+				type: 'number'
+			}],
+			defaultValue: Runtime.options.cycleDetectionStackSize,
+			required: false
+		},
+		maxCycles: {
+			description: 'The maximum number of cycles to allow before throwing an exception',
+			types: [{
+				type: 'number'
+			}],
+			defaultValue: Runtime.options.maxCycles,
+			require: false
+		}
+	});
+}
+
+/**
+ * Source information for a project
+ *
+ * @typedef {Object} module:CodeProcessor.sourceInformation
+ * @property {string} projectDir The project directory
+ * @property {string} sourceDir The directory containing the source code (e.g. &lt;project dir>/Resources)
+ * @property {string} entryPoint The entry point of the project
+ * @property {string} [sourceMapDir] The directory containing the source maps for the project
+ *		(e.g. &lt;project dir>/build/map/Resources for Alloy apps)
+ * @property {string} [originalSourceDir] The directory containing the original source code that the
+ */
+/**
+ * Plugin information
+ *
+ * @typedef {Object} module:CodeProcessor.pluginInformation
+ * @property {string} path The path to the plugin directory
+ * @property {Object} options The plugin specific options used to initialize the plugin
+ * @property {boolean} suppressOutput Whether or not to exclude the plugin results from the output
+ */
+/**
+ * Processes the entry point using the supplied options and plugins. The function calls the other functions in this module,
+ * so it is not necessary to call them separately if calling this function.
+ *
+ * @method module:CodeProcessor.run
+ * @param {module:CodeProcessor.sourceInformation} sourceInformation The source information for the project
+ * @param {Object} options The options for the run. See {@link module:CodeProcessor.queryOptions} for more info
+ * @param {Object} plugins The plugins to load. Each key is the name of the plugin, and the value is the plugin information
+ * @param {module:CodeProcessor.pluginInformation} plugins.entry A plugin entry, whose name is "entry"
+ * @param {(Object | undefined)} logger A logger instance from the CLI (can be a CLI logger, which wraps winston, or a winston logger directly)
+ * @param {Function} callback The callback to call once processing is complete (takes no arguments)
+ */
+exports.run = run;
+function run(sourceInformation, options, plugins, logger, callback) {
+
+	var results;
+	options = options || {};
+	plugins = plugins || {};
+
+	try {
+		Runtime.setLogger(logger);
+
+		init(sourceInformation, options, plugins);
+
+		Runtime.on('enteredFile', function(e) {
+			Runtime.log('debug', 'Entering file ' + e.data.filename);
+		});
+
+		Runtime.fireEvent('projectProcessingBegin', 'Project processing is beginning');
+
+		Runtime.log('info', 'Analyzing project');
+		results = processEntryPoint(sourceInformation.entryPoint);
+
+		Runtime.log('info', 'Processing queued functions');
+		processQueuedFunctions();
+
+		if (Runtime.options.processUnvisitedCode) {
+			Runtime.log('info', 'Processing unvisited code');
+			processUnvisitedCode();
+		}
+
+		finalize();
+
+		Runtime.log('info', 'Generating results');
+		Runtime.fireEvent('projectProcessingEnd', 'Project processing complete');
+		generateResultsPages(options.outputFormat, Runtime.options.resultsPath, Runtime.options.resultsTheme, callback);
+		if (options.outputFormat === 'stream') {
+			var endEvent = JSON.stringify({'projectProcessingEnd':true});
+			console.log('REQ,01000002,' + ('00000000' + endEvent.length.toString(16)).slice(-8) + ',' + endEvent);
+		}
+	} catch(e) {
+		if (e.message === 'Maximum call stack size exceeded') {
+			console.error('node.js maximum call stack size exceeded. Increasing the stack size may allow the project to be fully analyzed');
+		} else {
+			console.error('Internal error ' + e.message + '. Please file a bug report at http://jira.appcelerator.org/');
+			if (e.stack) {
+				Runtime.log('debug', e.stack);
+			}
+		}
+		process.exit(1);
+	}
+
+	return results;
+}
+
+/**
+ * Processes the input options
+ *
+ * @method module:CodeProcessor.init
+ * @param {module:CodeProcessor.sourceInformation} sourceInformation The source information for the project
+ * @param {Object} options The options for the run. See {@link module:CodeProcessor.queryOptions} for more info
+ * @param {Object} plugins The plugins to load. Each key is the name of the plugin, and the value is the plugin information
+ * @param {module:CodeProcessor.pluginInformation} plugins.entry A plugin entry, whose name is "entry"
+ * @param {module:AST.node} ast The root ast for the entry point file. Used to initialize the global namespace
+ */
+exports.init = init;
+function init(sourceInformation, options, plugins, ast) {
+	var i, ilen, j, jlen, k, klen,
+		loadedPlugins = [],
+		pkg,
+		dependencyFound,
+		pluginDefinitions = [],
+		pluginDependencyOrder = [],
+		unsortedPlugins,
+		changed,
+		dependencies,
+		numPlugins = plugins.length,
+		sourceMapDir,
+		sourceMapsFiles,
+		sourceMaps = {},
+		sourceMap,
+		sourceMapRegex = /\.map$/,
+		projectRoot = sourceInformation.projectDir,
+		whiteList,
+		whiteListPlatforms = ['', 'iphone', 'ipad', 'ios', 'android', 'mobileweb', 'tizen', 'blackberry'];
+
+	// Parse the invoke methods option
+	if (options.hasOwnProperty('invokeMethods')) {
+		Runtime.options.invokeMethods = !!options.invokeMethods;
+	}
+	Runtime.log('debug', 'Setting processing option: methods will ' +
+		(Runtime.options.invokeMethods ? '' : 'not ') + 'be invoked');
+
+	// Parse the evaluate loops option
+	if (options.hasOwnProperty('evaluateLoops')) {
+		Runtime.options.evaluateLoops = !!options.evaluateLoops;
+	}
+	Runtime.log('debug', 'Setting processing option: loops will ' +
+		(Runtime.options.evaluateLoops ? '' : 'not ') + 'be evaluated');
+
+	// Parse the max loop iterations option
+	if (options.hasOwnProperty('maxLoopIterations')) {
+		Runtime.options.maxLoopIterations = parseInt(options.maxLoopIterations, 10);
+	}
+	Runtime.log('debug', 'Setting processing option: max loop iterations is ' + Runtime.options.maxLoopIterations);
+
+	// Parse the log console calls option
+	if (options.hasOwnProperty('logConsoleCalls')) {
+		Runtime.options.logConsoleCalls = !!options.logConsoleCalls;
+	}
+	Runtime.log('debug', 'Setting processing option: console calls will ' +
+		(Runtime.options.logConsoleCalls ? '' : 'not ') + 'be logged to the terminal');
+
+	// Parse the execution time limit option
+	if (options.hasOwnProperty('executionTimeLimit')) {
+		Runtime.options.executionTimeLimit = parseInt(options.executionTimeLimit, 10);
+		Runtime.log('debug', 'Setting processing option: execution time limit is ' + Runtime.options.executionTimeLimit);
+	}
+
+	// Parse the max recursion limit option
+	if (options.hasOwnProperty('maxRecursionLimit')) {
+		Runtime.options.maxRecursionLimit = parseInt(options.maxRecursionLimit, 10);
+	}
+	Runtime.log('debug', 'Setting processing option: max recursion limit is ' + Runtime.options.maxRecursionLimit);
+
+	// Parse the cycle detection stack size option
+	if (options.hasOwnProperty('cycleDetectionStackSize')) {
+		Runtime.options.cycleDetectionStackSize = parseInt(options.cycleDetectionStackSize, 10);
+	}
+	Runtime.log('debug', 'Setting processing option: cycle detection stack size is ' + Runtime.options.cycleDetectionStackSize);
+
+	// Parse the max cycles limit option
+	if (options.hasOwnProperty('maxCycles')) {
+		Runtime.options.maxCycles = parseInt(options.maxCycles, 10);
+	}
+	Runtime.log('debug', 'Setting processing option: max cycle limit is ' + Runtime.options.maxCycles);
+
+	// Parse the exact mode options
+	if (options.hasOwnProperty('exactMode')) {
+		Runtime.options.exactMode = !!options.exactMode;
+	}
+	Runtime.log('debug', 'Setting processing option: exact mode is ' + (Runtime.options.exactMode ? 'on' : 'off'));
+
+	// Parse the process unvisited code option
+	if (options.hasOwnProperty('processUnvisitedCode')) {
+		Runtime.options.processUnvisitedCode = !!options.processUnvisitedCode;
+	}
+	Runtime.log('debug', 'Setting processing option: unvisited code will ' +
+		(Runtime.options.processUnvisitedCode ? '' : 'not ') + 'be processed');
+
+	// Parse the native exception recovery option
+	if (options.hasOwnProperty('nativeExceptionRecovery')) {
+		Runtime.options.nativeExceptionRecovery = !!options.nativeExceptionRecovery;
+	}
+	Runtime.log('debug', 'Setting processing option: native exception recovery is ' +
+		(Runtime.options.nativeExceptionRecovery ? 'enabled' : 'disabled'));
+
+	// Parse the resultsPath option
+	if (options.hasOwnProperty('resultsPath')) {
+		Runtime.options.resultsPath = options.resultsPath;
+	}
+	Runtime.log('debug', 'Setting processing option: ' + (Runtime.options.resultsPath ? 'the results path is "' +
+		Runtime.options.resultsPath + '"' : 'no results path is set'));
+
+	// Parse the resultsTheme option
+	if (options.hasOwnProperty('resultsTheme')) {
+		Runtime.options.resultsTheme = options.resultsTheme;
+	}
+	Runtime.log('debug', 'Setting processing option: ' + (Runtime.options.resultsTheme ? 'the results theme is "' +
+		Runtime.options.resultsTheme + '"' : 'no results theme is set'));
+
+	// Calculated the time limit
+	if (Runtime.options.executionTimeLimit) {
+		Runtime.executionTimeLimit = Date.now() + Runtime.options.executionTimeLimit;
+	}
+
+	// Iinitialize the whitelist
+	whiteList = [ path.join(projectRoot, 'modules') ];
+	if (fs.existsSync(path.join(projectRoot, 'app'))) {
+
+		// TODO: update to be dynamic from ti-api-provider or something
+		whiteListPlatforms.forEach(function (platform) {
+
+			// Calculate the root path
+			var rootPath = [ projectRoot, 'Resources' ],
+				sourceRootPath = [projectRoot, 'app' ],
+				rootContents,
+				jsRegex = /\.js$/;
+			if (platform) {
+				rootPath.push(platform);
+				sourceRootPath.push(platform);
+			}
+			rootPath.push('alloy');
+			sourceRootPath.push('alloy');
+			rootPath = path.join.apply(path, rootPath);
+			sourceRootPath = path.join.apply(path, sourceRootPath);
+
+			// If the path doesn't exist, then that means the platform isn't being used, so bail out early
+			if (!fs.existsSync(rootPath)) {
+				return;
+			}
+
+			// Check the base directories
+			['controllers', 'models', 'styles', 'sync', 'widgets'].forEach(function(component) {
+				if (fs.existsSync(path.join(rootPath, component))) {
+					whiteList.push(path.join(rootPath, component));
+				}
+			});
+
+			// Check for lib/ and assets/ files
+			rootPath = path.dirname(rootPath);
+			sourceRootPath = path.dirname(sourceRootPath);
+			rootContents = fs.readdirSync(rootPath);
+			rootContents.forEach(function (file) {
+				var filePath = path.join(rootPath, file);
+				if ((jsRegex.test(file) || fs.statSync(filePath).isDirectory() &amp;&amp; whiteListPlatforms.indexOf(file) == -1) &amp;&amp;
+						(fs.existsSync(path.join(sourceRootPath, 'lib', file)) ||
+						fs.existsSync(path.join(sourceRootPath, 'assets', file)))) {
+					whiteList.push(filePath);
+				}
+			});
+		});
+	} else {
+		whiteList.push(path.join(projectRoot, 'Resources'));
+	}
+	Runtime.options.whiteList = whiteList;
+
+	// Load the source maps
+	if (sourceInformation &amp;&amp; sourceInformation.sourceMapDir) {
+		sourceMapDir = sourceInformation.sourceMapDir;
+		if (!fs.existsSync(sourceMapDir)) {
+			console.error('Source map directory "' + sourceMapDir + '" does not exist');
+			process.exit(1);
+		}
+		sourceMapsFiles = wrench.readdirSyncRecursive(sourceMapDir);
+		for (i = 0, ilen = sourceMapsFiles.length; i &lt; ilen; i++) {
+			sourceMap = path.join(sourceMapDir, sourceMapsFiles[i]);
+			if (sourceMapRegex.test(sourceMap)) {
+				try {
+					sourceMaps[sourceMapsFiles[i].replace(sourceMapRegex, '')] =
+						new sourcemap.SourceMapConsumer(JSON.parse(fs.readFileSync(sourceMap).toString()));
+				} catch (e) {
+					console.error('Could not parse source map file "' + sourceMap + '": ' + e.message);
+					process.exit(1);
+				}
+			}
+		}
+		sourceInformation.sourceMaps = sourceMaps;
+	}
+
+	// Initialize the runtime
+	Runtime.log('info', 'Initializing core engine');
+	Base.init(ast);
+	Runtime.sourceInformation = sourceInformation;
+
+	// Load the plugins
+	for (i = 0; i &lt; numPlugins; i++) {
+		try {
+			pkg = JSON.parse(fs.readFileSync(path.join(plugins[i].path, 'package.json')));
+			Runtime.log('debug', 'Loading code processor plugin ' + pkg.name);
+			pluginDefinitions[i] = pkg;
+		} catch(e) {
+			console.error('Could not parse "' + path.join(plugins[i].path, 'package.json') + '": ' + e);
+			process.exit(1);
+		}
+	}
+	unsortedPlugins = [].concat(pluginDefinitions);
+	while (unsortedPlugins.length) {
+		changed = false;
+		for (i = 0, ilen = unsortedPlugins.length; i &lt; ilen; i++) {
+			dependencies = Object.keys(unsortedPlugins[i].dependencies);
+			if (dependencies.length) {
+				dependencyFound = dependencies.length;
+				for (j = 0, jlen = pluginDependencyOrder.length; j &lt; jlen; j++) {
+					for (k = 0, klen = dependencies.length; k &lt; klen; k++) {
+						if (pluginDependencyOrder[j].name === dependencies[k]) {
+							dependencyFound--;
+						}
+					}
+				}
+				if (dependencyFound === 0) {
+					changed = true;
+					pluginDependencyOrder.push(unsortedPlugins.splice(i, 1)[0]);
+					break;
+				}
+			} else {
+				changed = true;
+				pluginDependencyOrder.push(unsortedPlugins.splice(i, 1)[0]);
+				break;
+			}
+		}
+		if (!changed) {
+			console.error('Circular or missing plugin dependency detected, cannot load plugins');
+			process.exit(1);
+		}
+	}
+	for (i = 0; i &lt; numPlugins; i++) {
+		for (j = 0; j &lt; numPlugins; j++) {
+			if (pluginDependencyOrder[i].name === pluginDefinitions[j].name) {
+				Runtime.log('debug', 'Initializing plugin ' + pluginDefinitions[j].name);
+				dependencies = [];
+				for (k = 0; k &lt; numPlugins; k++) {
+					if (loadedPlugins[k] &amp;&amp; loadedPlugins[k].name in pluginDefinitions[j].dependencies) {
+						dependencies.push(loadedPlugins[k]);
+					}
+				}
+				loadedPlugins[j] = require(plugins[j].path);
+				loadedPlugins[j].name = pluginDefinitions[j].name;
+				loadedPlugins[j].displayName = pluginDefinitions[j].displayName;
+				loadedPlugins[j].suppressOutput = plugins[j].suppressOutput;
+				if (loadedPlugins[j].init) {
+					loadedPlugins[j].init(plugins[j].options, dependencies);
+				}
+				break;
+			}
+		}
+	}
+	Runtime.plugins = loadedPlugins;
+
+	// Calculate the list of viable files
+	if (sourceInformation) {
+		Runtime.fileList = CodeProcessorUtils.findJavaScriptFiles(sourceInformation.sourceDir);
+	}
+	Runtime.fireEvent('fileListSet', 'The list of files in the project was set', {
+		fileList: Runtime.fileList
+	});
+}
+
+/**
+ * Finalizes the state of the code processor
+ *
+ * @method module:CodeProcessor.finalize
+ */
+exports.finalize = finalize;
+function finalize() {
+	var id,
+		astSet = Runtime.getASTSet(),
+		ambiguousBlockSemaphoreStack = [0],
+		ambiguousContextSemaphoreStack = [false],
+		unknownSemaphoreStack = [0];
+
+	// Exit the global context
+	Base.exitContext();
+
+	// Mark all ambiguous blocks and contexts as ambiguous
+	function nodeCallback(node, descend) {
+		var isFunction = node instanceof uglify.AST_Defun || node instanceof uglify.AST_Function,
+			currentStackLocation,
+			taggedAsAmbiguousContext = node._ambiguousContext,
+			taggedAsAmbiguousBlock = node._ambiguousBlock,
+			taggedAsUnknown = node._unknown;
+		if (isFunction) {
+			ambiguousBlockSemaphoreStack.push(0);
+			ambiguousContextSemaphoreStack.push(0);
+			unknownSemaphoreStack.push(0);
+		}
+		currentStackLocation = ambiguousContextSemaphoreStack.length - 1;
+		if (taggedAsAmbiguousBlock ) {
+			ambiguousBlockSemaphoreStack[currentStackLocation]++;
+		}
+		if (taggedAsAmbiguousContext) {
+			ambiguousContextSemaphoreStack[currentStackLocation]++;
+		}
+		if (taggedAsUnknown) {
+			unknownSemaphoreStack[currentStackLocation]++;
+		}
+
+		if (ambiguousBlockSemaphoreStack[currentStackLocation]) {
+			node._ambiguousBlock = true;
+		}
+		if (ambiguousContextSemaphoreStack[currentStackLocation]) {
+			node._ambiguousContext = true;
+		}
+		if (unknownSemaphoreStack[currentStackLocation]) {
+			node._unknown = true;
+		}
+
+		descend();
+
+		if (taggedAsAmbiguousBlock ) {
+			ambiguousBlockSemaphoreStack[currentStackLocation]--;
+		}
+		if (taggedAsAmbiguousContext) {
+			ambiguousContextSemaphoreStack[currentStackLocation]--;
+		}
+		if (taggedAsUnknown) {
+			unknownSemaphoreStack[currentStackLocation]--;
+		}
+		if (isFunction) {
+			ambiguousBlockSemaphoreStack.pop();
+			ambiguousContextSemaphoreStack.pop();
+		}
+		return true;
+	}
+	for (id in astSet) {
+		astSet[id].walk(new uglify.TreeWalker(nodeCallback));
+	}
+}
+
+/**
+ * Processes the input options
+ *
+ * @method module:CodeProcessor.processEntryPoint
+ * @param {string} entrpoint The path to the entry point
+ * @return {Array} The return value tuple of the top level statement
+ */
+exports.processEntryPoint = processEntryPoint;
+function processEntryPoint(entryPoint) {
+
+	var ast,
+		results;
+
+	// Process the project
+	try {
+		debugger;
+
+		// Make sure the entryPoint exists
+		if (fs.existsSync(entryPoint)) {
+
+			// Fire the parsing begin event
+			Runtime.fireEvent('enteredFile', 'Entering file "' + entryPoint + '"', {
+				filename: entryPoint
+			});
+
+			// Read in the entryPoint and generate the AST
+			ast = AST.parse(entryPoint);
+			if (!ast.syntaxError) {
+				Runtime._unknown = false;
+				Base.createModuleContext(ast, RuleProcessor.isBlockStrict(ast), false, false);
+				try {
+					results = ast.processRule();
+				} finally {
+					Base.exitContext();
+				}
+			} else {
+				Runtime.reportUglifyError(ast);
+			}
+
+		} else {
+			throw new Error('Internal Error: could not find file "' + entryPoint + '"');
+		}
+
+		// Check if an exception was thrown
+		if (results &amp;&amp; results[0] === 'throw') {
+			Runtime.reportError('uncaughtException', Base.getExceptionMessage(results[1]._exception), results[1]._exception.stackTrace);
+		}
+	} catch (e) {
+		if (e.isCodeProcessorException) {
+			results = ['throw', Runtime._exception, undefined];
+			Runtime.reportError('uncaughtException', Base.getExceptionMessage(Runtime._exception), Runtime._exception.stackTrace);
+			Runtime._exception = undefined;
+		} else {
+			throw e;
+		}
+	}
+
+	return results;
+}
+
+/**
+ * Processes all queued functions, taking into account functions that were queued while processing a queued function
+ *
+ * @method module:CodeProcessor.processQueuedFunctions
+ */
+exports.processQueuedFunctions = processQueuedFunctions;
+function processQueuedFunctions() {
+
+	var queuedFunction;
+
+	// Process any queued functions
+	while (queuedFunction = Runtime.getNextQueuedFunction()) {
+
+		Runtime.log('debug', 'Evaluating queued function at ' + queuedFunction.filename + ':' + queuedFunction.line);
+		try {
+			if (queuedFunction.skippedContext) {
+				Base.processInSkippedMode(queuedFunction.func.callFunction.bind(queuedFunction.func, queuedFunction.thisVal, queuedFunction.args, {
+					isAmbiguousContext: queuedFunction.ambiguousContext
+				}));
+			} else {
+				queuedFunction.func.callFunction(queuedFunction.thisVal, queuedFunction.args, {
+					isAmbiguousContext: queuedFunction.ambiguousContext
+				});
+			}
+		} catch (e) {
+			if (e.isCodeProcessorException) {
+				Runtime.reportError('uncaughtException', Base.getExceptionMessage(Runtime._exception), RuleProcessor.getStackTrace());
+				Runtime._exception = undefined;
+			} else {
+				throw e;
+			}
+		}
+	}
+}
+
+/**
+ * Processes all unvisited code, if the appropriate option was set
+ *
+ * @method module:CodeProcessor.processUnvisitedCode
+ */
+exports.processUnvisitedCode = processUnvisitedCode;
+function processUnvisitedCode() {
+	var unprocessedFile,
+		unprocessedFunction,
+		ast,
+		funcObject,
+		args,
+		i,
+		previousAmbiguousSetting;
+
+	while (unprocessedFile = Runtime.getUnprocessedFilesList()[0]) {
+
+		Runtime.log('debug', 'Processing unprocessed file ' + unprocessedFile);
+
+		// Fire the parsing begin event
+		Runtime.fireEvent('enteredFile', 'Entering file "' + unprocessedFile + '"', {
+			filename: unprocessedFile
+		});
+
+		// Read in the entryPoint and generate the AST
+		ast = AST.parse(unprocessedFile);
+		if (!ast.syntaxError) {
+
+			// Create the module context
+			Base.createModuleContext(ast, RuleProcessor.isBlockStrict(ast), true, true);
+
+			// Process the code
+			Runtime._unknown = false;
+			try {
+				ast.processRule();
+			} catch (e) {
+				if (e.isCodeProcessorException) {
+					Runtime.reportError('uncaughtException', Base.getExceptionMessage(Runtime._exception), RuleProcessor.getStackTrace());
+					Runtime._exception = undefined;
+				} else {
+					throw e;
+				}
+			} finally {
+				// Exit the module context
+				Base.exitContext();
+			}
+		} else {
+			Runtime.reportUglifyError(ast);
+		}
+	}
+
+	Runtime.log('debug', 'Processing unvisited functions');
+	while (unprocessedFunction = Runtime.getNextUnprocessedFunction()) {
+
+		Runtime.log('debug', 'Evaluating unprocessed function at ' + unprocessedFunction.start.file + ':' + unprocessedFunction.start.line);
+
+		unprocessedFunction._lastKnownContext._ambiguousContext = true;
+		Base.enterContext(unprocessedFunction._lastKnownContext);
+
+		// Function definitions are instantiated as part of identifier binding in the context creation, but function exrpessions are not
+		if (unprocessedFunction.className === 'AST_Defun') {
+			funcObject = unprocessedFunction._funcObject;
+		} else {
+			funcObject = unprocessedFunction.processRule();
+		}
+
+		// Create unknown arguments set to the length of the expected args
+		args = [];
+		for (i = 0; i &lt; funcObject.formalParameters.length; i++) {
+			args.push(new Base.UnknownType());
+		}
+
+		try {
+			funcObject.callFunction(new Base.UnknownType(), args, {
+				isAmbiguousContext: true,
+				alwaysInvoke: true
+			});
+		} catch (e) {
+			if (e.isCodeProcessorException) {
+				Runtime.reportError('uncaughtException', Base.getExceptionMessage(Runtime._exception), RuleProcessor.getStackTrace());
+				Runtime._exception = undefined;
+			} else {
+				throw e;
+			}
+		} finally {
+			Base.exitContext();
+		}
+
+		unprocessedFunction._lastKnownContext._ambiguousContext = previousAmbiguousSetting;
+	}
+}
+
+/**
+ * The results object
+ *
+ * @typedef {Object} module:CodeProcessor.getResultsReturnValue
+ * @property {Array.&lt;Object>} errors The errors found in the project
+ * @property {Object} errors.entry A single error entry
+ * @property {string} errors.entry.type The type of the event
+ * @property {string} errors.entry.description The description of the event
+ * @property {(string | undefined)} errors.entry.filename The name of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} errors.entry.line The line number of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} errors.entry.column The column number of the file being processed when the event was triggered, if any
+ * @property {Object} errors.entry.data The event-specific information
+ * @property {string} errors.entry.data.type The type of error, e.g. "SyntaxError"
+ * @property {string} errors.entry.data.description A description of the error
+ * @property {Array.&lt;Object>} warnings The warnings found in the project
+ * @property {Object} warnings.entry A single warning entry
+ * @property {string} warnings.entry.type The type of the event
+ * @property {string} warnings.entry.description The description of the event
+ * @property {(string | undefined)} warnings.entry.filename The name of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} warnings.entry.line The line number of the file being processed when the event was triggered, if any
+ * @property {(number | undefined)} warnings.entry.column The column number of the file being processed when the event was triggered, if any
+ * @property {Object} warnings.entry.data The event-specific information
+ * @property {string} warnings.entry.type The type of warning, e.g. "deprecatedTiPropertyReferenced"
+ * @property {string} warnings.entry.description A description of the warning
+ * @property {Array.&lt;Object>} plugins The results of the plugins. Each plugin has its own results format
+ * @property {number} elapsedTime The elapsed time, in milliseconds
+ * @property {string} resultsPath The path to the results files, if a path was specified in the options
+ */
+/**
+ * Gets the results of the code processor. Note: the results are sanitized to remove hidden properties and functions,
+ * thus allowing the results to be JSON.stringify()'d.
+ *
+ * @method module:CodeProcessor.getResults
+ * @return {module:CodeProcessor.getResultsReturnValue} The results of the analysis
+ */
+exports.getResults = getResults;
+function getResults() {
+	var errors = Runtime.getReportedErrors(),
+		warnings = Runtime.getReportedWarnings(),
+		rawResults = {
+			errors: errors,
+			warnings: warnings,
+			plugins: [],
+			elapsedTime: Date.now() - startTime,
+			resultsPath: Runtime.options.resultsPath
+		},
+		results = {},
+		i, len,
+		hiddenRegex = /^_/,
+		astNode = uglify.AST_Node;
+	for (i = 0, len = Runtime.plugins.length; i &lt; len; i++) {
+		rawResults.plugins[i] = Runtime.plugins[i].getResults &amp;&amp; Runtime.plugins[i].getResults() || {};
+		rawResults.plugins[i].name = Runtime.plugins[i].name;
+	}
+	for (i = 0, len = errors.length; i &lt; len; i++) {
+		if (errors[i].occurances > 1) {
+			errors[i].description += ' (' + errors[i].occurances + ' occurances)';
+		}
+	}
+	for (i = 0, len = warnings.length; i &lt; len; i++) {
+		if (warnings[i].occurances > 1) {
+			warnings[i].description += ' (' + warnings[i].occurances + ' occurances)';
+		}
+	}
+	function sanitize(rawNode, node) {
+		var p;
+		for (p in rawNode) {
+			if (!hiddenRegex.test(p) &amp;&amp; !(rawNode[p] instanceof astNode)) {
+				if (typeof rawNode[p] === 'object') {
+					node[p] = Array.isArray(rawNode[p]) ? [] : {};
+					sanitize(rawNode[p], node[p]);
+				} else if (typeof rawNode[p] !== 'function') {
+					node[p] = rawNode[p];
+				}
+			}
+		}
+	}
+	sanitize(rawResults, results);
+	return results;
+}
+
+// ******** Helper Methods ********
+
+/**
+ * Generates a string with n number of chr
+ *
+ * @method module:CodeProcessor.nChars
+ * @param {number} n The number of times to duplicate chr
+ * @param {string} chr The character (or string) to duplicate
+ * @return {string} The string with the duplicated character
+ */
+function nChars(n, chr) {
+	var spaces = '',
+		i;
+	for (i = 0; i &lt; n; i++) {
+		spaces += chr;
+	}
+	return spaces;
+}
+
+/**
+ * Generates a table that plays nicely with mono-spaced fonts (e.g. like those found in a terminal). It works by
+ * generating a single row for each object in the entries array. Each column in the row is pulled from the object using
+ * the corresponding key in the entriesOrder array.
+ *
+ * @method module:CodeProcessor.arrayGen
+ * @param {Array.&lt;string>} headings The headings for the table
+ * @param {Array.&lt;Object>} entries The array of objects to render to the table
+ * @param {Array.&lt;string>} entriesOrder The order of the keys to fetch from entries
+ * @return {string} The rendered table
+ */
+function arrayGen(headings, entries, entriesOrder) {
+	var columns = new Array(headings.length),
+		i, ilen, j, jlen,
+		maxLength,
+		entry,
+		topSep,
+		middleSep,
+		bottomSep,
+		padding,
+		output = '';
+
+	// Collate and pad the data
+	for (i = 0, ilen = columns.length; i &lt; ilen; i++) {
+		columns[i] = [headings[i]];
+		maxLength = headings[i].length;
+		for (j = 0, jlen = entries.length; j &lt; jlen; j++) {
+			entry = (entries[j][entriesOrder[i]]).toString();
+			columns[i].push(entry);
+			if (entry.length > maxLength) {
+				maxLength = entry.length;
+			}
+		}
+		for (j = 0, jlen = columns[i].length; j &lt; jlen; j++) {
+			columns[i][j] = ' ' + columns[i][j] + nChars(maxLength - columns[i][j].length + 1, ' ');
+		}
+	}
+
+	// Generate the table separators
+	topSep =    '┌';
+	middleSep = '├';
+	bottomSep = '└';
+	for (i = 0, ilen = columns.length - 1; i &lt; ilen; i++) {
+		padding = nChars(columns[i][0].length, '─');
+		topSep += padding +    '┬';
+		middleSep += padding + '┼';
+		bottomSep += padding + '┴';
+	}
+	padding = nChars(columns[columns.length - 1][0].length, '─');
+	topSep += padding +    '┐\n';
+	middleSep += padding + '┤\n';
+	bottomSep += padding + '┘';
+
+	output += topSep;
+	for (i = 0, ilen = columns[0].length; i &lt; ilen; i++) {
+		output += '|';
+		for (j = 0, jlen = columns.length; j &lt; jlen; j++) {
+			output += '' + (i === 0 ? columns[j][i].cyan : columns[j][i]) + '|';
+		}
+		output += '\n' + (i &lt; ilen - 1 ? middleSep : bottomSep);
+	}
+
+	return output;
+}
+
+/**
+ * The object that plugins return for rendering
+ *
+ * @typedef {Object} module:CodeProcessor.pluginResultsPageData
+ * @property {string} template The path to the mustache template (filenames must be unique across all plugins)
+ * @property {Object} data The render data for the template
+ */
+/**
+ * private
+ */
+function generateResultsPages(outputFormat, resultsDirectory, theme, callback) {
+	var plugins = Runtime.plugins,
+		results = getResults(),
+		header = [],
+		i, len,
+		currentPage,
+		tasks = [],
+		errorList,
+		error,
+		warningList,
+		warning,
+		pluginList,
+		elevatedPluginList,
+		plugin,
+		page,
+		numErrors,
+		numWarnings,
+		errorsAndWarnings,
+		baseDirectory = Runtime.sourceInformation.projectDir + path.sep,
+		resultsToLog = '',
+		data,
+		paddingLength,
+		mappedLocation;
+
+	function queueRender(template, destination, headerIndex, data) {
+		tasks.push(function(next){
+			var renderStream,
+				i, len,
+				compiledData = '';
+
+			if (!fs.existsSync(template)) {
+				throw new Error('Template "' + template + '" does not exist');
+			}
+
+			for (i = 0, len = header.length; i &lt; len; i++) {
+				header[i].isHighlighted = i === headerIndex;
+			}
+			data.header = header;
+
+			mu.root = path.dirname(template);
+			renderStream = mu.compileAndRender(path.basename(template), data);
+			renderStream.on('data', function (data) {
+				compiledData += data.toString();
+			});
+			renderStream.on('end', function() {
+				fs.writeFile(destination, compiledData, function () {
+					next();
+				});
+			});
+		});
+	}
+
+	// Generate the errors and warnings lists
+	if (results.errors.length) {
+		errorList = [];
+		for (i = 0, len = results.errors.length; i &lt; len; i++) {
+			error = results.errors[i];
+			mappedLocation = Runtime.mapLocation(error);
+			errorList.push({
+				description: error.description,
+				filename: mappedLocation.filename.replace(baseDirectory, ''),
+				line: mappedLocation.line
+			});
+		}
+	}
+	if (results.warnings.length) {
+		warningList = [];
+		for (i = 0, len = results.warnings.length; i &lt; len; i++) {
+			warning = results.warnings[i];
+			mappedLocation = Runtime.mapLocation(warning);
+			warningList.push({
+				description: warning.description,
+				filename: mappedLocation.filename.replace(baseDirectory, ''),
+				line: mappedLocation.line
+			});
+		}
+	}
+
+	// Generate the plugin summary list
+	if (plugins.length) {
+		pluginList = [];
+		elevatedPluginList = [];
+		for (i = 0, len = plugins.length; i &lt; len; i++) {
+			plugin = plugins[i];
+			if (plugin.getResultsPageData &amp;&amp; !plugin.suppressOutput) {
+				(plugin.elevatePluginSummary ? elevatedPluginList : pluginList).push({
+					name: plugin.displayName,
+					overview: results.plugins[i].summary || ''
+				});
+			}
+		}
+	}
+
+	// Generate the errors and warnings summary
+	numErrors = results.errors.length;
+	numWarnings = results.warnings.length;
+	if (numErrors || numWarnings) {
+		errorsAndWarnings = '\n';
+		if (numErrors) {
+			errorsAndWarnings += pluralize('%s error ', '%s errors ', numErrors);
+			if (numWarnings) {
+				errorsAndWarnings += 'and ';
+			}
+		}
+		if (numWarnings) {
+			errorsAndWarnings += pluralize('%s warning ', '%s warnings ', numWarnings);
+		}
+		errorsAndWarnings += 'detected';
+	}
+
+	data = {
+		elapsedTime: (results.elapsedTime / 1000).toFixed(1),
+		time: (new Date()).toTimeString(),
+		date: (new Date()).toDateString(),
+		options: [{
+			option: 'Invoke Methods',
+			value: Runtime.options.invokeMethods,
+		},{
+			option: 'Evaluate Loops',
+			value: Runtime.options.evaluateLoops,
+		},{
+			option: 'Process Unvisited Code',
+			value: Runtime.options.processUnvisitedCode,
+		}],
+		errorsAndWarnings: errorsAndWarnings,
+		errors: errorList ? { errorList: errorList } : undefined,
+		warnings: warningList ? { warningList: warningList } : undefined,
+		elevatedPlugins: elevatedPluginList,
+		plugins: pluginList ? { pluginList: pluginList } : undefined
+	};
+
+	if (outputFormat === 'report') {
+		for (i = 0, len = plugins.length; i &lt; len; i++) {
+			plugin = plugins[i];
+			if (plugin.renderLogOutput &amp;&amp; !plugin.suppressOutput) {
+				paddingLength = (40 - plugin.displayName.length) / 2;
+				resultsToLog += '\n\n' +
+					'******************************************\n' +
+					'*' + nChars(Math.floor(paddingLength), ' ') + plugin.displayName.cyan + nChars(Math.ceil(paddingLength), ' ') + '*\n' +
+					'******************************************\n\n' +
+					plugin.renderLogOutput(arrayGen);
+			}
+		}
+
+		resultsToLog +=
+			'\n\n******************************************\n' +
+			'*                ' + 'Summary'.cyan + '                 *\n' +
+			'******************************************\n\n';
+
+		resultsToLog += 'Analysis completed in ' + data.elapsedTime + ' seconds at ' + data.time + ' on ' + data.date +
+			(data.errorsAndWarnings ? data.errorsAndWarnings : '') + '\n';
+		if (elevatedPluginList &amp;&amp; elevatedPluginList.length) {
+			for (i = 0, len = elevatedPluginList.length; i &lt; len; i++) {
+				resultsToLog += elevatedPluginList[i].name + ': ' + elevatedPluginList[i].overview + '\n';
+			}
+		}
+		resultsToLog += '\n';
+
+		resultsToLog += 'Options selected\n';
+		resultsToLog += arrayGen(['Option', 'Value'], data.options, ['option', 'value']);
+
+		if (data.errors) {
+			resultsToLog += '\n\nErrors\n';
+			resultsToLog += arrayGen(['Description', 'File', 'Line'], data.errors.errorList, ['description', 'filename', 'line']);
+		}
+		if (data.warnings) {
+			resultsToLog += '\n\nWarnings\n';
+			resultsToLog += arrayGen(['Description', 'File', 'Line'], data.warnings.warningList, ['description', 'filename', 'line']);
+		}
+		if (data.plugins &amp;&amp; data.plugins.pluginList.length) {
+			resultsToLog += '\n\nPlugin Summary\n';
+			resultsToLog += arrayGen(['Plugin', 'Overview'], data.plugins.pluginList, ['name', 'overview']);
+		}
+
+		console.log(resultsToLog + '\n');
+	} else if (outputFormat === 'json') {
+		console.log(JSON.stringify(results, false, '\t'));
+	} else if (outputFormat === 'stream') {
+		results = JSON.stringify(results);
+		console.log('REQ,01000001,' + ('00000000' + results.length.toString(16)).slice(-8) + ',' + results);
+	}
+
+	if (resultsDirectory) {
+
+		// Create the results directory if it doesn't exist
+		if (!fs.existsSync(resultsDirectory)) {
+			wrench.mkdirSyncRecursive(resultsDirectory);
+		}
+
+		// Copy the style sheet over
+		theme = path.join(__dirname, '..', 'templates', 'bootstrap-' + (theme || 'light'));
+		if (!fs.existsSync(theme)) {
+			throw new Error('Template theme "' + theme + '" does not exist');
+		}
+		wrench.copyDirSyncRecursive(theme, path.join(resultsDirectory, 'bootstrap'));
+
+		// Create the header
+		for (i = 0, len = plugins.length; i &lt; len; i++) {
+			plugin = plugins[i];
+			if (plugin.getResultsPageData &amp;&amp; !plugin.suppressOutput) {
+				header.push({
+					name: plugin.displayName,
+					file: plugin.name + '.html'
+				});
+			}
+		}
+
+		// Generate the summary results page
+		queueRender(path.join(__dirname, '..', 'templates', 'summary.html'),
+			path.join(resultsDirectory, 'index.html'), -1, data);
+
+		// Generate the plugin results pages
+		currentPage = 0;
+		for (i = 0, len = plugins.length; i &lt; len; i++) {
+			plugin = plugins[i];
+			if (plugin.getResultsPageData &amp;&amp; !plugin.suppressOutput) {
+				plugin = plugin.getResultsPageData(plugin.name + '.html', baseDirectory);
+				for (page in plugin) {
+					queueRender(plugin[page].template,
+						path.join(resultsDirectory, page),
+						currentPage,
+						plugin[page].data);
+				}
+				currentPage++;
+			}
+		}
+
+		// Render the results
+		async.series(tasks, callback);
+	} else {
+		callback &amp;&amp; callback();
+	}
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-AST.html">AST</a></li><li><a href="module-base.html">base</a></li><li><a href="array.html">base/constructors/array</a></li><li><a href="boolean.html">base/constructors/boolean</a></li><li><a href="date.html">base/constructors/date</a></li><li><a href="error.html">base/constructors/error</a></li><li><a href="function.html">base/constructors/function</a></li><li><a href="number.html">base/constructors/number</a></li><li><a href="object.html">base/constructors/object</a></li><li><a href="regexp.html">base/constructors/regexp</a></li><li><a href="string.html">base/constructors/string</a></li><li><a href="context.html">base/context</a></li><li><a href="conversion.html">base/conversion</a></li><li><a href="exceptions.html">base/exceptions</a></li><li><a href="init.html">base/init</a></li><li><a href="array_.html">base/prototypes/array</a></li><li><a href="boolean_.html">base/prototypes/boolean</a></li><li><a href="date_.html">base/prototypes/date</a></li><li><a href="error_.html">base/prototypes/error</a></li><li><a href="function_.html">base/prototypes/function</a></li><li><a href="number_.html">base/prototypes/number</a></li><li><a href="object_.html">base/prototypes/object</a></li><li><a href="regexp_.html">base/prototypes/regexp</a></li><li><a href="string_.html">base/prototypes/string</a></li><li><a href="array__.html">base/types/array</a></li><li><a href="boolean__.html">base/types/boolean</a></li><li><a href="function__.html">base/types/function</a></li><li><a href="null.html">base/types/null</a></li><li><a href="number__.html">base/types/number</a></li><li><a href="object__.html">base/types/object</a></li><li><a href="reference.html">base/types/reference</a></li><li><a href="regexp__.html">base/types/regexp</a></li><li><a href="string__.html">base/types/string</a></li><li><a href="undefined.html">base/types/undefined</a></li><li><a href="unknown.html">base/types/unknown</a></li><li><a href="module-CodeProcessor.html">CodeProcessor</a></li><li><a href="module-CodeProcessorUtils.html">CodeProcessorUtils</a></li><li><a href="TiApiDeprecationFinder.html">plugins/TiApiDeprecationFinder</a></li><li><a href="TiApiIncludeFinder.html">plugins/TiApiIncludeFinder</a></li><li><a href="TiApiPlatformValidator.html">plugins/TiApiPlatformValidator</a></li><li><a href="TiApiProvider.html">plugins/TiApiProvider</a></li><li><a href="globals.html">plugins/TiApiProvider/globals</a></li><li><a href="require.html">plugins/TiApiProvider/require</a></li><li><a href="Ti.html">plugins/TiApiProvider/Ti</a></li><li><a href="API.html">plugins/TiApiProvider/Ti/API</a></li><li><a href="App.html">plugins/TiApiProvider/Ti/App</a></li><li><a href="Properties.html">plugins/TiApiProvider/Ti/App/Properties</a></li><li><a href="FileSystem.html">plugins/TiApiProvider/Ti/FileSystem</a></li><li><a href="Window.html">plugins/TiApiProvider/Ti/UI/Window</a></li><li><a href="TiApiRequireFinder.html">plugins/TiApiRequireFinder</a></li><li><a href="TiApiUsageFinder.html">plugins/TiApiUsageFinder</a></li><li><a href="module-RuleProcessor.html">RuleProcessor</a></li><li><a href="AST_Accessor.html">rules/AST_Accessor</a></li><li><a href="AST_Array.html">rules/AST_Array</a></li><li><a href="AST_Assign.html">rules/AST_Assign</a></li><li><a href="AST_Binary.html">rules/AST_Binary</a></li><li><a href="AST_BlockStatement.html">rules/AST_BlockStatement</a></li><li><a href="AST_Break.html">rules/AST_Break</a></li><li><a href="AST_Call.html">rules/AST_Call</a></li><li><a href="AST_Conditional.html">rules/AST_Conditional</a></li><li><a href="AST_Const.html">rules/AST_Const</a></li><li><a href="AST_Continue.html">rules/AST_Continue</a></li><li><a href="AST_Debugger.html">rules/AST_Debugger</a></li><li><a href="AST_Defun.html">rules/AST_Defun</a></li><li><a href="AST_Directive.html">rules/AST_Directive</a></li><li><a href="AST_Do.html">rules/AST_Do</a></li><li><a href="AST_Dot.html">rules/AST_Dot</a></li><li><a href="AST_EmptyStatement.html">rules/AST_EmptyStatement</a></li><li><a href="AST_False.html">rules/AST_False</a></li><li><a href="AST_For.html">rules/AST_For</a></li><li><a href="AST_ForIn.html">rules/AST_ForIn</a></li><li><a href="AST_Function.html">rules/AST_Function</a></li><li><a href="AST_Hole.html">rules/AST_Hole</a></li><li><a href="AST_If.html">rules/AST_If</a></li><li><a href="AST_Infinity.html">rules/AST_Infinity</a></li><li><a href="AST_LabeledStatement.html">rules/AST_LabeledStatement</a></li><li><a href="AST_NaN.html">rules/AST_NaN</a></li><li><a href="AST_New.html">rules/AST_New</a></li><li><a href="AST_Null.html">rules/AST_Null</a></li><li><a href="AST_Number.html">rules/AST_Number</a></li><li><a href="AST_Object.html">rules/AST_Object</a></li><li><a href="AST_RegExp.html">rules/AST_RegExp</a></li><li><a href="AST_Return.html">rules/AST_Return</a></li><li><a href="AST_Seq.html">rules/AST_Seq</a></li><li><a href="AST_SimpleStatement.html">rules/AST_SimpleStatement</a></li><li><a href="AST_String.html">rules/AST_String</a></li><li><a href="AST_Sub.html">rules/AST_Sub</a></li><li><a href="AST_Switch.html">rules/AST_Switch</a></li><li><a href="AST_SymbolRef.html">rules/AST_SymbolRef</a></li><li><a href="AST_This.html">rules/AST_This</a></li><li><a href="AST_Throw.html">rules/AST_Throw</a></li><li><a href="AST_Toplevel.html">rules/AST_Toplevel</a></li><li><a href="AST_True.html">rules/AST_True</a></li><li><a href="AST_Try.html">rules/AST_Try</a></li><li><a href="AST_UnaryPostfix.html">rules/AST_UnaryPostfix</a></li><li><a href="AST_UnaryPrefix.html">rules/AST_UnaryPrefix</a></li><li><a href="AST_Undefined.html">rules/AST_Undefined</a></li><li><a href="AST_Var.html">rules/AST_Var</a></li><li><a href="AST_While.html">rules/AST_While</a></li><li><a href="AST_With.html">rules/AST_With</a></li><li><a href="module-Runtime.html">Runtime</a></li></ul><h3>Classes</h3><ul><li><a href="module-base.BaseType.html">BaseType</a></li><li><a href="context.DeclarativeEnvironmentRecord.html">DeclarativeEnvironmentRecord</a></li><li><a href="context.ObjectEnvironmentRecord.html">ObjectEnvironmentRecord</a></li><li><a href="context-ExecutionContext.html">ExecutionContext</a></li><li><a href="context-LexicalEnvironment.html">LexicalEnvironment</a></li><li><a href="array.ArrayPrototypeType.html">ArrayPrototypeType</a></li><li><a href="boolean.BooleanPrototypeType.html">BooleanPrototypeType</a></li><li><a href="date.DatePrototypeType.html">DatePrototypeType</a></li><li><a href="error.ErrorPrototypeType.html">ErrorPrototypeType</a></li><li><a href="function.FunctionPrototypeType.html">FunctionPrototypeType</a></li><li><a href="number.NumberPrototypeType.html">NumberPrototypeType</a></li><li><a href="object.ObjectPrototypeType.html">ObjectPrototypeType</a></li><li><a href="regexp.RegExpPrototypeType.html">RegExpPrototypeType</a></li><li><a href="string.StringPrototypeType.html">StringPrototypeType</a></li><li><a href="array.ArrayType.html">ArrayType</a></li><li><a href="boolean.BooleanType.html">BooleanType</a></li><li><a href="function.FunctionType.html">FunctionType</a></li><li><a href="function.FunctionTypeBase.html">FunctionTypeBase</a></li><li><a href="null.NullType.html">NullType</a></li><li><a href="number.NumberType.html">NumberType</a></li><li><a href="object.AccessorPropertyDescriptor.html">AccessorPropertyDescriptor</a></li><li><a href="object.DataPropertyDescriptor.html">DataPropertyDescriptor</a></li><li><a href="object.ObjectType.html">ObjectType</a></li><li><a href="reference.ReferenceType.html">ReferenceType</a></li><li><a href="regexp.RegExpType.html">RegExpType</a></li><li><a href="string.StringType.html">StringType</a></li><li><a href="undefined.UndefinedType.html">UndefinedType</a></li><li><a href="unknown.UnknownType.html">UnknownType</a></li><li><a href="module-Runtime.Evented.html">Evented</a></li></ul><h3>Events</h3><ul><li><a href="array.ArrayType.html#event:propertyDefined">propertyDefined</a></li><li><a href="array.ArrayType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="array.ArrayType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="array.ArrayType.html#event:propertySet">propertySet</a></li><li><a href="object.ObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="object.ObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="object.ObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="object.ObjectType.html#event:propertySet">propertySet</a></li><li><a href="module-CodeProcessor.html#event:enteredFile">enteredFile</a></li><li><a href="module-CodeProcessor.html#event:errorReported">errorReported</a></li><li><a href="module-CodeProcessor.html#event:maxIterationsExceeded">maxIterationsExceeded</a></li><li><a href="module-CodeProcessor.html#event:maxRecusionLimitReached">maxRecusionLimitReached</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingBegin">projectProcessingBegin</a></li><li><a href="module-CodeProcessor.html#event:projectProcessingEnd">projectProcessingEnd</a></li><li><a href="module-CodeProcessor.html#event:undeclaredGlobalVariableCreated">undeclaredGlobalVariableCreated</a></li><li><a href="module-CodeProcessor.html#event:warningReported">warningReported</a></li><li><a href="TiApiProvider.html#event:tiPropertyDeleted">tiPropertyDeleted</a></li><li><a href="TiApiProvider.html#event:tiPropertyReferenced">tiPropertyReferenced</a></li><li><a href="TiApiProvider.html#event:tiPropertySet">tiPropertySet</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDefined">propertyDefined</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyDeleted">propertyDeleted</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertyReferenced">propertyReferenced</a></li><li><a href="TiApiProvider-TiObjectType.html#event:propertySet">propertySet</a></li><li><a href="AST_Accessor.html#event:rule">rule</a></li><li><a href="AST_Array.html#event:rule">rule</a></li><li><a href="AST_Assign.html#event:rule">rule</a></li><li><a href="AST_Binary.html#event:rule">rule</a></li><li><a href="AST_BlockStatement.html#event:rule">rule</a></li><li><a href="AST_Break.html#event:rule">rule</a></li><li><a href="AST_Call.html#event:rule">rule</a></li><li><a href="AST_Conditional.html#event:rule">rule</a></li><li><a href="AST_Const.html#event:rule">rule</a></li><li><a href="AST_Continue.html#event:rule">rule</a></li><li><a href="AST_Debugger.html#event:rule">rule</a></li><li><a href="AST_Defun.html#event:rule">rule</a></li><li><a href="AST_Directive.html#event:rule">rule</a></li><li><a href="AST_Do.html#event:rule">rule</a></li><li><a href="AST_Dot.html#event:rule">rule</a></li><li><a href="AST_EmptyStatement.html#event:rule">rule</a></li><li><a href="AST_False.html#event:rule">rule</a></li><li><a href="AST_For.html#event:rule">rule</a></li><li><a href="AST_ForIn.html#event:rule">rule</a></li><li><a href="AST_Function.html#event:rule">rule</a></li><li><a href="AST_Hole.html#event:rule">rule</a></li><li><a href="AST_If.html#event:rule">rule</a></li><li><a href="AST_Infinity.html#event:rule">rule</a></li><li><a href="AST_LabeledStatement.html#event:rule">rule</a></li><li><a href="AST_NaN.html#event:rule">rule</a></li><li><a href="AST_New.html#event:rule">rule</a></li><li><a href="AST_Null.html#event:rule">rule</a></li><li><a href="AST_Number.html#event:rule">rule</a></li><li><a href="AST_Object.html#event:rule">rule</a></li><li><a href="AST_RegExp.html#event:rule">rule</a></li><li><a href="AST_Return.html#event:rule">rule</a></li><li><a href="AST_Seq.html#event:rule">rule</a></li><li><a href="AST_SimpleStatement.html#event:rule">rule</a></li><li><a href="AST_String.html#event:rule">rule</a></li><li><a href="AST_Sub.html#event:rule">rule</a></li><li><a href="AST_Switch.html#event:rule">rule</a></li><li><a href="AST_SymbolRef.html#event:rule">rule</a></li><li><a href="AST_This.html#event:rule">rule</a></li><li><a href="AST_Throw.html#event:rule">rule</a></li><li><a href="AST_Toplevel.html#event:rule">rule</a></li><li><a href="AST_True.html#event:rule">rule</a></li><li><a href="AST_Try.html#event:rule">rule</a></li><li><a href="AST_UnaryPostfix.html#event:rule">rule</a></li><li><a href="AST_UnaryPrefix.html#event:rule">rule</a></li><li><a href="AST_Undefined.html#event:rule">rule</a></li><li><a href="AST_Var.html#event:rule">rule</a></li><li><a href="AST_While.html#event:rule">rule</a></li><li><a href="AST_With.html#event:rule">rule</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Thu Nov 14 2013 15:31:12 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

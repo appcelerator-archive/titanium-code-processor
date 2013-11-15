@@ -1,11 +1,10 @@
 /**
- * <p>Copyright (c) 2013 by Appcelerator, Inc. All Rights Reserved.
+ * <p>Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
  * Please see the LICENSE file for information about licensing.</p>
  *
  * common globals implementations
  *
- * @module plugins/TiAPIProcessor
- * @author Chris Williams &lt;<a href='mailto:cwilliams@appcelerator.com'>cwilliams@appcelerator.com</a>&gt;
+ * @module plugins/TiApiProvider/globals
  */
 
 var path = require('path'),
@@ -13,6 +12,13 @@ var path = require('path'),
 	Base = require(path.join(global.titaniumCodeProcessorLibDir, 'Base')),
 	Runtime = require(path.join(global.titaniumCodeProcessorLibDir, 'Runtime'));
 
+/**
+ * Gets the set of overrides defined in this file
+ *
+ * @method module:plugins/TiApiProvider/globals.getOverrides
+ * @param  {Object} options The options passed to the Ti API provider plugin
+ * @return {Array.<module:plugins/TiApiProvider.override>} The list of overrides
+ */
 exports.getOverrides = function () {
 	return [{
 		regex: /^clearInterval$/,

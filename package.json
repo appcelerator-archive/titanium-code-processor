@@ -1,7 +1,17 @@
 {
-	"author": "Bryan Hughes <bhughes@appcelerator.com>",
 	"name": "titanium-code-processor",
 	"description": "A code processing tool for Titanium Mobile",
+	"author": {
+		"name": "Appcelerator, Inc.",
+		"email": "info@appcelerator.com"
+	},
+	"maintainers": [{
+		"name": "Bryan Hughes",
+		"email": "bhughes@appcelerator.com"
+	},{
+		"name": "Allen Yeung",
+		"email": "ayeung@appcelerator.com>"
+	}],
 	"version": "1.1.0",
 	"homepage": "https://github.com/appcelerator/titanium-code-processor",
 	"repository": {

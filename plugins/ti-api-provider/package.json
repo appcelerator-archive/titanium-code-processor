@@ -1,10 +1,9 @@
 {
-	"author": "Bryan Hughes <bhughes@appcelerator.com> (https://github.com/bryan-m-hughes/)",
 	"name": "ti-api-provider",
 	"displayName": "Titanium API Provider",
 	"description": "Provides an implementation of the Titanium SDK",
 	"titaniumCodeProcessorPlugin": true,
-	"main": "lib/TiAPIProvider.js",
+	"main": "lib/TiApiProvider.js",
 	"dependencies": {},
 	"options": {
 		"globalsOnly": {
