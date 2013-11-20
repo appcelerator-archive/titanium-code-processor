@@ -373,16 +373,6 @@ function validateConfigFile(logger, config, cli, callback) {
 				}
 				if (pkg.name === 'ti-api-provider') {
 					sdkPath = configFile.plugins[i].options.sdkPath;
-					if (!existsSync(sdkPath)) {
-						console.log('error', 'Could not find the specified SDK path "' + sdkPath + '"');
-						process.exit(1);
-					}
-					try {
-						ti = require(path.join(sdkPath, 'node_modules', 'titanium-sdk'));
-						ti.validateProjectDir(logger, cli, cli.argv, 'project-dir');
-						ti.validateTiappXml(logger, cli.tiapp);
-						ti.loadPlugins(logger, cli, config, cli.argv['project-dir']);
-					} catch(e) {} // squash
 				}
 			} catch(e) {
 				if (!configFile.plugins[i]) {
@@ -405,7 +395,16 @@ function validateConfigFile(logger, config, cli, callback) {
 		sourceInformation = configFile.sourceInformation;
 		options = configFile.options;
 		plugins = configFile.plugins;
-		callback(true);
+
+		// Initialize the CLI
+		if (!existsSync(sdkPath)) {
+			console.log('error', 'Could not find the specified SDK path "' + sdkPath + '"');
+			process.exit(1);
+		}
+		ti = require(path.join(sdkPath, 'node_modules', 'titanium-sdk'));
+		ti.validateProjectDir(logger, cli, cli.argv, 'project-dir');
+		ti.validateTiappXml(logger, cli.tiapp);
+		ti.loadPlugins(logger, config, cli, cli.argv['project-dir'], callback.bind(this, true));
 	});
 }
 
