@@ -15,7 +15,7 @@
 			"email": "ayeung@appcelerator.com>"
 		}
 	],
-	"version": "1.1.0-cr2",
+	"version": "1.1.0",
 	"homepage": "https://github.com/appcelerator/titanium-code-processor",
 	"repository": {
 		"type": "git",
