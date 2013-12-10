@@ -403,7 +403,7 @@ function validateConfigFile(logger, config, cli, callback) {
 		}
 		ti = require(path.join(sdkPath, 'node_modules', 'titanium-sdk'));
 		ti.validateProjectDir(logger, cli, cli.argv, 'project-dir');
-		ti.validateTiappXml(logger, cli.tiapp);
+		ti.validateTiappXml(logger, config, cli.tiapp);
 		ti.loadPlugins(logger, config, cli, cli.argv['project-dir'], callback.bind(this, true));
 	});
 }
