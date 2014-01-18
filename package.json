@@ -45,6 +45,5 @@
 	},
 	"engine": {
 		"node": ">=0.8"
-	},
-	"private": true
+	}
 }
