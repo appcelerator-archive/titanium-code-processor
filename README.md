@@ -38,6 +38,8 @@ below the type definition. Object properties always have a name and array entrie
 
 ## Quick Start
 
+Note: Titanium Code Processor requires version 3.2.0 of the Titanium SDK or newer.
+
 ### Install Using NPM
 
 ```
@@ -45,16 +47,9 @@ below the type definition. Object properties always have a name and array entrie
 ```
 
 The code processor works as a command in the [Titanium CLI](https://github.com/appcelerator/titanium), so make sure
-it is installed before continuing. If you have a 3.0.0. or newer Titanium SDK installed, you should already have the CLI.
-There are two ways to include the code processor as part of the CLI:
+it is installed before continuing. If you have a 3.2.0. or newer Titanium SDK installed, you should already have the CLI.
 
-Automatic Method: run the included install script
-
-```
-node /path/to/titanium-code-processor/bin/install
-```
-
-Manual Method: configure the cli by hand
+Configure the cli
 
 ```
 titanium config paths.commands --append /path/to/titanium-code-processor/commands
