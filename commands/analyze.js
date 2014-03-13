@@ -44,7 +44,10 @@ exports.config = function (logger, config, cli) {
 		sdks = cli.env.sdks,
 		vers = Object.keys(sdks).sort().reverse();
 	locations.indexOf(defaultInstallLocation) == -1 && locations.push(defaultInstallLocation);
-	latestSDK = vers[0];
+	latestSDK = config.sdk.selected;
+	if (latestSDK === undefined) {
+		latestSDK = vers[0];
+	}
 	if (semver.lt(latestSDK.match(/^([0-9]*\.[0-9]*\.[0-9]*)/)[1], '3.2.0')) {
 		logger.error('The Titanium Code Processor requires version 3.2.0 of the Titanium SDK or newer');
 		process.exit(1);
