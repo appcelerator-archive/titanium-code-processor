@@ -427,7 +427,9 @@ function validateCLIParameters(logger, config, cli, callback) {
 
 	// Validate the project information
 	ti.validateProjectDir(logger, cli, cli.argv, 'project-dir');
-	ti.validateTiappXml(logger, cli.tiapp);
+	// Initialize tiapp properties to stay compatible with old SDK versions.
+	cli.tiapp.properties || (cli.tiapp.properties = {});
+	ti.validateTiappXml(logger, config, cli.tiapp);
 
 	// Note: we do custom SDK validation because the validateCorrectSDK method does a lot more than we need
 	sdk = cli.tiapp['sdk-version'] || Object.keys(cli.env.sdks).sort().reverse()[0];
