@@ -1,4 +1,4 @@
-Titanium Code Processor
+Titanium Code Processor [![Build Status](https://travis-ci.org/appcelerator/titanium-code-processor.png)](https://travis-ci.org/appcelerator/titanium-code-processor)
 =======================
 
 The Titanium Code Processor is a tool for analyzing JavaScript code in
