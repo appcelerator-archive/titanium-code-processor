@@ -1,3 +1,9 @@
+## 1.1.1
+
+### Bug Fixes
+* Fixed a bug where analyzer fails when only minimum Android SDK is installed.
+* Fixed a bug to address the compatibility with dependent npm modules.
+
 ## 1.1.0
 
 ## New Features
